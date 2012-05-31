@@ -1,0 +1,13 @@
+# this makefile also gets parsed by shell scripts
+# therefore it does not support full make syntax and features
+# edit with care
+
+PACKAGE          = SusyCommon
+PACKAGE_PRELOAD  = Tree
+PACKAGE_CXXFLAGS = 
+PACKAGE_LDFLAGS  = 
+PACKAGE_BINFLAGS = -lCintex -lReflex
+PACKAGE_DEP      = SusyNtuple MultiLep 
+PACKAGE_NOOPT    = 0
+
+include $(ROOTCOREDIR)/Makefile-common

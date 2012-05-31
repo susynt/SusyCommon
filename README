@@ -1,0 +1,148 @@
+#------------------------------------------------------------------------------------
+#  SusyCommon
+#
+#  A RootCore package for common UCI SUSY analysis
+#
+#------------------------------------------------------------------------------------
+
+
+
+# Link to code in SVN browser
+https://svnweb.cern.ch/trac/atlasinst/browser/Institutes/UCIrvine/SUSYAnalysis/SusyCommon
+
+# To checkout the package trunk
+svn co svn+ssh://svn.cern.ch/reps/atlasinst/Institutes/UCIrvine/SUSYAnalysis/SusyCommon/trunk SusyCommon
+
+# Or the current recommended tag (currently changing)
+svn co svn+ssh://svn.cern.ch/reps/atlasinst/Institutes/UCIrvine/SUSYAnalysis/SusyCommon/tags/SusyCommon-00-00-01 SusyCommon
+
+# To make a tag, from this directory
+svn cp . svn+ssh://svn.cern.ch/reps/atlasinst/Institutes/UCIrvine/SUSYAnalysis/SusyCommon/tags/SusyCommon-XX-YY-ZZ -m "some message"
+
+# To install, check out the MultiLep Common code and run install script 
+# Common code is in a temporary location because svn was down:
+#svn co svn+ssh://svn.cern.ch/reps/atlasinst/Physics/SUSY/Analyses/Multilepton/trunk/fiveinvfb/MultiLep MultiLep
+svn co svn+ssh://svn.cern.ch/reps/atlasusr/lucian/Multilepton/MultiLep MultiLep
+source MultiLep/installscripts/install_script.sh
+
+# for examples, here is my analysis code which depends on this package
+# Currently on UCI Tier3, I need to update to update svn later
+/data11/home/sfarrell/workarea/SusyAna_r17/SusyAna
+
+
+#------------------------------------------------------------------------------------
+# Overview of the package
+#------------------------------------------------------------------------------------
+
+SusyDefs
+  - typedefs, constants, global functions, etc.
+
+SusyD3PDInterface
+  - TSelector for processing Susy D3PDs
+  - Provides access to d3pd objects via 'd3pd' container
+
+SusyD3PDAna
+  - Inherits from SusyD3PDInterface
+  - Holds all the functionality for doing the analysis out of d3pds.
+    Object selection, event cleaning, reweighting, etc.
+
+SusyNt
+  - Definitions for the SusyNt classes: particles, jets, event variables, etc.
+
+SusyNtObject
+  - Manages SusyNt read/write of branches
+
+SusyNtMaker
+  - Inherits from SusyD3PDAna
+  - Applies cleaning cuts and event filtering
+  - Writes a SusyNt tree
+
+SusyNtAna
+  - TSelector which will run on SusyNt
+  - Holds functionality to do final object selections
+        
+
+# Executables
+SusyD3PDTest
+  - Just dumps D3PD variables, for testing
+
+NtMaker
+  - Runs the SusyNtMaker
+
+SusyNtTest
+  - Example executable for processing SusyNt
+
+
+
+#------------------------------------------------------------------------------------
+# Examples on how to run
+#------------------------------------------------------------------------------------
+
+##################
+# To Make SusyNt #
+##################
+
+1.) compile with Rootcore, or in standalone mode
+2.) cd run/
+3.) Create a list of d3pd files into a text file
+
+command: NtMaker -s mc -f filelist.txt
+Notice the second option is 'mc'.  If you want to run over data, simply insert 'data' here.
+Also, NtMaker -h will show you the current list of options.  More will be added soon to turn on
+and off systematics
+
+After you run NtMaker, it will spit out a susyNt.root which will contain the tree
+
+
+#########################
+# How to Run ove SusyNt #
+#########################
+
+1.) Move to run/ area
+2.) Put your files to run over in a list
+
+command: SusyNtTest -f filelist.txt
+
+Other commands exist and can be found by running SusyNtTest -h
+This list will be updated to include switching on and off sys.
+
+#------------------------------------------------------------------------------------
+# More stuff to come!
+#------------------------------------------------------------------------------------
+
+# TODO
+- Add script or package list for checking out all RootCore packages
+        - Could easily set it up to checkout just the MultiLep common code and use the install script
+
+# Things needed to be addressed in the latest version:
+
+In SusyCommon:
+
+[X] Make trigger matching done regardless of Pt
+[ ] Add remaining systematics
+[ ] Add a timer so we can monitor speed of what we make SusyNt
+[ ] Add to jet truth labels
+[ ] Add event <mu>
+[ ] Add good vertex info (>3 tracks?) & position of PV
+[ ] Add e/mu Z0 pvtx
+[ ] Add necessary MC information to do  signal diagram selection, charge flip, ID decay (eg ttbar dilepton)
+[ ] Add metadata: D3PD input list, D3PD tag, SusyTool tag, CommonCode tag, histogram with cutflow
+[ ] Improve event weighting skim for lumi so that if not all job run on grid, still ok (see Common code for how it's done there)
+[ ] Add script or package list for checking out all RootCore packages
+        - Could easily set it up to checkout just the MultiLep common code and use the install script
+
+
+In SusyNtuple:
+
+[ ] Code up trigger checking of objects in SusyNtTools.
+[ ] Add a timer so we can monitor speed of what we make/read SusyNt
+[ ] Add methods that are currently commented out in SusyD3PDAna to SusyNtTools.  Need to
+    check things like badJet, badMuon, etc on the fly.  Add bools to SusyNt...? Might be best.
+[ ] Compare to Cutflow on multiple samples
+[ ] Compare systematic shifts with someone TBD.
+[ ] Add the rest of the systematic shifts (trigger eff, etc.)
+[ ] Right now the code is not setup to run just on d3pd. My modifications were done to
+    accomodate making SusyNt. We need to add option for either d3pd or SusyNt mode, which
+    will place back all the cuts on badJet, badMuon, etc.
+
+[ ] ... Anything else?

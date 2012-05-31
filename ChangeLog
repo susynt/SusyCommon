@@ -1,0 +1,109 @@
+# vim: set noexpandtab:
+2012-05-30 Matt
+	* The great restructuring has begun! Merging now.
+	* All things relevant to running over SusyNt moved to separate directory: SusyNtuple
+	* Merged override of xsec in NtMaker
+	* Added avgMu to NtMaker
+	* Added electron cluster Energy
+	* Added jet truth label	
+	* Tagged SusyCommon-00-00-05 (added after.. sorry )	
+	
+#-----------------------------------------------------------------------------------------
+# Changes made in parallel with Steve's Original version by Matt/Anyes/Serhan
+#-----------------------------------------------------------------------------------------
+
+2012-05-28 Matt
+	* Corrected trigger matching. Was called after filling. Garbage results.
+
+2012-05-23 Matt
+	* Added cutflow histogram to susynt storing info on cuts applied upstream
+
+2012-05-18 Matt
+	* Compared cutflow on su4 sample. Match up to Cosmic Veto.
+	* Added a dump method that can be filled.. Could be deleted, leave for now.
+
+2012-05-17 Matt
+	* Updated NtMaker to handle new way to save met
+	* Updated Way sys is looped over
+
+2012-05-11 Matt
+	* Updated way evtFlag saved to insure association with SYSTEMATIC enum
+
+2012-05-10 Anyes 
+	* Move SusyNtuple related classes to separate package
+	
+	
+
+#-----------------------------------------------------------------------------------------
+# Steve's Previous version before the merge:
+#-----------------------------------------------------------------------------------------
+
+2012-05-23 Steve
+	* Added pythiaB, V+gamma, and sherpa diboson samples
+	* Added wA_sl susy grids to the submission area
+	* Added optional overrides of mc cross section and lumi to the NtMaker
+	* Added function for computing the btag scale factor, although it is not finished
+	* Tagging SusyCommon-00-00-04
+
+2012-05-15 Steve
+	* Finally we have SVNGRP back!
+	* Updating all of my changes while svn was down
+	* Added enums for data period and mc period
+	* Added Meff helper function
+	* Added function to help find best Z candidate pair
+	* Added d0 cuts to signal lepton definitions
+	* Added cluster energy to the electrons
+	* Added jet truth label
+	* Updated common code function usage for latest version
+	* Added e-mu trigger matching
+	* Changed signal jet pt to 20 GeV (3L convention only)
+	* Added avgMu = avergeIntPerXing to the Event
+
+2012-04-27 Steve
+	* Fixed muon trigger matching.  It wasn't saving the flags
+	* Moved ele and mu trigger enums into one enum
+	* This change was never committed, so it is picked up with the repository update above
+
+2012-04-24 Steve
+	* Added TrackD3PDObject for reading track variables from d3pd
+	* Added d0 and error for electrons
+
+2012-04-22 Steve
+	* New muon trigger matching, doing it myself since common code approach was weird
+	* I also increased the SusyNtMaker filter to >=2 baseline leptons, for now
+	* Tagging SusyCommon-00-00-03
+
+2012-04-21 Steve
+	* Added cross sections from SUSYTools
+	* Pileup reweighting
+	* summed mc weights and lumi scaling (lumi/sumw)
+	* di-electron trigger matching
+		* di-muon feature matching prescription not available
+	* Added trigger reweighting maps to SusyNtAna
+
+2012-04-19 Steve
+	* Added DataStream
+	* fix jet index usage when filling SusyNt
+	* Started adding some trigger matching stuff
+	* Added sample name to SusyNtAna
+	* removed 'inline' for most SusyDef functions
+
+2012-04-11 Steve
+	* Added ChainHelper for easy TChain building
+	* Implemented signal obj selection in SusyNtAna
+	* Tagging SusyCommon-00-00-01
+	* Oops, forgot to add SusyNtAna files! Can't delete tag...
+	* Tagging SusyCommon-00-00-02
+
+2012-04-10 Steve
+	* Added SusyNtObject, SusyD3PDAna, SusyNtMaker
+	* Added object and event selection to SusyD3PDAna
+	* Added filling of SusyNt in SusyNtMaker
+
+2012-04-05 Steve
+	* Added SusyNt classes
+	* Added SusyD3PDInterface TSelector class
+	* Added SusyD3PDTest executable for testing the d3pd interface
+
+2012-04-04 Steve
+	* Initial package layout
