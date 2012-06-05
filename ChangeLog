@@ -1,4 +1,11 @@
 # vim: set noexpandtab:
+
+
+2012-06-05 Steve
+	* Updated code to work with current fiveinvfb MultiLep pkg, 
+	  which is here (directory structure is weird):
+	  svn+ssh://svn.cern.ch/reps/atlasphys/Physics/SUSY/Analyses/Multilepton/trunk/fiveinvfb/MultiLep
+
 2012-05-30 Matt
 	* The great restructuring has begun! Merging now.
 	* All things relevant to running over SusyNt moved to separate directory: SusyNtuple
@@ -7,7 +14,7 @@
 	* Added electron cluster Energy
 	* Added jet truth label	
 	* Tagged SusyCommon-00-00-05 (added after.. sorry )	
-	
+
 #-----------------------------------------------------------------------------------------
 # Changes made in parallel with Steve's Original version by Matt/Anyes/Serhan
 #-----------------------------------------------------------------------------------------

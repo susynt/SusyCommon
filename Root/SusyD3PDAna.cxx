@@ -128,7 +128,7 @@ void SusyD3PDAna::selectBaselineObjects(SYSTEMATIC sys)
 {
   if(m_dbg) cout << "selectBaselineObjects" << endl;
   vector<int> goodJets;  // What the hell is this??
-  float mu = d3pd.evt.averageIntPerXing();
+  //float mu = d3pd.evt.averageIntPerXing();
 
   // Handle Systematic
   int ees = 0, eer = 0;
@@ -150,7 +150,8 @@ void SusyD3PDAna::selectBaselineObjects(SYSTEMATIC sys)
   // Preselection
   m_preElectrons = get_electrons_baseline( &d3pd.ele, !m_isMC, d3pd.evt.RunNumber(), m_susyObj, 10.*GeV, 2.47, ees, eer, false );
   m_preMuons     = get_muons_baseline( &d3pd.muo, !m_isMC, m_susyObj, 10.*GeV, 2.4, musys );
-  m_preJets      = get_jet_baseline( &d3pd.jet, !m_isMC, m_susyObj, 20.*GeV, 4.9, jetsys, false, goodJets, mu, &d3pd.vtx );
+  //m_preJets      = get_jet_baseline( &d3pd.jet, !m_isMC, m_susyObj, 20.*GeV, 4.9, jetsys, false, goodJets, mu, &d3pd.vtx );
+  m_preJets      = get_jet_baseline( &d3pd.jet, &d3pd.vtx, &d3pd.evt, !m_isMC, m_susyObj, 20.*GeV, 4.9, jetsys, false, goodJets );
   
   performOverlapRemoval();
 
@@ -198,8 +199,8 @@ void SusyD3PDAna::selectSignalObjects()
 {
   if(m_dbg) cout << "selectSignalObjects" << endl;
   // TODO: make these functions more symmetric
-  m_sigElectrons = get_electrons_signal(&d3pd.ele, m_baseElectrons, m_susyObj, 10.*GeV);
-  m_sigMuons     = get_muons_signal(&d3pd.muo, m_susyObj, m_baseMuons, 10.*GeV, 1.8*GeV);
+  m_sigElectrons = get_electrons_signal(&d3pd.ele, m_baseElectrons, m_susyObj, 10.*GeV, false, 6, &d3pd.trk);
+  m_sigMuons     = get_muons_signal(&d3pd.muo, m_susyObj, m_baseMuons, 10.*GeV, 1.8*GeV, false, 3);
   m_sigJets      = get_jet_signal(&d3pd.jet, m_susyObj, m_baseJets, 20.*GeV, 2.5, 0.75);
 
   // combine leptons
@@ -433,9 +434,11 @@ bool SusyD3PDAna::passLarHoleVeto()
 {
   TVector2 metVector = m_met.Vect().XYvector();
   vector<int> goodJets;
-  float mu = d3pd.evt.averageIntPerXing();
+  //float mu = d3pd.evt.averageIntPerXing();
   // Do I still need these jets with no eta cut?
-  vector<int> jets = get_jet_baseline( &d3pd.jet, !m_isMC, m_susyObj, 20.*GeV, 9999999, JetErr::NONE, false, goodJets,mu,&d3pd.vtx );
+  //vector<int> jets = get_jet_baseline( &d3pd.jet, !m_isMC, m_susyObj, 20.*GeV, 9999999, JetErr::NONE, false, goodJets,mu,&d3pd.vtx );
+  vector<int> jets = get_jet_baseline( &d3pd.jet, &d3pd.vtx, &d3pd.evt, !m_isMC, m_susyObj, 
+                                       20.*GeV, 9999999, JetErr::NONE, false, goodJets );
   return !check_jet_larhole(&d3pd.jet, jets, !m_isMC, m_susyObj, 180614, metVector, &m_fakeMetEst);
 }
 /*--------------------------------------------------------------------------------*/
