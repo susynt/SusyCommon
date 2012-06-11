@@ -48,17 +48,17 @@ class SusyD3PDAna : public SusyD3PDInterface
     // 
 
     // Full object selection
-    void selectObjects(SYSTEMATIC sys = NOM){
+    void selectObjects(SusyNtSys sys = NtSys_NOM){
       selectBaselineObjects(sys);
       selectSignalObjects();
     }
-    void selectBaselineObjects(SYSTEMATIC sys = NOM);
+    void selectBaselineObjects(SusyNtSys sys = NtSys_NOM);
     void selectSignalObjects();
     void performOverlapRemoval();
     void evtCheck();
 
     // MissingEt
-    void buildMet(SYSTEMATIC sys = NOM);
+    void buildMet(SusyNtSys sys = NtSys_NOM);
 
     void clearObjects();
 

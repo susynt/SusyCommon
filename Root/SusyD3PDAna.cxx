@@ -124,7 +124,7 @@ void SusyD3PDAna::Terminate()
 /*--------------------------------------------------------------------------------*/
 // Baseline object selection
 /*--------------------------------------------------------------------------------*/
-void SusyD3PDAna::selectBaselineObjects(SYSTEMATIC sys)
+void SusyD3PDAna::selectBaselineObjects(SusyNtSys sys)
 {
   if(m_dbg) cout << "selectBaselineObjects" << endl;
   vector<int> goodJets;  // What the hell is this??
@@ -134,18 +134,18 @@ void SusyD3PDAna::selectBaselineObjects(SYSTEMATIC sys)
   int ees = 0, eer = 0;
   string musys = "";
   JetErr::Syste jetsys = JetErr::NONE;
-  if(sys == NOM);                                  // No need to check needlessly
-  else if(sys == EES_UP) ees = 1;                  // E scale up
-  else if(sys == EES_DN) ees = 2;                  // E scale down
-  else if(sys == EER_UP) eer = 1;                  // E smear up
-  else if(sys == EER_DN) eer = 2;                  // E smear down
-  else if(sys == MS_UP ) musys = "MSUP";           // MS scale up
-  else if(sys == MS_DN ) musys = "MSLOW";          // MS scale down
-  else if(sys == ID_UP ) musys = "IDUP";           // ID scale up
-  else if(sys == ID_DN ) musys = "IDLOW";          // ID scale down
-  else if(sys == JES_UP) jetsys = JetErr::JESUP;   // JES up
-  else if(sys == JES_DN) jetsys = JetErr::JESDOWN; // JES down
-  else if(sys == JER)    jetsys = JetErr::JER;     // JER (gaussian)
+  if(sys == NtSys_NOM);                                  // No need to check needlessly
+  else if(sys == NtSys_EES_UP) ees = 1;                  // E scale up
+  else if(sys == NtSys_EES_DN) ees = 2;                  // E scale down
+  else if(sys == NtSys_EER_UP) eer = 1;                  // E smear up
+  else if(sys == NtSys_EER_DN) eer = 2;                  // E smear down
+  else if(sys == NtSys_MS_UP ) musys = "MSUP";           // MS scale up
+  else if(sys == NtSys_MS_DN ) musys = "MSLOW";          // MS scale down
+  else if(sys == NtSys_ID_UP ) musys = "IDUP";           // ID scale up
+  else if(sys == NtSys_ID_DN ) musys = "IDLOW";          // ID scale down
+  else if(sys == NtSys_JES_UP) jetsys = JetErr::JESUP;   // JES up
+  else if(sys == NtSys_JES_DN) jetsys = JetErr::JESDOWN; // JES down
+  else if(sys == NtSys_JER)    jetsys = JetErr::JER;     // JER (gaussian)
 
   // Preselection
   m_preElectrons = get_electrons_baseline( &d3pd.ele, !m_isMC, d3pd.evt.RunNumber(), m_susyObj, 10.*GeV, 2.47, ees, eer, false );
@@ -210,16 +210,16 @@ void SusyD3PDAna::selectSignalObjects()
 /*--------------------------------------------------------------------------------*/
 // Build MissingEt
 /*--------------------------------------------------------------------------------*/
-void SusyD3PDAna::buildMet(SYSTEMATIC sys)
+void SusyD3PDAna::buildMet(SusyNtSys sys)
 {
   if(m_dbg) cout << "buildMet" << endl;
  
   // Need the proper jet systematic for building systematic
   JetErr::Syste jetsys = JetErr::NONE;     // Nominal
-  if(sys == NOM);
-  else if(sys == JES_UP) jetsys = JetErr::JESUP;   // JES up
-  else if(sys == JES_DN) jetsys = JetErr::JESDOWN; // JES down
-  else if(sys == JER)    jetsys = JetErr::JER;     // JER (gaussian)
+  if(sys == NtSys_NOM);
+  else if(sys == NtSys_JES_UP) jetsys = JetErr::JESUP;   // JES up
+  else if(sys == NtSys_JES_DN) jetsys = JetErr::JESDOWN; // JES down
+  else if(sys == NtSys_JER)    jetsys = JetErr::JER;     // JER (gaussian)
   
 
   // Need ALL electrons in order to calculate the MET

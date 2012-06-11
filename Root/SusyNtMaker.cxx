@@ -212,8 +212,7 @@ void SusyNtMaker::fillEventVars()
   evt->xsec             = m_isMC? getXsecWeight() : 1;
   evt->lumiSF           = m_isMC? getLumiWeight() : 1;             
 
-  addEventFlag(NOM,m_evtFlag);
-
+  addEventFlag(NtSys_NOM,m_evtFlag);
 }
 
 /*--------------------------------------------------------------------------------*/
@@ -353,10 +352,11 @@ void SusyNtMaker::fillJetVar(int jetIdx)
   jetOut->truthLabel  = m_isMC? element->flavor_truth_label() : 0;
 
 }
+
 /*--------------------------------------------------------------------------------*/
 // Fill MET variables
 /*--------------------------------------------------------------------------------*/
-void SusyNtMaker::fillMetVars(SYSTEMATIC sys)
+void SusyNtMaker::fillMetVars(SusyNtSys sys)
 {
   if(m_dbg) cout << "fillMetVars" << endl;
 
@@ -374,19 +374,18 @@ void SusyNtMaker::fillMetVars(SYSTEMATIC sys)
   metOut->Et  = Et;
   metOut->phi = phi;
   metOut->sys = sys;  
-
 }
 
 /*--------------------------------------------------------------------------------*/
 // Handle Systematic 
 /*--------------------------------------------------------------------------------*/
-void SusyNtMaker::doSystematic(){
-  
+void SusyNtMaker::doSystematic()
+{
   // Loop over the systematics:
   // Start at 1, nominal saved
-  for(int i = 1; i<Syst_N; ++i){
+  for(int i = 1; i < NtSys_N; i++){
 
-    SYSTEMATIC sys = (SYSTEMATIC) i;
+    SusyNtSys sys = (SusyNtSys) i;
 
     // Reset Objects 
     m_susyObj.Reset();
@@ -414,9 +413,10 @@ void SusyNtMaker::doSystematic(){
   }// end loop over systematic
 
 }
-/*--------------------------------------------------------------------------------*/
-void SusyNtMaker::saveElectronSF(SYSTEMATIC sys){
 
+/*--------------------------------------------------------------------------------*/
+void SusyNtMaker::saveElectronSF(SusyNtSys sys)
+{
   // loop over preselected leptons and fill the output tree
   for(uint iLep=0; iLep < m_preLeptons.size(); iLep++){
     const LeptonInfo* lep = & m_preLeptons[iLep];
@@ -431,10 +431,10 @@ void SusyNtMaker::saveElectronSF(SYSTEMATIC sys){
 	match = true;
 	
 	float sf = lep->lv()->E() / GeV / ele->E();
-	if(sys == EES_UP)      ele->ees_up = sf;
-	else if(sys == EES_DN) ele->ees_dn = sf;
-	else if(sys == EER_UP) ele->eer_up = sf;
-	else if(sys == EER_DN) ele->eer_dn = sf;
+	if(sys == NtSys_EES_UP)      ele->ees_up = sf;
+	else if(sys == NtSys_EES_DN) ele->ees_dn = sf;
+	else if(sys == NtSys_EER_UP) ele->eer_up = sf;
+	else if(sys == NtSys_EER_DN) ele->eer_dn = sf;
 	
       }// end if electron matches
     }// end loop over electrons in susyNt
@@ -444,11 +444,11 @@ void SusyNtMaker::saveElectronSF(SYSTEMATIC sys){
       addMissingElectron(lep, sys);
 
   }// end loop over leptons
-      
 }
-/*--------------------------------------------------------------------------------*/
-void SusyNtMaker::saveMuonSF(SYSTEMATIC sys){
 
+/*--------------------------------------------------------------------------------*/
+void SusyNtMaker::saveMuonSF(SusyNtSys sys)
+{
   // loop over preselected leptons and fill the output tree
   for(uint iLep=0; iLep < m_preLeptons.size(); iLep++){
     const LeptonInfo* lep = & m_preLeptons[iLep];
@@ -463,10 +463,10 @@ void SusyNtMaker::saveMuonSF(SYSTEMATIC sys){
 	match = true;
 	
 	float sf = lep->lv()->E() / GeV / mu->E();
-	if(sys == MS_UP)      mu->ms_up = sf;
-	else if(sys == MS_DN) mu->ms_dn = sf;
-	else if(sys == ID_UP) mu->id_up = sf;
-	else if(sys == ID_DN) mu->id_dn = sf;
+	if(sys == NtSys_MS_UP)      mu->ms_up = sf;
+	else if(sys == NtSys_MS_DN) mu->ms_dn = sf;
+	else if(sys == NtSys_ID_UP) mu->id_up = sf;
+	else if(sys == NtSys_ID_DN) mu->id_dn = sf;
 	
       }// end if muon matches
     }// end loop over muons in SusyNt
@@ -478,9 +478,10 @@ void SusyNtMaker::saveMuonSF(SYSTEMATIC sys){
   }// end loop over leptons
       
 }
-/*--------------------------------------------------------------------------------*/
-void SusyNtMaker::saveJetSF(SYSTEMATIC sys){
 
+/*--------------------------------------------------------------------------------*/
+void SusyNtMaker::saveJetSF(SusyNtSys sys)
+{
   // Loop over selected jets and fill output tree
   for(uint iJet=0; iJet<m_preJets.size(); iJet++){
     uint jetIdx = m_preJets[iJet];
@@ -495,9 +496,9 @@ void SusyNtMaker::saveJetSF(SYSTEMATIC sys){
 	match = true;
 	
 	float sf = element->E() / GeV / jet->E();
-	if(sys == JES_UP)      jet->jes_up = sf;
-	else if(sys == JES_DN) jet->jes_dn = sf;
-	else if(sys == JER)    jet->jer = sf;
+	if(sys == NtSys_JES_UP)      jet->jes_up = sf;
+	else if(sys == NtSys_JES_DN) jet->jes_dn = sf;
+	else if(sys == NtSys_JER)    jet->jer = sf;
       }// end if the leptons match	
     }// end loop over what we have saved
     
@@ -510,8 +511,8 @@ void SusyNtMaker::saveJetSF(SYSTEMATIC sys){
 }
 
 /*--------------------------------------------------------------------------------*/
-void SusyNtMaker::addMissingElectron(const LeptonInfo* lep, SYSTEMATIC sys){
-  
+void SusyNtMaker::addMissingElectron(const LeptonInfo* lep, SusyNtSys sys)
+{
   //cout<<"Adding an electron that was missing!"<<endl;
 
   // This electron did not pass nominal cuts, and therefore
@@ -540,17 +541,16 @@ void SusyNtMaker::addMissingElectron(const LeptonInfo* lep, SYSTEMATIC sys){
   // Set the sf
   Susy::Electron* ele = & m_susyNt.ele()->back();
   float sf = tlv_sys.E() / GeV / ele->E();
-  if(sys == EES_UP) ele->ees_up = sf;
-  else if(sys == EES_DN) ele->ees_dn = sf;
-  else if(sys == EER_UP) ele->eer_up = sf;
-  else if(sys == EER_DN) ele->eer_dn = sf;
+  if(sys == NtSys_EES_UP) ele->ees_up = sf;
+  else if(sys == NtSys_EES_DN) ele->ees_dn = sf;
+  else if(sys == NtSys_EER_UP) ele->eer_up = sf;
+  else if(sys == NtSys_EER_DN) ele->eer_dn = sf;
   //ele->print();
-
-  
 }
+
 /*--------------------------------------------------------------------------------*/
-void SusyNtMaker::addMissingMuon(const LeptonInfo* lep, SYSTEMATIC sys){
-  
+void SusyNtMaker::addMissingMuon(const LeptonInfo* lep, SusyNtSys sys)
+{
   //cout<<"Adding a muon that was missing!"<<endl;
 
   // This electron did not pass nominal cuts, and therefore
@@ -580,16 +580,16 @@ void SusyNtMaker::addMissingMuon(const LeptonInfo* lep, SYSTEMATIC sys){
   // Set the sf
   Susy::Muon* mu = & m_susyNt.muo()->back();
   float sf = tlv_sys.E() / GeV / mu->E();
-  if(sys == MS_UP) mu->ms_up = sf;
-  else if(sys == MS_DN) mu->ms_dn = sf;
-  else if(sys == ID_UP) mu->id_up = sf;
-  else if(sys == ID_DN) mu->id_dn = sf;
+  if(sys == NtSys_MS_UP) mu->ms_up = sf;
+  else if(sys == NtSys_MS_DN) mu->ms_dn = sf;
+  else if(sys == NtSys_ID_UP) mu->id_up = sf;
+  else if(sys == NtSys_ID_DN) mu->id_dn = sf;
   //mu->print();
   
 }
 
-void SusyNtMaker::addMissingJet(int index, SYSTEMATIC sys){
-  
+void SusyNtMaker::addMissingJet(int index, SusyNtSys sys)
+{
   // Get the tlv with the sys
   TLorentzVector tlv_sys = m_susyObj.GetJetTLV( index );
   
@@ -609,9 +609,7 @@ void SusyNtMaker::addMissingJet(int index, SYSTEMATIC sys){
   // Set SF
   Susy::Jet* j = & m_susyNt.jet()->back();
   float sf = tlv_sys.E() / GeV / j->E();
-  if(sys == JER)         j->jer = sf;
-  else if(sys == JES_UP) j->jes_up = sf;
-  else if(sys == JES_DN) j->jes_dn = sf;
-
-
+  if(sys == NtSys_JER)         j->jer = sf;
+  else if(sys == NtSys_JES_UP) j->jes_up = sf;
+  else if(sys == NtSys_JES_DN) j->jes_dn = sf;
 }

@@ -45,25 +45,32 @@ class SusyNtMaker : public SusyD3PDAna
     void fillMuonVars(const LeptonInfo* lepIn);
     void fillJetVars();
     void fillJetVar(int jetIdx);
-    void fillMetVars(SYSTEMATIC sys = NOM);
+    void fillMetVars(SusyNtSys sys = NtSys_NOM);
 
     // Systematic Methods
     void doSystematic();
 
-    void saveElectronSF(SYSTEMATIC sys);
-    void saveMuonSF(SYSTEMATIC sys);
-    void saveJetSF(SYSTEMATIC sys);
+    void saveElectronSF(SusyNtSys sys);
+    void saveMuonSF(SusyNtSys sys);
+    void saveJetSF(SusyNtSys sys);
 
-    void addMissingElectron(const LeptonInfo*, SYSTEMATIC sys);
-    void addMissingMuon(const LeptonInfo*, SYSTEMATIC sys);
-    void addMissingJet(int index, SYSTEMATIC sys);
+    void addMissingElectron(const LeptonInfo*, SusyNtSys sys);
+    void addMissingMuon(const LeptonInfo*, SusyNtSys sys);
+    void addMissingJet(int index, SusyNtSys sys);
 
-    bool isElecSys(SYSTEMATIC s){ return (s == EES_UP || s == EES_DN || s == EER_UP || s == EER_DN); };
-    bool isMuonSys(SYSTEMATIC s){ return (s == MS_UP || s == MS_DN || s == ID_UP || s == ID_DN); };
-    bool isJetSys(SYSTEMATIC s){ return (s == JES_UP || s == JES_DN || s == JER); };
+    // Systematic enum checks
+    bool isElecSys(SusyNtSys s){ 
+      return (s == NtSys_EES_UP || s == NtSys_EES_DN || s == NtSys_EER_UP || s == NtSys_EER_DN); 
+    }
+    bool isMuonSys(SusyNtSys s){ 
+      return (s == NtSys_MS_UP || s == NtSys_MS_DN || s == NtSys_ID_UP || s == NtSys_ID_DN); 
+    }
+    bool isJetSys(SusyNtSys s){ 
+      return (s == NtSys_JES_UP || s == NtSys_JES_DN || s == NtSys_JER); 
+    }
     
-    void addEventFlag(SYSTEMATIC s, int eventFlag){ 
-      m_susyNt.evt()->evtFlag[s] =eventFlag;
+    void addEventFlag(SusyNtSys s, int eventFlag){ 
+      m_susyNt.evt()->evtFlag[s] = eventFlag;
     };
     
  protected:
