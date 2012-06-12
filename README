@@ -2,7 +2,6 @@
 #  SusyCommon
 #
 #  A RootCore package for common UCI SUSY analysis
-#
 #------------------------------------------------------------------------------------
 
 
@@ -14,14 +13,14 @@ https://svnweb.cern.ch/trac/atlasinst/browser/Institutes/UCIrvine/SUSYAnalysis/S
 svn co svn+ssh://svn.cern.ch/reps/atlasinst/Institutes/UCIrvine/SUSYAnalysis/SusyCommon/trunk SusyCommon
 
 # Or the current recommended tag (currently changing)
-svn co svn+ssh://svn.cern.ch/reps/atlasinst/Institutes/UCIrvine/SUSYAnalysis/SusyCommon/tags/SusyCommon-00-00-01 SusyCommon
+svn co svn+ssh://svn.cern.ch/reps/atlasinst/Institutes/UCIrvine/SUSYAnalysis/SusyCommon/tags/SusyCommon-00-00-06 SusyCommon
 
 # To make a tag, from this directory
 svn cp . svn+ssh://svn.cern.ch/reps/atlasinst/Institutes/UCIrvine/SUSYAnalysis/SusyCommon/tags/SusyCommon-XX-YY-ZZ -m "some message"
 # Or, even better, copy from trunk to tag
 trunk=svn+ssh://svn.cern.ch/reps/atlasinst/Institutes/UCIrvine/SUSYAnalysis/SusyCommon/trunk
 target=svn+ssh://svn.cern.ch/reps/atlasinst/Institutes/UCIrvine/SUSYAnalysis/SusyCommon/tags/SusyCommon-XX-YY-ZZ
-svn cp $trunk $targer -m "some message"
+svn cp $trunk $target -m "some message"
 
 # To install, check out SusyNtuple, the MultiLep Common code, and run install script 
 svn co svn+ssh://svn.cern.ch/reps/atlasinst/Institutes/UCIrvine/SUSYAnalysis/SusyNtuple/trunk SusyNtuple
