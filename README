@@ -18,20 +18,25 @@ svn co svn+ssh://svn.cern.ch/reps/atlasinst/Institutes/UCIrvine/SUSYAnalysis/Sus
 
 # To make a tag, from this directory
 svn cp . svn+ssh://svn.cern.ch/reps/atlasinst/Institutes/UCIrvine/SUSYAnalysis/SusyCommon/tags/SusyCommon-XX-YY-ZZ -m "some message"
+# Or, even better, copy from trunk to tag
+trunk=svn+ssh://svn.cern.ch/reps/atlasinst/Institutes/UCIrvine/SUSYAnalysis/SusyCommon/trunk
+target=svn+ssh://svn.cern.ch/reps/atlasinst/Institutes/UCIrvine/SUSYAnalysis/SusyCommon/tags/SusyCommon-XX-YY-ZZ
+svn cp $trunk $targer -m "some message"
 
-# To install, check out the MultiLep Common code and run install script 
-# Common code is in a temporary location because svn was down:
-#svn co svn+ssh://svn.cern.ch/reps/atlasinst/Physics/SUSY/Analyses/Multilepton/trunk/fiveinvfb/MultiLep MultiLep
-svn co svn+ssh://svn.cern.ch/reps/atlasusr/lucian/Multilepton/MultiLep MultiLep
+# To install, check out SusyNtuple, the MultiLep Common code, and run install script 
+svn co svn+ssh://svn.cern.ch/reps/atlasinst/Institutes/UCIrvine/SUSYAnalysis/SusyNtuple/trunk SusyNtuple
+svn co svn+ssh://svn.cern.ch/reps/atlasphys/Physics/SUSY/Analyses/Multilepton/trunk/fiveinvfb/MultiLep MultiLep
 source MultiLep/installscripts/install_script.sh
+# Or, for convenience, these commands have been put in this package (kinit first):
+source SusyCommon/scripts/install.sh
 
 # for examples, here is my analysis code which depends on this package
-# Currently on UCI Tier3, I need to update to update svn later
-/data11/home/sfarrell/workarea/SusyAna_r17/SusyAna
+https://svnweb.cern.ch/trac/atlasinst/browser/Institutes/UCIrvine/sfarrell/SusyAna
 
 
 #------------------------------------------------------------------------------------
 # Overview of the package
+# This was not updated....
 #------------------------------------------------------------------------------------
 
 SusyDefs
@@ -94,9 +99,9 @@ and off systematics
 After you run NtMaker, it will spit out a susyNt.root which will contain the tree
 
 
-#########################
-# How to Run ove SusyNt #
-#########################
+##########################
+# How to Run over SusyNt #
+##########################
 
 1.) Move to run/ area
 2.) Put your files to run over in a list
@@ -110,10 +115,6 @@ This list will be updated to include switching on and off sys.
 # More stuff to come!
 #------------------------------------------------------------------------------------
 
-# TODO
-- Add script or package list for checking out all RootCore packages
-        - Could easily set it up to checkout just the MultiLep common code and use the install script
-
 # Things needed to be addressed in the latest version:
 
 In SusyCommon:
@@ -121,11 +122,11 @@ In SusyCommon:
 [X] Make trigger matching done regardless of Pt
 [ ] Add remaining systematics
 [ ] Add a timer so we can monitor speed of what we make SusyNt
-[ ] Add to jet truth labels
+[ ] Add to jet truth labels # huh? Add what?
 [ ] Add event <mu>
 [ ] Add good vertex info (>3 tracks?) & position of PV
 [ ] Add e/mu Z0 pvtx
-[ ] Add necessary MC information to do  signal diagram selection, charge flip, ID decay (eg ttbar dilepton)
+[ ] Add necessary MC information to do signal diagram selection, charge flip, ID decay (eg ttbar dilepton)
 [ ] Add metadata: D3PD input list, D3PD tag, SusyTool tag, CommonCode tag, histogram with cutflow
 [ ] Improve event weighting skim for lumi so that if not all job run on grid, still ok (see Common code for how it's done there)
 [ ] Add script or package list for checking out all RootCore packages
