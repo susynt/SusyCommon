@@ -42,11 +42,11 @@ void SusyNtMaker::Begin(TTree* /*tree*/)
   m_outTree = new TTree("susyNt", "susyNt");
 
   // create histogram for cutflow
-  cutflow = new TH1F("cutflow","Histogram storing cuts applied upstream",4,-0.5,3.5);
-  cutflow->GetXaxis()->SetBinLabel(1,"total");
-  cutflow->GetXaxis()->SetBinLabel(2,"GRL");
-  cutflow->GetXaxis()->SetBinLabel(3,"LAr Error");
-  cutflow->GetXaxis()->SetBinLabel(4,"Good Vertex");
+  h_cutFlow = new TH1F("cutFlow","Histogram storing cuts applied upstream",4,-0.5,3.5);
+  h_cutFlow->GetXaxis()->SetBinLabel(1,"total");
+  h_cutFlow->GetXaxis()->SetBinLabel(2,"GRL");
+  h_cutFlow->GetXaxis()->SetBinLabel(3,"LAr Error");
+  h_cutFlow->GetXaxis()->SetBinLabel(4,"Good Vertex");
 
   // Set autosave size (determines how often tree writes to disk)
   m_outTree->SetAutoSave(10000000);
@@ -56,6 +56,9 @@ void SusyNtMaker::Begin(TTree* /*tree*/)
   // Later, add switch for systematics
   m_susyNt.SetActive();
   m_susyNt.WriteTo(m_outTree);
+
+  // Start the timer
+  m_timer.Start();
 }
 
 /*--------------------------------------------------------------------------------*/
@@ -91,6 +94,9 @@ Bool_t SusyNtMaker::Process(Long64_t entry)
 /*--------------------------------------------------------------------------------*/
 void SusyNtMaker::Terminate()
 {
+  // Stop the timer
+  m_timer.Stop();
+
   SusyD3PDAna::Terminate();
   if(m_dbg) cout << "SusyNtMaker::Terminate" << endl;
 
@@ -112,6 +118,23 @@ void SusyNtMaker::Terminate()
   m_outTreeFile->Write(0, TObject::kOverwrite);
   cout << "susyNt tree saved to " << m_outTreeFile->GetName() << endl;
   m_outTreeFile->Close();
+
+  // Report timer
+  double realTime = m_timer.RealTime();
+  double cpuTime  = m_timer.CpuTime();
+  int hours = int(realTime / 3600);
+  realTime -= hours * 3600;
+  int min   = int(realTime / 60);
+  realTime -= min * 60;
+  int sec   = int(realTime);
+
+  float speed = n_evt_initial/realTime/1000;
+
+  printf("---------------------------------------------------\n");
+  printf(" Number of events processed: %d \n",n_evt_initial);
+  printf("\t Analysis time: Real %d:%02d:%02d, CPU %.3f      \n", hours, min, sec, cpuTime);
+  printf("\t Analysis speed [kHz]: %2.3f                     \n",speed);
+  printf("---------------------------------------------------\n\n");
 }
 
 /*--------------------------------------------------------------------------------*/
@@ -131,22 +154,22 @@ bool SusyNtMaker::selectEvent()
   // Obj Independent checks
 
   // Total events
-  cutflow->Fill(0.0,1.0);
+  h_cutFlow->Fill(0.0,1.0);
 
   // grl
   if(!passGRL()) return false;
   n_evt_grl++;
-  cutflow->Fill(1.0,1.0);
+  h_cutFlow->Fill(1.0,1.0);
 
   // larErr
   if(!passLarErr()) return false;
   n_evt_larErr++;
-  cutflow->Fill(2.0,1.0);
+  h_cutFlow->Fill(2.0,1.0);
 
   // primary vertex cut
   if(!passGoodVtx()) return false; 
   n_evt_goodVtx++;
-  cutflow->Fill(3.0,1.0);
+  h_cutFlow->Fill(3.0,1.0);
 
   //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-//  
   // Get Nominal Objects
@@ -171,10 +194,8 @@ bool SusyNtMaker::selectEvent()
     doSystematic();
   
     
-  // For filling the output tree, require at least one baseline lepton
-  // Actually, I'm gonna speed this up and increase it to 2
-  // Turned off for cutflow comparison
-  //if((m_susyNt.ele()->size() + m_susyNt.muo()->size())<2)  return false;
+  // For filling the output tree, require at least 2 baseline lepton
+  if((m_susyNt.ele()->size() + m_susyNt.muo()->size())<2)  return false;
 
   return true;
 }
@@ -241,11 +262,12 @@ void SusyNtMaker::fillElectronVars(const LeptonInfo* lepIn)
   float eta = lv->Eta();
   float phi = lv->Phi();
   float m   = lv->M() / GeV;
+
   eleOut->SetPtEtaPhiM(pt, eta, phi, m);
-  eleOut->pt  = pt;
-  eleOut->eta = eta;
-  eleOut->phi = phi;
-  eleOut->m   = m;
+  eleOut->pt            = pt;
+  eleOut->eta           = eta;
+  eleOut->phi           = phi;
+  eleOut->m             = m;
 
   eleOut->ptcone20      = element->ptcone20()/GeV;
   eleOut->q             = element->charge();

@@ -4,8 +4,9 @@
 
 #include <iostream>
 
-#include "SusyCommon/SusyD3PDAna.h"
+#include "TStopwatch.h"
 
+#include "SusyCommon/SusyD3PDAna.h"
 #include "SusyNtuple/SusyNtObject.h"
 
 
@@ -95,8 +96,11 @@ class SusyNtMaker : public SusyD3PDAna
     uint                n_evt_badMu;
     uint                n_evt_cosmic;
 
-    // histogram to save cutflow
-    TH1F*               cutflow;
+    // histogram to save cutflow 
+    TH1F*               h_cutFlow;
+
+    // Timer
+    TStopwatch          m_timer;
 
 };
 

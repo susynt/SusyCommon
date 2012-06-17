@@ -90,7 +90,7 @@ SusyNtTest
 2.) cd run/
 3.) Create a list of d3pd files into a text file
 
-command: NtMaker -s mc -f filelist.txt
+command: NtMaker -s mc -f fileList.txt
 Notice the second option is 'mc'.  If you want to run over data, simply insert 'data' here.
 Also, NtMaker -h will show you the current list of options.  More will be added soon to turn on
 and off systematics
@@ -105,7 +105,7 @@ After you run NtMaker, it will spit out a susyNt.root which will contain the tre
 1.) Move to run/ area
 2.) Put your files to run over in a list
 
-command: SusyNtTest -f filelist.txt
+command: SusyNtTest -f fileList.txt
 
 Other commands exist and can be found by running SusyNtTest -h
 This list will be updated to include switching on and off sys.
@@ -120,25 +120,23 @@ In SusyCommon:
 
 [X] Make trigger matching done regardless of Pt
 [ ] Add remaining systematics
-[ ] Add a timer so we can monitor speed of what we make SusyNt
-[ ] Add to jet truth labels # huh? Add what?
-[ ] Add event <mu>
+[X] Add a timer so we can monitor speed of what we make SusyNt
+[X] Add to jet truth labels # huh? Add what?
+[X] Add event <mu>
 [ ] Add good vertex info (>3 tracks?) & position of PV
-[ ] Add e/mu Z0 pvtx
+[X] Add e/mu Z0 pvtx
 [ ] Add necessary MC information to do signal diagram selection, charge flip, ID decay (eg ttbar dilepton)
 [ ] Add metadata: D3PD input list, D3PD tag, SusyTool tag, CommonCode tag, histogram with cutflow
 [ ] Improve event weighting skim for lumi so that if not all job run on grid, still ok (see Common code for how it's done there)
-[ ] Add script or package list for checking out all RootCore packages
-        - Could easily set it up to checkout just the MultiLep common code and use the install script
-
+[X] Add script or package list for checking out all RootCore packages
 
 In SusyNtuple:
 
-[ ] Code up trigger checking of objects in SusyNtTools.
+[X] Code up trigger checking of objects in SusyNtTools.
 [ ] Add a timer so we can monitor speed of what we make/read SusyNt
-[ ] Add methods that are currently commented out in SusyD3PDAna to SusyNtTools.  Need to
+[X] Add methods that are currently commented out in SusyD3PDAna to SusyNtTools.  Need to
     check things like badJet, badMuon, etc on the fly.  Add bools to SusyNt...? Might be best.
-[ ] Compare to Cutflow on multiple samples
+[X] Compare to Cutflow on multiple samples
 [ ] Compare systematic shifts with someone TBD.
 [ ] Add the rest of the systematic shifts (trigger eff, etc.)
 [ ] Right now the code is not setup to run just on d3pd. My modifications were done to

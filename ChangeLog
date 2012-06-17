@@ -1,11 +1,13 @@
 # vim: set noexpandtab:
 
 2012-06-11 Steve
+	* Added TStopwatch for monitoring processing time
+
+2012-06-11 Steve
 	* Updating syntax and conventions for code consistency:
 		* SYSTEMATIC -> SusyNtSys
 		* NOM -> NtSys_NOM
 		* etc.
-
 
 2012-06-05 Steve
 	* Updated code to work with current fiveinvfb MultiLep pkg, 
