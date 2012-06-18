@@ -1,5 +1,12 @@
 # vim: set noexpandtab:
 
+2012-06-18 Steve
+	* Added PDFTool for reweighting 7 TeV -> 8 TeV
+	* Added switch in Makefile for controlling PDFTool usage.
+		* Turn on USEPDFTOOL switch to use the tool.
+		* Requires corresponding switch to be set in MultiLep package as well
+	* Tagging SusyCommon-00-00-07
+
 2012-06-11 Steve
 	* Added TStopwatch for monitoring processing time
 
@@ -8,6 +15,7 @@
 		* SYSTEMATIC -> SusyNtSys
 		* NOM -> NtSys_NOM
 		* etc.
+	* Tagging SusyCommon-00-00-06
 
 2012-06-05 Steve
 	* Updated code to work with current fiveinvfb MultiLep pkg, 

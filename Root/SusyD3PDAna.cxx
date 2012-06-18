@@ -5,6 +5,10 @@
 #include "MultiLep/JetTools.h"
 #include "MultiLep/CutflowTools.h"
 
+#ifdef USEPDFTOOL
+#include "MultiLep/PDFErrorTools.h"
+#endif
+
 using namespace std;
 
 /*--------------------------------------------------------------------------------*/
@@ -19,6 +23,10 @@ SusyD3PDAna::SusyD3PDAna() :
         m_pileup(0),
         m_susyXsec(0)
 {
+  #ifdef USEPDFTOOL
+  m_pdfTool = new PDFTool(3500000, 1, -1, 21000);
+  //m_pdfTool = new PDFTool(3500000, 4./3.5);
+  #endif
 }
 /*--------------------------------------------------------------------------------*/
 // Destructor
@@ -102,6 +110,9 @@ Bool_t SusyD3PDAna::Process(Long64_t entry)
          << " event " << setw(7) << d3pd.evt.EventNumber() << " ****" << endl;
   }
 
+  // Testing PDF reweighting
+
+
   return kTRUE;
 }
 
@@ -184,12 +195,13 @@ void SusyD3PDAna::performOverlapRemoval()
   //m_baseMuons     = overlap_removal(m_susyObj, &d3pd.muo, m_baseMuons, &d3pd.ele, m_baseElectrons, 0.1, 0);
   m_baseMuons     = overlap_removal(m_susyObj, &d3pd.muo, m_baseMuons, &d3pd.ele, copyElectrons, 0.1, 0);
 
+  // TODO: FIX THIS!!  
+  // This is supposed to work standalone for D3PD analysis!!
+
   // Moved to SusyNtTools to be called during ana
   // remove SFOS lepton pairs with Mll < 20 GeV
   //m_baseElectrons = RemoveSFOSPair(m_susyObj, &d3pd.ele, m_baseElectrons, 20.*GeV);
   //m_baseMuons     = RemoveSFOSPair(m_susyObj, &d3pd.muo, m_baseMuons,     20.*GeV);
-
-
 }
 
 /*--------------------------------------------------------------------------------*/
@@ -499,16 +511,45 @@ float SusyD3PDAna::getPileupWeight()
 {
   return m_pileup->GetCombinedWeight(d3pd.evt.RunNumber(), d3pd.truth.channel_number(), d3pd.evt.averageIntPerXing());
 }
+
+/*--------------------------------------------------------------------------------*/
+// PDF reweighting of 7TeV -> 8TeV
+/*--------------------------------------------------------------------------------*/
+float SusyD3PDAna::getPDFWeight8TeV()
+{
+  #ifdef USEPDFTOOL
+  float scale = d3pd.gen.pdf_scale()->at(0);
+  float x1 = d3pd.gen.pdf_x1()->at(0);
+  float x2 = d3pd.gen.pdf_x2()->at(0);
+  int id1 = d3pd.gen.pdf_id1()->at(0);
+  int id2 = d3pd.gen.pdf_id2()->at(0);
+
+  // MultiLep function... Not working?
+  //return scaleBeamEnergy(*m_pdfTool, 21000, d3pd.gen.pdf_scale()->at(0), d3pd.gen.pdf_x1()->at(0),
+                         //d3pd.gen.pdf_x2()->at(0), d3pd.gen.pdf_id1()->at(0), d3pd.gen.pdf_id2()->at(0));
+  // Simple scaling
+  //return m_pdfTool->event_weight( pow(scale,2), x1, x2, id1, id2, 21000 );
+
+  // For scaling to/from arbitrary beam energy
+  m_pdfTool->setEventInfo( scale*scale, x1, x2, id1, id2 );
+  //return m_pdfTool->scale((3.5+4.)/3.5);
+  // possible typo correction?
+  return m_pdfTool->scale(4./3.5);
+
+  #else
+  return 1;
+  #endif
+}
+
 /*--------------------------------------------------------------------------------*/
 // Method for quick debuggin'
 /*--------------------------------------------------------------------------------*/
-void SusyD3PDAna::dump(){
-
+void SusyD3PDAna::dump()
+{
   // Right now I need to debug the jets, so that is what I will dump
   for(uint i=0; i<m_preJets.size(); ++i){
     int idx = m_preJets.at(i);
     TLorentzVector tlv = m_susyObj.GetJetTLV( idx );
     cout<<"Jet index: "<<idx<<" Pt: "<<tlv.Pt()/GeV<<" Eta: "<<tlv.Eta()<<" Phi: "<<tlv.Phi()<<endl;
   }
-
 }

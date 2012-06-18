@@ -78,11 +78,13 @@ Bool_t SusyNtMaker::Process(Long64_t entry)
          << " event " << setw(7) << d3pd.evt.EventNumber() << " ****" << endl;
   }
 
+  // Test the pdf reweighting
+  //float pdfSF = getPDFWeight8TeV();
+  //cout << "PDF rescale weight: " << pdfSF << endl;
+
   if(selectEvent()){
     m_outTree->Fill(); //fillNtVars();
   }
-
-  //selectEvent();
 
   return kTRUE;
 }
@@ -232,6 +234,8 @@ void SusyNtMaker::fillEventVars()
   evt->wPileup          = m_isMC? getPileupWeight() : 1;
   evt->xsec             = m_isMC? getXsecWeight() : 1;
   evt->lumiSF           = m_isMC? getLumiWeight() : 1;             
+
+  evt->pdfSF            = m_isMC? getPDFWeight8TeV() : 1;
 
   addEventFlag(NtSys_NOM,m_evtFlag);
 }

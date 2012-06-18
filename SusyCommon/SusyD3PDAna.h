@@ -12,6 +12,10 @@
 #include "PileupReweighting/TPileupReweighting.h"
 #include "MultiLep/LeptonInfo.h"
 
+#ifdef USEPDFTOOL
+#include "MultiLep/PDFTool.h"
+#endif
+
 #include "SusyCommon/SusyD3PDInterface.h"
 
 /*
@@ -98,7 +102,8 @@ class SusyD3PDAna : public SusyD3PDInterface
     void setXsec(float xsec) { m_xsec = xsec; }
     // pileup weight, not included in event weight above
     float getPileupWeight();
-
+    // PDF reweighting of 7TeV -> 8TeV
+    float getPDFWeight8TeV();
 
     //
     // Running conditions
@@ -189,6 +194,10 @@ class SusyD3PDAna : public SusyD3PDInterface
 
     SUSY::CrossSectionDB*                       m_susyXsec;     // SUSY cross section database
     std::map<int,SUSY::CrossSectionDB::Process> m_xsecMap;      // our own xsec map for faster lookup times
+
+    #ifdef USEPDFTOOL
+    PDFTool*                    m_pdfTool;      // PDF reweighting tool (In MultiLep pkg)
+    #endif
 
 };
 
