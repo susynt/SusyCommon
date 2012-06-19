@@ -20,6 +20,7 @@ SusyNtMaker::SusyNtMaker()
   n_evt_goodVtx=0;
   n_evt_badMu=0;
   n_evt_cosmic=0;
+  n_evt_saved=0;
 }
 /*--------------------------------------------------------------------------------*/
 // Destructor
@@ -84,6 +85,7 @@ Bool_t SusyNtMaker::Process(Long64_t entry)
 
   if(selectEvent()){
     m_outTree->Fill(); //fillNtVars();
+    n_evt_saved++;
   }
 
   return kTRUE;
@@ -130,10 +132,11 @@ void SusyNtMaker::Terminate()
   realTime -= min * 60;
   int sec   = int(realTime);
 
-  float speed = n_evt_initial/realTime/1000;
+  float speed = n_evt_initial/m_timer.RealTime()/1000;
 
   printf("---------------------------------------------------\n");
   printf(" Number of events processed: %d \n",n_evt_initial);
+  printf(" Number of events saved:     %d \n",n_evt_saved);
   printf("\t Analysis time: Real %d:%02d:%02d, CPU %.3f      \n", hours, min, sec, cpuTime);
   printf("\t Analysis speed [kHz]: %2.3f                     \n",speed);
   printf("---------------------------------------------------\n\n");
