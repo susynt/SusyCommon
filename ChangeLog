@@ -2,6 +2,7 @@
 
 2012-06-19 Steve
 	* Fixed event timer calculation
+	* Added helper script for tagging package: scripts/makeTag.sh
 	* Tagging SusyCommon-00-00-08
 
 2012-06-18 Steve
