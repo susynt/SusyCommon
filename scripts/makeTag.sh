@@ -3,21 +3,26 @@
 # Use this script to easily create a SusyCommon tag in svn
 # Need to pass the desired tag in as the only argument
 
-if [[ $# != 1 ]]; then
+if [[ $# < 2 ]]; then
 
     echo "Usage:"
-    echo "> makeTag.sh SusyCommon-XX-YY-ZZ"
+    echo "> makeTag.sh SusyCommon-XX-YY-ZZ \"My message\""
     exit 1
 
 fi
 
 tag=$1
+shift
+message=$@
 
 trunk=svn+ssh://svn.cern.ch/reps/atlasinst/Institutes/UCIrvine/SUSYAnalysis/SusyCommon/trunk
 target=svn+ssh://svn.cern.ch/reps/atlasinst/Institutes/UCIrvine/SUSYAnalysis/SusyCommon/tags/$tag
 
-echo "Copying trunk to"
-echo "  $target"
+
+echo "Copying trunk to:"
+echo "    $target"
+echo "With message:"
+echo "    $message"
 echo
 
 sleep 1s
@@ -34,6 +39,6 @@ fi
 
 echo "OK, tagging now..."
 
-svn cp $trunk $target
+svn cp $trunk $target -m "$message"
 
 echo "Done"
