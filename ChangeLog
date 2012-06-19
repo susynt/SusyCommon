@@ -1,6 +1,6 @@
 # vim: set noexpandtab:
 
-2012-06-XX Steve
+2012-06-20 Steve
 	* Updated to twentyinvfb version of MultiLep, and SUSYTools v71
 	* Added calculation of num good vertex (nTracks > 4)
 	* Added preliminary 2012 triggers:
@@ -12,11 +12,14 @@
 	* Move to 2012 pileup reweighting files:
 		* $ROOTCOREDIR/data/PileupReweighting/mc12a_defaults.prw.root
 		* $ROOTCOREDIR/data/MultiLep/ilumicalc_histograms_EF_e24vhi_medium1_200841-203524.root
+	* Tagging SusyCommon-00-00-09
+		* First tag for 2012 data/mc
 
 2012-06-19 Steve
 	* Fixed event timer calculation
 	* Added helper script for tagging package: scripts/makeTag.sh
 	* Tagging SusyCommon-00-00-08
+		* Last tag for 2011 data/mc
 
 2012-06-18 Steve
 	* Added PDFTool for reweighting 7 TeV -> 8 TeV
