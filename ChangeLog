@@ -1,5 +1,18 @@
 # vim: set noexpandtab:
 
+2012-06-XX Steve
+	* Updated to twentyinvfb version of MultiLep, and SUSYTools v71
+	* Added calculation of num good vertex (nTracks > 4)
+	* Added preliminary 2012 triggers:
+		* EF_e24vhi_medium1
+		* EF_2e12Tvh_loose1
+		* EF_mu24i_tight
+		* EF_2mu13
+		* EF_e12Tvh_medium1_mu8
+	* Move to 2012 pileup reweighting files:
+		* $ROOTCOREDIR/data/PileupReweighting/mc12a_defaults.prw.root
+		* $ROOTCOREDIR/data/MultiLep/ilumicalc_histograms_EF_e24vhi_medium1_200841-203524.root
+
 2012-06-19 Steve
 	* Fixed event timer calculation
 	* Added helper script for tagging package: scripts/makeTag.sh

@@ -95,7 +95,7 @@ class SusyNtMaker : public SusyD3PDAna
     uint                n_evt_goodVtx;
     uint                n_evt_badMu;
     uint                n_evt_cosmic;
-    uint                n_evt_saved;
+    uint                n_evt_saved;    // number of events save in the SusyNt
 
     // histogram to save cutflow 
     TH1F*               h_cutFlow;

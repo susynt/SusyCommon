@@ -4,6 +4,7 @@
 
 using namespace std;
 
+#define GeV 1000.
 
 /*--------------------------------------------------------------------------------*/
 // SusyD3PDContainer constructor
@@ -144,3 +145,4 @@ void SusyD3PDInterface::Terminate()
   if(m_dbg) cout << "SusyD3PDInterface::Terminate" << endl;
 }
 
+#undef GeV

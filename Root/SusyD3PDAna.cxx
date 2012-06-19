@@ -11,6 +11,8 @@
 
 using namespace std;
 
+#define GeV 1000.
+
 /*--------------------------------------------------------------------------------*/
 // SusyD3PDAna Constructor
 /*--------------------------------------------------------------------------------*/
@@ -81,8 +83,10 @@ void SusyD3PDAna::Begin(TTree* /*tree*/)
   // Pileup reweighting
   if(m_isMC){
     m_pileup = new Root::TPileupReweighting("PileupReweighting");
-    m_pileup->AddLumiCalcFile("$ROOTCOREDIR/data/MultiLep/ilumicalc_histograms_None_178044-191933.root");
-    m_pileup->AddConfigFile("$ROOTCOREDIR/data/MultiLep/mc11b_defaults.root");
+    m_pileup->AddConfigFile("$ROOTCOREDIR/data/PileupReweighting/mc12a_defaults.prw.root");
+    m_pileup->AddLumiCalcFile("$ROOTCOREDIR/data/MultiLep/ilumicalc_histograms_EF_e24vhi_medium1_200841-203524.root");
+    //m_pileup->AddLumiCalcFile("$ROOTCOREDIR/data/MultiLep/ilumicalc_histograms_None_178044-191933.root");
+    //m_pileup->AddConfigFile("$ROOTCOREDIR/data/MultiLep/mc11b_defaults.root");
     m_pileup->SetUnrepresentedDataAction(2);
     int pileupError = m_pileup->Initialize();
 
@@ -139,30 +143,46 @@ void SusyD3PDAna::selectBaselineObjects(SusyNtSys sys)
 {
   if(m_dbg) cout << "selectBaselineObjects" << endl;
   vector<int> goodJets;  // What the hell is this??
-  //float mu = d3pd.evt.averageIntPerXing();
+
+  // SUSYTools takes a flag for AF2. TODO: do we need to use it? 
+  bool isAF2 = false;
 
   // Handle Systematic
-  int ees = 0, eer = 0;
-  string musys = "";
-  JetErr::Syste jetsys = JetErr::NONE;
-  if(sys == NtSys_NOM);                                  // No need to check needlessly
-  else if(sys == NtSys_EES_UP) ees = 1;                  // E scale up
-  else if(sys == NtSys_EES_DN) ees = 2;                  // E scale down
-  else if(sys == NtSys_EER_UP) eer = 1;                  // E smear up
-  else if(sys == NtSys_EER_DN) eer = 2;                  // E smear down
-  else if(sys == NtSys_MS_UP ) musys = "MSUP";           // MS scale up
-  else if(sys == NtSys_MS_DN ) musys = "MSLOW";          // MS scale down
-  else if(sys == NtSys_ID_UP ) musys = "IDUP";           // ID scale up
-  else if(sys == NtSys_ID_DN ) musys = "IDLOW";          // ID scale down
-  else if(sys == NtSys_JES_UP) jetsys = JetErr::JESUP;   // JES up
-  else if(sys == NtSys_JES_DN) jetsys = JetErr::JESDOWN; // JES down
-  else if(sys == NtSys_JER)    jetsys = JetErr::JER;     // JER (gaussian)
+  // New syntax for SUSYTools in mc12
+  SystErr::Syste susySys = SystErr::NONE;
+  if(sys == NtSys_NOM);                                         // No need to check needlessly
+  else if(sys == NtSys_EES_UP) susySys = SystErr::EESUP;        // E scale up
+  else if(sys == NtSys_EES_DN) susySys = SystErr::EESDOWN;      // E scale down
+  else if(sys == NtSys_EER_UP) susySys = SystErr::ERESUP;       // E smear up
+  else if(sys == NtSys_EER_DN) susySys = SystErr::ERESDOWN;     // E smear down
+  else if(sys == NtSys_MS_UP ) susySys = SystErr::MMSUP;        // MS scale up
+  else if(sys == NtSys_MS_DN ) susySys = SystErr::MMSLOW;       // MS scale down
+  else if(sys == NtSys_ID_UP ) susySys = SystErr::MIDUP;        // ID scale up
+  else if(sys == NtSys_ID_DN ) susySys = SystErr::MIDLOW;       // ID scale down
+  else if(sys == NtSys_JES_UP) susySys = SystErr::JESUP;        // JES up
+  else if(sys == NtSys_JES_DN) susySys = SystErr::JESDOWN;      // JES down
+  else if(sys == NtSys_JER)    susySys = SystErr::JER;          // JER (gaussian)
+
+  //int ees = 0, eer = 0;
+  //string musys = "";
+  //JetErr::Syste jetsys = JetErr::NONE;
+  //if(sys == NtSys_NOM);                                  // No need to check needlessly
+  //else if(sys == NtSys_EES_UP) ees = 1;                  // E scale up
+  //else if(sys == NtSys_EES_DN) ees = 2;                  // E scale down
+  //else if(sys == NtSys_EER_UP) eer = 1;                  // E smear up
+  //else if(sys == NtSys_EER_DN) eer = 2;                  // E smear down
+  //else if(sys == NtSys_MS_UP ) musys = "MSUP";           // MS scale up
+  //else if(sys == NtSys_MS_DN ) musys = "MSLOW";          // MS scale down
+  //else if(sys == NtSys_ID_UP ) musys = "IDUP";           // ID scale up
+  //else if(sys == NtSys_ID_DN ) musys = "IDLOW";          // ID scale down
+  //else if(sys == NtSys_JES_UP) jetsys = JetErr::JESUP;   // JES up
+  //else if(sys == NtSys_JES_DN) jetsys = JetErr::JESDOWN; // JES down
+  //else if(sys == NtSys_JER)    jetsys = JetErr::JER;     // JER (gaussian)
 
   // Preselection
-  m_preElectrons = get_electrons_baseline( &d3pd.ele, !m_isMC, d3pd.evt.RunNumber(), m_susyObj, 10.*GeV, 2.47, ees, eer, false );
-  m_preMuons     = get_muons_baseline( &d3pd.muo, !m_isMC, m_susyObj, 10.*GeV, 2.4, musys );
-  //m_preJets      = get_jet_baseline( &d3pd.jet, !m_isMC, m_susyObj, 20.*GeV, 4.9, jetsys, false, goodJets, mu, &d3pd.vtx );
-  m_preJets      = get_jet_baseline( &d3pd.jet, &d3pd.vtx, &d3pd.evt, !m_isMC, m_susyObj, 20.*GeV, 4.9, jetsys, false, goodJets );
+  m_preElectrons = get_electrons_baseline( &d3pd.ele, !m_isMC, d3pd.evt.RunNumber(), m_susyObj, 10.*GeV, 2.47, susySys, isAF2 );
+  m_preMuons     = get_muons_baseline( &d3pd.muo, !m_isMC, m_susyObj, 10.*GeV, 2.4, susySys );
+  m_preJets      = get_jet_baseline( &d3pd.jet, &d3pd.vtx, &d3pd.evt, !m_isMC, m_susyObj, 20.*GeV, 4.9, susySys, false, goodJets );
   
   performOverlapRemoval();
 
@@ -227,12 +247,17 @@ void SusyD3PDAna::buildMet(SusyNtSys sys)
   if(m_dbg) cout << "buildMet" << endl;
  
   // Need the proper jet systematic for building systematic
-  JetErr::Syste jetsys = JetErr::NONE;     // Nominal
+  SystErr::Syste susySys = SystErr::NONE;
   if(sys == NtSys_NOM);
-  else if(sys == NtSys_JES_UP) jetsys = JetErr::JESUP;   // JES up
-  else if(sys == NtSys_JES_DN) jetsys = JetErr::JESDOWN; // JES down
-  else if(sys == NtSys_JER)    jetsys = JetErr::JER;     // JER (gaussian)
-  
+  else if(sys == NtSys_JES_UP) susySys = SystErr::JESUP;        // JES up
+  else if(sys == NtSys_JES_DN) susySys = SystErr::JESDOWN;      // JES down
+  else if(sys == NtSys_JER)    susySys = SystErr::JER;          // JER (gaussian)
+
+  //JetErr::Syste jetsys = JetErr::NONE;     // Nominal
+  //if(sys == NtSys_NOM);
+  //else if(sys == NtSys_JES_UP) jetsys = JetErr::JESUP;   // JES up
+  //else if(sys == NtSys_JES_DN) jetsys = JetErr::JESDOWN; // JES down
+  //else if(sys == NtSys_JER)    jetsys = JetErr::JER;     // JER (gaussian)
 
   // Need ALL electrons in order to calculate the MET
   // Actually, I see common code uses all electrons that have lv.Pt() != 0
@@ -241,7 +266,7 @@ void SusyD3PDAna::buildMet(SusyNtSys sys)
   vector<int> allElectrons = get_electrons_all(&d3pd.ele, m_susyObj);
   // MET uses muons before overlap removal
   //TVector2 metVector = GetMetVector(&d3pd.jet, m_susyObj, &d3pd.muo, &d3pd.ele, &d3pd.met, m_baseMuons, m_baseElectrons, allElectrons, JetErr::NONE);
-  TVector2 metVector = GetMetVector(&d3pd.jet, m_susyObj, &d3pd.muo, &d3pd.ele, &d3pd.met, m_preMuons, m_baseElectrons, allElectrons, jetsys);
+  TVector2 metVector = GetMetVector(&d3pd.jet, m_susyObj, &d3pd.muo, &d3pd.ele, &d3pd.met, m_preMuons, m_baseElectrons, allElectrons, susySys);
   m_met.SetPxPyPzE(metVector.X(), metVector.Y(), 0, metVector.Mod());
 }
 
@@ -266,12 +291,24 @@ void SusyD3PDAna::clearObjects()
 }
 
 /*--------------------------------------------------------------------------------*/
+// Count number of good vertices
+/*--------------------------------------------------------------------------------*/
+uint SusyD3PDAna::getNumGoodVtx()
+{
+  uint nVtx = 0;
+  for(int i=0; i < d3pd.vtx.n(); i++){
+    if(d3pd.vtx.nTracks()->at(i) > 4) nVtx++;
+  }
+  return nVtx;
+}
+
+/*--------------------------------------------------------------------------------*/
 // Electron trigger matching
 /*--------------------------------------------------------------------------------*/
-void SusyD3PDAna::matchElectronTriggers(bool disregardPt)
+void SusyD3PDAna::matchElectronTriggers()
 {
   if(m_dbg) cout << "matchElectronTriggers" << endl;
-  int run = d3pd.evt.RunNumber();
+  //int run = d3pd.evt.RunNumber();
 
   // loop over all pre electrons
   for(uint i=0; i<m_preElectrons.size(); i++){
@@ -281,39 +318,48 @@ void SusyD3PDAna::matchElectronTriggers(bool disregardPt)
     // trigger flags
     uint flags = 0;
 
-    if(disregardPt || lv->Pt() > 25.*GeV){
-      // e20_medium
-      if( m_isMC || (run<186873 && matchElectronTrigger(lv, d3pd.trig.trig_EF_el_EF_e20_medium())) ){
-        flags |= TRIG_e20_medium;
-      }
-      // e22_medium
-      if( m_isMC || (run<188902 && matchElectronTrigger(lv, d3pd.trig.trig_EF_el_EF_e22_medium())) ){
-        flags |= TRIG_e22_medium;
-      }
-      // e22vh_medium1
-      if( m_isMC || (run>188901 && matchElectronTrigger(lv, d3pd.trig.trig_EF_el_EF_e22vh_medium1())) ){
-        flags |= TRIG_e22vh_medium1;
-      }
+    // e20_medium
+    //if( /*m_isMC ||*/ (run<186873 && matchElectronTrigger(lv, d3pd.trig.trig_EF_el_EF_e20_medium())) ){
+      //flags |= TRIG_e20_medium;
+    //}
+    // e22_medium
+    //if( /*m_isMC ||*/ (run<188902 && matchElectronTrigger(lv, d3pd.trig.trig_EF_el_EF_e22_medium())) ){
+      //flags |= TRIG_e22_medium;
+    //}
+    // e22vh_medium1
+    //if( /*m_isMC ||*/ (run>188901 && matchElectronTrigger(lv, d3pd.trig.trig_EF_el_EF_e22vh_medium1())) ){
+      //flags |= TRIG_e22vh_medium1;
+    //}
+    // 2e12_medium
+    //if( /*m_isMC ||*/ (run<186873 && matchElectronTrigger(lv, d3pd.trig.trig_EF_el_EF_2e12_medium())) ){
+      //flags |= TRIG_2e12_medium;
+    //}
+    // 2e12T_medium
+    //if( /*m_isMC ||*/ (run>186873 && run<188902 && matchElectronTrigger(lv, d3pd.trig.trig_EF_el_EF_2e12T_medium())) ){
+      //flags |= TRIG_2e12T_medium;
+    //}
+    // 2e12Tvh_medium
+    //if( /*m_isMC ||*/ (run>188901 && matchElectronTrigger(lv, d3pd.trig.trig_EF_el_EF_2e12Tvh_medium())) ){
+      //flags |= TRIG_2e12Tvh_medium;
+    //}
+    // e10_medium_mu6
+    //if( /*m_isMC ||*/ (run>185353 && matchElectronTrigger(lv, d3pd.trig.trig_EF_el_EF_e10_medium_mu6())) ){
+      //flags |= TRIG_e10_medium_mu6;
+    //}
+
+    // 2012 triggers
+
+    // e24vhi_medium1
+    if( /*m_isMC ||*/ matchElectronTrigger(lv, d3pd.trig.trig_EF_el_EF_e24vhi_medium1()) ){
+      flags |= TRIG_e24vhi_medium1;
     }
-    if(disregardPt || lv->Pt() > 17.*GeV){
-      // 2e12_medium
-      if( m_isMC || (run<186873 && matchElectronTrigger(lv, d3pd.trig.trig_EF_el_EF_2e12_medium())) ){
-        flags |= TRIG_2e12_medium;
-      }
-      // 2e12T_medium
-      if( m_isMC || (run>186873 && run<188902 && matchElectronTrigger(lv, d3pd.trig.trig_EF_el_EF_2e12T_medium())) ){
-        flags |= TRIG_2e12T_medium;
-      }
-      // 2e12Tvh_medium
-      if( m_isMC || (run>188901 && matchElectronTrigger(lv, d3pd.trig.trig_EF_el_EF_2e12Tvh_medium())) ){
-        flags |= TRIG_2e12Tvh_medium;
-      }
+    // 2e12Tvh_loose1
+    if( /*m_isMC ||*/ matchElectronTrigger(lv, d3pd.trig.trig_EF_el_EF_2e12Tvh_loose1()) ){
+      flags |= TRIG_2e12Tvh_loose1;
     }
-    if(disregardPt || lv->Pt() > 15.*GeV){
-      // e10_medium_mu6
-      if( m_isMC || (run>185353 && matchElectronTrigger(lv, d3pd.trig.trig_EF_el_EF_e10_medium_mu6())) ){
-        flags |= TRIG_e10_medium_mu6;
-      }
+    // e12Tvh_medium1_mu8
+    if( /*m_isMC ||*/ matchElectronTrigger(lv, d3pd.trig.trig_EF_el_EF_e12Tvh_medium1_mu8()) ){
+      flags |= TRIG_e12Tvh_medium1_mu8;
     }
 
     // assign the flags in the map
@@ -334,12 +380,13 @@ bool SusyD3PDAna::matchElectronTrigger(const TLorentzVector* lv, vector<int>* tr
 /*--------------------------------------------------------------------------------*/
 // Muon trigger matching
 /*--------------------------------------------------------------------------------*/
-void SusyD3PDAna::matchMuonTriggers(bool disregardPt)
+void SusyD3PDAna::matchMuonTriggers()
 {
   if(m_dbg) cout << "matchMuonTriggers" << endl;
 
+  //int run = d3pd.evt.RunNumber();
+
   // New prescription!
-  int run = d3pd.evt.RunNumber();
   // loop over all pre muons
   for(uint i=0; i<m_preMuons.size(); i++){
 
@@ -349,27 +396,36 @@ void SusyD3PDAna::matchMuonTriggers(bool disregardPt)
     // trigger flags
     uint flags = 0;
 
-    if(disregardPt || lv->Pt() > 20.*GeV){
-      // mu18
-      if( m_isMC || (run<186516 && matchMuonTrigger(lv, d3pd.trig.trig_EF_trigmuonef_EF_mu18()))) {
-        flags |= TRIG_mu18;
-      }
-      // mu18_medium
-      if( m_isMC || (run>=186516 && matchMuonTrigger(lv, d3pd.trig.trig_EF_trigmuonef_EF_mu18_medium()))) {
-        flags |= TRIG_mu18_medium;
-      }
+    // mu18
+    //if( /*m_isMC ||*/ (run<186516 && matchMuonTrigger(lv, d3pd.trig.trig_EF_trigmuonef_EF_mu18()))) {
+      //flags |= TRIG_mu18;
+    //}
+    // mu18_medium
+    //if( /*m_isMC ||*/ (run>=186516 && matchMuonTrigger(lv, d3pd.trig.trig_EF_trigmuonef_EF_mu18_medium()))) {
+      //flags |= TRIG_mu18_medium;
+    //}
+    // 2mu10_loose
+    //if( /*m_isMC ||*/ matchMuonTrigger(lv, d3pd.trig.trig_EF_trigmuonef_EF_2mu10_loose())) {
+      //flags |= TRIG_2mu10_loose;
+    //}
+    // e10_medium_mu6
+    //if( /*m_isMC ||*/ matchMuonTrigger(lv, d3pd.trig.trig_EF_trigmuonef_EF_mu6()) ) {
+      //flags |= TRIG_e10_medium_mu6;
+    //}
+
+    // 2012 triggers
+
+    // mu24i_tight
+    if( /*m_isMC ||*/ matchMuonTrigger(lv, d3pd.trig.trig_EF_trigmuonef_EF_mu24i_tight()) ) {
+      flags |= TRIG_mu24i_tight;
     }
-    if(disregardPt || lv->Pt() > 10.*GeV){
-      // 2mu10_loose
-      if( m_isMC || matchMuonTrigger(lv, d3pd.trig.trig_EF_trigmuonef_EF_2mu10_loose())) {
-        flags |= TRIG_2mu10_loose;
-      }
+    // 2mu13
+    if( /*m_isMC ||*/ matchMuonTrigger(lv, d3pd.trig.trig_EF_trigmuonef_EF_2mu13()) ) {
+      flags |= TRIG_2mu13;
     }
-    if(disregardPt || lv->Pt() > 8.*GeV){
-      // e10_medium_mu6
-      if( m_isMC || matchMuonTrigger(lv, d3pd.trig.trig_EF_trigmuonef_EF_mu6()) ) {
-        flags |= TRIG_e10_medium_mu6;
-      }
+    // e12Tvh_medium1_mu8
+    if( /*m_isMC ||*/ matchMuonTrigger(lv, d3pd.trig.trig_EF_trigmuonef_EF_mu8()) ) {
+      flags |= TRIG_e12Tvh_medium1_mu8;
     }
 
     // assign the flags for this muon
@@ -411,8 +467,8 @@ bool SusyD3PDAna::matchMuonTrigger(const TLorentzVector* lv, vector<int>* passTr
 /*--------------------------------------------------------------------------------*/
 // Check event level cuts, like LArHole veto, badJet, etc.
 /*--------------------------------------------------------------------------------*/
-void SusyD3PDAna::evtCheck(){
-
+void SusyD3PDAna::evtCheck()
+{
   // Lar Hole Veto
   if(passLarHoleVeto())
     m_evtFlag |= PASS_LAr;
@@ -435,7 +491,6 @@ void SusyD3PDAna::evtCheck(){
       (m_evtFlag & PASS_BadMuon) &&
       (m_evtFlag & PASS_Cosmic) )
     m_evtFlag |= PASS_Event;
-
 }
 
 /*--------------------------------------------------------------------------------*/
@@ -446,11 +501,10 @@ bool SusyD3PDAna::passLarHoleVeto()
 {
   TVector2 metVector = m_met.Vect().XYvector();
   vector<int> goodJets;
-  //float mu = d3pd.evt.averageIntPerXing();
   // Do I still need these jets with no eta cut?
-  //vector<int> jets = get_jet_baseline( &d3pd.jet, !m_isMC, m_susyObj, 20.*GeV, 9999999, JetErr::NONE, false, goodJets,mu,&d3pd.vtx );
+  // This only uses nominal jets...?  TODO
   vector<int> jets = get_jet_baseline( &d3pd.jet, &d3pd.vtx, &d3pd.evt, !m_isMC, m_susyObj, 
-                                       20.*GeV, 9999999, JetErr::NONE, false, goodJets );
+                                       20.*GeV, 9999999, SystErr::NONE, false, goodJets );
   return !check_jet_larhole(&d3pd.jet, jets, !m_isMC, m_susyObj, 180614, metVector, &m_fakeMetEst);
 }
 /*--------------------------------------------------------------------------------*/
@@ -553,3 +607,5 @@ void SusyD3PDAna::dump()
     cout<<"Jet index: "<<idx<<" Pt: "<<tlv.Pt()/GeV<<" Eta: "<<tlv.Eta()<<" Phi: "<<tlv.Phi()<<endl;
   }
 }
+
+#undef GeV

@@ -59,12 +59,15 @@ class SusyD3PDAna : public SusyD3PDInterface
     void selectBaselineObjects(SusyNtSys sys = NtSys_NOM);
     void selectSignalObjects();
     void performOverlapRemoval();
-    void evtCheck();
 
     // MissingEt
     void buildMet(SusyNtSys sys = NtSys_NOM);
 
+    // Clear object selection
     void clearObjects();
+
+    // Count number of good vertices
+    uint getNumGoodVtx();
 
     //
     // Event cleaning
@@ -85,6 +88,9 @@ class SusyD3PDAna : public SusyD3PDInterface
     bool passBadMuon();
     // cosmic veto
     bool passCosmic();
+
+    // Poorly named, checks some event cleaning cuts
+    void evtCheck();
 
     //
     // Event weighting
@@ -119,20 +125,18 @@ class SusyD3PDAna : public SusyD3PDInterface
       m_eleTrigFlags.clear();
       m_muoTrigFlags.clear();
     }
-    void matchTriggers(bool disregardPt){
-      matchElectronTriggers(disregardPt);
-      matchMuonTriggers(disregardPt);
+    void matchTriggers(){
+      matchElectronTriggers();
+      matchMuonTriggers();
     }
-    void matchElectronTriggers(bool disregardPt);
+    void matchElectronTriggers();
     //bool matchElectronTrigger(float eta, float phi, std::vector<int>* roi);
     bool matchElectronTrigger(const TLorentzVector* lv, std::vector<int>* trigBools);
-    void matchMuonTriggers(bool disregardPt);
+    void matchMuonTriggers();
     bool matchMuonTrigger(const TLorentzVector* lv, std::vector<int>* trigBools);
 
 
-    // 
     // Debugging method
-    //
     void dump();
 
   protected:

@@ -4,6 +4,8 @@
 
 using namespace std;
 
+#define GeV 1000.
+
 /*--------------------------------------------------------------------------------*/
 // SusyNtMaker Constructor
 /*--------------------------------------------------------------------------------*/
@@ -159,22 +161,22 @@ bool SusyNtMaker::selectEvent()
   // Obj Independent checks
 
   // Total events
-  h_cutFlow->Fill(0.0,1.0);
+  h_cutFlow->Fill(0);
 
   // grl
   if(!passGRL()) return false;
   n_evt_grl++;
-  h_cutFlow->Fill(1.0,1.0);
+  h_cutFlow->Fill(1);
 
   // larErr
   if(!passLarErr()) return false;
   n_evt_larErr++;
-  h_cutFlow->Fill(2.0,1.0);
+  h_cutFlow->Fill(2);
 
   // primary vertex cut
   if(!passGoodVtx()) return false; 
   n_evt_goodVtx++;
-  h_cutFlow->Fill(3.0,1.0);
+  h_cutFlow->Fill(3);
 
   //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-//  
   // Get Nominal Objects
@@ -188,7 +190,7 @@ bool SusyNtMaker::selectEvent()
   n_base_jet += m_baseJets.size();
 
   // Match the triggers
-  matchTriggers( true /*Don't Check Pt of Trigger*/);
+  matchTriggers();
 
   // This will fill the pre selected
   // objects prior to overlap removal
@@ -200,7 +202,7 @@ bool SusyNtMaker::selectEvent()
   
     
   // For filling the output tree, require at least 2 baseline lepton
-  if((m_susyNt.ele()->size() + m_susyNt.muo()->size())<2)  return false;
+  if((m_susyNt.ele()->size() + m_susyNt.muo()->size()) < 2)  return false;
 
   return true;
 }
@@ -232,6 +234,7 @@ void SusyNtMaker::fillEventVars()
   evt->mcChannel        = m_isMC? d3pd.truth.channel_number() : 0;
   evt->w                = m_isMC? d3pd.truth.event_weight()   : 1;
 
+  evt->nVtx             = getNumGoodVtx();
   evt->avgMu            = d3pd.evt.averageIntPerXing();
 
   evt->wPileup          = m_isMC? getPileupWeight() : 1;
@@ -325,7 +328,6 @@ void SusyNtMaker::fillMuonVars(const LeptonInfo* lepIn)
   muOut->phi = phi;
   muOut->m   = m;
 
-
   muOut->q              = element->charge();
   muOut->ptcone20       = element->ptcone20()/GeV;
   muOut->d0             = element->d0_exPV();
@@ -341,7 +343,6 @@ void SusyNtMaker::fillMuonVars(const LeptonInfo* lepIn)
   muOut->errEffSF       = m_susyObj.GetSignalMuonSFUnc(lepIn->idx());
   
   muOut->idx            = lepIn->idx();
-
 }
 
 /*--------------------------------------------------------------------------------*/
@@ -423,7 +424,6 @@ void SusyNtMaker::doSystematic()
     selectObjects(sys);
     buildMet(sys);                   
     evtCheck();
-    
 
     // Lepton Specific sys    
     if( isElecSys(sys) )
@@ -440,7 +440,6 @@ void SusyNtMaker::doSystematic()
     addEventFlag(sys,m_evtFlag);
 
   }// end loop over systematic
-
 }
 
 /*--------------------------------------------------------------------------------*/
@@ -562,7 +561,7 @@ void SusyNtMaker::addMissingElectron(const LeptonInfo* lep, SusyNtSys sys)
   bool isAF2     = false; 
 
   // Reset the Nominal TLV
-  m_susyObj.SetElecTLV(index, cl_eta, cl_phi, cl_E, trk_eta, trk_phi, nPixHits, nSCTHits, 0, 0, isData, isAF2);
+  m_susyObj.SetElecTLV(index, cl_eta, cl_phi, cl_E, trk_eta, trk_phi, nPixHits, nSCTHits, isData, SystErr::NONE, isAF2);
 
   // Now push it back onto to susyNt
   fillElectronVars( lep );
@@ -601,7 +600,7 @@ void SusyNtMaker::addMissingMuon(const LeptonInfo* lep, SusyNtSys sys)
   bool isData             = !m_isMC;
 
   // Reset the Nominal TLV
-  m_susyObj.SetMuonTLV(index, pt, eta, phi, E, me_qoverp_exPV, id_qoverp_exPV, me_theta_exPV, id_theta_exPV, isCombined, isData, "");
+  m_susyObj.SetMuonTLV(index, pt, eta, phi, E, me_qoverp_exPV, id_qoverp_exPV, me_theta_exPV, id_theta_exPV, isCombined, isData, SystErr::NONE);
   
   // Now push it back onto to susyNt
   fillMuonVars( lep );
@@ -617,6 +616,7 @@ void SusyNtMaker::addMissingMuon(const LeptonInfo* lep, SusyNtSys sys)
   
 }
 
+/*--------------------------------------------------------------------------------*/
 void SusyNtMaker::addMissingJet(int index, SusyNtSys sys)
 {
   // Get the tlv with the sys
@@ -642,3 +642,5 @@ void SusyNtMaker::addMissingJet(int index, SusyNtSys sys)
   else if(sys == NtSys_JES_UP) j->jes_up = sf;
   else if(sys == NtSys_JES_DN) j->jes_dn = sf;
 }
+
+#undef GeV
