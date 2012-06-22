@@ -562,7 +562,8 @@ void SusyNtMaker::addMissingElectron(const LeptonInfo* lep, SusyNtSys sys)
   bool isAF2     = false; 
 
   // Reset the Nominal TLV
-  m_susyObj.SetElecTLV(index, cl_eta, cl_phi, cl_E, trk_eta, trk_phi, nPixHits, nSCTHits, 0, 0, isData, isAF2);
+  //m_susyObj.SetElecTLV(index, cl_eta, cl_phi, cl_E, trk_eta, trk_phi, nPixHits, nSCTHits, 0, 0, isData, isAF2);
+  m_susyObj.SetElecTLV(index, cl_eta, cl_phi, cl_E, trk_eta, trk_phi, nPixHits, nSCTHits, isData, SystErr::NONE, isAF2);
 
   // Now push it back onto to susyNt
   fillElectronVars( lep );
@@ -601,7 +602,8 @@ void SusyNtMaker::addMissingMuon(const LeptonInfo* lep, SusyNtSys sys)
   bool isData             = !m_isMC;
 
   // Reset the Nominal TLV
-  m_susyObj.SetMuonTLV(index, pt, eta, phi, E, me_qoverp_exPV, id_qoverp_exPV, me_theta_exPV, id_theta_exPV, isCombined, isData, "");
+  //m_susyObj.SetMuonTLV(index, pt, eta, phi, E, me_qoverp_exPV, id_qoverp_exPV, me_theta_exPV, id_theta_exPV, isCombined, isData, "");
+  m_susyObj.SetMuonTLV(index, pt, eta, phi, E, me_qoverp_exPV, id_qoverp_exPV, me_theta_exPV, id_theta_exPV, isCombined, isData, SystErr::NONE);
   
   // Now push it back onto to susyNt
   fillMuonVars( lep );

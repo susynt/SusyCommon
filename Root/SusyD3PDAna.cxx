@@ -81,8 +81,8 @@ void SusyD3PDAna::Begin(TTree* /*tree*/)
   // Pileup reweighting
   if(m_isMC){
     m_pileup = new Root::TPileupReweighting("PileupReweighting");
-    m_pileup->AddLumiCalcFile("$ROOTCOREDIR/data/MultiLep/ilumicalc_histograms_None_178044-191933.root");
     m_pileup->AddConfigFile("$ROOTCOREDIR/data/MultiLep/mc11b_defaults.root");
+    m_pileup->AddLumiCalcFile("$ROOTCOREDIR/data/MultiLep/ilumicalc_histograms_EF_mu18_178044-186493__B-I_EF_mu18_medium_186516-191933__J-M.root");
     m_pileup->SetUnrepresentedDataAction(2);
     int pileupError = m_pileup->Initialize();
 
@@ -141,28 +141,44 @@ void SusyD3PDAna::selectBaselineObjects(SusyNtSys sys)
   vector<int> goodJets;  // What the hell is this??
   //float mu = d3pd.evt.averageIntPerXing();
 
+  // SUSYTools takes a flag for AF2. TODO: do we need to use it? 
+  bool isAF2 = false;
+
   // Handle Systematic
-  int ees = 0, eer = 0;
-  string musys = "";
-  JetErr::Syste jetsys = JetErr::NONE;
-  if(sys == NtSys_NOM);                                  // No need to check needlessly
-  else if(sys == NtSys_EES_UP) ees = 1;                  // E scale up
-  else if(sys == NtSys_EES_DN) ees = 2;                  // E scale down
-  else if(sys == NtSys_EER_UP) eer = 1;                  // E smear up
-  else if(sys == NtSys_EER_DN) eer = 2;                  // E smear down
-  else if(sys == NtSys_MS_UP ) musys = "MSUP";           // MS scale up
-  else if(sys == NtSys_MS_DN ) musys = "MSLOW";          // MS scale down
-  else if(sys == NtSys_ID_UP ) musys = "IDUP";           // ID scale up
-  else if(sys == NtSys_ID_DN ) musys = "IDLOW";          // ID scale down
-  else if(sys == NtSys_JES_UP) jetsys = JetErr::JESUP;   // JES up
-  else if(sys == NtSys_JES_DN) jetsys = JetErr::JESDOWN; // JES down
-  else if(sys == NtSys_JER)    jetsys = JetErr::JER;     // JER (gaussian)
+  SystErr::Syste susySys = SystErr::NONE;
+  if(sys == NtSys_NOM);                                         // No need to check needlessly
+  else if(sys == NtSys_EES_UP) susySys = SystErr::EESUP;        // E scale up
+  else if(sys == NtSys_EES_DN) susySys = SystErr::EESDOWN;      // E scale down
+  else if(sys == NtSys_EER_UP) susySys = SystErr::ERESUP;       // E smear up
+  else if(sys == NtSys_EER_DN) susySys = SystErr::ERESDOWN;     // E smear down
+  else if(sys == NtSys_MS_UP ) susySys = SystErr::MMSUP;        // MS scale up
+  else if(sys == NtSys_MS_DN ) susySys = SystErr::MMSLOW;       // MS scale down
+  else if(sys == NtSys_ID_UP ) susySys = SystErr::MIDUP;        // ID scale up
+  else if(sys == NtSys_ID_DN ) susySys = SystErr::MIDLOW;       // ID scale down
+  else if(sys == NtSys_JES_UP) susySys = SystErr::JESUP;        // JES up
+  else if(sys == NtSys_JES_DN) susySys = SystErr::JESDOWN;      // JES down
+  else if(sys == NtSys_JER)    susySys = SystErr::JER;          // JER (gaussian)
+
+  //int ees = 0, eer = 0;
+  //string musys = "";
+  //JetErr::Syste jetsys = JetErr::NONE;
+  //if(sys == NtSys_NOM);                                  // No need to check needlessly
+  //else if(sys == NtSys_EES_UP) ees = 1;                  // E scale up
+  //else if(sys == NtSys_EES_DN) ees = 2;                  // E scale down
+  //else if(sys == NtSys_EER_UP) eer = 1;                  // E smear up
+  //else if(sys == NtSys_EER_DN) eer = 2;                  // E smear down
+  //else if(sys == NtSys_MS_UP ) musys = "MSUP";           // MS scale up
+  //else if(sys == NtSys_MS_DN ) musys = "MSLOW";          // MS scale down
+  //else if(sys == NtSys_ID_UP ) musys = "IDUP";           // ID scale up
+  //else if(sys == NtSys_ID_DN ) musys = "IDLOW";          // ID scale down
+  //else if(sys == NtSys_JES_UP) jetsys = JetErr::JESUP;   // JES up
+  //else if(sys == NtSys_JES_DN) jetsys = JetErr::JESDOWN; // JES down
+  //else if(sys == NtSys_JER)    jetsys = JetErr::JER;     // JER (gaussian)
 
   // Preselection
-  m_preElectrons = get_electrons_baseline( &d3pd.ele, !m_isMC, d3pd.evt.RunNumber(), m_susyObj, 10.*GeV, 2.47, ees, eer, false );
-  m_preMuons     = get_muons_baseline( &d3pd.muo, !m_isMC, m_susyObj, 10.*GeV, 2.4, musys );
-  //m_preJets      = get_jet_baseline( &d3pd.jet, !m_isMC, m_susyObj, 20.*GeV, 4.9, jetsys, false, goodJets, mu, &d3pd.vtx );
-  m_preJets      = get_jet_baseline( &d3pd.jet, &d3pd.vtx, &d3pd.evt, !m_isMC, m_susyObj, 20.*GeV, 4.9, jetsys, false, goodJets );
+  m_preElectrons = get_electrons_baseline( &d3pd.ele, !m_isMC, d3pd.evt.RunNumber(), m_susyObj, 10.*GeV, 2.47, susySys, isAF2 );
+  m_preMuons     = get_muons_baseline( &d3pd.muo, !m_isMC, m_susyObj, 10.*GeV, 2.4, susySys );
+  m_preJets      = get_jet_baseline( &d3pd.jet, &d3pd.vtx, &d3pd.evt, !m_isMC, m_susyObj, 20.*GeV, 4.9, susySys, false, goodJets );
   
   performOverlapRemoval();
 
@@ -227,12 +243,17 @@ void SusyD3PDAna::buildMet(SusyNtSys sys)
   if(m_dbg) cout << "buildMet" << endl;
  
   // Need the proper jet systematic for building systematic
-  JetErr::Syste jetsys = JetErr::NONE;     // Nominal
+  SystErr::Syste susySys = SystErr::NONE;
   if(sys == NtSys_NOM);
-  else if(sys == NtSys_JES_UP) jetsys = JetErr::JESUP;   // JES up
-  else if(sys == NtSys_JES_DN) jetsys = JetErr::JESDOWN; // JES down
-  else if(sys == NtSys_JER)    jetsys = JetErr::JER;     // JER (gaussian)
-  
+  else if(sys == NtSys_JES_UP) susySys = SystErr::JESUP;        // JES up
+  else if(sys == NtSys_JES_DN) susySys = SystErr::JESDOWN;      // JES down
+  else if(sys == NtSys_JER)    susySys = SystErr::JER;          // JER (gaussian)
+
+  //JetErr::Syste jetsys = JetErr::NONE;     // Nominal
+  //if(sys == NtSys_NOM);
+  //else if(sys == NtSys_JES_UP) jetsys = JetErr::JESUP;   // JES up
+  //else if(sys == NtSys_JES_DN) jetsys = JetErr::JESDOWN; // JES down
+  //else if(sys == NtSys_JER)    jetsys = JetErr::JER;     // JER (gaussian)
 
   // Need ALL electrons in order to calculate the MET
   // Actually, I see common code uses all electrons that have lv.Pt() != 0
@@ -240,8 +261,8 @@ void SusyD3PDAna::buildMet(SusyNtSys sys)
   // should enter the RefEle term
   vector<int> allElectrons = get_electrons_all(&d3pd.ele, m_susyObj);
   // MET uses muons before overlap removal
-  //TVector2 metVector = GetMetVector(&d3pd.jet, m_susyObj, &d3pd.muo, &d3pd.ele, &d3pd.met, m_baseMuons, m_baseElectrons, allElectrons, JetErr::NONE);
-  TVector2 metVector = GetMetVector(&d3pd.jet, m_susyObj, &d3pd.muo, &d3pd.ele, &d3pd.met, m_preMuons, m_baseElectrons, allElectrons, jetsys);
+  TVector2 metVector = GetMetVector(&d3pd.jet, m_susyObj, &d3pd.muo, &d3pd.ele, &d3pd.met, m_preMuons, m_baseElectrons, allElectrons, susySys);
+  //TVector2 metVector = GetMetVector(&d3pd.jet, m_susyObj, &d3pd.muo, &d3pd.ele, &d3pd.met, m_preMuons, m_baseElectrons, allElectrons, jetsys);
   m_met.SetPxPyPzE(metVector.X(), metVector.Y(), 0, metVector.Mod());
 }
 
@@ -448,9 +469,8 @@ bool SusyD3PDAna::passLarHoleVeto()
   vector<int> goodJets;
   //float mu = d3pd.evt.averageIntPerXing();
   // Do I still need these jets with no eta cut?
-  //vector<int> jets = get_jet_baseline( &d3pd.jet, !m_isMC, m_susyObj, 20.*GeV, 9999999, JetErr::NONE, false, goodJets,mu,&d3pd.vtx );
   vector<int> jets = get_jet_baseline( &d3pd.jet, &d3pd.vtx, &d3pd.evt, !m_isMC, m_susyObj, 
-                                       20.*GeV, 9999999, JetErr::NONE, false, goodJets );
+                                       20.*GeV, 9999999, SystErr::NONE, false, goodJets );
   return !check_jet_larhole(&d3pd.jet, jets, !m_isMC, m_susyObj, 180614, metVector, &m_fakeMetEst);
 }
 /*--------------------------------------------------------------------------------*/

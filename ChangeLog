@@ -1,5 +1,15 @@
 # vim: set noexpandtab:
 
+#-----------------------------------------------------------------------------------------
+# Changes made in SusyCommon v08 branch (for 2011 data)
+#-----------------------------------------------------------------------------------------
+
+2012-06-22 Steve
+	* Updated for latest MultiLep changes
+		* Uses SUSYTools-00-00-67-01
+	* Tagging SusyCommon-00-00-08-01
+
+#-----------------------------------------------------------------------------------------
 2012-06-19 Steve
 	* Fixed event timer calculation
 	* Added helper script for tagging package: scripts/makeTag.sh
