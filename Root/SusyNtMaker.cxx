@@ -182,6 +182,7 @@ bool SusyNtMaker::selectEvent()
   // Get Nominal Objects
 
   selectObjects();
+  if(m_savePh) selectSignalPhotons();
   buildMet();
   evtCheck();
 
@@ -216,6 +217,7 @@ void SusyNtMaker::fillNtVars()
   fillLeptonVars();
   fillJetVars();
   fillMetVars();
+  if( m_savePh ) fillPhotonVars();
 }
 
 /*--------------------------------------------------------------------------------*/
@@ -404,6 +406,51 @@ void SusyNtMaker::fillMetVars(SusyNtSys sys)
   metOut->Et  = Et;
   metOut->phi = phi;
   metOut->sys = sys;  
+}
+
+/*--------------------------------------------------------------------------------*/
+// Fill Photon variables
+/*--------------------------------------------------------------------------------*/
+void SusyNtMaker::fillPhotonVars()
+{
+  if(m_dbg) cout << "fillPhotonVars" << endl;
+
+  // Loop over photons
+  for(uint iPh=0; iPh<m_sigPhotons.size(); iPh++){
+    int phIndex = m_sigPhotons[iPh];  
+
+    fillPhotonVar(phIndex);
+  }
+}
+/*--------------------------------------------------------------------------------*/
+void SusyNtMaker::fillPhotonVar(int phIdx)
+{
+
+  if(m_dbg) cout << "fillPhotonVars" << endl;
+  m_susyNt.pho()->push_back( Susy::Photon() );
+  Susy::Photon* phoOut = & m_susyNt.pho()->back();
+  const PhotonElement* element = & d3pd.pho[phIdx];
+
+
+  // Set TLV
+  const TLorentzVector* phTLV = & m_susyObj.GetPhotonTLV(phIdx);
+  float pt  = phTLV->Pt() / GeV;
+  float E   = phTLV->E()  / GeV;
+  float eta = phTLV->Eta();
+  float phi = phTLV->Phi();
+  
+  phoOut->SetPtEtaPhiE(pt, eta, phi, E);
+  phoOut->pt  = pt;
+  phoOut->eta = eta;
+  phoOut->phi = phi;
+  phoOut->m   = 0.;
+  
+  // Save conversion info
+  phoOut->isConv = element->isConv();
+
+  // Miscellaneous 
+  phoOut->idx    = phIdx;
+
 }
 
 /*--------------------------------------------------------------------------------*/

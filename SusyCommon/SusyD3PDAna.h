@@ -59,6 +59,7 @@ class SusyD3PDAna : public SusyD3PDInterface
     void selectBaselineObjects(SusyNtSys sys = NtSys_NOM);
     void selectSignalObjects();
     void performOverlapRemoval();
+    void selectSignalPhotons();
 
     // MissingEt
     void buildMet(SusyNtSys sys = NtSys_NOM);
@@ -118,6 +119,9 @@ class SusyD3PDAna : public SusyD3PDInterface
     // Set sys run
     void setSys(bool sysOn){ m_sys = sysOn; };
     
+    // Set to save photons or not
+    void setSavePhotons(bool phOn){ m_savePh = phOn; };
+    
     //
     // Trigger - check matching for all baseline leptons
     //
@@ -166,11 +170,13 @@ class SusyD3PDAna : public SusyD3PDInterface
     std::vector<LeptonInfo>     m_sigLeptons;   // signal leptonInfos
     std::vector<int>            m_sigJets;      // signal jets
 
+    std::vector<int>            m_sigPhotons;   // signal photons
+    
     // Trigger object matching maps
     // Key: d3pd index, Val: trig bit word
     std::map<int, uint>         m_eleTrigFlags; // electron trigger matching flags
     std::map<int, uint>         m_muoTrigFlags; // muon trigger matching flags
-
+    
     // MET
     TLorentzVector              m_met;          // fully corrected MET
 
@@ -178,6 +184,8 @@ class SusyD3PDAna : public SusyD3PDInterface
     float                       m_sumw;         // sum of mc weights for normalization, must be set by user
     float                       m_xsec;         // optional user cross section, to override susy xsec usage
     bool                        m_sys;          // True if you want sys for MC, must be set by user. 
+    bool                        m_savePh;       // True if want to save photons
+
     int                         m_evtFlag;      // Reset after each evt
 
     //

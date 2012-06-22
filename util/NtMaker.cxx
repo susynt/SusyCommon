@@ -49,6 +49,9 @@ void help()
   cout << "  -sys will turn on systematic run"  << endl;
   cout << "     default: off"                   << endl;
 
+  cout << "  -savePh will save photons"         << endl;
+  cout << "     default: off"                   << endl;
+
   cout << "  -h print this help"                << endl;
 }
 
@@ -66,6 +69,7 @@ int main(int argc, char** argv)
   string sample;
   string fileList = "fileList.txt";
   bool sysOn      = false;
+  bool savePh     = false;
 
   cout << "SusyNtMaker" << endl;
   cout << endl;
@@ -90,6 +94,8 @@ int main(int argc, char** argv)
       lumi = atof(argv[++i]);
     else if (strcmp(argv[i], "-sys") == 0)
       sysOn = true;
+    else if (strcmp(argv[i], "-savePh") == 0)
+      savePh = true;
     //if (strcmp(argv[i], "-h") == 0)
     else
     {
@@ -106,6 +112,7 @@ int main(int argc, char** argv)
   cout << "  input   " << fileList << endl;
   cout << "  sumw    " << sumw     << endl;
   cout << "  sys     " << sysOn    << endl;
+  cout << "  savePh  " << savePh   << endl;
   cout << "  lumi    " << lumi     << endl;
   cout << "  xsec    " << xsec     << endl;
   cout << endl;
@@ -124,11 +131,13 @@ int main(int argc, char** argv)
   susyAna->setLumi(lumi);
   susyAna->setSumw(sumw);
   susyAna->setSys(sysOn);
+  susyAna->setSavePhotons(savePh);
   susyAna->setXsec(xsec);
 
 
   // GRL
-  TString grl = gSystem->ExpandPathName("$ROOTCOREDIR/data/MultiLep/data12_8TeV.periodAllYear_DetStatus-v42-pro13_CoolRunQuery-00-04-08_Susy.xml");
+  TString grl = gSystem->ExpandPathName("$ROOTCOREDIR/data/MultiLep/data12_8TeV.periodAllYear_DetStatus-v45-pro13_CoolRunQuery-00-04-08_JetEtMiss.xml");
+  //TString grl = gSystem->ExpandPathName("$ROOTCOREDIR/data/MultiLep/data12_8TeV.periodAllYear_DetStatus-v42-pro13_CoolRunQuery-00-04-08_Susy.xml");
   //TString grl = gSystem->ExpandPathName("$ROOTCOREDIR/data/MultiLep/data11_7TeV.periodAllYear_DetStatus-v36-pro10_CoolRunQuery-00-04-08_Susy.xml");
   susyAna->setGRLFile(grl);
 

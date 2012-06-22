@@ -20,7 +20,8 @@ SusyD3PDContainer::SusyD3PDContainer(const Long64_t& entry) :
         trig(entry),
         gen(entry),
         truth(entry),
-        truthMu(entry)
+        truthMu(entry),
+	pho(entry)
 {
 }
 /*--------------------------------------------------------------------------------*/
@@ -39,6 +40,7 @@ void SusyD3PDContainer::ReadFrom(TTree* tree)
   gen.ReadFrom(tree);
   truth.ReadFrom(tree);
   truthMu.ReadFrom(tree);
+  pho.ReadFrom(tree);
 }
 
 /*--------------------------------------------------------------------------------*/

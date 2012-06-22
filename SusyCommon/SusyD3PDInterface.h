@@ -20,6 +20,8 @@
 #include "MultiLep/TruthParticleD3PDObject.h"
 #include "MultiLep/TruthMuonD3PDObject.h"
 
+#include "MultiLep/PhotonD3PDObject.h"
+
 #include "SusyNtuple/SusyDefs.h"
 
 
@@ -34,7 +36,7 @@ typedef D3PDReader::ElectronD3PDObjectElement ElectronElement;
 typedef D3PDReader::MuonD3PDObjectElement MuonElement;
 typedef D3PDReader::JetD3PDObjectElement JetElement;
 typedef D3PDReader::TruthMuonD3PDObjectElement TruthMuonElement;
-
+typedef D3PDReader::PhotonD3PDObjectElement PhotonElement;
 
 class SusyD3PDContainer
 {
@@ -57,6 +59,7 @@ class SusyD3PDContainer
     D3PDReader::GenEventD3PDObject      gen;
     D3PDReader::TruthParticleD3PDObject truth;
     D3PDReader::TruthMuonD3PDObject     truthMu;
+    D3PDReader::PhotonD3PDObject        pho;
 };
 
 

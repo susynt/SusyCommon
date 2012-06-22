@@ -13,12 +13,12 @@
 /*
 
     SusyNtMaker - a class for making SusyNt from Susy D3PDs
-
+    
 */
 
 class SusyNtMaker : public SusyD3PDAna
 {
-
+  
   public:
 
     // Constructor and destructor
@@ -47,6 +47,8 @@ class SusyNtMaker : public SusyD3PDAna
     void fillJetVars();
     void fillJetVar(int jetIdx);
     void fillMetVars(SusyNtSys sys = NtSys_NOM);
+    void fillPhotonVars();
+    void fillPhotonVar(int phIdx);
 
     // Systematic Methods
     void doSystematic();

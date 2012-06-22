@@ -5,6 +5,8 @@
 #include "MultiLep/JetTools.h"
 #include "MultiLep/CutflowTools.h"
 
+#include "MultiLep/PhotonTools.h"
+
 #ifdef USEPDFTOOL
 #include "MultiLep/PDFErrorTools.h"
 #endif
@@ -22,6 +24,7 @@ SusyD3PDAna::SusyD3PDAna() :
         m_sumw(1),
 	m_xsec(-1),
 	m_sys(false),
+	m_savePh(false),
         m_pileup(0),
         m_susyXsec(0)
 {
@@ -271,6 +274,19 @@ void SusyD3PDAna::buildMet(SusyNtSys sys)
 }
 
 /*--------------------------------------------------------------------------------*/
+// Signal photons
+/*--------------------------------------------------------------------------------*/
+void SusyD3PDAna::selectSignalPhotons()
+{
+  if(m_dbg) cout << "selectSignalPhotons" << endl;
+
+  vector<int> base_photons = get_photons_baseline(&d3pd.pho, !m_isMC, d3pd.evt.RunNumber(), m_susyObj, 20.*GeV, 2.47, SystErr::NONE, 2 /*Quality:Tight*/);
+
+  m_sigPhotons = get_photons_signal(&d3pd.pho, base_photons, m_susyObj, 20.*GeV, 3 /*etcone40Corrected < 3*/, !m_isMC);
+  
+}
+
+/*--------------------------------------------------------------------------------*/
 // Clear selected objects
 /*--------------------------------------------------------------------------------*/
 void SusyD3PDAna::clearObjects()
@@ -288,6 +304,8 @@ void SusyD3PDAna::clearObjects()
   m_sigLeptons.clear();
   m_sigJets.clear();
   m_evtFlag = 0;
+
+  m_sigPhotons.clear();
 }
 
 /*--------------------------------------------------------------------------------*/
