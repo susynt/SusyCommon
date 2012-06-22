@@ -27,6 +27,7 @@ SusyD3PDAna::SusyD3PDAna() :
 	m_sys(false),
 	m_savePh(false),
         m_pileup(0),
+        m_pileup2fb(0),
         m_susyXsec(0)
 {
   #ifdef USEPDFTOOL
@@ -92,12 +93,26 @@ void SusyD3PDAna::Begin(TTree* /*tree*/)
   // Pileup reweighting
   if(m_isMC){
     m_pileup = new Root::TPileupReweighting("PileupReweighting");
+    m_pileup->SetDataScaleFactors(1/1.11);
     m_pileup->AddConfigFile("$ROOTCOREDIR/data/PileupReweighting/mc12a_defaults.prw.root");
+    // TODO: update me
     m_pileup->AddLumiCalcFile("$ROOTCOREDIR/data/MultiLep/ilumicalc_histograms_EF_e24vhi_medium1_200841-203524.root");
-    //m_pileup->AddLumiCalcFile("$ROOTCOREDIR/data/MultiLep/ilumicalc_histograms_None_178044-191933.root");
-    //m_pileup->AddConfigFile("$ROOTCOREDIR/data/MultiLep/mc11b_defaults.root");
     m_pileup->SetUnrepresentedDataAction(2);
     int pileupError = m_pileup->Initialize();
+
+    if(pileupError){
+      cout << "Problem in pileup initialization.  pileupError = " << pileupError << endl;
+      abort();
+    }
+
+    // pileup reweighting for 2012 A-B5 only
+    m_pileup2fb = new Root::TPileupReweighting("PileupReweighting2fb");
+    m_pileup2fb->SetDataScaleFactors(1/1.11);
+    m_pileup2fb->AddConfigFile("$ROOTCOREDIR/data/PileupReweighting/mc12a_defaults.prw.root");
+    // TODO: update me
+    m_pileup2fb->AddLumiCalcFile("$ROOTCOREDIR/data/MultiLep/ilumicalc_histograms_EF_e24vhi_medium1_200841-203524.root");
+    m_pileup2fb->SetUnrepresentedDataAction(2);
+    pileupError = m_pileup2fb->Initialize();
 
     if(pileupError){
       cout << "Problem in pileup initialization.  pileupError = " << pileupError << endl;
@@ -142,6 +157,7 @@ void SusyD3PDAna::Terminate()
   if(m_isMC){
     delete m_susyXsec;
     delete m_pileup;
+    delete m_pileup2fb;
   }
 }
 
@@ -375,17 +391,25 @@ void SusyD3PDAna::matchElectronTriggers()
     // 2012 triggers
 
     // e24vhi_medium1
-    if( /*m_isMC ||*/ matchElectronTrigger(lv, d3pd.trig.trig_EF_el_EF_e24vhi_medium1()) ){
+    if( matchElectronTrigger(lv, d3pd.trig.trig_EF_el_EF_e24vhi_medium1()) ){
       flags |= TRIG_e24vhi_medium1;
     }
     // 2e12Tvh_loose1
-    if( /*m_isMC ||*/ matchElectronTrigger(lv, d3pd.trig.trig_EF_el_EF_2e12Tvh_loose1()) ){
+    if( matchElectronTrigger(lv, d3pd.trig.trig_EF_el_EF_2e12Tvh_loose1()) ){
       flags |= TRIG_2e12Tvh_loose1;
     }
-    // e12Tvh_medium1_mu8
-    if( /*m_isMC ||*/ matchElectronTrigger(lv, d3pd.trig.trig_EF_el_EF_e12Tvh_medium1_mu8()) ){
-      flags |= TRIG_e12Tvh_medium1_mu8;
+    // e24vh_medium1_e7_medium1
+    if( matchElectronTrigger(lv, d3pd.trig.trig_EF_el_EF_e24vh_medium1_e7_medium1()) ){
+      flags |= TRIG_e24vh_medium1_e7_medium1;
     }
+    // e12Tvh_medium1_mu8
+    //if( matchElectronTrigger(lv, d3pd.trig.trig_EF_el_EF_e12Tvh_medium1_mu8()) ){
+      //flags |= TRIG_e12Tvh_medium1_mu8;
+    //}
+    // mu18_tight_e7_medium1
+    //if( matchElectronTrigger(lv, d3pd.trig.trig_EF_el_EF_mu18_tight_e7_medium1()) ){
+      //flags |= TRIG_mu18_tight_e7_medium1;
+    //}
 
     // assign the flags in the map
     m_eleTrigFlags[iEl] = flags;
@@ -440,17 +464,25 @@ void SusyD3PDAna::matchMuonTriggers()
 
     // 2012 triggers
 
+    // mu18_tight
+    if( matchMuonTrigger(lv, d3pd.trig.trig_EF_trigmuonef_EF_mu18_tight()) ) {
+      flags |= TRIG_mu18_tight;
+    }
     // mu24i_tight
-    if( /*m_isMC ||*/ matchMuonTrigger(lv, d3pd.trig.trig_EF_trigmuonef_EF_mu24i_tight()) ) {
+    if( matchMuonTrigger(lv, d3pd.trig.trig_EF_trigmuonef_EF_mu24i_tight()) ) {
       flags |= TRIG_mu24i_tight;
     }
     // 2mu13
-    if( /*m_isMC ||*/ matchMuonTrigger(lv, d3pd.trig.trig_EF_trigmuonef_EF_2mu13()) ) {
+    if( matchMuonTrigger(lv, d3pd.trig.trig_EF_trigmuonef_EF_2mu13()) ) {
       flags |= TRIG_2mu13;
     }
     // e12Tvh_medium1_mu8
-    if( /*m_isMC ||*/ matchMuonTrigger(lv, d3pd.trig.trig_EF_trigmuonef_EF_mu8()) ) {
+    if( matchMuonTrigger(lv, d3pd.trig.trig_EF_trigmuonef_EF_mu8()) ) {
       flags |= TRIG_e12Tvh_medium1_mu8;
+    }
+    // mu18_tight_e7_medium1
+    if( matchMuonTrigger(lv, d3pd.trig.trig_EF_trigmuonef_EF_mu18_tight_e7_medium1()) ) {
+      flags |= TRIG_mu18_tight_e7_medium1;
     }
 
     // assign the flags for this muon
@@ -587,6 +619,11 @@ float SusyD3PDAna::getLumiWeight()
 // Pileup reweighting
 /*--------------------------------------------------------------------------------*/
 float SusyD3PDAna::getPileupWeight()
+{
+  return m_pileup->GetCombinedWeight(d3pd.evt.RunNumber(), d3pd.truth.channel_number(), d3pd.evt.averageIntPerXing());
+}
+/*--------------------------------------------------------------------------------*/
+float SusyD3PDAna::getPileupWeight2fb()
 {
   return m_pileup->GetCombinedWeight(d3pd.evt.RunNumber(), d3pd.truth.channel_number(), d3pd.evt.averageIntPerXing());
 }

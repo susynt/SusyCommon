@@ -1,11 +1,13 @@
 # vim: set noexpandtab:
 
-2012-06-21 Steve
+2012-06-22 Steve
 	* Updated to latest MultiLep usage
 	* Now includes switch for controlling the jet/met calibration: m_metCalib
 		* For now I'm leaving it as Simplified20 (EMJES), but will switch soon
 	* Added SV0 and MV1 b-taggers to SusyNtMaker
 	* Fixed/updated to latest SUSY GRL
+	* Added 2nd pileup tool for A-B5 unblinded region
+	* Added available 2012 triggers
 
 2012-06-21 Matt
 	* Added Photon methods to SusyD3PDAna and SusyNtMaker to load and save.

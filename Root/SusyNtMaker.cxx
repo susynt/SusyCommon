@@ -82,9 +82,8 @@ Bool_t SusyNtMaker::Process(Long64_t entry)
          << " event " << setw(7) << d3pd.evt.EventNumber() << " ****" << endl;
   }
 
-  // Test the pdf reweighting
-  //float pdfSF = getPDFWeight8TeV();
-  //cout << "PDF rescale weight: " << pdfSF << endl;
+  // Test the generator weight
+  //cout << "mc weight: " << d3pd.truth.event_weight() << endl;
 
   if(selectEvent()){
     m_outTree->Fill(); //fillNtVars();
