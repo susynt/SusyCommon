@@ -1,9 +1,17 @@
 # vim: set noexpandtab:
+
+2012-06-21 Steve
+	* Updated to latest MultiLep usage
+	* Now includes switch for controlling the jet/met calibration: m_metCalib
+		* For now I'm leaving it as Simplified20 (EMJES), but will switch soon
+	* Added SV0 and MV1 b-taggers to SusyNtMaker
+	* Fixed/updated to latest SUSY GRL
+
 2012-06-21 Matt
 	* Added Photon methods to SusyD3PDAna and SusyNtMaker to load and save.
 	* Flag for saving: -savePh (default is false)
 	* Class now depends on PhotonTools and PhotonD3PDObject
-	
+
 2012-06-20 Steve
 	* Updated to twentyinvfb version of MultiLep, and SUSYTools v71
 	* Added calculation of num good vertex (nTracks > 4)

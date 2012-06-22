@@ -1,3 +1,4 @@
+#include "SUSYTools/MV1.h"
 #include "MultiLep/MuonTools.h"
 #include "MultiLep/ElectronTools.h"
 #include "SusyCommon/SusyNtMaker.h"
@@ -378,11 +379,16 @@ void SusyNtMaker::fillJetVar(int jetIdx)
   jetOut->phi = phi;
   jetOut->m   = m;
   
-  jetOut->jvf         = element->jvtxf();
-  jetOut->combNN      = element->flavor_weight_JetFitterCOMBNN();
   jetOut->idx         = jetIdx;
+  jetOut->jvf         = element->jvtxf();
   jetOut->truthLabel  = m_isMC? element->flavor_truth_label() : 0;
 
+  // btag weights
+  jetOut->sv0         = element->flavor_weight_SV0();
+  jetOut->combNN      = element->flavor_weight_JetFitterCOMBNN();
+  // flavor tagging twiki page says to use the uncorrected jet kinematics for MV1
+  jetOut->mv1         = mv1Eval(element->flavor_weight_IP3D(), element->flavor_weight_SV1(), 
+                                element->flavor_weight_JetFitterCOMBNN(), element->pt(), element->eta());
 }
 
 /*--------------------------------------------------------------------------------*/
@@ -620,7 +626,6 @@ void SusyNtMaker::addMissingElectron(const LeptonInfo* lep, SusyNtSys sys)
   else if(sys == NtSys_EES_DN) ele->ees_dn = sf;
   else if(sys == NtSys_EER_UP) ele->eer_up = sf;
   else if(sys == NtSys_EER_DN) ele->eer_dn = sf;
-  //ele->print();
 }
 
 /*--------------------------------------------------------------------------------*/
@@ -628,7 +633,7 @@ void SusyNtMaker::addMissingMuon(const LeptonInfo* lep, SusyNtSys sys)
 {
   //cout<<"Adding a muon that was missing!"<<endl;
 
-  // This electron did not pass nominal cuts, and therefore
+  // This muon did not pass nominal cuts, and therefore
   // needs to be added, but with the correct TLV
   
   TLorentzVector tlv_sys =m_susyObj.GetMuonTLV(lep->idx());
@@ -659,8 +664,6 @@ void SusyNtMaker::addMissingMuon(const LeptonInfo* lep, SusyNtSys sys)
   else if(sys == NtSys_MS_DN) mu->ms_dn = sf;
   else if(sys == NtSys_ID_UP) mu->id_up = sf;
   else if(sys == NtSys_ID_DN) mu->id_dn = sf;
-  //mu->print();
-  
 }
 
 /*--------------------------------------------------------------------------------*/

@@ -20,6 +20,7 @@ using namespace std;
 /*--------------------------------------------------------------------------------*/
 SusyD3PDAna::SusyD3PDAna() : 
         m_sample(""),
+        m_metCalib("Simplified20"),
         m_lumi(4700),
         m_sumw(1),
 	m_xsec(-1),
@@ -63,6 +64,11 @@ void SusyD3PDAna::Begin(TTree* /*tree*/)
   else       cout << "Processing as DATA" << endl;
 
   cout << "DataStream: " << streamName(m_stream) << endl;
+
+  // Setup Jet/MET calibration
+  if(m_metCalib == "RefFinal"){
+    d3pd.jet.SetPrefix("jet_AntiKt4LCTopo_");
+  }
 
   // Setup SUSYTools
   m_susyObj.initialize(!m_isMC);
@@ -149,6 +155,8 @@ void SusyD3PDAna::selectBaselineObjects(SusyNtSys sys)
 
   // SUSYTools takes a flag for AF2. TODO: do we need to use it? 
   bool isAF2 = false;
+  // MET calibration: TODO: update to LC
+  static string metCalib = "Simplified20";
 
   // Handle Systematic
   // New syntax for SUSYTools in mc12
@@ -199,7 +207,6 @@ void SusyD3PDAna::selectBaselineObjects(SusyNtSys sys)
 /*--------------------------------------------------------------------------------*/
 void SusyD3PDAna::performOverlapRemoval()
 {
-
   // e-e overlap removal
   m_baseElectrons = overlap_removal(m_susyObj, &d3pd.ele, m_preElectrons, &d3pd.ele, m_preElectrons, 0.1, 1);
 
@@ -269,7 +276,7 @@ void SusyD3PDAna::buildMet(SusyNtSys sys)
   vector<int> allElectrons = get_electrons_all(&d3pd.ele, m_susyObj);
   // MET uses muons before overlap removal
   //TVector2 metVector = GetMetVector(&d3pd.jet, m_susyObj, &d3pd.muo, &d3pd.ele, &d3pd.met, m_baseMuons, m_baseElectrons, allElectrons, JetErr::NONE);
-  TVector2 metVector = GetMetVector(&d3pd.jet, m_susyObj, &d3pd.muo, &d3pd.ele, &d3pd.met, m_preMuons, m_baseElectrons, allElectrons, susySys);
+  TVector2 metVector = GetMetVector(&d3pd.jet, m_susyObj, &d3pd.muo, &d3pd.ele, &d3pd.met, m_preMuons, m_baseElectrons, allElectrons, m_metCalib, susySys);
   m_met.SetPxPyPzE(metVector.X(), metVector.Y(), 0, metVector.Mod());
 }
 

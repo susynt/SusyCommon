@@ -148,6 +148,8 @@ class SusyD3PDAna : public SusyD3PDInterface
     TString                     m_sample;       // sample name
     DataStream                  m_stream;       // data stream enum, taken from sample name
 
+    std::string                 m_metCalib;     // Calibration string for MET (and jets)
+
     //
     // Object collections (usually just vectors of indices)
     //
@@ -171,15 +173,16 @@ class SusyD3PDAna : public SusyD3PDInterface
     std::vector<int>            m_sigJets;      // signal jets
 
     std::vector<int>            m_sigPhotons;   // signal photons
+
+    // MET
+    TLorentzVector              m_met;          // fully corrected MET
+
     
     // Trigger object matching maps
     // Key: d3pd index, Val: trig bit word
     std::map<int, uint>         m_eleTrigFlags; // electron trigger matching flags
     std::map<int, uint>         m_muoTrigFlags; // muon trigger matching flags
     
-    // MET
-    TLorentzVector              m_met;          // fully corrected MET
-
     float                       m_lumi;         // normalized luminosity (defaults to 4.7/fb)
     float                       m_sumw;         // sum of mc weights for normalization, must be set by user
     float                       m_xsec;         // optional user cross section, to override susy xsec usage
