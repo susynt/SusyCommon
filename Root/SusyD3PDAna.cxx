@@ -21,7 +21,7 @@ using namespace std;
 SusyD3PDAna::SusyD3PDAna() : 
         m_sample(""),
         m_metCalib("Simplified20"),
-        m_lumi(4700),
+        m_lumi(5312),
         m_sumw(1),
 	m_xsec(-1),
 	m_sys(false),
