@@ -96,7 +96,8 @@ void SusyD3PDAna::Begin(TTree* /*tree*/)
     m_pileup->SetDataScaleFactors(1/1.11);
     m_pileup->AddConfigFile("$ROOTCOREDIR/data/PileupReweighting/mc12a_defaults.prw.root");
     // TODO: update me
-    m_pileup->AddLumiCalcFile("$ROOTCOREDIR/data/MultiLep/ilumicalc_histograms_EF_e24vhi_medium1_200841-203524.root");
+    //m_pileup->AddLumiCalcFile("$ROOTCOREDIR/data/MultiLep/ilumicalc_histograms_EF_e24vhi_medium1_200841-203524.root");
+    m_pileup->AddLumiCalcFile("$ROOTCOREDIR/data/SusyCommon/ilumicalc_histograms_EF_e24vhi_medium1_200841-205017.root");
     m_pileup->SetUnrepresentedDataAction(2);
     int pileupError = m_pileup->Initialize();
 
@@ -110,7 +111,8 @@ void SusyD3PDAna::Begin(TTree* /*tree*/)
     m_pileup2fb->SetDataScaleFactors(1/1.11);
     m_pileup2fb->AddConfigFile("$ROOTCOREDIR/data/PileupReweighting/mc12a_defaults.prw.root");
     // TODO: update me
-    m_pileup2fb->AddLumiCalcFile("$ROOTCOREDIR/data/MultiLep/ilumicalc_histograms_EF_e24vhi_medium1_200841-203524.root");
+    //m_pileup2fb->AddLumiCalcFile("$ROOTCOREDIR/data/MultiLep/ilumicalc_histograms_EF_e24vhi_medium1_200841-203524.root");
+    m_pileup2fb->AddLumiCalcFile("$ROOTCOREDIR/data/SusyCommon/ilumicalc_histograms_EF_e24vhi_medium1_200842-203680.root");
     m_pileup2fb->SetUnrepresentedDataAction(2);
     pileupError = m_pileup2fb->Initialize();
 

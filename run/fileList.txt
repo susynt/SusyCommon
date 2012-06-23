@@ -1,5 +1,2 @@
-/gdata/atlas/ucintprod/susyd3pd/mc11c/mc11_7TeV.106484.SU4_herwigpp_susy.merge.NTUP_SUSY.e835_s1310_s1300_r3043_r2993_p832/NTUP_SUSY.655440._000001.root.1
-/gdata/atlas/ucintprod/susyd3pd/mc11c/mc11_7TeV.106484.SU4_herwigpp_susy.merge.NTUP_SUSY.e835_s1310_s1300_r3043_r2993_p832/NTUP_SUSY.655440._000002.root.1
-/gdata/atlas/ucintprod/susyd3pd/mc11c/mc11_7TeV.106484.SU4_herwigpp_susy.merge.NTUP_SUSY.e835_s1310_s1300_r3043_r2993_p832/NTUP_SUSY.655440._000003.root.1
-/gdata/atlas/ucintprod/susyd3pd/mc11c/mc11_7TeV.106484.SU4_herwigpp_susy.merge.NTUP_SUSY.e835_s1310_s1300_r3043_r2993_p832/NTUP_SUSY.655440._000004.root.1
-/gdata/atlas/ucintprod/susyd3pd/mc11c/mc11_7TeV.106484.SU4_herwigpp_susy.merge.NTUP_SUSY.e835_s1310_s1300_r3043_r2993_p832/NTUP_SUSY.655440._000005.root.1
+/gdata/atlas/ucintprod/susyd3pd/mc12a/mc12_8TeV.126893.Sherpa_CT10_lllnu_WZ.merge.NTUP_SUSY.e1243_s1469_s1470_r3542_r3549_p1032/NTUP_SUSY.00823183._000001.root.1
+/gdata/atlas/ucintprod/susyd3pd/mc12a/mc12_8TeV.126893.Sherpa_CT10_lllnu_WZ.merge.NTUP_SUSY.e1243_s1469_s1470_r3542_r3549_p1032/NTUP_SUSY.00823183._000168.root.1
