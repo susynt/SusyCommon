@@ -25,7 +25,7 @@ for line in ${matches[@]}; do
         xsec=1
         lumi=1
 
-	outDS="user.Steve.$iteration.$sample.SusyNt/"
+	outDS="user.Steve.$sample.SusyNt.$iteration/"
 
         command="./gridScript.sh %IN -s $sample -w $sumw -x $xsec -l $lumi"
 

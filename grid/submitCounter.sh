@@ -9,7 +9,7 @@ if [[ $# = 0 ]]; then
 else
         pattern=$1
 fi
-matches=(`cat newMcSamples.txt | grep $pattern | tr '\t' ','`)
+matches=(`cat mcSamples.txt | grep $pattern | tr '\t' ','`)
 echo "${#matches[@]} matches"
 
 # set it up manually I guess
