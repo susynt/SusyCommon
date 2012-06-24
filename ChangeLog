@@ -1,5 +1,16 @@
 # vim: set noexpandtab:
 
+2012-06-24 Steve
+	* Added single lepton trigger matching for our dilepton triggers
+	* This way we have more flexibility to implement the best logic later
+	* Added event trigger flags to SusyD3PDAna and SusyNtMaker
+	* Changed jet/met calibration to RefFinal (LC jets)
+	* Updated submission scripts and sample lists
+		* New dataSamples with data12 containers
+		* New SusyNt DS naming convention by request
+		* Added single top tchan samples
+	* Tagging SusyCommon-00-00-11
+
 2012-06-23 Steve
 	* Updated the pileup file usage and lumi
 	* Update mcSamples

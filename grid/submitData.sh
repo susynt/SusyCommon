@@ -1,7 +1,7 @@
 #!/bin/bash
 
-iteration="i15"
-#iteration="test4"
+tag=n0020
+nickname=Steve
 
 # get the samples of interest
 if [[ $# = 0 ]]; then
@@ -10,12 +10,10 @@ if [[ $# = 0 ]]; then
 else
         pattern=$1
 fi
+
 datasets=(`cat dataSamples.txt | grep $pattern`)
 echo "${#datasets[@]} datasets"
 
-
-# Setup Panda before running this script
-#source ${ATLAS_LOCAL_ROOT_BASE}/packageSetups/atlasLocalPandaClientSetup.sh
 
 # Loop over datasets
 for inDS in ${datasets[@]}; do
@@ -26,7 +24,9 @@ for inDS in ${datasets[@]}; do
         sample=${sample/physics_/}
 
 	# final output ds name
-	outDS="user.Steve.$iteration.$sample.SusyNt/"
+	#outDS="user.Steve.$sample.SusyNt.$iteration/"
+        outDS="user.$nickname.${inDS%/}_$tag/"
+        outDS=${outDS/merge.NTUP_SUSY/SusyNt}
 
         command="./gridScript.sh %IN -s $sample"
 
@@ -35,13 +35,15 @@ for inDS in ${datasets[@]}; do
 	echo "INPUT   $inDS"
 	echo "OUTPUT  $outDS"
         echo "sample  $sample"
+        echo "command:"
+        echo "    $command"
 	
 	# prun command
 	prun --exec "$command" --useRootCore --tmpDir /tmp --inTarBall=area.tar \
              --excludedSite=OX,SARA,SHEF,PIC,FZK,LPSC,ARC,GLASGOW,GRIF-LAL \
              --extFile '*.so,*.root' --match "*root*" --outputs "susyNt.root" \
+             --athenaTag=17.3.1.1 \
              --nGBPerJob=MAX \
-             --athenaTag=17.0.5.5 \
 	     --inDS  $inDS \
 	     --outDS $outDS
 

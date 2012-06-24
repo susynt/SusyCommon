@@ -1,29 +1,33 @@
 #!/bin/bash
 
-iteration="i15"
-#iteration="test4"
+tag=n0020
+nickname=Steve
 
 # get the samples of interest
 if [[ $# = 0 ]]; then
         echo "submit all samples"
-        pattern="mc11"
+        pattern="mc12"
 else
         pattern=$1
 fi
-matches=(`cat mcSamples.txt | grep $pattern | tr '\t' ','`)
-echo "${#matches[@]} matches"
 
-# set it up manually I guess
-#source ${ATLAS_LOCAL_ROOT_BASE}/packageSetups/atlasLocalPandaClientSetup.sh
+# A trick to parse the text, first separate columns by commas
+matches=(`cat newMcSamples.txt | grep $pattern | tr '\t' ','`)
+echo "${#matches[@]} matches"
 
 # Loop over samples
 for line in ${matches[@]}; do
-        info=(`echo $line | tr ',' ' '`)
-        sample=${info[0]}
-        inDS=${info[1]}
-        sumw=${info[2]}
 
-	outDS="user.Steve.$iteration.$sample.SusyNt/"
+        # Now replace the commas with normal whitespace
+        info=(`echo $line | tr ',' ' '`)
+        inDS=${info[0]}
+        sumw=${info[1]}
+        sample=${inDS#mc12_8TeV.*.}
+        sample=${sample%.merge.*/}
+
+        # Build the output dataset name
+        outDS="user.$nickname.${inDS%/}_$tag/"
+        outDS=${outDS/merge.NTUP_SUSY/SusyNt}
 
         command="./gridScript.sh %IN -s $sample -w $sumw"
 
@@ -33,14 +37,15 @@ for line in ${matches[@]}; do
         echo "OUTPUT  $outDS"
         echo "sample  $sample"
         echo "sumw    $sumw"
+        echo "command:"
+        echo "    $command"
 
 	
 	# prun command
 	prun --exec "$command" --tmpDir /tmp --inTarBall=area.tar --useRootCore \
                 --excludedSite=ECDF,WEIZMANN,OX,SARA,SHEF,PIC,LPSC,ARC,GLASGOW,GRIF-LAL \
-		--match "*root*" --outputs "susyNt.root" \
-                --extFile '*.so,*.root' \
-                --athenaTag=17.0.5.5 \
+                --extFile '*.so,*.root' --match "*root*" --outputs "susyNt.root" \
+                --athenaTag=17.3.1.1 \
 		--inDS  $inDS \
 		--outDS $outDS
                 #--nGBPerJob=MAX \

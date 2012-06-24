@@ -239,6 +239,8 @@ void SusyNtMaker::fillEventVars()
   evt->nVtx             = getNumGoodVtx();
   evt->avgMu            = d3pd.evt.averageIntPerXing();
 
+  evt->trigFlags        = m_evtTrigFlags;
+
   evt->wPileup          = m_isMC? getPileupWeight() : 1;
   evt->xsec             = m_isMC? getXsecWeight() : 1;
   evt->lumiSF           = m_isMC? getLumiWeight() : 1;             

@@ -127,15 +127,17 @@ class SusyD3PDAna : public SusyD3PDInterface
     // Trigger - check matching for all baseline leptons
     //
     void resetTriggers(){
+      m_evtTrigFlags = 0;
       m_eleTrigFlags.clear();
       m_muoTrigFlags.clear();
     }
     void matchTriggers(){
+      fillEventTriggers();
       matchElectronTriggers();
       matchMuonTriggers();
     }
+    void fillEventTriggers();
     void matchElectronTriggers();
-    //bool matchElectronTrigger(float eta, float phi, std::vector<int>* roi);
     bool matchElectronTrigger(const TLorentzVector* lv, std::vector<int>* trigBools);
     void matchMuonTriggers();
     bool matchMuonTrigger(const TLorentzVector* lv, std::vector<int>* trigBools);
@@ -178,6 +180,7 @@ class SusyD3PDAna : public SusyD3PDInterface
     // MET
     TLorentzVector              m_met;          // fully corrected MET
 
+    uint                        m_evtTrigFlags; // Event trigger flags
     
     // Trigger object matching maps
     // Key: d3pd index, Val: trig bit word

@@ -20,7 +20,8 @@ using namespace std;
 /*--------------------------------------------------------------------------------*/
 SusyD3PDAna::SusyD3PDAna() : 
         m_sample(""),
-        m_metCalib("Simplified20"),
+        //m_metCalib("Simplified20"),
+        m_metCalib("RefFinal"),
         m_lumi(5312),
         m_sumw(1),
 	m_xsec(-1),
@@ -281,20 +282,13 @@ void SusyD3PDAna::buildMet(SusyNtSys sys)
   else if(sys == NtSys_JES_DN) susySys = SystErr::JESDOWN;      // JES down
   else if(sys == NtSys_JER)    susySys = SystErr::JER;          // JER (gaussian)
 
-  //JetErr::Syste jetsys = JetErr::NONE;     // Nominal
-  //if(sys == NtSys_NOM);
-  //else if(sys == NtSys_JES_UP) jetsys = JetErr::JESUP;   // JES up
-  //else if(sys == NtSys_JES_DN) jetsys = JetErr::JESDOWN; // JES down
-  //else if(sys == NtSys_JER)    jetsys = JetErr::JER;     // JER (gaussian)
-
   // Need ALL electrons in order to calculate the MET
   // Actually, I see common code uses all electrons that have lv.Pt() != 0
   // That's fine though because SUSYObjDef specifically fills for electrons that
   // should enter the RefEle term
   vector<int> allElectrons = get_electrons_all(&d3pd.ele, m_susyObj);
-  // MET uses muons before overlap removal
-  //TVector2 metVector = GetMetVector(&d3pd.jet, m_susyObj, &d3pd.muo, &d3pd.ele, &d3pd.met, m_baseMuons, m_baseElectrons, allElectrons, JetErr::NONE);
-  TVector2 metVector = GetMetVector(&d3pd.jet, m_susyObj, &d3pd.muo, &d3pd.ele, &d3pd.met, m_preMuons, m_baseElectrons, allElectrons, m_metCalib, susySys);
+  TVector2 metVector = GetMetVector(&d3pd.jet, m_susyObj, &d3pd.muo, &d3pd.ele, &d3pd.met, 
+                                    m_preMuons, m_baseElectrons, allElectrons, m_metCalib, susySys);
   m_met.SetPxPyPzE(metVector.X(), metVector.Y(), 0, metVector.Mod());
 }
 
@@ -305,10 +299,12 @@ void SusyD3PDAna::selectSignalPhotons()
 {
   if(m_dbg) cout << "selectSignalPhotons" << endl;
 
-  vector<int> base_photons = get_photons_baseline(&d3pd.pho, !m_isMC, d3pd.evt.RunNumber(), m_susyObj, 20.*GeV, 2.47, SystErr::NONE, 2 /*Quality:Tight*/);
+  int phoQual = 2;      // Quality::Tight
+  float etcone40CorrCut = 3*GeV; 
+  vector<int> base_photons = get_photons_baseline(&d3pd.pho, !m_isMC, d3pd.evt.RunNumber(), m_susyObj, 
+                                                  20.*GeV, 2.47, SystErr::NONE, phoQual);
 
-  m_sigPhotons = get_photons_signal(&d3pd.pho, base_photons, m_susyObj, 20.*GeV, 3 /*etcone40Corrected < 3*/, !m_isMC);
-  
+  m_sigPhotons = get_photons_signal(&d3pd.pho, base_photons, m_susyObj, 20.*GeV, etcone40CorrCut, !m_isMC);
 }
 
 /*--------------------------------------------------------------------------------*/
@@ -343,6 +339,30 @@ uint SusyD3PDAna::getNumGoodVtx()
     if(d3pd.vtx.nTracks()->at(i) > 4) nVtx++;
   }
   return nVtx;
+}
+
+/*--------------------------------------------------------------------------------*/
+// Event trigger flags
+/*--------------------------------------------------------------------------------*/
+void SusyD3PDAna::fillEventTriggers()
+{
+  if(m_dbg) cout << "fillEventTriggers" << endl;
+  
+  m_evtTrigFlags = 0;
+  // e7_medium1 not available at the moment, so use e7T for now
+  //if(d3pd.trig.EF_e7_medium1())                 m_evtTrigFlags |= TRIG_e7_medium1;
+  if(d3pd.trig.EF_e7T_medium1())                m_evtTrigFlags |= TRIG_e7_medium1;
+  if(d3pd.trig.EF_e12Tvh_medium1())             m_evtTrigFlags |= TRIG_e12Tvh_medium1;
+  if(d3pd.trig.EF_e24vh_medium1())              m_evtTrigFlags |= TRIG_e24vh_medium1;
+  if(d3pd.trig.EF_e24vhi_medium1())             m_evtTrigFlags |= TRIG_e24vhi_medium1;
+  if(d3pd.trig.EF_2e12Tvh_loose1())             m_evtTrigFlags |= TRIG_2e12Tvh_loose1;
+  if(d3pd.trig.EF_e24vh_medium1_e7_medium1())   m_evtTrigFlags |= TRIG_e24vh_medium1_e7_medium1;
+  if(d3pd.trig.EF_mu8())                        m_evtTrigFlags |= TRIG_mu8;
+  if(d3pd.trig.EF_mu18_tight())                 m_evtTrigFlags |= TRIG_mu18_tight;
+  if(d3pd.trig.EF_mu24i_tight())                m_evtTrigFlags |= TRIG_mu24i_tight;
+  if(d3pd.trig.EF_2mu13())                      m_evtTrigFlags |= TRIG_2mu13;
+  if(d3pd.trig.EF_e12Tvh_medium1_mu8())         m_evtTrigFlags |= TRIG_e12Tvh_medium1_mu8;
+  if(d3pd.trig.EF_mu18_tight_e7_medium1())      m_evtTrigFlags |= TRIG_mu18_tight_e7_medium1;
 }
 
 /*--------------------------------------------------------------------------------*/
@@ -392,6 +412,20 @@ void SusyD3PDAna::matchElectronTriggers()
 
     // 2012 triggers
 
+    // e7_medium1
+    // NOTE: This feature is not currently available in d3pds!! Use e7T for now!
+    //if( matchElectronTrigger(lv, d3pd.trig.trig_EF_el_EF_e7_medium1()) )
+    if( matchElectronTrigger(lv, d3pd.trig.trig_EF_el_EF_e7T_medium1()) ){
+      flags |= TRIG_e7_medium1;
+    }
+    // e12Tvh_medium1
+    if( matchElectronTrigger(lv, d3pd.trig.trig_EF_el_EF_e12Tvh_medium1()) ){
+      flags |= TRIG_e12Tvh_medium1;
+    }
+    // e24vh_medium1
+    if( matchElectronTrigger(lv, d3pd.trig.trig_EF_el_EF_e24vh_medium1()) ){
+      flags |= TRIG_e24vh_medium1;
+    }
     // e24vhi_medium1
     if( matchElectronTrigger(lv, d3pd.trig.trig_EF_el_EF_e24vhi_medium1()) ){
       flags |= TRIG_e24vhi_medium1;
@@ -400,15 +434,15 @@ void SusyD3PDAna::matchElectronTriggers()
     if( matchElectronTrigger(lv, d3pd.trig.trig_EF_el_EF_2e12Tvh_loose1()) ){
       flags |= TRIG_2e12Tvh_loose1;
     }
-    // e24vh_medium1_e7_medium1
+    // e24vh_medium1_e7_medium1 - NOTE: you don't know which feature it matches to!!
     if( matchElectronTrigger(lv, d3pd.trig.trig_EF_el_EF_e24vh_medium1_e7_medium1()) ){
       flags |= TRIG_e24vh_medium1_e7_medium1;
     }
     // e12Tvh_medium1_mu8
-    //if( matchElectronTrigger(lv, d3pd.trig.trig_EF_el_EF_e12Tvh_medium1_mu8()) ){
-      //flags |= TRIG_e12Tvh_medium1_mu8;
-    //}
-    // mu18_tight_e7_medium1
+    if( matchElectronTrigger(lv, d3pd.trig.trig_EF_el_EF_e12Tvh_medium1_mu8()) ){
+      flags |= TRIG_e12Tvh_medium1_mu8;
+    }
+    // mu18_tight_e7_medium1 - NOTE: feature not available, so use e7_medium1 above!
     //if( matchElectronTrigger(lv, d3pd.trig.trig_EF_el_EF_mu18_tight_e7_medium1()) ){
       //flags |= TRIG_mu18_tight_e7_medium1;
     //}
@@ -466,6 +500,10 @@ void SusyD3PDAna::matchMuonTriggers()
 
     // 2012 triggers
 
+    // mu8
+    if( matchMuonTrigger(lv, d3pd.trig.trig_EF_trigmuonef_EF_mu8()) ) {
+      flags |= TRIG_mu8;
+    }
     // mu18_tight
     if( matchMuonTrigger(lv, d3pd.trig.trig_EF_trigmuonef_EF_mu18_tight()) ) {
       flags |= TRIG_mu18_tight;
@@ -478,10 +516,10 @@ void SusyD3PDAna::matchMuonTriggers()
     if( matchMuonTrigger(lv, d3pd.trig.trig_EF_trigmuonef_EF_2mu13()) ) {
       flags |= TRIG_2mu13;
     }
-    // e12Tvh_medium1_mu8
-    if( matchMuonTrigger(lv, d3pd.trig.trig_EF_trigmuonef_EF_mu8()) ) {
-      flags |= TRIG_e12Tvh_medium1_mu8;
-    }
+    // e12Tvh_medium1_mu8 - NOTE: muon feature not available, so use mu8
+    //if( matchMuonTrigger(lv, d3pd.trig.trig_EF_trigmuonef_EF_mu8()) ) {
+      //flags |= TRIG_e12Tvh_medium1_mu8;
+    //}
     // mu18_tight_e7_medium1
     if( matchMuonTrigger(lv, d3pd.trig.trig_EF_trigmuonef_EF_mu18_tight_e7_medium1()) ) {
       flags |= TRIG_mu18_tight_e7_medium1;

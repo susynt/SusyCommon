@@ -1,15 +1,15 @@
 #!/bin/bash
 
-iteration="i0"
+iteration=i1
 
 # get the samples of interest
 if [[ $# = 0 ]]; then
         echo "submit all samples"
-        pattern="mc11"
+        pattern="mc12"
 else
         pattern=$1
 fi
-matches=(`cat mcSamples.txt | grep $pattern | tr '\t' ','`)
+matches=(`cat newMcSamples.txt | grep $pattern | tr '\t' ','`)
 echo "${#matches[@]} matches"
 
 # set it up manually I guess
@@ -17,9 +17,12 @@ echo "${#matches[@]} matches"
 
 # Loop over samples
 for line in ${matches[@]}; do
+
         info=(`echo $line | tr ',' ' '`)
-        sample=${info[0]}
-        inDS=${info[1]}
+        #sample=${info[0]}
+        inDS=${info[0]}
+        sample=${inDS#mc12_8TeV.*.}
+        sample=${sample%.merge.*/}
 
 	outDS="user.Steve.$iteration.$sample.eventCounter/"
 
@@ -30,21 +33,16 @@ for line in ${matches[@]}; do
         echo "INPUT   $inDS"
         echo "OUTPUT  $outDS"
         echo "sample  $sample"
+        echo "command:"
+        echo "    $command"
 	
 	# prun command
 	prun --exec "$command" --tmpDir /tmp --noBuild \
                 --excludedSite=RHUL,OX,SARA,SHEF \
 		--outputs "sumWeights.root" \
-                --athenaTag=17.0.5.5 \
+                --athenaTag=17.3.1.1 \
 		--inDS  $inDS \
 		--outDS $outDS
         
-	#prun --exec "$command" --tmpDir /tmp --inTarBall=area.tar --useRootCore \
-                #--excludedSite=RHUL,OX,SARA,SHEF \
-		#--match "*root*" --outputs "susyNt.root" \
-                #--extFile '*.so,*.root' \
-                #--athenaTag=17.0.5.5 \
-		#--inDS  $inDS \
-		#--outDS $outDS
 
 done
