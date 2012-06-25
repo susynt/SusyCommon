@@ -10,13 +10,10 @@ for line in `cat $input | tr '\t' ','`; do
 
         info=(`echo $line | tr ',' ' '`)
 
-        sample=${info[0]}
-        ds=${info[1]}
-        sumw=${info[2]}
-
+        #sample=${info[0]}
+        ds=${info[0]}
         sumw=`ami dataset info $ds | grep totalEvents | awk '{print $2}'`
-
-        echo -e "$sample\t$ds\t$sumw"
+        echo -e "$ds\t$sumw"
 
 done
 

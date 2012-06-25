@@ -26,7 +26,7 @@ for inDS in ${datasets[@]}; do
 	# final output ds name
 	#outDS="user.Steve.$sample.SusyNt.$iteration/"
         outDS="user.$nickname.${inDS%/}_$tag/"
-        outDS=${outDS/merge.NTUP_SUSY/SusyNt}
+        outDS=${outDS/NTUP_SUSY/SusyNt}
 
         command="./gridScript.sh %IN -s $sample"
 
