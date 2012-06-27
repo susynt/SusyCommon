@@ -1,6 +1,6 @@
 #!/bin/bash
 
-tag=n0022
+tag=n0023
 nickname=Steve
 
 # get the samples of interest
