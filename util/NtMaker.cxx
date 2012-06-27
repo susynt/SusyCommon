@@ -44,7 +44,7 @@ void help()
   cout << "     default: -1 (use susy db)"      << endl;
 
   cout << "  -l set lumi"                       << endl;
-  cout << "     default: 4700/pb"               << endl;
+  cout << "     default: 5312/pb"               << endl;
 
   cout << "  --sys will turn on systematic run" << endl;
   cout << "     default: off"                   << endl;
@@ -63,7 +63,7 @@ int main(int argc, char** argv)
   int nEvt        = -1;
   int nSkip       = 0;
   int dbg         = 0;
-  float lumi      = 4700;
+  float lumi      = 5312;
   float xsec      = -1;
   float sumw      = 1;
   string sample;

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-tag=n0021
+tag=n0022
 nickname=Steve
 
 # get the samples of interest
@@ -33,12 +33,11 @@ for line in ${matches[@]}; do
 
 	echo 
 	echo "__________________________________________________________________________________________________________"
-        echo "INPUT   $inDS"
-        echo "OUTPUT  $outDS"
-        echo "sample  $sample"
-        echo "sumw    $sumw"
-        echo "command:"
-        echo "    $command"
+        echo "INPUT    $inDS"
+        echo "OUTPUT   $outDS"
+        echo "sample   $sample"
+        echo "sumw     $sumw"
+        echo "command  $command"
 
 	
 	# prun command

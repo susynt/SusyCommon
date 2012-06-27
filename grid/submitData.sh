@@ -1,6 +1,6 @@
 #!/bin/bash
 
-tag=n0021
+tag=n0022
 nickname=Steve
 
 # get the samples of interest
@@ -32,11 +32,10 @@ for inDS in ${datasets[@]}; do
 
 	echo 
         echo "__________________________________________________________________________________________________________"
-	echo "INPUT   $inDS"
-	echo "OUTPUT  $outDS"
-        echo "sample  $sample"
-        echo "command:"
-        echo "    $command"
+	echo "INPUT    $inDS"
+	echo "OUTPUT   $outDS"
+        echo "sample   $sample"
+        echo "command  $command"
 	
 	# prun command
 	prun --exec "$command" --useRootCore --tmpDir /tmp --inTarBall=area.tar \

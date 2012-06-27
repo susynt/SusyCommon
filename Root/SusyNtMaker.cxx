@@ -244,6 +244,7 @@ void SusyNtMaker::fillEventVars()
   evt->wPileup          = m_isMC? getPileupWeight() : 1;
   evt->xsec             = m_isMC? getXsecWeight() : 1;
   evt->lumiSF           = m_isMC? getLumiWeight() : 1;             
+  //cout << "lumi " << m_lumi << " sumw " << m_sumw << " lumiSF " << evt->lumiSF << endl;
 
   evt->pdfSF            = m_isMC? getPDFWeight8TeV() : 1;
 

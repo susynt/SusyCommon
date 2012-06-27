@@ -1,5 +1,11 @@
 # vim: set noexpandtab:
 
+2012-06-27 Steve
+	* Changed default lumi to 5312
+		* Based on current GRLs. This will be updated again soon.
+	* Update grid submission scripts
+	* Tagging SusyCommon-00-00-13
+
 2012-06-25 Steve
 	* Added missing trigger: mu18_tight_mu8_EFFS
 	* Tagging SusyCommon-00-00-12
