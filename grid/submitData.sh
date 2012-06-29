@@ -1,6 +1,6 @@
 #!/bin/bash
 
-tag=n0023
+tag=n0024
 nickname=Steve
 
 # get the samples of interest
@@ -11,6 +11,10 @@ else
         pattern=$1
 fi
 
+# User blacklist of sites
+blackList=`cat blacklist.txt`
+
+# Parse samples
 datasets=(`cat dataSamples.txt | grep $pattern`)
 echo "${#datasets[@]} datasets"
 
@@ -39,7 +43,7 @@ for inDS in ${datasets[@]}; do
 	
 	# prun command
 	prun --exec "$command" --useRootCore --tmpDir /tmp --inTarBall=area.tar \
-             --excludedSite=OX,SARA,SHEF,PIC,FZK,LPSC,ARC,GLASGOW,GRIF-LAL \
+             --excludedSite=$blackList \
              --extFile '*.so,*.root' --match "*root*" --outputs "susyNt.root" \
              --athenaTag=17.3.1.1 \
              --nGBPerJob=MAX \

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-tag=n0023
+tag=n0024
 nickname=Steve
 
 # get the samples of interest
@@ -10,6 +10,9 @@ if [[ $# = 0 ]]; then
 else
         pattern=$1
 fi
+
+# User blacklist of sites
+blackList=`cat blacklist.txt`
 
 # A trick to parse the text, first separate columns by commas
 matches=(`cat mcSamples.txt | grep $pattern | tr '\t' ','`)
@@ -42,7 +45,7 @@ for line in ${matches[@]}; do
 	
 	# prun command
 	prun --exec "$command" --tmpDir /tmp --inTarBall=area.tar --useRootCore \
-                --excludedSite=ECDF,WEIZMANN,OX,SARA,SHEF,PIC,LPSC,ARC,GLASGOW,GRIF-LAL \
+                --excludedSite=$blackList \
                 --extFile '*.so,*.root' --match "*root*" --outputs "susyNt.root" \
                 --athenaTag=17.3.1.1 \
 		--inDS  $inDS \
