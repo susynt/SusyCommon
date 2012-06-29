@@ -1,5 +1,13 @@
 # vim: set noexpandtab:
 
+2012-06-29 Steve
+	* Updated submission scripts
+		* They now use a common blacklist file
+	* Code has been tested against latest MultiLep changes
+		* Now uses SUSYTools-00-01-00
+		* Updated photon branches/selection
+	* Tagging SusyCommon-00-00-14
+
 2012-06-27 Steve
 	* Changed default lumi to 5312
 		* Based on current GRLs. This will be updated again soon.
