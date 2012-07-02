@@ -1,3 +1,4 @@
+#include "egammaAnalysisUtils/CaloIsoCorrection.h"
 #include "SUSYTools/MV1.h"
 #include "MultiLep/MuonTools.h"
 #include "MultiLep/ElectronTools.h"
@@ -285,6 +286,7 @@ void SusyNtMaker::fillElectronVars(const LeptonInfo* lepIn)
   eleOut->m             = m;
 
   eleOut->ptcone20      = element->ptcone20()/GeV;
+  eleOut->ptcone30      = element->ptcone30()/GeV;
   eleOut->q             = element->charge();
   eleOut->mcType        = m_isMC? element->type() : 0;
   eleOut->mcOrigin      = m_isMC? element->origin() : 0;
@@ -300,6 +302,14 @@ void SusyNtMaker::fillElectronVars(const LeptonInfo* lepIn)
     eleOut->errD0       = sqrt(d3pd.trk.cov_d0_wrtPV()->at(trkIdx));
   }
 
+  // New iso
+  eleOut->etcone30Corr  = CaloIsoCorrection::GetPtEDCorrectedIsolation(element->Etcone40(), element->Etcone40_ED_corrected(), lv->E(), element->etas2(), 
+                                                                       element->etap(), element->cl_eta(), 0.3, m_isMC, element->Etcone30())/GeV;
+
+  // TODO: we don't have ED_median in the MultiLep code.  Need to regenerate the ElectronD3PDObject!
+  eleOut->etcone30TopoCorr = CaloIsoCorrection::GetPtEDCorrectedTopoIsolation(/*element->ED_median*/ 0, lv->E(), element->etas2(), element->etap(), 
+                                                                              element->cl_eta(), 0.3, m_isMC, element->Etcone30())/GeV;
+
   eleOut->trigFlags     = m_eleTrigFlags[ lepIn->idx() ];
 
   // Efficiency scale factor.  For now, use tightPP if electrons is tightPP, otherwise mediumPP
@@ -308,8 +318,8 @@ void SusyNtMaker::fillElectronVars(const LeptonInfo* lepIn)
   eleOut->errEffSF      = m_susyObj.GetSignalElecSFUnc( element->cl_eta(), lepIn->lv()->Pt(), set );
 
   eleOut->idx           = lepIn->idx();
-  
 }
+
 /*--------------------------------------------------------------------------------*/
 void SusyNtMaker::fillMuonVars(const LeptonInfo* lepIn)
 {
@@ -335,6 +345,7 @@ void SusyNtMaker::fillMuonVars(const LeptonInfo* lepIn)
 
   muOut->q              = element->charge();
   muOut->ptcone20       = element->ptcone20()/GeV;
+  muOut->ptcone30       = element->ptcone30()/GeV;
   muOut->d0             = element->d0_exPV();
   muOut->errD0          = sqrt(element->cov_d0_exPV());
   muOut->isCombined     = element->isCombinedMuon();

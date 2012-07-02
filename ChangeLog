@@ -1,5 +1,12 @@
 # vim: set noexpandtab:
 
+2012-07-03 Steve
+	* Adding additional isolation variables
+		* ptcone30
+		* etcone30Corr
+		* etcone30TopoCorr
+			-> Requires a regeneration of MultiLep/ElectronD3PDObject, we don't have ED_median branch yet
+
 2012-06-29 Steve
 	* Updated submission scripts
 		* They now use a common blacklist file
