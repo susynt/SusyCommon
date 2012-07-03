@@ -1,6 +1,6 @@
 #!/bin/bash
 
-tag=n0024
+tag=n0026
 nickname=Steve
 
 # get the samples of interest
@@ -46,10 +46,10 @@ for line in ${matches[@]}; do
 	# prun command
 	prun --exec "$command" --tmpDir /tmp --inTarBall=area.tar --useRootCore \
                 --excludedSite=$blackList \
+                --nGBPerJob=MAX \
                 --extFile '*.so,*.root' --match "*root*" --outputs "susyNt.root" \
                 --athenaTag=17.3.1.1 \
 		--inDS  $inDS \
 		--outDS $outDS
-                #--nGBPerJob=MAX \
 
 done
