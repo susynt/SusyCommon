@@ -205,7 +205,9 @@ bool SusyNtMaker::selectEvent()
     
   // For filling the output tree, require at least 2 baseline lepton
   if((m_susyNt.ele()->size() + m_susyNt.muo()->size()) < 2)  return false;
+  
 
+  
   return true;
 }
 
@@ -346,6 +348,7 @@ void SusyNtMaker::fillMuonVars(const LeptonInfo* lepIn)
   muOut->q              = element->charge();
   muOut->ptcone20       = element->ptcone20()/GeV;
   muOut->ptcone30       = element->ptcone30()/GeV;
+  muOut->etcone30       = element->etcone30()/GeV;
   muOut->d0             = element->d0_exPV();
   muOut->errD0          = sqrt(element->cov_d0_exPV());
   muOut->isCombined     = element->isCombinedMuon();

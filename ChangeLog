@@ -1,5 +1,9 @@
 # vim: set noexpandtab:
 
+2012-07-03 Matt
+	* Adding additional isolation variable
+	       * etcone30 for muons (needed for 2-lep iso soon)
+	
 2012-07-03 Steve
 	* Adding additional isolation variables
 		* ptcone30
