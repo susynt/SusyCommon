@@ -287,6 +287,8 @@ void SusyNtMaker::fillElectronVars(const LeptonInfo* lepIn)
   eleOut->phi           = phi;
   eleOut->m             = m;
 
+  // TODO: clean this up, group things together, etc.
+
   eleOut->ptcone20      = element->ptcone20()/GeV;
   eleOut->ptcone30      = element->ptcone30()/GeV;
   eleOut->q             = element->charge();
@@ -297,21 +299,38 @@ void SusyNtMaker::fillElectronVars(const LeptonInfo* lepIn)
   eleOut->mediumPP      = element->mediumPP();
   eleOut->tightPP       = element->tightPP();
 
+  eleOut->d0            = element->trackd0pv();
+  eleOut->errD0         = element->tracksigd0pv();
+  eleOut->z0            = element->trackz0pv();
+  eleOut->errZ0         = element->tracksigz0pv();
+
   // Get d0 from track
-  int trkIdx            = get_electron_track( &d3pd.ele, lepIn->idx(), &d3pd.trk );
-  if(trkIdx!=-99){
-    eleOut->d0          = d3pd.trk.d0_wrtPV()->at(trkIdx);
-    eleOut->errD0       = sqrt(d3pd.trk.cov_d0_wrtPV()->at(trkIdx));
-  }
+  //int trkIdx            = get_electron_track( &d3pd.ele, lepIn->idx(), &d3pd.trk );
+  //if(trkIdx!=-99){
+    //eleOut->d0          = d3pd.trk.d0_wrtPV()->at(trkIdx);
+    //eleOut->errD0       = sqrt(d3pd.trk.cov_d0_wrtPV()->at(trkIdx));
+  //}
 
-  // New iso
-  eleOut->etcone30Corr  = CaloIsoCorrection::GetPtEDCorrectedIsolation(element->Etcone40(), element->Etcone40_ED_corrected(), lv->E(), element->etas2(), 
-                                                                       element->etap(), element->cl_eta(), 0.3, m_isMC, element->Etcone30())/GeV;
+  // New iso variables!! 
+  // Corrected topo iso is available in the susy d3pd, apparently calculated using the cluster E.
+  // However, the CaloIsoCorrection header says to use the energy after scaling/smearing...
+  // So, which should we use?
+  // TODO: come back to this, open a discussion somewhere.
+  // For now, I will just use the cluster E, which I suspect people will use anyway (even if mistaken)
 
-  // TODO: we don't have ED_median in the MultiLep code.  Need to regenerate the ElectronD3PDObject!
-  eleOut->etcone30TopoCorr = CaloIsoCorrection::GetPtEDCorrectedTopoIsolation(/*element->ED_median*/ 0, lv->E(), element->etas2(), element->etap(), 
-                                                                              element->cl_eta(), 0.3, m_isMC, element->Etcone30())/GeV;
+  // Corrected etcone has Pt and ED corrections
+  //eleOut->etcone30Corr  = CaloIsoCorrection::GetPtEDCorrectedIsolation(element->Etcone40(), element->Etcone40_ED_corrected(), lv->E(), element->etas2(), 
+  //                                                                     element->etap(), element->cl_eta(), 0.3, m_isMC, element->Etcone30())/GeV;
+  eleOut->etcone30Corr  = CaloIsoCorrection::GetPtEDCorrectedIsolation(element->Etcone40(), element->Etcone40_ED_corrected(), element->cl_E(), 
+                                                                       element->etas2(), element->etap(), element->cl_eta(), 0.3, m_isMC, 
+                                                                       element->Etcone30())/GeV;
 
+  // Corrected topoEtcone has Pt and ED corrections.  Use D3PD branch for now
+  //float topo            = CaloIsoCorrection::GetPtEDCorrectedTopoIsolation(element->ED_median(), element->cl_E(), element->etas2(), element->etap(), 
+  //                                                                         element->cl_eta(), 0.3, m_isMC, element->topoEtcone30())/GeV;
+  eleOut->topoEtcone30Corr      = element->topoEtcone30_corrected()/GeV;
+  
+  // Trigger flags
   eleOut->trigFlags     = m_eleTrigFlags[ lepIn->idx() ];
 
   // Efficiency scale factor.  For now, use tightPP if electrons is tightPP, otherwise mediumPP
@@ -319,6 +338,7 @@ void SusyNtMaker::fillElectronVars(const LeptonInfo* lepIn)
   eleOut->effSF         = m_susyObj.GetSignalElecSF   ( element->cl_eta(), lepIn->lv()->Pt(), set );
   eleOut->errEffSF      = m_susyObj.GetSignalElecSFUnc( element->cl_eta(), lepIn->lv()->Pt(), set );
 
+  // Do we need this??
   eleOut->idx           = lepIn->idx();
 }
 
@@ -330,8 +350,8 @@ void SusyNtMaker::fillMuonVars(const LeptonInfo* lepIn)
   Susy::Muon* muOut = & m_susyNt.muo()->back();
   const MuonElement* element = lepIn->getMuonElement();
 
-  // need truthMuon for type and origin
-  const TruthMuonElement* trueMuon = m_isMC? getMuonTruth( &d3pd.muo, lepIn->idx(), &d3pd.truthMu ) : 0;
+  // need truthMuon for type and origin - not anymore!
+  //const TruthMuonElement* trueMuon = m_isMC? getMuonTruth( &d3pd.muo, lepIn->idx(), &d3pd.truthMu ) : 0;
 
   // LorentzVector
   const TLorentzVector* lv = lepIn->lv();
@@ -349,18 +369,28 @@ void SusyNtMaker::fillMuonVars(const LeptonInfo* lepIn)
   muOut->ptcone20       = element->ptcone20()/GeV;
   muOut->ptcone30       = element->ptcone30()/GeV;
   muOut->etcone30       = element->etcone30()/GeV;
+
   muOut->d0             = element->d0_exPV();
   muOut->errD0          = sqrt(element->cov_d0_exPV());
+  muOut->z0             = element->z0_exPV();
+  muOut->errZ0          = sqrt(element->cov_z0_exPV());
+
   muOut->isCombined     = element->isCombinedMuon();
 
-  muOut->mcType         = trueMuon? trueMuon->type()   : 0;
-  muOut->mcOrigin       = trueMuon? trueMuon->origin() : 0;
+  // theta_exPV.  Not sure if necessary.
+  muOut->thetaPV        = element->theta_exPV();
+
+  //muOut->mcType         = trueMuon? trueMuon->type()   : 0;
+  //muOut->mcOrigin       = trueMuon? trueMuon->origin() : 0;
+  muOut->mcType         = m_isMC? element->type()   : 0;
+  muOut->mcOrigin       = m_isMC? element->origin() : 0;
 
   muOut->trigFlags      = m_muoTrigFlags[ lepIn->idx() ];
 
   muOut->effSF          = m_susyObj.GetSignalMuonSF(lepIn->idx());
   muOut->errEffSF       = m_susyObj.GetSignalMuonSFUnc(lepIn->idx());
   
+  // Do we need this??
   muOut->idx            = lepIn->idx();
 }
 

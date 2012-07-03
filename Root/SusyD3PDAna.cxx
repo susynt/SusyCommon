@@ -309,7 +309,6 @@ void SusyD3PDAna::selectSignalPhotons()
   // Latest and Greatest
   int nPV = getNumGoodVtx();
   m_sigPhotons = get_photons_signal(&d3pd.pho, base_photons, m_susyObj, nPV, !m_isMC, 20.*GeV, etcone40CorrCut, isoType);
-
 }
 
 /*--------------------------------------------------------------------------------*/
