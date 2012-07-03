@@ -3,6 +3,7 @@
 2012-07-03 Matt
 	* Adding additional isolation variable
 	       * etcone30 for muons (needed for 2-lep iso soon)
+	* Updating Photon selection to match SusyTools-00-01-00
 	
 2012-07-03 Steve
 	* Adding additional isolation variables
