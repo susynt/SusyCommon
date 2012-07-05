@@ -1,6 +1,6 @@
 #!/bin/bash
 
-tag=n0026
+tag=n0028
 nickname=Steve
 
 # get the samples of interest
@@ -46,6 +46,7 @@ for line in ${matches[@]}; do
 	# prun command
 	prun --exec "$command" --tmpDir /tmp --inTarBall=area.tar --useRootCore \
                 --excludedSite=$blackList \
+                #--nGBPerJob=14 \
                 --nGBPerJob=MAX \
                 --extFile '*.so,*.root' --match "*root*" --outputs "susyNt.root" \
                 --athenaTag=17.3.1.1 \

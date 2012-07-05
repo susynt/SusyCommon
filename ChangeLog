@@ -6,7 +6,6 @@
 		* ptcone30
 		* etcone30Corr
 		* etcone30TopoCorr
-			-> Requires a regeneration of MultiLep/ElectronD3PDObject, we don't have ED_median branch yet
 	* Now getting d0, z0, and the errors from the corresponding lepton branches
 	* Muon type and origin are now grabbed directly from muon branches
 	* Tagging SusyCommon-00-00-15

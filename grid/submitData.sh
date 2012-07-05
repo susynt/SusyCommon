@@ -1,6 +1,6 @@
 #!/bin/bash
 
-tag=n0026
+tag=n0028
 nickname=Steve
 
 # get the samples of interest
@@ -44,9 +44,10 @@ for inDS in ${datasets[@]}; do
 	# prun command
 	prun --exec "$command" --useRootCore --tmpDir /tmp --inTarBall=area.tar \
              --excludedSite=$blackList \
+             #--nGBPerJob=14 \
+             --nGBPerJob=MAX \
              --extFile '*.so,*.root' --match "*root*" --outputs "susyNt.root" \
              --athenaTag=17.3.1.1 \
-             --nGBPerJob=MAX \
 	     --inDS  $inDS \
 	     --outDS $outDS
 
