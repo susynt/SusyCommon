@@ -368,6 +368,11 @@ void SusyD3PDAna::fillEventTriggers()
   if(d3pd.trig.EF_mu18_tight_mu8_EFFS())        m_evtTrigFlags |= TRIG_mu18_tight_mu8_EFFS;
   if(d3pd.trig.EF_e12Tvh_medium1_mu8())         m_evtTrigFlags |= TRIG_e12Tvh_medium1_mu8;
   if(d3pd.trig.EF_mu18_tight_e7_medium1())      m_evtTrigFlags |= TRIG_mu18_tight_e7_medium1;
+
+  // Added by Matt:
+  if(d3pd.trig.EF_mu13())                       m_evtTrigFlags |= TRIG_mu13;
+  if(d3pd.trig.EF_e12Tvh_loose1())              m_evtTrigFlags |= TRIG_e12Tvh_loose1;
+
 }
 
 /*--------------------------------------------------------------------------------*/
@@ -447,6 +452,10 @@ void SusyD3PDAna::matchElectronTriggers()
     // e12Tvh_medium1_mu8
     if( matchElectronTrigger(lv, d3pd.trig.trig_EF_el_EF_e12Tvh_medium1_mu8()) ){
       flags |= TRIG_e12Tvh_medium1_mu8;
+    }
+    // e12Tvh_loose1
+    if( matchElectronTrigger(lv, d3pd.trig.trig_EF_el_EF_e12Tvh_loose1()) ){
+      flags |= TRIG_e12Tvh_loose1;
     }
     // mu18_tight_e7_medium1 - NOTE: feature not available, so use e7_medium1 above!
     //if( matchElectronTrigger(lv, d3pd.trig.trig_EF_el_EF_mu18_tight_e7_medium1()) ){
@@ -534,6 +543,10 @@ void SusyD3PDAna::matchMuonTriggers()
     // mu18_tight_e7_medium1
     if( matchMuonTrigger(lv, d3pd.trig.trig_EF_trigmuonef_EF_mu18_tight_e7_medium1()) ) {
       flags |= TRIG_mu18_tight_e7_medium1;
+    }
+    // mu13
+    if( matchMuonTrigger(lv, d3pd.trig.trig_EF_trigmuonef_EF_mu13()) ){
+      flags |= TRIG_mu13;
     }
 
     // assign the flags for this muon

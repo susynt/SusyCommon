@@ -1,5 +1,8 @@
 # vim: set noexpandtab:
 
+2012-07-05 Matt
+	* Added two lepton triggers: EF_e12Tvh_loose1 and EF_mu13 following todays DiLepton trigger talk
+	
 2012-07-03 Steve
 	* Added muon thetaPV, requested by Anyes (might not be needed)
 	* Adding additional isolation variables

@@ -181,7 +181,7 @@ bool SusyNtMaker::selectEvent()
 
   //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-//  
   // Get Nominal Objects
-
+  
   selectObjects();
   if(m_savePh) selectSignalPhotons();
   buildMet();
@@ -205,6 +205,9 @@ bool SusyNtMaker::selectEvent()
     
   // For filling the output tree, require at least 2 baseline lepton
   if((m_susyNt.ele()->size() + m_susyNt.muo()->size()) < 2)  return false;
+  
+  // For Fake studies
+  //if((m_susyNt.ele()->size() + m_susyNt.muo()->size()) < 1)  return false;
   
 
   
