@@ -63,7 +63,7 @@ int main(int argc, char** argv)
   int nEvt        = -1;
   int nSkip       = 0;
   int dbg         = 0;
-  float lumi      = 5312;
+  float lumi      = 5831;
   float xsec      = -1;
   float sumw      = 1;
   string sample;

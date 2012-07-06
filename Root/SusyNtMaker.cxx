@@ -250,6 +250,7 @@ void SusyNtMaker::fillEventVars()
   evt->wPileup          = m_isMC? getPileupWeight() : 1;
   evt->xsec             = m_isMC? getXsecWeight() : 1;
   evt->lumiSF           = m_isMC? getLumiWeight() : 1;             
+  evt->sumw             = m_isMC? m_sumw : 1;
   //cout << "lumi " << m_lumi << " sumw " << m_sumw << " lumiSF " << evt->lumiSF << endl;
 
   evt->pdfSF            = m_isMC? getPDFWeight8TeV() : 1;
@@ -697,11 +698,13 @@ void SusyNtMaker::addMissingMuon(const LeptonInfo* lep, SusyNtSys sys)
   float id_qoverp_exPV    = m->id_qoverp_exPV()->at(index);
   float me_theta_exPV     = m->me_theta_exPV()->at(index);
   float id_theta_exPV     = m->id_theta_exPV()->at(index);
+  float charge            = m->charge()->at(index);
   int isCombined          = m->isCombinedMuon()->at(index);
   bool isData             = !m_isMC;
 
   // Reset the Nominal TLV
-  m_susyObj.SetMuonTLV(index, pt, eta, phi, E, me_qoverp_exPV, id_qoverp_exPV, me_theta_exPV, id_theta_exPV, isCombined, isData, SystErr::NONE);
+  //m_susyObj.SetMuonTLV(index, pt, eta, phi, E, me_qoverp_exPV, id_qoverp_exPV, me_theta_exPV, id_theta_exPV, isCombined, isData, SystErr::NONE);
+  m_susyObj.SetMuonTLV(index, pt, eta, phi, E, me_qoverp_exPV, id_qoverp_exPV, me_theta_exPV, id_theta_exPV, charge, isCombined, isData, SystErr::NONE);
   
   // Now push it back onto to susyNt
   fillMuonVars( lep );

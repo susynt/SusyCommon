@@ -1,5 +1,12 @@
 # vim: set noexpandtab:
 
+2012-07-03 Steve
+	* Updated GRL and pileup files
+	* Updated SUSY cross section file to 8TeV version
+	* Fixed pileup weight usage for 1/fb
+	* Updated to SUSYTools-00-01-02
+	* Tagging SusyCommon-00-00-16
+
 2012-07-05 Matt
 	* Added two lepton triggers: EF_e12Tvh_loose1 and EF_mu13 following todays DiLepton trigger talk
 	

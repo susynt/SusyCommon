@@ -109,7 +109,7 @@ class SusyD3PDAna : public SusyD3PDInterface
     void setXsec(float xsec) { m_xsec = xsec; }
     // pileup weight, not included in event weight above
     float getPileupWeight();
-    float getPileupWeight2fb();
+    float getPileupWeight1fb();
     // PDF reweighting of 7TeV -> 8TeV
     float getPDFWeight8TeV();
 
@@ -207,7 +207,7 @@ class SusyD3PDAna : public SusyD3PDInterface
     FakeMetEstimator            m_fakeMetEst;   // fake met estimator for lar hole veto
 
     Root::TPileupReweighting*   m_pileup;       // pileup reweighting
-    Root::TPileupReweighting*   m_pileup2fb;    // pileup reweighting for 2012 A-B5 only
+    Root::TPileupReweighting*   m_pileup1fb;    // pileup reweighting for 2012 A-B3 only
 
     // The SUSY CrossSectionDB has its own map for retrieving xsec info, but
     // it has a lot of entries so lookup is slow.  Save our own xsec map
