@@ -1,5 +1,9 @@
 # vim: set noexpandtab:
 
+2012-07-06 Matt
+	* Default is to use jets with no scaling as noted here: https://twiki.cern.ch/twiki/bin/viewauth/AtlasProtected/JetCalibrationToolsWinter2011 which has been added to SusyD3PDAna: m_susyObj.SetJetCalib(false)
+
+	
 2012-07-03 Steve
 	* Updated GRL and pileup files
 	* Updated SUSY cross section file to 8TeV version

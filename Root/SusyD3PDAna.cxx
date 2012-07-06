@@ -77,6 +77,9 @@ void SusyD3PDAna::Begin(TTree* /*tree*/)
   m_susyObj.initialize(!m_isMC);
   m_fakeMetEst.initialize("$ROOTCOREDIR/data/MultiLep/fest_periodF_v1.root");
 
+  // Default is to not use calibrated jets 
+  m_susyObj.SetJetCalib(false);
+
   // SUSY cross sections
   if(m_isMC){
     string xsecFileName  = gSystem->ExpandPathName("$ROOTCOREDIR/data/SUSYTools/susy_crosssections_8TeV.txt");
