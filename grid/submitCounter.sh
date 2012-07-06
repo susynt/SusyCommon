@@ -1,6 +1,6 @@
 #!/bin/bash
 
-iteration=i1
+iteration=i2
 
 # get the samples of interest
 if [[ $# = 0 ]]; then
