@@ -75,10 +75,10 @@ void SusyD3PDAna::Begin(TTree* /*tree*/)
 
   // Setup SUSYTools
   m_susyObj.initialize(!m_isMC);
-  m_fakeMetEst.initialize("$ROOTCOREDIR/data/MultiLep/fest_periodF_v1.root");
-
-  // Default is to not use calibrated jets 
+  // Turn off jet calibration for now
   m_susyObj.SetJetCalib(false);
+
+  m_fakeMetEst.initialize("$ROOTCOREDIR/data/MultiLep/fest_periodF_v1.root");
 
   // SUSY cross sections
   if(m_isMC){
