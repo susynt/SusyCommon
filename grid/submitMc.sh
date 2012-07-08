@@ -1,7 +1,12 @@
 #!/bin/bash
 
-tag=n0029
+# Settings
+tag=n0031
 nickname=Steve
+nGBPerJob=MAX
+#nGBPerJob=14
+athenaTag=17.3.1.1
+
 
 # get the samples of interest
 if [[ $# = 0 ]]; then
@@ -17,6 +22,7 @@ blackList=`cat blacklist.txt`
 # A trick to parse the text, first separate columns by commas
 matches=(`cat mcSamples.txt | grep $pattern | tr '\t' ','`)
 echo "${#matches[@]} matches"
+
 
 # Loop over samples
 for line in ${matches[@]}; do
@@ -44,13 +50,12 @@ for line in ${matches[@]}; do
 
 	
 	# prun command
-	prun --exec "$command" --tmpDir /tmp --inTarBall=area.tar --useRootCore \
-                --excludedSite=$blackList \
-                #--nGBPerJob=14 \
-                --nGBPerJob=MAX \
-                --extFile '*.so,*.root' --match "*root*" --outputs "susyNt.root" \
-                --athenaTag=17.3.1.1 \
-		--inDS  $inDS \
-		--outDS $outDS
+	prun --exec "$command" --useRootCore --tmpDir /tmp --inTarBall=area.tar \
+             --extFile '*.so,*.root' --match "*root*" --outputs "susyNt.root" \
+             --excludedSite=$blackList \
+             --nGBPerJob=$nGBPerJob \
+             --athenaTag=$athenaTag \
+             --inDS  $inDS \
+             --outDS $outDS
 
 done

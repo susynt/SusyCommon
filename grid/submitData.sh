@@ -1,7 +1,11 @@
 #!/bin/bash
 
-tag=n0029
+# Settings
+tag=n0031
 nickname=Steve
+nGBPerJob=MAX
+#nGBPerJob=14
+athenaTag=17.3.1.1
 
 # get the samples of interest
 if [[ $# = 0 ]]; then
@@ -41,13 +45,13 @@ for inDS in ${datasets[@]}; do
         echo "sample   $sample"
         echo "command  $command"
 	
+
 	# prun command
 	prun --exec "$command" --useRootCore --tmpDir /tmp --inTarBall=area.tar \
-             --excludedSite=$blackList \
-             #--nGBPerJob=14 \
-             --nGBPerJob=MAX \
              --extFile '*.so,*.root' --match "*root*" --outputs "susyNt.root" \
-             --athenaTag=17.3.1.1 \
+             --excludedSite=$blackList \
+             --nGBPerJob=$nGBPerJob \
+             --athenaTag=$athenaTag \
 	     --inDS  $inDS \
 	     --outDS $outDS
 
