@@ -1,5 +1,8 @@
 # vim: set noexpandtab:
 
+2012-07-08 Steve
+	* Tagging SusyCommon-00-00-17
+
 2012-07-06 Matt
 	* Default is to use jets with no scaling as noted here: https://twiki.cern.ch/twiki/bin/viewauth/AtlasProtected/JetCalibrationToolsWinter2011 
 	* Added to SusyD3PDAna: m_susyObj.SetJetCalib(false)
