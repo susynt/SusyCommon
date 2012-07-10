@@ -206,30 +206,28 @@ void SusyD3PDAna::selectBaselineObjects(SusyNtSys sys)
 void SusyD3PDAna::performOverlapRemoval()
 {
   // e-e overlap removal
-  m_baseElectrons = overlap_removal(m_susyObj, &d3pd.ele, m_preElectrons, &d3pd.ele, m_preElectrons, 0.1, 1);
+  m_baseElectrons = overlap_removal(m_susyObj, &d3pd.ele, m_preElectrons, &d3pd.ele, m_preElectrons, 0.1, true, true);
 
   // jet-e overlap removal
-  m_baseJets      = overlap_removal(m_susyObj, &d3pd.jet, m_preJets, &d3pd.ele, m_baseElectrons, 0.2, 0);
+  m_baseJets      = overlap_removal(m_susyObj, &d3pd.jet, m_preJets, &d3pd.ele, m_baseElectrons, 0.2, false, false);
 
   // e-jet overlap removal
-  m_baseElectrons = overlap_removal(m_susyObj, &d3pd.ele, m_baseElectrons, &d3pd.jet, m_baseJets, 0.4, 0);
+  m_baseElectrons = overlap_removal(m_susyObj, &d3pd.ele, m_baseElectrons, &d3pd.jet, m_baseJets, 0.4, false, false);
 
   // m-jet overlap removal
-  m_baseMuons     = overlap_removal(m_susyObj, &d3pd.muo, m_preMuons, &d3pd.jet, m_baseJets, 0.4, 0);
+  m_baseMuons     = overlap_removal(m_susyObj, &d3pd.muo, m_preMuons, &d3pd.jet, m_baseJets, 0.4, false, false);
 
   // e-m overlap removal
   vector<int> copyElectrons = m_baseElectrons;
-  m_baseElectrons = overlap_removal(m_susyObj, &d3pd.ele, m_baseElectrons, &d3pd.muo, m_baseMuons, 0.1, 0);
-  //m_baseMuons     = overlap_removal(m_susyObj, &d3pd.muo, m_baseMuons, &d3pd.ele, m_baseElectrons, 0.1, 0);
-  m_baseMuons     = overlap_removal(m_susyObj, &d3pd.muo, m_baseMuons, &d3pd.ele, copyElectrons, 0.1, 0);
+  m_baseElectrons = overlap_removal(m_susyObj, &d3pd.ele, m_baseElectrons, &d3pd.muo, m_baseMuons, 0.1, false, false);
+  m_baseMuons     = overlap_removal(m_susyObj, &d3pd.muo, m_baseMuons, &d3pd.ele, copyElectrons, 0.1, false, false);
 
-  // TODO: FIX THIS!!  
-  // This is supposed to work standalone for D3PD analysis!!
+  // m-m overlap removal - need to validate this!!
+  m_baseMuons     = overlap_removal(m_susyObj, &d3pd.muo, m_baseMuons, &d3pd.muo, m_baseMuons, 0.05, true, false);
 
-  // Moved to SusyNtTools to be called during ana
-  // remove SFOS lepton pairs with Mll < 20 GeV
-  //m_baseElectrons = RemoveSFOSPair(m_susyObj, &d3pd.ele, m_baseElectrons, 20.*GeV);
-  //m_baseMuons     = RemoveSFOSPair(m_susyObj, &d3pd.muo, m_baseMuons,     20.*GeV);
+  // remove SFOS lepton pairs with Mll < 12 GeV
+  m_baseElectrons = RemoveSFOSPair(m_susyObj, &d3pd.ele, m_baseElectrons, 12.*GeV);
+  m_baseMuons     = RemoveSFOSPair(m_susyObj, &d3pd.muo, m_baseMuons,     12.*GeV);
 }
 
 /*--------------------------------------------------------------------------------*/
@@ -238,9 +236,11 @@ void SusyD3PDAna::performOverlapRemoval()
 void SusyD3PDAna::selectSignalObjects()
 {
   if(m_dbg) cout << "selectSignalObjects" << endl;
-  // TODO: make these functions more symmetric
-  m_sigElectrons = get_electrons_signal(&d3pd.ele, m_baseElectrons, m_susyObj, 10.*GeV, false, 6, &d3pd.trk);
-  m_sigMuons     = get_muons_signal(&d3pd.muo, m_susyObj, m_baseMuons, 10.*GeV, 1.8*GeV, false, 3);
+  uint nVtx = getNumGoodVtx();
+  //m_sigElectrons = get_electrons_signal(&d3pd.ele, m_baseElectrons, m_susyObj, 10.*GeV, false, 6, &d3pd.trk);
+  //m_sigMuons     = get_muons_signal(&d3pd.muo, m_susyObj, m_baseMuons, 10.*GeV, 1.8*GeV, false, 3);
+  m_sigElectrons = get_electrons_signal(&d3pd.ele, m_baseElectrons, nVtx, !m_isMC, m_susyObj, 10.*GeV, 5., 0.4);
+  m_sigMuons     = get_muons_signal(&d3pd.muo, m_baseMuons, nVtx, !m_isMC, m_susyObj, 10.*GeV, .12, 3., 1.);
   m_sigJets      = get_jet_signal(&d3pd.jet, m_susyObj, m_baseJets, 20.*GeV, 2.5, 0.75);
 
   // combine leptons
@@ -318,7 +318,7 @@ uint SusyD3PDAna::getNumGoodVtx()
 {
   uint nVtx = 0;
   for(int i=0; i < d3pd.vtx.n(); i++){
-    if(d3pd.vtx.nTracks()->at(i) > 4) nVtx++;
+    if(d3pd.vtx.nTracks()->at(i) >= 5) nVtx++;
   }
   return nVtx;
 }
@@ -517,25 +517,25 @@ bool SusyD3PDAna::matchMuonTrigger(const TLorentzVector* lv, vector<int>* passTr
 /*--------------------------------------------------------------------------------*/
 void SusyD3PDAna::evtCheck()
 {
-  // Lar Hole Veto
-  if(passLarHoleVeto())
-    m_evtFlag |= PASS_LAr;
+  // Lar Hole Veto - shouldn't be used
+  if(passLarHoleVeto()) m_evtFlag |= PASS_LAr;
+
+  // Tile hot spot
+  if(passTileHotSpot()) m_evtFlag |= PASS_HotSpot;
 
   // Bad Jet
-  if(passBadJet())
-    m_evtFlag |= PASS_BadJet;
+  if(passBadJet()) m_evtFlag |= PASS_BadJet;
   
   // Bad Muon
-  if(passBadMuon())
-    m_evtFlag |= PASS_BadMuon;
+  if(passBadMuon()) m_evtFlag |= PASS_BadMuon;
   
   // Cosmic muon check
-  if(passCosmic())
-    m_evtFlag |= PASS_Cosmic;
+  if(passCosmic()) m_evtFlag |= PASS_Cosmic;
 
   // Now store the pass all
-  if( (m_evtFlag & PASS_LAr) &&
-      (m_evtFlag & PASS_BadJet) &&
+  if( (m_evtFlag & PASS_HotSpot) &&
+      //(m_evtFlag & PASS_LAr) &&
+      (m_evtFlag & PASS_BadJet)  &&
       (m_evtFlag & PASS_BadMuon) &&
       (m_evtFlag & PASS_Cosmic) )
     m_evtFlag |= PASS_Event;
@@ -554,6 +554,13 @@ bool SusyD3PDAna::passLarHoleVeto()
   vector<int> jets = get_jet_baseline( &d3pd.jet, &d3pd.vtx, &d3pd.evt, !m_isMC, m_susyObj, 
                                        20.*GeV, 9999999, SystErr::NONE, false, goodJets );
   return !check_jet_larhole(&d3pd.jet, jets, !m_isMC, m_susyObj, 180614, metVector, &m_fakeMetEst);
+}
+/*--------------------------------------------------------------------------------*/
+// Pass tile hot spot veto
+/*--------------------------------------------------------------------------------*/
+bool SusyD3PDAna::passTileHotSpot()
+{
+  return !check_jet_tileHotSpot( &d3pd.jet, m_preJets, m_susyObj, !m_isMC, d3pd.evt.RunNumber() );
 }
 /*--------------------------------------------------------------------------------*/
 // Pass bad jet cut

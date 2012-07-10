@@ -29,7 +29,6 @@ class SusyD3PDAna : public SusyD3PDInterface
 
   public:
 
-
     // Constructor and destructor
     SusyD3PDAna();
     virtual ~SusyD3PDAna();
@@ -81,6 +80,8 @@ class SusyD3PDAna : public SusyD3PDInterface
     bool passLarErr(){ return m_isMC || (d3pd.evt.larError()==0); }
     // lar hole veto
     bool passLarHoleVeto();
+    // tile hot spot
+    bool passTileHotSpot();
     // bad jet
     bool passBadJet();
     // good vertex
@@ -193,7 +194,7 @@ class SusyD3PDAna : public SusyD3PDInterface
     bool                        m_sys;          // True if you want sys for MC, must be set by user. 
     bool                        m_savePh;       // True if want to save photons
 
-    int                         m_evtFlag;      // Reset after each evt
+    uint                        m_evtFlag;      // Reset after each evt
 
     //
     // Tools

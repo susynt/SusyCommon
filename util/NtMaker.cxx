@@ -46,6 +46,9 @@ void help()
   cout << "  -l set lumi"                       << endl;
   cout << "     default: 5312/pb"               << endl;
 
+  cout << "  -m write output ntuple"            << endl;
+  cout << "     default: 1 (true)"              << endl;
+
   cout << "  --sys will turn on systematic run" << endl;
   cout << "     default: off"                   << endl;
 
@@ -70,6 +73,7 @@ int main(int argc, char** argv)
   string fileList = "fileList.txt";
   bool sysOn      = false;
   bool savePh     = false;
+  bool writeNt    = true;
 
   cout << "SusyNtMaker" << endl;
   cout << endl;
@@ -92,6 +96,8 @@ int main(int argc, char** argv)
       xsec = atof(argv[++i]);
     else if (strcmp(argv[i], "-l") == 0)
       lumi = atof(argv[++i]);
+    else if (strcmp(argv[i], "-m") == 0)
+      writeNt = atoi(argv[++i]);
     else if (strcmp(argv[i], "--sys") == 0)
       sysOn = true;
     else if (strcmp(argv[i], "--savePh") == 0)
@@ -133,6 +139,7 @@ int main(int argc, char** argv)
   susyAna->setSys(sysOn);
   susyAna->setSavePhotons(savePh);
   susyAna->setXsec(xsec);
+  susyAna->setFillNt(writeNt);
 
 
   // GRL

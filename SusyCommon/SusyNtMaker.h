@@ -75,6 +75,9 @@ class SusyNtMaker : public SusyD3PDAna
     void addEventFlag(SusyNtSys s, int eventFlag){ 
       m_susyNt.evt()->evtFlag[s] = eventFlag;
     };
+
+    // Toggle SusyNt file writing
+    void setFillNt(bool fill=true) { m_fillNt = fill; }
     
  protected:
     
@@ -83,20 +86,29 @@ class SusyNtMaker : public SusyD3PDAna
 
     Susy::SusyNtObject  m_susyNt;       // SusyNt interface
 
+    bool                m_fillNt;       // Flag to turn off Nt filling (for fast cutflow checks)
+
     // Some object counts
     uint                n_base_ele;
     uint                n_base_muo;
     uint                n_base_jet;
+    uint                n_sig_ele;
+    uint                n_sig_muo;
+    uint                n_sig_jet;
 
     // Some event counts
     uint                n_evt_initial;
     uint                n_evt_grl;
     uint                n_evt_larErr;
     uint                n_evt_larHole;
+    uint                n_evt_hotSpot;
     uint                n_evt_badJet;
     uint                n_evt_goodVtx;
     uint                n_evt_badMu;
     uint                n_evt_cosmic;
+    uint                n_evt_1Lep;
+    uint                n_evt_2Lep;
+    uint                n_evt_3Lep;
     uint                n_evt_saved;    // number of events save in the SusyNt
 
     // histogram to save cutflow 

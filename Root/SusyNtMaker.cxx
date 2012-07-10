@@ -11,19 +11,26 @@ using namespace std;
 /*--------------------------------------------------------------------------------*/
 // SusyNtMaker Constructor
 /*--------------------------------------------------------------------------------*/
-SusyNtMaker::SusyNtMaker()
+SusyNtMaker::SusyNtMaker() : m_fillNt(true)
 {
   n_base_ele=0;
   n_base_muo=0;
   n_base_jet=0;
+  n_sig_ele=0;
+  n_sig_muo=0;
+  n_sig_jet=0;
   n_evt_initial=0;
   n_evt_grl=0;
   n_evt_larErr=0;
   n_evt_larHole=0;
+  n_evt_hotSpot=0;
   n_evt_badJet=0;
   n_evt_goodVtx=0;
   n_evt_badMu=0;
   n_evt_cosmic=0;
+  n_evt_1Lep=0;
+  n_evt_2Lep=0;
+  n_evt_3Lep=0;
   n_evt_saved=0;
 }
 /*--------------------------------------------------------------------------------*/
@@ -42,9 +49,22 @@ void SusyNtMaker::Begin(TTree* /*tree*/)
   SusyD3PDAna::Begin(0);
   if(m_dbg) cout << "SusyNtMaker::Begin" << endl;
 
-  // Open the output tree
-  m_outTreeFile = new TFile("susyNt.root", "recreate");
-  m_outTree = new TTree("susyNt", "susyNt");
+  if(m_fillNt){
+
+    // Open the output tree
+    m_outTreeFile = new TFile("susyNt.root", "recreate");
+    m_outTree = new TTree("susyNt", "susyNt");
+
+    // Set autosave size (determines how often tree writes to disk)
+    m_outTree->SetAutoSave(10000000);
+    // Max tree size determines when a new file and tree are written
+    m_outTree->SetMaxTreeSize(3000000000u);
+    // Set all branches active for writing, for now.
+    // Later, add switch for systematics
+    m_susyNt.SetActive();
+    m_susyNt.WriteTo(m_outTree);
+
+  }
 
   // create histogram for cutflow
   h_cutFlow = new TH1F("cutFlow","Histogram storing cuts applied upstream",4,-0.5,3.5);
@@ -52,15 +72,6 @@ void SusyNtMaker::Begin(TTree* /*tree*/)
   h_cutFlow->GetXaxis()->SetBinLabel(2,"GRL");
   h_cutFlow->GetXaxis()->SetBinLabel(3,"LAr Error");
   h_cutFlow->GetXaxis()->SetBinLabel(4,"Good Vertex");
-
-  // Set autosave size (determines how often tree writes to disk)
-  m_outTree->SetAutoSave(10000000);
-  // Max tree size determines when a new file and tree are written
-  m_outTree->SetMaxTreeSize(3000000000u);
-  // Set all branches active for writing, for now.
-  // Later, add switch for systematics
-  m_susyNt.SetActive();
-  m_susyNt.WriteTo(m_outTree);
 
   // Start the timer
   m_timer.Start();
@@ -83,10 +94,7 @@ Bool_t SusyNtMaker::Process(Long64_t entry)
          << " event " << setw(7) << d3pd.evt.EventNumber() << " ****" << endl;
   }
 
-  // Test the generator weight
-  //cout << "mc weight: " << d3pd.truth.event_weight() << endl;
-
-  if(selectEvent()){
+  if(selectEvent() && m_fillNt){
     m_outTree->Fill(); //fillNtVars();
     n_evt_saved++;
   }
@@ -112,19 +120,34 @@ void SusyNtMaker::Terminate()
   cout << "  BaseEle  " << n_base_ele    << endl;
   cout << "  BaseMuo  " << n_base_muo    << endl;
   cout << "  BaseJet  " << n_base_jet    << endl;
+  cout << "  SigEle   " << n_sig_ele     << endl;
+  cout << "  SigMuo   " << n_sig_muo     << endl;
+  cout << "  SigJet   " << n_sig_jet     << endl;
   cout << endl;
   cout << "Event counter" << endl;
   cout << "  Initial  " << n_evt_initial << endl;
   cout << "  GRL      " << n_evt_grl     << endl;
   cout << "  LarErr   " << n_evt_larErr  << endl;
+  //cout << "  LarHole  " << n_evt_larHole << endl;
+  cout << "  HotSpot  " << n_evt_hotSpot << endl;
+  cout << "  BadJet   " << n_evt_badJet  << endl;
   cout << "  GoodVtx  " << n_evt_goodVtx << endl;
+  cout << "  BadMuon  " << n_evt_badMu   << endl;
+  cout << "  Cosmic   " << n_evt_cosmic  << endl;
+  cout << "  >=1 Lep  " << n_evt_1Lep    << endl;
+  cout << "  >=2 Lep  " << n_evt_2Lep    << endl;
+  cout << "  ==3 Lep  " << n_evt_3Lep    << endl;
   cout << endl;
 
-  // Save the output tree
-  m_outTreeFile = m_outTree->GetCurrentFile();
-  m_outTreeFile->Write(0, TObject::kOverwrite);
-  cout << "susyNt tree saved to " << m_outTreeFile->GetName() << endl;
-  m_outTreeFile->Close();
+  if(m_fillNt){
+
+    // Save the output tree
+    m_outTreeFile = m_outTree->GetCurrentFile();
+    m_outTreeFile->Write(0, TObject::kOverwrite);
+    cout << "susyNt tree saved to " << m_outTreeFile->GetName() << endl;
+    m_outTreeFile->Close();
+
+  }
 
   // Report timer
   double realTime = m_timer.RealTime();
@@ -174,11 +197,6 @@ bool SusyNtMaker::selectEvent()
   n_evt_larErr++;
   h_cutFlow->Fill(2);
 
-  // primary vertex cut
-  if(!passGoodVtx()) return false; 
-  n_evt_goodVtx++;
-  h_cutFlow->Fill(3);
-
   //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-//  
   // Get Nominal Objects
   
@@ -187,29 +205,62 @@ bool SusyNtMaker::selectEvent()
   buildMet();
   evtCheck();
 
+  // These next cuts are not used to filter the SusyNt because they depend on systematics.
+  // Instead, they are simply used for the counters, for comparing the cutflow
+
+  // Lar hole veto - not applied anymore
+  //if(m_evtFlag & PASS_LAr) n_evt_larHole++;
+
+  // Tile hot spot
+  if(m_evtFlag & PASS_HotSpot) n_evt_hotSpot++;
+  // Bad jet cut
+  if(m_evtFlag & PASS_BadJet) n_evt_badJet++;
+
+  // primary vertex cut
+  if(!passGoodVtx()) return false; 
+  n_evt_goodVtx++;
+  h_cutFlow->Fill(3);
+
+  // More cuts just for cutflow
+
+  // Bad muon veto
+  if(m_evtFlag & PASS_BadMuon) n_evt_badMu++;
+  // Cosmic muon veto
+  if(m_evtFlag & PASS_Cosmic) n_evt_cosmic++;
+
   n_base_ele += m_baseElectrons.size();
   n_base_muo += m_baseMuons.size();
   n_base_jet += m_baseJets.size();
+  n_sig_ele += m_sigElectrons.size();
+  n_sig_muo += m_sigMuons.size();
+  n_sig_jet += m_sigJets.size();
+
+  // Lepton multiplicity
+  uint nSigLep = m_sigElectrons.size() + m_sigMuons.size();
+  //cout << "nSigLep " << nSigLep << endl;
+  if(nSigLep >= 1) n_evt_1Lep++;
+  if(nSigLep >= 2) n_evt_2Lep++;
+  if(nSigLep == 3) n_evt_3Lep++;
 
   // Match the triggers
   matchTriggers();
 
-  // This will fill the pre selected
-  // objects prior to overlap removal
-  fillNtVars();
+  if(m_fillNt){
 
-  // If it is mc and option for sys is set
-  if(m_isMC && m_sys)
-    doSystematic();
-  
+    // This will fill the pre selected
+    // objects prior to overlap removal
+    fillNtVars();
+
+    // If it is mc and option for sys is set
+    if(m_isMC && m_sys) doSystematic(); 
     
-  // For filling the output tree, require at least 2 baseline lepton
-  if((m_susyNt.ele()->size() + m_susyNt.muo()->size()) < 2)  return false;
+    // For filling the output tree, require at least 2 baseline lepton
+    if((m_susyNt.ele()->size() + m_susyNt.muo()->size()) < 2)  return false;
   
-  // For Fake studies
-  //if((m_susyNt.ele()->size() + m_susyNt.muo()->size()) < 1)  return false;
-  
+    // For Fake studies
+    if((m_susyNt.ele()->size() + m_susyNt.muo()->size()) < 1)  return false;
 
+  }
   
   return true;
 }
@@ -248,6 +299,7 @@ void SusyNtMaker::fillEventVars()
   evt->trigFlags        = m_evtTrigFlags;
 
   evt->wPileup          = m_isMC? getPileupWeight() : 1;
+  evt->wPileup1fb       = m_isMC? getPileupWeight1fb() : 1;
   evt->xsec             = m_isMC? getXsecWeight() : 1;
   evt->lumiSF           = m_isMC? getLumiWeight() : 1;             
   evt->sumw             = m_isMC? m_sumw : 1;
@@ -352,6 +404,11 @@ void SusyNtMaker::fillElectronVars(const LeptonInfo* lepIn)
   eleOut->z0            = element->trackz0pv();
   eleOut->errZ0         = element->tracksigz0pv();
 
+  eleOut->d0Unbiased    = element->trackIPEstimate_d0_unbiasedpvunbiased();
+  eleOut->errD0Unbiased = element->trackIPEstimate_sigd0_unbiasedpvunbiased();
+  eleOut->z0Unbiased    = element->trackIPEstimate_z0_unbiasedpvunbiased();
+  eleOut->errZ0Unbiased = element->trackIPEstimate_sigz0_unbiasedpvunbiased();
+
   // Get d0 from track
   //int trkIdx            = get_electron_track( &d3pd.ele, lepIn->idx(), &d3pd.trk );
   //if(trkIdx!=-99){
@@ -422,6 +479,11 @@ void SusyNtMaker::fillMuonVars(const LeptonInfo* lepIn)
   muOut->errD0          = sqrt(element->cov_d0_exPV());
   muOut->z0             = element->z0_exPV();
   muOut->errZ0          = sqrt(element->cov_z0_exPV());
+
+  muOut->d0Unbiased     = element->trackIPEstimate_d0_unbiasedpvunbiased();
+  muOut->errD0Unbiased  = element->trackIPEstimate_sigd0_unbiasedpvunbiased();
+  muOut->z0Unbiased     = element->trackIPEstimate_z0_unbiasedpvunbiased();
+  muOut->errZ0Unbiased  = element->trackIPEstimate_sigz0_unbiasedpvunbiased();
 
   muOut->isCombined     = element->isCombinedMuon();
 

@@ -118,25 +118,15 @@ This list will be updated to include switching on and off sys.
 
 In SusyCommon:
 
-[X] Make trigger matching done regardless of Pt
 [ ] Add remaining systematics
-[X] Add a timer so we can monitor speed of what we make SusyNt
-[X] Add to jet truth labels # huh? Add what?
-[X] Add event <mu>
-[ ] Add good vertex info (>3 tracks?) & position of PV
-[X] Add e/mu Z0 pvtx
 [ ] Add necessary MC information to do signal diagram selection, charge flip, ID decay (eg ttbar dilepton)
-[ ] Add metadata: D3PD input list, D3PD tag, SusyTool tag, CommonCode tag, histogram with cutflow
-[ ] Improve event weighting skim for lumi so that if not all job run on grid, still ok (see Common code for how it's done there)
-[X] Add script or package list for checking out all RootCore packages
+[?] Add metadata: D3PD input list, D3PD tag, SusyTool tag, CommonCode tag, histogram with cutflow
+[?] Improve event weighting skim for lumi so that if not all job run on grid, still ok (see Common code for how it's done there)
+[ ] Add more cutflow counters to the SusyNtMaker so we can easily compare cutflows with the common code
+        * Might actually be better to make a separate d3pd cutflow class...
 
 In SusyNtuple:
 
-[X] Code up trigger checking of objects in SusyNtTools.
-[ ] Add a timer so we can monitor speed of what we make/read SusyNt
-[X] Add methods that are currently commented out in SusyD3PDAna to SusyNtTools.  Need to
-    check things like badJet, badMuon, etc on the fly.  Add bools to SusyNt...? Might be best.
-[X] Compare to Cutflow on multiple samples
 [ ] Compare systematic shifts with someone TBD.
 [ ] Add the rest of the systematic shifts (trigger eff, etc.)
 [ ] Right now the code is not setup to run just on d3pd. My modifications were done to

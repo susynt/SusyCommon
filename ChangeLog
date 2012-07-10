@@ -1,7 +1,22 @@
 # vim: set noexpandtab:
+
+2012-07-10 Steve
+	* Updated usage of overlap removal function from MultiLep
+	* Mll > 12  applied for baseline selection in both analyses
+	* Updated usgae of d3pd signal lepton selection
+	* Added full cutflow counters up to ==3 leptons in the SusyNtMaker
+		* These additional cuts are not really used to filter the ntuple,
+		  but are just for checking cutflow on the d3pds
+	* Added tile hot spot cut to the event cleaning
+	* Removed the lar hole check from PASS_Event and from the cutflow counters
+	* Added flag for turning off the SusyNt making, just for quicker cutflow comparison and testing
+	* Fixed pileup weight filling for A-B3
+	* Added unbiased impact parameters
+	* Tagging SusyCommon-00-00-18
+
 2012-07-09 Matt
 	* Added updated medium++ and tight++ to SusyNtMaker. Maybe could make these functions to keep code clean?
-	
+
 2012-07-08 Steve
 	* Tagging SusyCommon-00-00-17
 
