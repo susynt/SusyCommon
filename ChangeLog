@@ -1,5 +1,7 @@
 # vim: set noexpandtab:
-
+2012-07-09 Matt
+	* Added updated medium++ and tight++ to SusyNtMaker. Maybe could make these functions to keep code clean?
+	
 2012-07-08 Steve
 	* Tagging SusyCommon-00-00-17
 

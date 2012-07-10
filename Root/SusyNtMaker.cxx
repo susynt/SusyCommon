@@ -300,8 +300,52 @@ void SusyNtMaker::fillElectronVars(const LeptonInfo* lepIn)
   eleOut->mcOrigin      = m_isMC? element->origin() : 0;
   eleOut->clusEta       = element->cl_eta();
   eleOut->clusE         = element->cl_E();
-  eleOut->mediumPP      = element->mediumPP();
-  eleOut->tightPP       = element->tightPP();
+
+  // Need to recalculate these variables
+  //eleOut->mediumPP      = element->mediumPP();
+  //eleOut->tightPP       = element->tightPP();
+  ////
+  double DEmaxs1 = 0;
+  double rHad = 0;
+  double rHad1 = 0;
+  double ele_et = element->cl_E()/cosh(element->etas2());
+  if(element->emaxs1()+element->Emax2() !=0)
+    DEmaxs1 = (element->emaxs1()-element->Emax2())/(element->emaxs1()+element->Emax2());
+  if(ele_et !=0){
+    rHad = element->Ethad()/ele_et;
+    rHad1 = element->Ethad1()/ele_et;
+  }
+  
+  eleOut->mediumPP = m_susyObj.ST_isMediumPlusPlus(element->etas2(), ele_et, element->f3(),
+						   rHad, rHad1, element->reta(), element->weta2(),
+						   element->f1(), element->wstot(), DEmaxs1, 
+						   element->deltaeta1(), 
+						   element->trackd0_physics(),
+						   element->TRTHighTOutliersRatio(), 
+						   element->nTRTHits(), element->nTRTOutliers(),
+						   element->nSiHits(), 
+						   element->nSCTOutliers()+
+						   element->nPixelOutliers(), element->nPixHits(),
+						   element->nPixelOutliers(), element->nBLHits(),
+						   element->nBLayerOutliers(),
+						   element->expectHitInBLayer());
+  eleOut->tightPP = m_susyObj.ST_isTightPlusPlus(element->etas2(), ele_et, element->f3(),
+						 rHad, rHad1, element->reta(), element->weta2(),
+						 element->f1(), element->wstot(), DEmaxs1, 
+						 element->deltaeta1(), 
+						 element->trackd0_physics(),
+						 element->TRTHighTOutliersRatio(), 
+						 element->nTRTHits(), element->nTRTOutliers(),
+						 element->nSiHits(), 
+						 element->nSCTOutliers()+
+						 element->nPixelOutliers(), element->nPixHits(),
+						 element->nPixelOutliers(), element->nBLHits(),
+						 element->nBLayerOutliers(),
+						 element->expectHitInBLayer(),
+						 element->cl_E()*fabs(element->trackqoverp()),
+						 element->deltaphi2(), 
+						 m_susyObj.GetConvBit(element->isEM()));
+						 
 
   eleOut->d0            = element->trackd0pv();
   eleOut->errD0         = element->tracksigd0pv();
