@@ -254,11 +254,14 @@ bool SusyNtMaker::selectEvent()
     // If it is mc and option for sys is set
     if(m_isMC && m_sys) doSystematic(); 
     
-    // For filling the output tree, require at least 2 baseline lepton
+    // TODO: add a command line option for controlling this filtering, 
+    // so that we don't keep committing conflicting changes...
+
+    // For filling the output tree, require at least 2 pre-selected leptons (baseline before OR)
     if((m_susyNt.ele()->size() + m_susyNt.muo()->size()) < 2)  return false;
   
     // For Fake studies
-    if((m_susyNt.ele()->size() + m_susyNt.muo()->size()) < 1)  return false;
+    //if((m_susyNt.ele()->size() + m_susyNt.muo()->size()) < 1)  return false;
 
   }
   

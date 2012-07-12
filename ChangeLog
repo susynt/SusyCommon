@@ -1,5 +1,9 @@
 # vim: set noexpandtab:
 
+2012-07-12 Steve
+	* Updating GRL, apparently forgot to do so
+	* Tagging SusyCommon-00-00-19
+
 2012-07-10 Steve
 	* Updated usage of overlap removal function from MultiLep
 	* Mll > 12  applied for baseline selection in both analyses
