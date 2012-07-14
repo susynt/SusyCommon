@@ -1,5 +1,9 @@
 # vim: set noexpandtab:
 
+2012-07-14 Steve
+	* Corrected usage of get_electrons_signal
+		* Does not affect the SusyNt production, only d3pd cutflow
+
 2012-07-12 Steve
 	* Updating GRL, apparently forgot to do so
 	* Tagging SusyCommon-00-00-19

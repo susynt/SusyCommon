@@ -20,9 +20,8 @@ using namespace std;
 /*--------------------------------------------------------------------------------*/
 SusyD3PDAna::SusyD3PDAna() : 
         m_sample(""),
-        //m_metCalib("Simplified20"),
         m_metCalib("RefFinal"),
-        m_lumi(5312),
+        m_lumi(5831),
         m_sumw(1),
 	m_xsec(-1),
 	m_sys(false),
@@ -237,9 +236,7 @@ void SusyD3PDAna::selectSignalObjects()
 {
   if(m_dbg) cout << "selectSignalObjects" << endl;
   uint nVtx = getNumGoodVtx();
-  //m_sigElectrons = get_electrons_signal(&d3pd.ele, m_baseElectrons, m_susyObj, 10.*GeV, false, 6, &d3pd.trk);
-  //m_sigMuons     = get_muons_signal(&d3pd.muo, m_susyObj, m_baseMuons, 10.*GeV, 1.8*GeV, false, 3);
-  m_sigElectrons = get_electrons_signal(&d3pd.ele, m_baseElectrons, nVtx, !m_isMC, m_susyObj, 10.*GeV, 5., 0.4);
+  m_sigElectrons = get_electrons_signal(&d3pd.ele, m_baseElectrons, nVtx, !m_isMC, m_susyObj, 10.*GeV, 0.16, 0.18, 5., 0.4);
   m_sigMuons     = get_muons_signal(&d3pd.muo, m_baseMuons, nVtx, !m_isMC, m_susyObj, 10.*GeV, .12, 3., 1.);
   m_sigJets      = get_jet_signal(&d3pd.jet, m_susyObj, m_baseJets, 20.*GeV, 2.5, 0.75);
 
@@ -431,7 +428,6 @@ void SusyD3PDAna::matchMuonTriggers()
 
   //int run = d3pd.evt.RunNumber();
 
-  // New prescription!
   // loop over all pre muons
   for(uint i=0; i<m_preMuons.size(); i++){
 

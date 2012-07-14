@@ -243,6 +243,7 @@ bool SusyNtMaker::selectEvent()
   if(nSigLep == 3) n_evt_3Lep++;
 
   // Match the triggers
+  // Wait, this won't work for systematic leptons!
   matchTriggers();
 
   if(m_fillNt){
@@ -277,7 +278,7 @@ void SusyNtMaker::fillNtVars()
   fillLeptonVars();
   fillJetVars();
   fillMetVars();
-  if( m_savePh ) fillPhotonVars();
+  if(m_savePh) fillPhotonVars();
 }
 
 /*--------------------------------------------------------------------------------*/
@@ -412,7 +413,7 @@ void SusyNtMaker::fillElectronVars(const LeptonInfo* lepIn)
   eleOut->z0Unbiased    = element->trackIPEstimate_z0_unbiasedpvunbiased();
   eleOut->errZ0Unbiased = element->trackIPEstimate_sigz0_unbiasedpvunbiased();
 
-  // Get d0 from track
+  // Get d0 from track - old procedure before the d3pd branches were directly available
   //int trkIdx            = get_electron_track( &d3pd.ele, lepIn->idx(), &d3pd.trk );
   //if(trkIdx!=-99){
     //eleOut->d0          = d3pd.trk.d0_wrtPV()->at(trkIdx);
@@ -660,7 +661,7 @@ void SusyNtMaker::saveElectronSF(SusyNtSys sys)
   // loop over preselected leptons and fill the output tree
   for(uint iLep=0; iLep < m_preLeptons.size(); iLep++){
     const LeptonInfo* lep = & m_preLeptons[iLep];
-    if( !lep->isElectron() )continue;
+    if(!lep->isElectron()) continue;
     
     bool match = false;
 
@@ -692,7 +693,7 @@ void SusyNtMaker::saveMuonSF(SusyNtSys sys)
   // loop over preselected leptons and fill the output tree
   for(uint iLep=0; iLep < m_preLeptons.size(); iLep++){
     const LeptonInfo* lep = & m_preLeptons[iLep];
-    if( lep->isElectron() )continue;
+    if(lep->isElectron()) continue;
     
     bool match = false;
 
@@ -712,8 +713,7 @@ void SusyNtMaker::saveMuonSF(SusyNtSys sys)
     }// end loop over muons in SusyNt
     
     // The dreaded case...
-    if( !match )
-      addMissingMuon(lep, sys);
+    if(!match) addMissingMuon(lep, sys);
 
   }// end loop over leptons
       
@@ -743,8 +743,7 @@ void SusyNtMaker::saveJetSF(SusyNtSys sys)
     }// end loop over what we have saved
     
     // The dreaded case...
-    if( !match )
-      addMissingJet(jetIdx, sys);
+    if(!match) addMissingJet(jetIdx, sys);
     
   }// end loop over jets in pre-jets
 
@@ -776,7 +775,7 @@ void SusyNtMaker::addMissingElectron(const LeptonInfo* lep, SusyNtSys sys)
   m_susyObj.SetElecTLV(index, cl_eta, cl_phi, cl_E, trk_eta, trk_phi, nPixHits, nSCTHits, isData, SystErr::NONE, isAF2);
 
   // Now push it back onto to susyNt
-  fillElectronVars( lep );
+  fillElectronVars(lep);
   
   // Set the sf
   Susy::Electron* ele = & m_susyNt.ele()->back();
@@ -816,7 +815,7 @@ void SusyNtMaker::addMissingMuon(const LeptonInfo* lep, SusyNtSys sys)
   m_susyObj.SetMuonTLV(index, pt, eta, phi, E, me_qoverp_exPV, id_qoverp_exPV, me_theta_exPV, id_theta_exPV, charge, isCombined, isData, SystErr::NONE);
   
   // Now push it back onto to susyNt
-  fillMuonVars( lep );
+  fillMuonVars(lep);
   
   // Set the sf
   Susy::Muon* mu = & m_susyNt.muo()->back();
@@ -831,7 +830,7 @@ void SusyNtMaker::addMissingMuon(const LeptonInfo* lep, SusyNtSys sys)
 void SusyNtMaker::addMissingJet(int index, SusyNtSys sys)
 {
   // Get the tlv with the sys
-  TLorentzVector tlv_sys = m_susyObj.GetJetTLV( index );
+  TLorentzVector tlv_sys = m_susyObj.GetJetTLV(index);
   
   D3PDReader::JetD3PDObject* jets = & d3pd.jet;
 
