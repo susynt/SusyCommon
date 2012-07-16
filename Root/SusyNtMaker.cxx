@@ -87,7 +87,7 @@ Bool_t SusyNtMaker::Process(Long64_t entry)
 
   static Long64_t chainEntry = -1;
   chainEntry++;
-  if(m_dbg || chainEntry%1000==0)
+  if(m_dbg || chainEntry%5000==0)
   {
     cout << "**** Processing entry " << setw(6) << chainEntry
          << " run " << setw(6) << d3pd.evt.RunNumber()
@@ -205,6 +205,7 @@ bool SusyNtMaker::selectEvent()
   buildMet();
   evtCheck();
 
+
   // These next cuts are not used to filter the SusyNt because they depend on systematics.
   // Instead, they are simply used for the counters, for comparing the cutflow
 
@@ -212,36 +213,54 @@ bool SusyNtMaker::selectEvent()
   //if(m_evtFlag & PASS_LAr) n_evt_larHole++;
 
   // Tile hot spot
-  if(m_evtFlag & PASS_HotSpot) n_evt_hotSpot++;
-  // Bad jet cut
-  if(m_evtFlag & PASS_BadJet) n_evt_badJet++;
+  if(m_evtFlag & PASS_HotSpot){
+    n_evt_hotSpot++;
+    // Bad jet cut
+    if(m_evtFlag & PASS_BadJet){
+      n_evt_badJet++;
+    }
+  }
 
-  // primary vertex cut
+  // primary vertex cut is actually filtered
   if(!passGoodVtx()) return false; 
-  n_evt_goodVtx++;
   h_cutFlow->Fill(3);
 
   // More cuts just for cutflow
+  // This is a little ugly, but it was the easiest way to check the cutflow locally.
+  if((m_evtFlag & PASS_HotSpot) && (m_evtFlag & PASS_BadJet)){
+  n_evt_goodVtx++;
 
-  // Bad muon veto
-  if(m_evtFlag & PASS_BadMuon) n_evt_badMu++;
-  // Cosmic muon veto
-  if(m_evtFlag & PASS_Cosmic) n_evt_cosmic++;
-
-  n_base_ele += m_baseElectrons.size();
-  n_base_muo += m_baseMuons.size();
-  n_base_jet += m_baseJets.size();
-  n_sig_ele += m_sigElectrons.size();
-  n_sig_muo += m_sigMuons.size();
-  n_sig_jet += m_sigJets.size();
-
-  // Lepton multiplicity
-  uint nSigLep = m_sigElectrons.size() + m_sigMuons.size();
-  //cout << "nSigLep " << nSigLep << endl;
-  if(nSigLep >= 1) n_evt_1Lep++;
-  if(nSigLep >= 2) n_evt_2Lep++;
-  if(nSigLep == 3) n_evt_3Lep++;
-
+    // Bad muon veto
+    if(m_evtFlag & PASS_BadMuon){
+      n_evt_badMu++;
+      // Cosmic muon veto
+      if(m_evtFlag & PASS_Cosmic){
+        n_evt_cosmic++;
+  
+        n_base_ele += m_baseElectrons.size();
+        n_base_muo += m_baseMuons.size();
+        n_base_jet += m_baseJets.size();
+        n_sig_ele += m_sigElectrons.size();
+        n_sig_muo += m_sigMuons.size();
+        n_sig_jet += m_sigJets.size();
+  
+        // Lepton multiplicity
+        uint nSigLep = m_sigElectrons.size() + m_sigMuons.size();
+        //cout << "nSigLep " << nSigLep << endl;
+        if(nSigLep >= 1){
+          n_evt_1Lep++;
+          if(nSigLep >= 2){
+            n_evt_2Lep++;
+            if(nSigLep == 3){
+              n_evt_3Lep++;
+              //cout << "Event " << d3pd.evt.EventNumber() << endl;
+            }
+          }
+        }
+      }
+    }
+  }
+  
   // Match the triggers
   // Wait, this won't work for systematic leptons!
   matchTriggers();
@@ -311,7 +330,7 @@ void SusyNtMaker::fillEventVars()
 
   evt->pdfSF            = m_isMC? getPDFWeight8TeV() : 1;
 
-  addEventFlag(NtSys_NOM,m_evtFlag);
+  addEventFlag(NtSys_NOM, m_evtFlag);
 }
 
 /*--------------------------------------------------------------------------------*/
@@ -650,7 +669,7 @@ void SusyNtMaker::doSystematic()
     fillMetVars(sys);
 
     // Add the event flag for this event
-    addEventFlag(sys,m_evtFlag);
+    addEventFlag(sys, m_evtFlag);
 
   }// end loop over systematic
 }
