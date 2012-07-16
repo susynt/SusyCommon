@@ -5,6 +5,7 @@
 	* Added additional cutflow counters and event checksto the SusyNtMaker so that one
 	  can use it to produce a cutflow.
 	  	* Does not change the filtering at all
+	* Tagging SusyCommon-00-00-20
 
 2012-07-14 Steve
 	* Corrected usage of get_electrons_signal
