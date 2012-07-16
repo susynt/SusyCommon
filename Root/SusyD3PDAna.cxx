@@ -81,7 +81,9 @@ void SusyD3PDAna::Begin(TTree* /*tree*/)
 
   // SUSY cross sections
   if(m_isMC){
-    string xsecFileName  = gSystem->ExpandPathName("$ROOTCOREDIR/data/SUSYTools/susy_crosssections_8TeV.txt");
+    // Using modified cross section file
+    //string xsecFileName  = gSystem->ExpandPathName("$ROOTCOREDIR/data/SUSYTools/susy_crosssections_8TeV.txt");
+    string xsecFileName  = gSystem->ExpandPathName("$ROOTCOREDIR/data/MultiLep/susy_crosssections_8TeV_mod.txt");
     m_susyXsec = new SUSY::CrossSectionDB(xsecFileName);
   }
 
