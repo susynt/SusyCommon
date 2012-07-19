@@ -1,6 +1,6 @@
 #!/bin/bash
 
-iteration=i2
+iteration=i3
 
 #
 # Submit counter job for all mc datasets in input file passed as argument
@@ -34,7 +34,7 @@ for inDS in `cat $1`; do
 	
 	# prun command
 	prun --exec "$command" --tmpDir /tmp --noBuild \
-                --excludedSite=RHUL,OX,SARA,SHEF \
+                --excludedSite=RHUL,OX,SARA,SHEF,LRZ \
 		--outputs "sumWeights.root" \
                 --athenaTag=17.3.1.1 \
 		--inDS  $inDS \
