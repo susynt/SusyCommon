@@ -1,5 +1,10 @@
 # vim: set noexpandtab:
 
+2012-07-19 Steve
+	* Updated samples
+		* Adding Sherpa WW, Wbb, Wgamma, single top schan, 
+	* Tagging SusyCommon-00-00-21
+
 2012-07-16 Steve
 	* Switched to using modifed version of cross section file in common code
 	* Added additional cutflow counters and event checksto the SusyNtMaker so that one
