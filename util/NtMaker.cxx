@@ -130,6 +130,12 @@ int main(int argc, char** argv)
   Long64_t nEntries = chain->GetEntries();
   chain->ls();
 
+  // Try to catch cache errors that give empty files
+  if(nEntries == 0 && nEvt != 0){
+    cerr << "ERROR - zero input entries! Probably a problem. Aborting!" << endl;
+    abort();
+  }
+
   // Build the TSelector
   SusyNtMaker* susyAna = new SusyNtMaker();
   susyAna->setDebug(dbg);
