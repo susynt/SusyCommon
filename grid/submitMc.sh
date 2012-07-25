@@ -43,6 +43,14 @@ for line in ${matches[@]}; do
         outDS="user.$nickname.${inDS%/}_$tag/"
         outDS=${outDS/merge.NTUP_SUSY/SusyNt}
 
+        # If output DS name is too long, need to trim it down.
+        # For now, treat this on a case by case basis
+        echo $outDS
+        if [[ ${#outDS} > 131 ]]; then
+                # For Powheg WZ samples
+                outDS=${outDS/2LeptonFilter/2L}
+        fi
+
         command="./gridScript.sh %IN -s $sample -w $sumw"
 
 	echo 
