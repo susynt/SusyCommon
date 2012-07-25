@@ -8,19 +8,24 @@ nGBPerJob=MAX
 athenaTag=17.3.1.1
 
 
-# get the samples of interest
-if [[ $# = 0 ]]; then
-        echo "submit all samples"
-        pattern="mc12"
-else
-        pattern=$1
-fi
+# dataset file and grep pattern can be provided as arguments
+pattern="mc12"
+dsFile="mcSamples.txt"
+while [[ $# > 0 ]]; do
+        if [[ $1 == "-f" ]]; then
+                shift
+                dsFile=$1
+        else
+                pattern=$1
+        fi
+        shift
+done
 
 # User blacklist of sites
 blackList=`cat blacklist.txt`
 
 # A trick to parse the text, first separate columns by commas
-matches=(`cat mcSamples.txt | grep $pattern | tr '\t' ','`)
+matches=(`cat $dsFile | grep $pattern | tr '\t' ','`)
 echo "${#matches[@]} matches"
 
 
