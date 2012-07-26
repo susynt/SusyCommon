@@ -1,16 +1,36 @@
 #!/bin/bash
 
-for ds in `dq2-ls "mc11_7TeV.*.simplifiedModel_wA_slep_noWcascade_*.merge.NTUP_SUSY.e1043_a131_s1353_a145_r2993_p935/" | sort`
-do
+#
+# Generate susy simplified model sample list for grid submission from a list of datasets
+# You need to have tier3 ami setup in order to use this
+#
 
-        # Get the grid point number
-        id=${ds#*wA_slep_}
-        id=${id%.merge*}
+if [[ $# < 1 ]]; then
+        echo "Supply list of samples"
+        exit 1
+fi
 
-        sample="wA_sl_$id"
-        #sumw=`ami dataset info $ds | grep totalEvents | awk '{print $2}'`
-        sumw=1
+function getXsec {
 
-        echo -e "$sample\t$ds\t$sumw"
+        ds=$1
+        # extract dataset ID
+        id=${ds#mc12_8TeV.}
+        id=${id%.Herwigpp*}
+        grep $id $TestArea/SusyCommon/data/modeA_lightslep_MC1eqMN2.txt | awk '{print $5}'
+
+}
+
+
+input=$1
+
+for ds in `cat $input`; do
+
+        # Get the sum of weights from AMI (ok for herwigpp samples)
+        sumw=`ami dataset info $ds | grep totalEvents | awk '{print $2}'`
+        # Get the cross section from the text file (for now)
+        xsec=`getXsec $ds`
+
+        echo -e "$ds\t$sumw\t$xsec"
 
 done
+

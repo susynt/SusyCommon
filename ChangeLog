@@ -1,5 +1,10 @@
 # vim: set noexpandtab:
 
+2012-07-26 Steve
+	* Added some simplified model mode A samples
+		* Not all prio 0 samples are ready, will add more later
+	* Updated submitSusy script
+
 2012-07-22 Steve
 	* Added protection for dcache errors that give empty files
 	* Jobs will now abort if there are zero input entries
