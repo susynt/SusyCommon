@@ -12,6 +12,8 @@
 #include "MultiLep/ElectronD3PDObject.h"
 #include "MultiLep/MuonD3PDObject.h"
 #include "MultiLep/JetD3PDObject.h"
+#include "MultiLep/PhotonD3PDObject.h"
+#include "MultiLep/TauD3PDObject.h"
 #include "MultiLep/METD3PDObject.h"
 #include "MultiLep/TrackD3PDObject.h"
 #include "MultiLep/EFTriggerD3PDObject.h"
@@ -20,7 +22,6 @@
 #include "MultiLep/TruthParticleD3PDObject.h"
 #include "MultiLep/TruthMuonD3PDObject.h"
 
-#include "MultiLep/PhotonD3PDObject.h"
 
 #include "SusyNtuple/SusyDefs.h"
 
@@ -37,6 +38,7 @@ typedef D3PDReader::MuonD3PDObjectElement MuonElement;
 typedef D3PDReader::JetD3PDObjectElement JetElement;
 typedef D3PDReader::TruthMuonD3PDObjectElement TruthMuonElement;
 typedef D3PDReader::PhotonD3PDObjectElement PhotonElement;
+typedef D3PDReader::TauD3PDObjectElement TauElement;
 
 class SusyD3PDContainer
 {
@@ -52,6 +54,8 @@ class SusyD3PDContainer
     D3PDReader::ElectronD3PDObject      ele;
     D3PDReader::MuonD3PDObject          muo;
     D3PDReader::JetD3PDObject           jet;
+    D3PDReader::PhotonD3PDObject        pho;
+    D3PDReader::TauD3PDObject           tau;
     D3PDReader::METD3PDObject           met;
     D3PDReader::TrackD3PDObject         trk;
     D3PDReader::VertexD3PDObject        vtx;
@@ -59,7 +63,6 @@ class SusyD3PDContainer
     D3PDReader::GenEventD3PDObject      gen;
     D3PDReader::TruthParticleD3PDObject truth;
     D3PDReader::TruthMuonD3PDObject     truthMu;
-    D3PDReader::PhotonD3PDObject        pho;
 };
 
 

@@ -95,7 +95,7 @@ Bool_t SusyNtMaker::Process(Long64_t entry)
   }
 
   if(selectEvent() && m_fillNt){
-    m_outTree->Fill(); //fillNtVars();
+    m_outTree->Fill(); 
     n_evt_saved++;
   }
 
@@ -260,7 +260,7 @@ bool SusyNtMaker::selectEvent()
       }
     }
   }
-  
+
   // Match the triggers
   // Wait, this won't work for systematic leptons!
   matchTriggers();
@@ -278,7 +278,10 @@ bool SusyNtMaker::selectEvent()
     // so that we don't keep committing conflicting changes...
 
     // For filling the output tree, require at least 2 pre-selected leptons (baseline before OR)
-    if((m_susyNt.ele()->size() + m_susyNt.muo()->size()) < 2)  return false;
+    //if((m_susyNt.ele()->size() + m_susyNt.muo()->size()) < 2)  return false;
+
+    // Now counting taus as well!
+    if((m_susyNt.ele()->size() + m_susyNt.muo()->size() + m_susyNt.tau()->size()) < 2)  return false;
   
     // For Fake studies
     //if((m_susyNt.ele()->size() + m_susyNt.muo()->size()) < 1)  return false;
@@ -296,6 +299,7 @@ void SusyNtMaker::fillNtVars()
   fillEventVars();
   fillLeptonVars();
   fillJetVars();
+  fillTauVars();
   fillMetVars();
   if(m_savePh) fillPhotonVars();
 }
@@ -571,29 +575,6 @@ void SusyNtMaker::fillJetVar(int jetIdx)
 }
 
 /*--------------------------------------------------------------------------------*/
-// Fill MET variables
-/*--------------------------------------------------------------------------------*/
-void SusyNtMaker::fillMetVars(SusyNtSys sys)
-{
-  if(m_dbg) cout << "fillMetVars" << endl;
-
-  // Just fill the lv for now
-  double Et  = m_met.Et()/GeV;
-  double phi = m_met.Phi(); 
-
-  //double px = m_met.Px()/GeV;
-  //double py = m_met.Py()/GeV;
-  //double pz = m_met.Pz()/GeV;
-  //double E  = m_met.E()/GeV;
-  
-  m_susyNt.met()->push_back( Susy::Met() );
-  Susy::Met* metOut = & m_susyNt.met()->back();
-  metOut->Et  = Et;
-  metOut->phi = phi;
-  metOut->sys = sys;  
-}
-
-/*--------------------------------------------------------------------------------*/
 // Fill Photon variables
 /*--------------------------------------------------------------------------------*/
 void SusyNtMaker::fillPhotonVars()
@@ -610,7 +591,6 @@ void SusyNtMaker::fillPhotonVars()
 /*--------------------------------------------------------------------------------*/
 void SusyNtMaker::fillPhotonVar(int phIdx)
 {
-
   if(m_dbg) cout << "fillPhotonVars" << endl;
   m_susyNt.pho()->push_back( Susy::Photon() );
   Susy::Photon* phoOut = & m_susyNt.pho()->back();
@@ -635,7 +615,78 @@ void SusyNtMaker::fillPhotonVar(int phIdx)
 
   // Miscellaneous 
   phoOut->idx    = phIdx;
+}
 
+/*--------------------------------------------------------------------------------*/
+// Fill Tau variables
+/*--------------------------------------------------------------------------------*/
+void SusyNtMaker::fillTauVars()
+{
+  if(m_dbg) cout << "fillTauVars" << endl;
+
+  // Loop over selected taus
+  for(uint iTau=0; iTau<m_preTaus.size(); iTau++){
+    int tauIdx = m_preTaus[iTau];  
+
+    fillTauVar(tauIdx);
+  }
+}
+/*--------------------------------------------------------------------------------*/
+void SusyNtMaker::fillTauVar(int tauIdx)
+{
+  if(m_dbg) cout << "fillTauVars" << endl;
+  m_susyNt.tau()->push_back( Susy::Tau() );
+  Susy::Tau* tauOut = & m_susyNt.tau()->back();
+  const TauElement* element = & d3pd.tau[tauIdx];
+
+  // Set TLV
+  const TLorentzVector* tauLV = & m_tauLVs.at(tauIdx);
+  float pt  = tauLV->Pt() / GeV;
+  float eta = tauLV->Eta();
+  float phi = tauLV->Phi();
+  float m   = tauLV->M() / GeV;
+  
+  tauOut->SetPtEtaPhiM(pt, eta, phi, m);
+  tauOut->pt    = pt;
+  tauOut->eta   = eta;
+  tauOut->phi   = phi;
+  tauOut->m     = m;
+
+  tauOut->q                     = element->charge();
+
+  tauOut->jetBDTSigLoose        = element->JetBDTSigLoose();
+  tauOut->jetBDTSigMedium       = element->JetBDTSigMedium();
+  tauOut->jetBDTSigTight        = element->JetBDTSigTight();
+  tauOut->eleBDTLoose           = element->EleBDTLoose();
+  tauOut->eleBDTMedium          = element->EleBDTMedium();
+  tauOut->eleBDTTight           = element->EleBDTTight();
+
+  tauOut->muonVeto              = element->muonVeto();
+  
+  tauOut->idx   = tauIdx;
+}
+
+/*--------------------------------------------------------------------------------*/
+// Fill MET variables
+/*--------------------------------------------------------------------------------*/
+void SusyNtMaker::fillMetVars(SusyNtSys sys)
+{
+  if(m_dbg) cout << "fillMetVars" << endl;
+
+  // Just fill the lv for now
+  double Et  = m_met.Et()/GeV;
+  double phi = m_met.Phi(); 
+
+  //double px = m_met.Px()/GeV;
+  //double py = m_met.Py()/GeV;
+  //double pz = m_met.Pz()/GeV;
+  //double E  = m_met.E()/GeV;
+  
+  m_susyNt.met()->push_back( Susy::Met() );
+  Susy::Met* metOut = & m_susyNt.met()->back();
+  metOut->Et  = Et;
+  metOut->phi = phi;
+  metOut->sys = sys;  
 }
 
 /*--------------------------------------------------------------------------------*/

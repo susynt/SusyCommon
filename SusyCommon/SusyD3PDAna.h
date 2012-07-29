@@ -123,6 +123,9 @@ class SusyD3PDAna : public SusyD3PDInterface
     
     // Set to save photons or not
     void setSavePhotons(bool phOn){ m_savePh = phOn; };
+
+    // Perform full tau overlap removal
+    void setDoTauOR(bool doIt) { m_doTauOR = doIt; }
     
     //
     // Trigger - check matching for all baseline leptons
@@ -152,7 +155,7 @@ class SusyD3PDAna : public SusyD3PDInterface
     TString                     m_sample;       // sample name
     DataStream                  m_stream;       // data stream enum, taken from sample name
 
-    std::string                 m_metCalib;     // Calibration string for MET (and jets)
+    //std::string                 m_metCalib;     // Calibration string for MET (and jets)
 
     //
     // Object collections (usually just vectors of indices)
@@ -161,22 +164,27 @@ class SusyD3PDAna : public SusyD3PDInterface
     // "selected" objects pass kinematic cuts, but no overlap removal applied
     std::vector<int>            m_preElectrons; // selected electrons
     std::vector<int>            m_preMuons;     // selected muons
-    std::vector<int>            m_preJets;      // selected jets
     std::vector<LeptonInfo>     m_preLeptons;   // selected leptons
+    std::vector<int>            m_preJets;      // selected jets
+    std::vector<int>            m_preTaus;      // selected taus
     
     // "baseline" objects pass selection + overlap removal
     std::vector<int>            m_baseElectrons;// baseline electrons
     std::vector<int>            m_baseMuons;    // baseline muons
     std::vector<LeptonInfo>     m_baseLeptons;  // baseline leptonInfos
     std::vector<int>            m_baseJets;     // baseline jets
+    std::vector<int>            m_baseTaus;     // baseline taus
 
     // "signal" objects pass baseline + signal selection (like iso)
     std::vector<int>            m_sigElectrons; // signal electrons
     std::vector<int>            m_sigMuons;     // signal muons
     std::vector<LeptonInfo>     m_sigLeptons;   // signal leptonInfos
     std::vector<int>            m_sigJets;      // signal jets
-
+    std::vector<int>            m_sigTaus;      // signal taus
     std::vector<int>            m_sigPhotons;   // signal photons
+
+    // Tau TLorentzVectors, because they are not stored in SUSYTools
+    std::vector<TLorentzVector> m_tauLVs;
 
     // MET
     TLorentzVector              m_met;          // fully corrected MET
@@ -193,6 +201,7 @@ class SusyD3PDAna : public SusyD3PDInterface
     float                       m_xsec;         // optional user cross section, to override susy xsec usage
     bool                        m_sys;          // True if you want sys for MC, must be set by user. 
     bool                        m_savePh;       // True if want to save photons
+    bool                        m_doTauOR;      // Do tau overlap removal
 
     uint                        m_evtFlag;      // Reset after each evt
 

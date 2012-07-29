@@ -1,5 +1,11 @@
 # vim: set noexpandtab:
 
+2012-07-29 Steve
+	* Added taus
+		* Using new functions in the common code, e.g. get_taus_baseline
+		* There's a switch for turning tau overlap removal off (for d3pd code)
+		* Taus now counted in the event filtering
+
 2012-07-26 Steve
 	* Added some simplified model mode A samples
 		* Not all prio 0 samples are ready, will add more later

@@ -14,14 +14,15 @@ SusyD3PDContainer::SusyD3PDContainer(const Long64_t& entry) :
         ele(entry),
         muo(entry),
         jet(entry),
+	pho(entry),
+	tau(entry),
         met(entry),
         trk(entry),
         vtx(entry),
         trig(entry),
         gen(entry),
         truth(entry),
-        truthMu(entry),
-	pho(entry)
+        truthMu(entry)
 {
 }
 /*--------------------------------------------------------------------------------*/
@@ -33,6 +34,8 @@ void SusyD3PDContainer::ReadFrom(TTree* tree)
   ele.ReadFrom(tree);
   muo.ReadFrom(tree);
   jet.ReadFrom(tree);
+  pho.ReadFrom(tree);
+  tau.ReadFrom(tree);
   met.ReadFrom(tree);
   trk.ReadFrom(tree);
   vtx.ReadFrom(tree);
@@ -40,7 +43,6 @@ void SusyD3PDContainer::ReadFrom(TTree* tree)
   gen.ReadFrom(tree);
   truth.ReadFrom(tree);
   truthMu.ReadFrom(tree);
-  pho.ReadFrom(tree);
 }
 
 /*--------------------------------------------------------------------------------*/

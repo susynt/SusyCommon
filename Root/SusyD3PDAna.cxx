@@ -3,6 +3,7 @@
 #include "MultiLep/ElectronTools.h"
 #include "MultiLep/MuonTools.h"
 #include "MultiLep/JetTools.h"
+#include "MultiLep/TauTools.h"
 #include "MultiLep/CutflowTools.h"
 
 #include "MultiLep/PhotonTools.h"
@@ -20,12 +21,13 @@ using namespace std;
 /*--------------------------------------------------------------------------------*/
 SusyD3PDAna::SusyD3PDAna() : 
         m_sample(""),
-        m_metCalib("RefFinal"),
+        //m_metCalib("RefFinal"),
         m_lumi(5831),
         m_sumw(1),
 	m_xsec(-1),
 	m_sys(false),
 	m_savePh(false),
+        m_doTauOR(false),
         m_pileup(0),
         m_pileup1fb(0),
         m_susyXsec(0)
@@ -68,14 +70,17 @@ void SusyD3PDAna::Begin(TTree* /*tree*/)
 
   // Setup Jet/MET calibration
   // This no longer does anything. The common code only supports Egamma10NoTau at the moment!
-  if(m_metCalib == "RefFinal"){
-    d3pd.jet.SetPrefix("jet_AntiKt4LCTopo_");
-  }
+  //if(m_metCalib == "RefFinal"){
+    //d3pd.jet.SetPrefix("jet_AntiKt4LCTopo_");
+  //}
 
   // Setup SUSYTools
   m_susyObj.initialize(!m_isMC);
   // Turn off jet calibration for now
   m_susyObj.SetJetCalib(false);
+
+  // Reserve space for taus
+  m_tauLVs.reserve(10);
 
   m_fakeMetEst.initialize("$ROOTCOREDIR/data/MultiLep/fest_periodF_v1.root");
 
@@ -193,6 +198,7 @@ void SusyD3PDAna::selectBaselineObjects(SusyNtSys sys)
   m_preElectrons = get_electrons_baseline( &d3pd.ele, !m_isMC, d3pd.evt.RunNumber(), m_susyObj, 10.*GeV, 2.47, susySys, isAF2 );
   m_preMuons     = get_muons_baseline( &d3pd.muo, !m_isMC, m_susyObj, 10.*GeV, 2.4, susySys );
   m_preJets      = get_jet_baseline( &d3pd.jet, &d3pd.vtx, &d3pd.evt, !m_isMC, m_susyObj, 20.*GeV, 4.9, susySys, false, goodJets );
+  m_preTaus      = get_taus_baseline( &d3pd.tau, m_tauLVs );
   
   performOverlapRemoval();
 
@@ -212,6 +218,15 @@ void SusyD3PDAna::performOverlapRemoval()
   // jet-e overlap removal
   m_baseJets      = overlap_removal(m_susyObj, &d3pd.jet, m_preJets, &d3pd.ele, m_baseElectrons, 0.2, false, false);
 
+  if(m_doTauOR){
+    // tau-e overlap removal
+    m_baseTaus    = overlap_removal(m_susyObj, &d3pd.tau, m_preTaus, &d3pd.ele, m_baseElectrons, 0.2, false, false);
+    // tau-mu overlap removal
+    m_baseTaus    = overlap_removal(m_susyObj, &d3pd.tau, m_baseTaus, &d3pd.muo, m_preMuons, 0.2, false, false);
+    // jet-tau overlap removal
+    m_baseJets    = overlap_removal(m_susyObj, &d3pd.jet, m_baseJets, &d3pd.tau, m_baseTaus, 0.2, false, false);
+  }
+
   // e-jet overlap removal
   m_baseElectrons = overlap_removal(m_susyObj, &d3pd.ele, m_baseElectrons, &d3pd.jet, m_baseJets, 0.4, false, false);
 
@@ -229,6 +244,7 @@ void SusyD3PDAna::performOverlapRemoval()
   // remove SFOS lepton pairs with Mll < 12 GeV
   m_baseElectrons = RemoveSFOSPair(m_susyObj, &d3pd.ele, m_baseElectrons, 12.*GeV);
   m_baseMuons     = RemoveSFOSPair(m_susyObj, &d3pd.muo, m_baseMuons,     12.*GeV);
+  m_baseTaus      = RemoveSFOSPair(m_susyObj, &d3pd.tau, m_baseTaus,      12.*GeV);
 }
 
 /*--------------------------------------------------------------------------------*/
@@ -241,6 +257,7 @@ void SusyD3PDAna::selectSignalObjects()
   m_sigElectrons = get_electrons_signal(&d3pd.ele, m_baseElectrons, nVtx, !m_isMC, m_susyObj, 10.*GeV, 0.16, 0.18, 5., 0.4);
   m_sigMuons     = get_muons_signal(&d3pd.muo, m_baseMuons, nVtx, !m_isMC, m_susyObj, 10.*GeV, .12, 3., 1.);
   m_sigJets      = get_jet_signal(&d3pd.jet, m_susyObj, m_baseJets, 20.*GeV, 2.5, 0.75);
+  m_sigTaus      = get_taus_signal(&d3pd.tau, m_baseTaus);
 
   // combine leptons
   m_sigLeptons   = buildLeptonInfos(&d3pd.ele, m_sigElectrons, &d3pd.muo, m_sigMuons, m_susyObj);
@@ -266,7 +283,8 @@ void SusyD3PDAna::buildMet(SusyNtSys sys)
   // should enter the RefEle term
   vector<int> allElectrons = get_electrons_all(&d3pd.ele, m_susyObj);
   TVector2 metVector = GetMetVector(&d3pd.jet, m_susyObj, &d3pd.muo, &d3pd.ele, &d3pd.met, 
-                                    m_preMuons, m_baseElectrons, allElectrons, m_metCalib, susySys);
+                                    m_preMuons, m_baseElectrons, allElectrons, "", susySys);
+                                    //m_preMuons, m_baseElectrons, allElectrons, m_metCalib, susySys
   m_met.SetPxPyPzE(metVector.X(), metVector.Y(), 0, metVector.Mod());
 }
 

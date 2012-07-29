@@ -46,9 +46,11 @@ class SusyNtMaker : public SusyD3PDAna
     void fillMuonVars(const LeptonInfo* lepIn);
     void fillJetVars();
     void fillJetVar(int jetIdx);
-    void fillMetVars(SusyNtSys sys = NtSys_NOM);
     void fillPhotonVars();
     void fillPhotonVar(int phIdx);
+    void fillTauVars();
+    void fillTauVar(int tauIdx);
+    void fillMetVars(SusyNtSys sys = NtSys_NOM);
 
     // Systematic Methods
     void doSystematic();
