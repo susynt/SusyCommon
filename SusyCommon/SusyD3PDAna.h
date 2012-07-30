@@ -121,11 +121,12 @@ class SusyD3PDAna : public SusyD3PDInterface
     // Set sys run
     void setSys(bool sysOn){ m_sys = sysOn; };
     
-    // Set to save photons or not
-    void setSavePhotons(bool phOn){ m_savePh = phOn; };
+    // Toggle photon selection
+    //void setSavePhotons(bool phOn){ m_savePh = phOn; };
+    void setSelectPhotons(bool doIt) { m_selectPhotons = doIt; }
 
-    // Perform full tau overlap removal
-    void setDoTauOR(bool doIt) { m_doTauOR = doIt; }
+    // Toggle tau selection and overlap removal
+    void setSelectTaus(bool doIt) { m_selectTaus = doIt; }
     
     //
     // Trigger - check matching for all baseline leptons
@@ -172,16 +173,16 @@ class SusyD3PDAna : public SusyD3PDInterface
     std::vector<int>            m_baseElectrons;// baseline electrons
     std::vector<int>            m_baseMuons;    // baseline muons
     std::vector<LeptonInfo>     m_baseLeptons;  // baseline leptonInfos
-    std::vector<int>            m_baseJets;     // baseline jets
     std::vector<int>            m_baseTaus;     // baseline taus
+    std::vector<int>            m_baseJets;     // baseline jets
 
     // "signal" objects pass baseline + signal selection (like iso)
     std::vector<int>            m_sigElectrons; // signal electrons
     std::vector<int>            m_sigMuons;     // signal muons
     std::vector<LeptonInfo>     m_sigLeptons;   // signal leptonInfos
-    std::vector<int>            m_sigJets;      // signal jets
     std::vector<int>            m_sigTaus;      // signal taus
     std::vector<int>            m_sigPhotons;   // signal photons
+    std::vector<int>            m_sigJets;      // signal jets
 
     // Tau TLorentzVectors, because they are not stored in SUSYTools
     std::vector<TLorentzVector> m_tauLVs;
@@ -200,8 +201,9 @@ class SusyD3PDAna : public SusyD3PDInterface
     float                       m_sumw;         // sum of mc weights for normalization, must be set by user
     float                       m_xsec;         // optional user cross section, to override susy xsec usage
     bool                        m_sys;          // True if you want sys for MC, must be set by user. 
-    bool                        m_savePh;       // True if want to save photons
-    bool                        m_doTauOR;      // Do tau overlap removal
+    //bool                        m_savePh;       // True if want to save photons
+    bool                        m_selectPhotons;// Toggle photon selection
+    bool                        m_selectTaus;   // Toggle tau selection and overlap removal
 
     uint                        m_evtFlag;      // Reset after each evt
 

@@ -1,5 +1,12 @@
 # vim: set noexpandtab:
 
+2012-07-30 Steve
+	* Added flag for toggling tau selection and OR (not just OR as before)
+	* Modified photon flag to be similar in usage to tau flag
+	* Add tau counters for cutflow (not yet used in the nLep cut, though)
+	* Now saving the MET components: RefEle, RefMuon, RefJet, SoftJet, RefGamma, CellOutEflow
+	* Tagging SusyCommon-00-00-24
+
 2012-07-29 Steve
 	* Added taus
 		* Using new functions in the common code, e.g. get_taus_baseline

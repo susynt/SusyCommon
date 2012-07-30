@@ -26,8 +26,9 @@ SusyD3PDAna::SusyD3PDAna() :
         m_sumw(1),
 	m_xsec(-1),
 	m_sys(false),
-	m_savePh(false),
-        m_doTauOR(false),
+	//m_savePh(false),
+        m_selectPhotons(false),
+        m_selectTaus(false),
         m_pileup(0),
         m_pileup1fb(0),
         m_susyXsec(0)
@@ -198,7 +199,14 @@ void SusyD3PDAna::selectBaselineObjects(SusyNtSys sys)
   m_preElectrons = get_electrons_baseline( &d3pd.ele, !m_isMC, d3pd.evt.RunNumber(), m_susyObj, 10.*GeV, 2.47, susySys, isAF2 );
   m_preMuons     = get_muons_baseline( &d3pd.muo, !m_isMC, m_susyObj, 10.*GeV, 2.4, susySys );
   m_preJets      = get_jet_baseline( &d3pd.jet, &d3pd.vtx, &d3pd.evt, !m_isMC, m_susyObj, 20.*GeV, 4.9, susySys, false, goodJets );
-  m_preTaus      = get_taus_baseline( &d3pd.tau, m_tauLVs );
+
+  // Preselect taus
+  if(m_selectTaus){
+    m_preTaus    = get_taus_baseline( &d3pd.tau, m_tauLVs );
+  }
+  else{
+    m_preTaus.clear();
+  }
   
   performOverlapRemoval();
 
@@ -218,7 +226,7 @@ void SusyD3PDAna::performOverlapRemoval()
   // jet-e overlap removal
   m_baseJets      = overlap_removal(m_susyObj, &d3pd.jet, m_preJets, &d3pd.ele, m_baseElectrons, 0.2, false, false);
 
-  if(m_doTauOR){
+  if(m_selectTaus) {
     // tau-e overlap removal
     m_baseTaus    = overlap_removal(m_susyObj, &d3pd.tau, m_preTaus, &d3pd.ele, m_baseElectrons, 0.2, false, false);
     // tau-mu overlap removal
@@ -259,8 +267,11 @@ void SusyD3PDAna::selectSignalObjects()
   m_sigJets      = get_jet_signal(&d3pd.jet, m_susyObj, m_baseJets, 20.*GeV, 2.5, 0.75);
   m_sigTaus      = get_taus_signal(&d3pd.tau, m_baseTaus);
 
-  // combine leptons
+  // combine light leptons
   m_sigLeptons   = buildLeptonInfos(&d3pd.ele, m_sigElectrons, &d3pd.muo, m_sigMuons, m_susyObj);
+
+  // photon selection done in separate method, why?
+  if(m_selectPhotons) selectSignalPhotons();
 }
 
 /*--------------------------------------------------------------------------------*/

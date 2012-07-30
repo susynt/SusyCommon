@@ -15,9 +15,11 @@ SusyNtMaker::SusyNtMaker() : m_fillNt(true)
 {
   n_base_ele=0;
   n_base_muo=0;
+  n_base_tau=0;
   n_base_jet=0;
   n_sig_ele=0;
   n_sig_muo=0;
+  n_sig_tau=0;
   n_sig_jet=0;
   n_evt_initial=0;
   n_evt_grl=0;
@@ -119,9 +121,11 @@ void SusyNtMaker::Terminate()
   cout << "Object counter" << endl;
   cout << "  BaseEle  " << n_base_ele    << endl;
   cout << "  BaseMuo  " << n_base_muo    << endl;
+  cout << "  BaseTau  " << n_base_tau    << endl;
   cout << "  BaseJet  " << n_base_jet    << endl;
   cout << "  SigEle   " << n_sig_ele     << endl;
   cout << "  SigMuo   " << n_sig_muo     << endl;
+  cout << "  SigTau   " << n_sig_tau     << endl;
   cout << "  SigJet   " << n_sig_jet     << endl;
   cout << endl;
   cout << "Event counter" << endl;
@@ -201,7 +205,8 @@ bool SusyNtMaker::selectEvent()
   // Get Nominal Objects
   
   selectObjects();
-  if(m_savePh) selectSignalPhotons();
+  // Now using m_selectPhotons flag to toggle selection in SusyD3PDAna
+  //if(m_savePh) selectSignalPhotons();
   buildMet();
   evtCheck();
 
@@ -239,9 +244,11 @@ bool SusyNtMaker::selectEvent()
   
         n_base_ele += m_baseElectrons.size();
         n_base_muo += m_baseMuons.size();
+        n_base_tau += m_baseTaus.size();
         n_base_jet += m_baseJets.size();
         n_sig_ele += m_sigElectrons.size();
         n_sig_muo += m_sigMuons.size();
+        n_sig_tau += m_sigTaus.size();
         n_sig_jet += m_sigJets.size();
   
         // Lepton multiplicity
@@ -301,7 +308,9 @@ void SusyNtMaker::fillNtVars()
   fillJetVars();
   fillTauVars();
   fillMetVars();
-  if(m_savePh) fillPhotonVars();
+  // If photon selection is turned off, there are no photons to save anyway
+  //if(m_savePh) fillPhotonVars();
+  fillPhotonVars();
 }
 
 /*--------------------------------------------------------------------------------*/
@@ -662,6 +671,7 @@ void SusyNtMaker::fillTauVar(int tauIdx)
   tauOut->eleBDTTight           = element->EleBDTTight();
 
   tauOut->muonVeto              = element->muonVeto();
+  tauOut->trueTau               = element->trueTauAssocSmall_matched();
   
   tauOut->idx   = tauIdx;
 }
@@ -687,6 +697,14 @@ void SusyNtMaker::fillMetVars(SusyNtSys sys)
   metOut->Et  = Et;
   metOut->phi = phi;
   metOut->sys = sys;  
+
+  // MET comp terms - should we work the systematics into here as well?
+  metOut->refEle        = m_susyObj.computeMETComponent(METUtil::RefEle).Mod();
+  metOut->refMuo        = m_susyObj.computeMETComponent(METUtil::RefMuon).Mod();
+  metOut->refJet        = m_susyObj.computeMETComponent(METUtil::RefJet).Mod();
+  metOut->refGamma      = m_susyObj.computeMETComponent(METUtil::RefGamma).Mod();
+  metOut->softJet       = m_susyObj.computeMETComponent(METUtil::SoftJets).Mod();
+  metOut->refCell       = m_susyObj.computeMETComponent(METUtil::CellOutEflow).Mod();
 }
 
 /*--------------------------------------------------------------------------------*/

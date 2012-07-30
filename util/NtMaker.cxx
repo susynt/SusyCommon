@@ -55,6 +55,9 @@ void help()
   cout << "  --savePh will save photons"        << endl;
   cout << "     default: off"                   << endl;
 
+  cout << "  --saveTau will save taus"          << endl;
+  cout << "     default: off"                   << endl;
+
   cout << "  -h print this help"                << endl;
 }
 
@@ -73,6 +76,7 @@ int main(int argc, char** argv)
   string fileList = "fileList.txt";
   bool sysOn      = false;
   bool savePh     = false;
+  bool saveTau    = false;
   bool writeNt    = true;
 
   cout << "SusyNtMaker" << endl;
@@ -102,6 +106,8 @@ int main(int argc, char** argv)
       sysOn = true;
     else if (strcmp(argv[i], "--savePh") == 0)
       savePh = true;
+    else if (strcmp(argv[i], "--saveTau") == 0)
+      saveTau = true;
     //if (strcmp(argv[i], "-h") == 0)
     else
     {
@@ -119,6 +125,7 @@ int main(int argc, char** argv)
   cout << "  sumw    " << sumw     << endl;
   cout << "  sys     " << sysOn    << endl;
   cout << "  savePh  " << savePh   << endl;
+  cout << "  saveTau " << saveTau  << endl;
   cout << "  lumi    " << lumi     << endl;
   cout << "  xsec    " << xsec     << endl;
   cout << endl;
@@ -143,7 +150,9 @@ int main(int argc, char** argv)
   susyAna->setLumi(lumi);
   susyAna->setSumw(sumw);
   susyAna->setSys(sysOn);
-  susyAna->setSavePhotons(savePh);
+  //susyAna->setSavePhotons(savePh);
+  susyAna->setSelectPhotons(savePh);
+  susyAna->setSelectTaus(saveTau);
   susyAna->setXsec(xsec);
   susyAna->setFillNt(writeNt);
 

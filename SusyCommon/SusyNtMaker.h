@@ -93,9 +93,11 @@ class SusyNtMaker : public SusyD3PDAna
     // Some object counts
     uint                n_base_ele;
     uint                n_base_muo;
+    uint                n_base_tau;
     uint                n_base_jet;
     uint                n_sig_ele;
     uint                n_sig_muo;
+    uint                n_sig_tau;
     uint                n_sig_jet;
 
     // Some event counts
