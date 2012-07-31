@@ -19,12 +19,14 @@ svn co svn+ssh://svn.cern.ch/reps/atlasinst/Institutes/UCIrvine/SUSYAnalysis/Sus
 # To make a tag, use the script/makeTag.sh script (only for developers)
 ./scripts/makeTag.sh SusyCommon-XX-YY-ZZ "Some message"
 
+
 # To install, check out SusyNtuple, the MultiLep Common code, and run the MultiLep install script 
 # NOTE that this snippet will checkout the trunks of each code.  If you need to use specific tags, use the appropriate svn commands
+# It is recommended that you do this installation in a clean workarea, to avoid conflicts with other package tags.
 svn co svn+ssh://svn.cern.ch/reps/atlasinst/Institutes/UCIrvine/SUSYAnalysis/SusyNtuple/trunk SusyNtuple
 svn co svn+ssh://svn.cern.ch/reps/atlasphys/Physics/SUSY/Analyses/Multilepton/trunk/twentyinvfb/MultiLep MultiLep
 source MultiLep/installscripts/install_script.sh
-# Or, for convenience, these commands have been put in this package (kinit first):
+# Or, for convenience, these commands have been put in one script (kinit first):
 source SusyCommon/scripts/install.sh
 
 # for examples, here is my analysis code which depends on this package
@@ -33,11 +35,7 @@ https://svnweb.cern.ch/trac/atlasinst/browser/Institutes/UCIrvine/sfarrell/SusyA
 
 #------------------------------------------------------------------------------------
 # Overview of the package
-# This was not updated....
 #------------------------------------------------------------------------------------
-
-SusyDefs
-  - typedefs, constants, global functions, etc.
 
 SusyD3PDInterface
   - TSelector for processing Susy D3PDs
@@ -48,21 +46,11 @@ SusyD3PDAna
   - Holds all the functionality for doing the analysis out of d3pds.
     Object selection, event cleaning, reweighting, etc.
 
-SusyNt
-  - Definitions for the SusyNt classes: particles, jets, event variables, etc.
-
-SusyNtObject
-  - Manages SusyNt read/write of branches
-
 SusyNtMaker
   - Inherits from SusyD3PDAna
   - Applies cleaning cuts and event filtering
   - Writes a SusyNt tree
 
-SusyNtAna
-  - TSelector which will run on SusyNt
-  - Holds functionality to do final object selections
-        
 
 # Executables
 SusyD3PDTest
@@ -97,19 +85,6 @@ After you run NtMaker, it will spit out a susyNt.root which will contain the tre
 
 For more advanced grid production of SusyNt, please see the scripts under grid/
 
-
-##########################
-# How to Run over SusyNt #
-##########################
-
-# This info should be removed from here, updated, and put in the SusyNtuple package README
-
-1.) Move to run/ area
-2.) Put your files to run over in a list
-command: SusyNtTest -f fileList.txt
-
-Other commands exist and can be found by running SusyNtTest -h
-This list will be updated to include switching on and off sys.
 
 #------------------------------------------------------------------------------------
 # More stuff to come!
