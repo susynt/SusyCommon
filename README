@@ -4,7 +4,8 @@
 #  A RootCore package for common UCI SUSY analysis
 #------------------------------------------------------------------------------------
 
-
+# For useful information on using these packages, please consult the TWiki:
+https://twiki.cern.ch/twiki/bin/viewauth/AtlasProtected/UCISusyNtuples
 
 # Link to code in SVN browser
 https://svnweb.cern.ch/trac/atlasinst/browser/Institutes/UCIrvine/SUSYAnalysis/SusyCommon
@@ -12,19 +13,16 @@ https://svnweb.cern.ch/trac/atlasinst/browser/Institutes/UCIrvine/SUSYAnalysis/S
 # To checkout the package trunk
 svn co svn+ssh://svn.cern.ch/reps/atlasinst/Institutes/UCIrvine/SUSYAnalysis/SusyCommon/trunk SusyCommon
 
-# Or the current recommended tag (currently changing)
-svn co svn+ssh://svn.cern.ch/reps/atlasinst/Institutes/UCIrvine/SUSYAnalysis/SusyCommon/tags/SusyCommon-00-00-06 SusyCommon
+# For the currently recommended tag, please see the TWiki
+svn co svn+ssh://svn.cern.ch/reps/atlasinst/Institutes/UCIrvine/SUSYAnalysis/SusyCommon/tags/SusyCommon-XX-YY-ZZ SusyCommon
 
-# To make a tag, from this directory
-svn cp . svn+ssh://svn.cern.ch/reps/atlasinst/Institutes/UCIrvine/SUSYAnalysis/SusyCommon/tags/SusyCommon-XX-YY-ZZ -m "some message"
-# Or, even better, copy from trunk to tag
-trunk=svn+ssh://svn.cern.ch/reps/atlasinst/Institutes/UCIrvine/SUSYAnalysis/SusyCommon/trunk
-target=svn+ssh://svn.cern.ch/reps/atlasinst/Institutes/UCIrvine/SUSYAnalysis/SusyCommon/tags/SusyCommon-XX-YY-ZZ
-svn cp $trunk $target -m "some message"
+# To make a tag, use the script/makeTag.sh script (only for developers)
+./scripts/makeTag.sh SusyCommon-XX-YY-ZZ "Some message"
 
-# To install, check out SusyNtuple, the MultiLep Common code, and run install script 
+# To install, check out SusyNtuple, the MultiLep Common code, and run the MultiLep install script 
+# NOTE that this snippet will checkout the trunks of each code.  If you need to use specific tags, use the appropriate svn commands
 svn co svn+ssh://svn.cern.ch/reps/atlasinst/Institutes/UCIrvine/SUSYAnalysis/SusyNtuple/trunk SusyNtuple
-svn co svn+ssh://svn.cern.ch/reps/atlasphys/Physics/SUSY/Analyses/Multilepton/trunk/fiveinvfb/MultiLep MultiLep
+svn co svn+ssh://svn.cern.ch/reps/atlasphys/Physics/SUSY/Analyses/Multilepton/trunk/twentyinvfb/MultiLep MultiLep
 source MultiLep/installscripts/install_script.sh
 # Or, for convenience, these commands have been put in this package (kinit first):
 source SusyCommon/scripts/install.sh
@@ -97,14 +95,17 @@ and off systematics
 
 After you run NtMaker, it will spit out a susyNt.root which will contain the tree
 
+For more advanced grid production of SusyNt, please see the scripts under grid/
+
 
 ##########################
 # How to Run over SusyNt #
 ##########################
 
+# This info should be removed from here, updated, and put in the SusyNtuple package README
+
 1.) Move to run/ area
 2.) Put your files to run over in a list
-
 command: SusyNtTest -f fileList.txt
 
 Other commands exist and can be found by running SusyNtTest -h
