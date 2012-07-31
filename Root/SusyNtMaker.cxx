@@ -673,7 +673,7 @@ void SusyNtMaker::fillTauVar(int tauIdx)
   tauOut->eleBDTTight           = element->EleBDTTight();
 
   tauOut->muonVeto              = element->muonVeto();
-  tauOut->trueTau               = element->trueTauAssocSmall_matched();
+  tauOut->trueTau               = m_isMC? element->trueTauAssocSmall_matched() : false;
   
   tauOut->idx   = tauIdx;
 }
