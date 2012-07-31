@@ -5,6 +5,9 @@
 	* Now using the SUSYTools cross section file
 	* Added HforToolD3PD output for alpgen W and Z samples
 	* Tagging SusyCommon-00-00-25
+	* Oops, trying to access a trueTau branch on data
+		* Fixed, but I need to retag
+	* Tagging SusyCommon-00-00-26
 
 2012-07-30 Steve
 	* Added flag for toggling tau selection and OR (not just OR as before)
