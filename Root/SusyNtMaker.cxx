@@ -332,6 +332,8 @@ void SusyNtMaker::fillEventVars()
   evt->nVtx             = getNumGoodVtx();
   evt->avgMu            = d3pd.evt.averageIntPerXing();
 
+  evt->hfor             = m_isMC? getHFORDecision() : -1;
+
   evt->trigFlags        = m_evtTrigFlags;
 
   evt->wPileup          = m_isMC? getPileupWeight() : 1;
@@ -882,7 +884,7 @@ void SusyNtMaker::addMissingMuon(const LeptonInfo* lep, SusyNtSys sys)
   // This muon did not pass nominal cuts, and therefore
   // needs to be added, but with the correct TLV
   
-  TLorentzVector tlv_sys =m_susyObj.GetMuonTLV(lep->idx());
+  TLorentzVector tlv_sys = m_susyObj.GetMuonTLV(lep->idx());
 
   D3PDReader::MuonD3PDObject* m = & d3pd.muo;
   int index               = lep->idx();
@@ -896,11 +898,13 @@ void SusyNtMaker::addMissingMuon(const LeptonInfo* lep, SusyNtSys sys)
   float id_theta_exPV     = m->id_theta_exPV()->at(index);
   float charge            = m->charge()->at(index);
   int isCombined          = m->isCombinedMuon()->at(index);
+  int isSegTag            = m->isSegmentTaggedMuon()->at(index);
   bool isData             = !m_isMC;
 
   // Reset the Nominal TLV
   //m_susyObj.SetMuonTLV(index, pt, eta, phi, E, me_qoverp_exPV, id_qoverp_exPV, me_theta_exPV, id_theta_exPV, isCombined, isData, SystErr::NONE);
-  m_susyObj.SetMuonTLV(index, pt, eta, phi, E, me_qoverp_exPV, id_qoverp_exPV, me_theta_exPV, id_theta_exPV, charge, isCombined, isData, SystErr::NONE);
+  m_susyObj.SetMuonTLV(index, pt, eta, phi, E, me_qoverp_exPV, id_qoverp_exPV, me_theta_exPV, 
+                       id_theta_exPV, charge, isCombined, isSegTag, isData, SystErr::NONE);
   
   // Now push it back onto to susyNt
   fillMuonVars(lep);

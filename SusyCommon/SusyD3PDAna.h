@@ -9,6 +9,7 @@
 #include "SUSYTools/SUSYObjDef.h"
 #include "SUSYTools/FakeMetEstimator.h"
 #include "SUSYTools/SUSYCrossSection.h"
+#include "SUSYTools/HforToolD3PD.h"
 #include "PileupReweighting/TPileupReweighting.h"
 #include "MultiLep/LeptonInfo.h"
 
@@ -113,6 +114,9 @@ class SusyD3PDAna : public SusyD3PDInterface
     float getPileupWeight1fb();
     // PDF reweighting of 7TeV -> 8TeV
     float getPDFWeight8TeV();
+
+    // HF overlap removal decision
+    int getHFORDecision();
 
     //
     // Running conditions
@@ -226,6 +230,8 @@ class SusyD3PDAna : public SusyD3PDInterface
 
     SUSY::CrossSectionDB*                       m_susyXsec;     // SUSY cross section database
     std::map<int,SUSY::CrossSectionDB::Process> m_xsecMap;      // our own xsec map for faster lookup times
+
+    HforToolD3PD                m_hforTool;     // heavy flavor overlap removal tool
 
     #ifdef USEPDFTOOL
     PDFTool*                    m_pdfTool;      // PDF reweighting tool (In MultiLep pkg)

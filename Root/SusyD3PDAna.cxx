@@ -31,8 +31,12 @@ SusyD3PDAna::SusyD3PDAna() :
         m_selectTaus(false),
         m_pileup(0),
         m_pileup1fb(0),
-        m_susyXsec(0)
+        m_susyXsec(0),
+        m_hforTool()
 {
+  // doesn't work
+  //m_hforTool.setVerbosity(3);
+
   #ifdef USEPDFTOOL
   m_pdfTool = new PDFTool(3500000, 1, -1, 21000);
   //m_pdfTool = new PDFTool(3500000, 4./3.5);
@@ -87,9 +91,9 @@ void SusyD3PDAna::Begin(TTree* /*tree*/)
 
   // SUSY cross sections
   if(m_isMC){
-    // Using modified cross section file
-    //string xsecFileName  = gSystem->ExpandPathName("$ROOTCOREDIR/data/SUSYTools/susy_crosssections_8TeV.txt");
-    string xsecFileName  = gSystem->ExpandPathName("$ROOTCOREDIR/data/MultiLep/susy_crosssections_8TeV_mod.txt");
+    // Back to using the SUSYTools file
+    //string xsecFileName  = gSystem->ExpandPathName("$ROOTCOREDIR/data/MultiLep/susy_crosssections_8TeV_mod.txt");
+    string xsecFileName  = gSystem->ExpandPathName("$ROOTCOREDIR/data/SUSYTools/susy_crosssections_8TeV.txt");
     m_susyXsec = new SUSY::CrossSectionDB(xsecFileName);
   }
 
@@ -682,6 +686,54 @@ float SusyD3PDAna::getPDFWeight8TeV()
   #endif
 }
 
+/*--------------------------------------------------------------------------------*/
+// Get the heavy flavor overlap removal decision
+/*--------------------------------------------------------------------------------*/
+int SusyD3PDAna::getHFORDecision()
+{
+  if(m_isMC){
+    int id = d3pd.truth.channel_number();
+
+    // Z inclusive samples
+    if (    (id >= 107650 && id <= 107655) // ee
+         || (id >= 107660 && id <= 107665) // mumu
+         || (id >= 107670 && id <= 107675) // tautau
+  
+         // Wc samples
+         || (id >= 117288 && id <= 117297)
+    
+         // Wcc samples
+         || (id >= 117284 && id <= 117287)
+    
+         // Wbb samples
+         || (id >= 106280 && id <= 106283)
+         || (id >= 107280 && id <= 107283)
+    
+         // Zcc samples
+         || (id >= 126414 && id <= 126421) // ee or mumu
+         || (id >= 117706 && id <= 117709) // tautau
+  
+         // Zbb samples
+         || (id >= 109300 && id <= 109313) // ee, mumu, tautau
+         || (id >= 118962 && id <= 118965) // nunu
+         || (id >= 128130 && id <= 128143) ) // DY Mll10to30
+    {
+
+      return m_hforTool.getDecision(d3pd.truth.channel_number(),
+                                    d3pd.truth.n(),
+                                    d3pd.truth.pt(),
+                                    d3pd.truth.eta(),
+                                    d3pd.truth.phi(),
+                                    d3pd.truth.m(),
+                                    d3pd.truth.pdgId(),
+                                    d3pd.truth.status(),
+                                    d3pd.truth.vx_barcode(),
+                                    d3pd.truth.parent_index(),
+                                    d3pd.truth.child_index());
+    }
+  }
+  return -1;  
+}
 /*--------------------------------------------------------------------------------*/
 // Method for quick debuggin'
 /*--------------------------------------------------------------------------------*/
