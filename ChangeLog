@@ -1,5 +1,9 @@
 # vim: set noexpandtab:
 
+2012-08-02 Steve
+	* Changed met component terms to GeV
+	* Tagging SusyCommon-00-00-27
+
 2012-07-31 Steve
 	* Updated to SUSYTools-00-01-03
 	* Now using the SUSYTools cross section file
