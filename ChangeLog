@@ -1,6 +1,11 @@
 # vim: set noexpandtab:
 
 2012-08-02 Steve
+	* Changed btag weight MV1 to use the d3pd variable
+	* Tagging SusyCommon-00-00-29
+		* Wow, lot's of tags lately...
+
+2012-08-01 Steve
 	* Changed met component terms to GeV
 	* Tagging SusyCommon-00-00-27
 	* Turned off jet-tau overlap which was affecting the bad jet cut

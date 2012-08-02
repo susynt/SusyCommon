@@ -573,16 +573,16 @@ void SusyNtMaker::fillJetVar(int jetIdx)
   jetOut->phi = phi;
   jetOut->m   = m;
   
-  jetOut->idx         = jetIdx;
-  jetOut->jvf         = element->jvtxf();
-  jetOut->truthLabel  = m_isMC? element->flavor_truth_label() : 0;
+  jetOut->idx           = jetIdx;
+  jetOut->jvf           = element->jvtxf();
+  jetOut->truthLabel    = m_isMC? element->flavor_truth_label() : 0;
 
   // btag weights
-  jetOut->sv0         = element->flavor_weight_SV0();
-  jetOut->combNN      = element->flavor_weight_JetFitterCOMBNN();
-  // flavor tagging twiki page says to use the uncorrected jet kinematics for MV1
-  jetOut->mv1         = mv1Eval(element->flavor_weight_IP3D(), element->flavor_weight_SV1(), 
-                                element->flavor_weight_JetFitterCOMBNN(), element->pt(), element->eta());
+  jetOut->sv0           = element->flavor_weight_SV0();
+  jetOut->combNN        = element->flavor_weight_JetFitterCOMBNN();
+  // Apparently the SUSYTools function is outdated and we should use the d3pd variable instead
+  //jetOut->mv1           = mv1Eval(element->flavor_weight_IP3D(), element->flavor_weight_SV1(), element->flavor_weight_JetFitterCOMBNN(), element->pt(), element->eta());
+  jetOut->mv1           = element->flavor_weight_MV1();
 }
 
 /*--------------------------------------------------------------------------------*/
