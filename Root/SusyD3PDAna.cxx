@@ -236,7 +236,8 @@ void SusyD3PDAna::performOverlapRemoval()
     // tau-mu overlap removal
     m_baseTaus    = overlap_removal(m_susyObj, &d3pd.tau, m_baseTaus, &d3pd.muo, m_preMuons, 0.2, false, false);
     // jet-tau overlap removal
-    m_baseJets    = overlap_removal(m_susyObj, &d3pd.jet, m_baseJets, &d3pd.tau, m_baseTaus, 0.2, false, false);
+    // Oops, this actually screws up the bad jet veto.  I can't apply this here...
+    //m_baseJets    = overlap_removal(m_susyObj, &d3pd.jet, m_baseJets, &d3pd.tau, m_baseTaus, 0.2, false, false);
   }
 
   // e-jet overlap removal
