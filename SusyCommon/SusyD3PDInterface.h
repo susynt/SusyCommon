@@ -35,10 +35,10 @@
 
 typedef D3PDReader::ElectronD3PDObjectElement ElectronElement;
 typedef D3PDReader::MuonD3PDObjectElement MuonElement;
+typedef D3PDReader::TauD3PDObjectElement TauElement;
 typedef D3PDReader::JetD3PDObjectElement JetElement;
 typedef D3PDReader::TruthMuonD3PDObjectElement TruthMuonElement;
 typedef D3PDReader::PhotonD3PDObjectElement PhotonElement;
-typedef D3PDReader::TauD3PDObjectElement TauElement;
 
 class SusyD3PDContainer
 {

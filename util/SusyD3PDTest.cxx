@@ -5,7 +5,7 @@
 #include "TChain.h"
 #include "Cintex/Cintex.h"
 
-#include "SusyCommon/SusyD3PDInterface.h"
+#include "SusyCommon/SusyD3PDAna.h"
 #include "SusyNtuple/SusyDefs.h"
 #include "SusyNtuple/ChainHelper.h"
 
@@ -89,7 +89,8 @@ int main(int argc, char** argv)
   chain->ls();
 
   // Build the TSelector
-  SusyD3PDInterface* susyAna = new SusyD3PDInterface();
+  //SusyD3PDInterface* susyAna = new SusyD3PDInterface();
+  SusyD3PDAna* susyAna = new SusyD3PDAna();
   susyAna->setDebug(dbg);
 
   // Run the job

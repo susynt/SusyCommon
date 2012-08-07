@@ -152,6 +152,61 @@ Bool_t SusyD3PDAna::Process(Long64_t entry)
          << " event " << setw(7) << d3pd.evt.EventNumber() << " ****" << endl;
   }
 
+  // Object selection
+  m_susyObj.Reset();
+  clearObjects();
+  selectObjects();
+  buildMet();
+
+  //
+  // This next bit was used to do some quick truth checks for muons.
+  // I'm going to leave it here in case I need something like this again.
+  // It serves as another example of how to use this code on d3pds.
+  //
+
+  /*
+  // Loop over baseline muons, looking for ones with type and origin unknown
+  uint nBaseMu = m_baseMuons.size();
+  for(uint i=0; i<nBaseMu; i++){
+    int muIdx = m_baseMuons[i];
+    const MuonElement* muon = & d3pd.muo[muIdx];
+    const TLorentzVector* muLV = & m_susyObj.GetMuonTLV(muIdx);
+
+    cout.precision(3);
+    cout << endl << "Muon  -" << fixed
+         << " pt " << setw(6) << muLV->Pt()/GeV
+         << " type " << muon->type() 
+         << " origin " << muon->origin() 
+         << endl;
+
+    //if(muon->type()==0 && muon->origin()==0)
+    if(false)
+    {
+      // Loop over truth particles and dump those that are close to this muon
+      for(int iMc=0; iMc<d3pd.truth.n(); iMc++){
+        TLorentzVector mcLV;
+        mcLV.SetPtEtaPhiM(d3pd.truth.pt()->at(iMc), d3pd.truth.eta()->at(iMc), d3pd.truth.phi()->at(iMc), d3pd.truth.m()->at(iMc));
+        if(mcLV.Pt()==0) continue;
+
+        float dR = muLV->DeltaR(mcLV);
+
+        if(dR < 0.2){
+          
+          // dump info
+          cout << "Truth -" << fixed
+               << " dR " << setw(4) << dR
+               << " pdg " << setw(5) << d3pd.truth.pdgId()->at(iMc) 
+               << " status " << setw(3) << d3pd.truth.status()->at(iMc)
+               << " pt " << setw(6) << d3pd.truth.pt()->at(iMc) / GeV
+               << endl;
+
+        }
+      }
+    }
+    cout.precision(6);
+  }
+  */
+
   return kTRUE;
 }
 
