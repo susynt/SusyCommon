@@ -1,5 +1,8 @@
 # vim: set noexpandtab:
 
+2012-08-08 Steve
+	* Now setting lepton efficiency SF to 1 if running on data
+
 2012-08-07 Steve
 	* Added some stuff in SusyD3PDAna for my muon truth checks
 	* Modified the SusyD3PDTest to use SusyD3PDAna rather than SusyNtInterface

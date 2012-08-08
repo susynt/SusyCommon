@@ -478,8 +478,8 @@ void SusyNtMaker::fillElectronVars(const LeptonInfo* lepIn)
 
   // Efficiency scale factor.  For now, use tightPP if electrons is tightPP, otherwise mediumPP
   int set               = eleOut->tightPP? 7 : 6;
-  eleOut->effSF         = m_susyObj.GetSignalElecSF   ( element->cl_eta(), lepIn->lv()->Pt(), set );
-  eleOut->errEffSF      = m_susyObj.GetSignalElecSFUnc( element->cl_eta(), lepIn->lv()->Pt(), set );
+  eleOut->effSF         = m_isMC? m_susyObj.GetSignalElecSF   ( element->cl_eta(), lepIn->lv()->Pt(), set ) : 1;
+  eleOut->errEffSF      = m_isMC? m_susyObj.GetSignalElecSFUnc( element->cl_eta(), lepIn->lv()->Pt(), set ) : 1;
 
   // Do we need this??
   eleOut->idx           = lepIn->idx();
