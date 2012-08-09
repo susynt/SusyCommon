@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Settings
-tag=n0036
+tag=n0042
 nickname=Steve
 nGBPerJob=MAX
 #nGBPerJob=14
@@ -51,7 +51,7 @@ for line in ${matches[@]}; do
                 outDS=${outDS/2LeptonFilter/2L}
         fi
 
-        command="./gridScript.sh %IN -s $sample -w $sumw"
+        command="./gridScript.sh %IN --saveTau -s $sample -w $sumw"
 
 	echo 
 	echo "__________________________________________________________________________________________________________"

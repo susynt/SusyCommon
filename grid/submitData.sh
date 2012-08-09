@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Settings
-tag=n0035
+tag=n0041
 nickname=Steve
 nGBPerJob=MAX
 #nGBPerJob=14
@@ -36,7 +36,7 @@ for inDS in ${datasets[@]}; do
         outDS="user.$nickname.${inDS%/}_$tag/"
         outDS=${outDS/NTUP_SUSY/SusyNt}
 
-        command="./gridScript.sh %IN -s $sample"
+        command="./gridScript.sh %IN --saveTau -s $sample"
 
 	echo 
         echo "__________________________________________________________________________________________________________"
