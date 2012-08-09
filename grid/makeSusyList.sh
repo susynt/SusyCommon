@@ -16,7 +16,9 @@ function getXsec {
         # extract dataset ID
         id=${ds#mc12_8TeV.}
         id=${id%.Herwigpp*}
-        grep $id $TestArea/SusyCommon/data/modeA_lightslep_MC1eqMN2.txt | awk '{print $5}'
+        #grep $id $TestArea/SusyCommon/data/modeA_lightslep_MC1eqMN2.txt | awk '{print $5}'
+        #cat $TestArea/SusyCommon/data/modeA_lightslep_MC1eqMN2.txt $TestArea/SusyCommon/data/modeC_lightslep_MC1eqMN2.txt | grep $id | awk '{print $5}'
+        cat $TestArea/SusyCommon/data/mode*_lightslep_MC1eqMN2.txt | grep $id | awk '{print $5}'
 
 }
 
