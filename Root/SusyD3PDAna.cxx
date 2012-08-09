@@ -172,15 +172,17 @@ Bool_t SusyD3PDAna::Process(Long64_t entry)
     const MuonElement* muon = & d3pd.muo[muIdx];
     const TLorentzVector* muLV = & m_susyObj.GetMuonTLV(muIdx);
 
+    cout << endl << "Event " << d3pd.evt.EventNumber() << endl;
+
     cout.precision(3);
-    cout << endl << "Muon  -" << fixed
+    cout << "Muon  -" << fixed
          << " pt " << setw(6) << muLV->Pt()/GeV
          << " type " << muon->type() 
          << " origin " << muon->origin() 
          << endl;
 
     //if(muon->type()==0 && muon->origin()==0)
-    if(false)
+    if(true)
     {
       // Loop over truth particles and dump those that are close to this muon
       for(int iMc=0; iMc<d3pd.truth.n(); iMc++){
@@ -190,7 +192,7 @@ Bool_t SusyD3PDAna::Process(Long64_t entry)
 
         float dR = muLV->DeltaR(mcLV);
 
-        if(dR < 0.2){
+        if(dR < 0.3){
           
           // dump info
           cout << "Truth -" << fixed
@@ -785,7 +787,8 @@ int SusyD3PDAna::getHFORDecision()
                                     d3pd.truth.status(),
                                     d3pd.truth.vx_barcode(),
                                     d3pd.truth.parent_index(),
-                                    d3pd.truth.child_index());
+                                    d3pd.truth.child_index(),
+                                    HforToolD3PD::ALL);
     }
   }
   return -1;  
