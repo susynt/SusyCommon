@@ -1,5 +1,8 @@
 # vim: set noexpandtab:
 
+2012-08-12 Steve
+	* Changed refMuo term to use MuonTotal from the METUtility, not RefMuon
+
 2012-08-09 Steve
 	* Updated usage of HforToolD3PD to use removalmode = ALL
 	* Tagging SusyCommon-00-00-30

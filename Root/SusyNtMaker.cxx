@@ -702,7 +702,7 @@ void SusyNtMaker::fillMetVars(SusyNtSys sys)
 
   // MET comp terms - should we work the systematics into here as well?
   metOut->refEle        = m_susyObj.computeMETComponent(METUtil::RefEle).Mod()/GeV;
-  metOut->refMuo        = m_susyObj.computeMETComponent(METUtil::RefMuon).Mod()/GeV;
+  metOut->refMuo        = m_susyObj.computeMETComponent(METUtil::MuonTotal).Mod()/GeV;
   metOut->refJet        = m_susyObj.computeMETComponent(METUtil::RefJet).Mod()/GeV;
   metOut->refGamma      = m_susyObj.computeMETComponent(METUtil::RefGamma).Mod()/GeV;
   metOut->softJet       = m_susyObj.computeMETComponent(METUtil::SoftJets).Mod()/GeV;
