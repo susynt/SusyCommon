@@ -117,6 +117,7 @@ class SusyD3PDAna : public SusyD3PDInterface
 
     // HF overlap removal decision
     int getHFORDecision();
+    bool isHFORSample();
 
     //
     // Running conditions

@@ -749,50 +749,149 @@ float SusyD3PDAna::getPDFWeight8TeV()
 /*--------------------------------------------------------------------------------*/
 int SusyD3PDAna::getHFORDecision()
 {
-  if(m_isMC){
-    int id = d3pd.truth.channel_number();
-
-    // Z inclusive samples
-    if (    (id >= 107650 && id <= 107655) // ee
-         || (id >= 107660 && id <= 107665) // mumu
-         || (id >= 107670 && id <= 107675) // tautau
-  
-         // Wc samples
-         || (id >= 117288 && id <= 117297)
-    
-         // Wcc samples
-         || (id >= 117284 && id <= 117287)
-    
-         // Wbb samples
-         || (id >= 106280 && id <= 106283)
-         || (id >= 107280 && id <= 107283)
-    
-         // Zcc samples
-         || (id >= 126414 && id <= 126421) // ee or mumu
-         || (id >= 117706 && id <= 117709) // tautau
-  
-         // Zbb samples
-         || (id >= 109300 && id <= 109313) // ee, mumu, tautau
-         || (id >= 118962 && id <= 118965) // nunu
-         || (id >= 128130 && id <= 128143) ) // DY Mll10to30
-    {
-
-      return m_hforTool.getDecision(d3pd.truth.channel_number(),
-                                    d3pd.truth.n(),
-                                    d3pd.truth.pt(),
-                                    d3pd.truth.eta(),
-                                    d3pd.truth.phi(),
-                                    d3pd.truth.m(),
-                                    d3pd.truth.pdgId(),
-                                    d3pd.truth.status(),
-                                    d3pd.truth.vx_barcode(),
-                                    d3pd.truth.parent_index(),
-                                    d3pd.truth.child_index(),
-                                    HforToolD3PD::ALL);
-    }
+  if(isHFORSample()){
+    return m_hforTool.getDecision(d3pd.truth.channel_number(),
+                                  d3pd.truth.n(),
+                                  d3pd.truth.pt(),
+                                  d3pd.truth.eta(),
+                                  d3pd.truth.phi(),
+                                  d3pd.truth.m(),
+                                  d3pd.truth.pdgId(),
+                                  d3pd.truth.status(),
+                                  d3pd.truth.vx_barcode(),
+                                  d3pd.truth.parent_index(),
+                                  d3pd.truth.child_index(),
+                                  HforToolD3PD::ALL);
   }
   return -1;  
 }
+
+/*--------------------------------------------------------------------------------*/
+// Check if this sample cat be used with HforD3PDTool.
+// This code was copied from HforD3PDTool::checkSampleType.
+// It is needed to be able to run blindly on samples without 
+// getting a ton of error messages (the verbosity is broken).
+/*--------------------------------------------------------------------------------*/
+bool SusyD3PDAna::isHFORSample()
+{
+  if(m_isMC){
+    int id = d3pd.truth.channel_number();
+
+    // W inclusive samples
+    //// HERWIG
+    if ( (id >= 107680 && id <= 107685) // enu
+         || (id >= 107690 && id <= 107695) // munu
+         || (id >= 107700 && id <= 107705) // taunu
+         || (id >= 144018 && id <= 144020) // Np5_excl
+         || (id >= 144022 && id <= 144024) // Np6
+         || (id >= 144196 && id <= 144207) // susyfilt 
+         ){ 
+      return true;
+    }
+    //// PYTHIA
+    if ( (id >= 117680 && id <= 117685) // enu 
+         || (id >= 117690 && id <= 117695) // munu
+         || (id >= 117700 && id <= 117705) // taunu
+         ){
+      return true;
+    }
+   
+    // Z inclusive samples
+    //// HERWIG
+    if ( (id >= 107650 && id <= 107655) // ee
+         || (id >= 107660 && id <= 107665) // mumu
+         || (id >= 107670 && id <= 107675) // tautau
+         || (id >= 107710 && id <= 107715) // nunu
+         || (id == 144017) // nunuNp5_exl
+         || (id == 144021) // nunuNp6
+         || (id >= 144192 && id <= 144195) // nunu_susyfilt
+         || (id >= 116250 && id <= 116275) // DY Mll10to40
+         ){ 
+      return true;
+    }
+    //// PYTHIA
+    if ( (id >= 117650 && id <= 117655) // ee
+         || (id >= 117660 && id <= 117665) // mumu
+         || (id >= 117670 && id <= 117675) // tautau
+         ){
+       return true;  
+     } 
+
+    // Wc samples
+    //// HERWIG
+    if (id >= 117288 && id <= 117297) {
+      return true;
+    }
+    //// PYTHIA
+    if (id >= 126601 && id <= 126605) {
+      return true;
+    }
+  
+    // Wcc samples
+    //// HERWIG
+    if (id >= 117284 && id <= 117287) {
+      return true;
+    }
+    //// PYTHIA
+    if (id >= 126606 && id <= 126609) {
+      return true;
+    }
+    
+    // Wbb samples
+    //// HERWIG
+    if ( (id >= 106280 && id <= 106283)
+         || (id >= 107280 && id <= 107283) ) {
+      return true;
+    }
+    //// PYTHIA
+    if( id >= 126530 && id <= 126533) {
+      return true;
+    }
+  
+    // Zcc samples
+    //// HERWIG
+    if ( (id >= 126414 && id <= 126421) // ee or mumu
+         || (id >= 117706 && id <= 117709) // tautau
+         ) {
+      return true;
+    }
+  
+    // Zbb samples
+    //// HERWIG
+    if ( (id >= 109300 && id <= 109313) // ee, mumu, tautau
+         || (id >= 118962 && id <= 118965) // nunu
+         || (id >= 128130 && id <= 128143) // DY Mll10to30
+         ) {
+      return true;
+    }
+    //// PYTHIA
+    if ( id >= 126560 && id <= 126563 ) {
+      return true;  
+    }
+  
+    // ttbar inclusive samples
+    //// HERWIG
+    if ( (id >= 105890 && id <= 105897) 
+         || (id >= 117887 && id <= 117899) ){
+      return true;
+    }
+
+    // ttbb sample
+    //// HERWIG
+    if ( id == 116108 ) {
+      return true;
+    }
+  
+    // ttcc sample
+    //// HERWIG
+    if ( id == 116109 ) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 /*--------------------------------------------------------------------------------*/
 // Method for quick debuggin'
 /*--------------------------------------------------------------------------------*/

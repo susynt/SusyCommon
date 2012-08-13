@@ -1,5 +1,10 @@
 # vim: set noexpandtab:
 
+2012-08-13 Steve
+	* To make sure I'm allowing all samples allowed by the Hfor tool, I copied
+	  the whole function which checks the run number into SusyD3PDAna.isHFORSample()
+	* Tagging SusyCommon-00-00-31
+
 2012-08-12 Steve
 	* Changed refMuo term to use MuonTotal from the METUtility, not RefMuon
 
