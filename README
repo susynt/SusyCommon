@@ -24,7 +24,7 @@ svn co svn+ssh://svn.cern.ch/reps/atlasinst/Institutes/UCIrvine/SUSYAnalysis/Sus
 # NOTE that this snippet will checkout the trunks of each code.  If you need to use specific tags, use the appropriate svn commands
 # It is recommended that you do this installation in a clean workarea, to avoid conflicts with other package tags.
 svn co svn+ssh://svn.cern.ch/reps/atlasinst/Institutes/UCIrvine/SUSYAnalysis/SusyNtuple/trunk SusyNtuple
-svn co svn+ssh://svn.cern.ch/reps/atlasphys/Physics/SUSY/Analyses/Multilepton/trunk/twentyinvfb/MultiLep MultiLep
+svn co svn+ssh://svn.cern.ch/reps/atlasphys/Physics/SUSY/Analyses/WeakProduction/MultiLep/trunk MultiLep
 source MultiLep/installscripts/install_script.sh
 # Or, for convenience, these commands have been put in one script (kinit first):
 source SusyCommon/scripts/install.sh
