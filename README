@@ -76,12 +76,15 @@ SusyNtTest
 2.) cd run/
 3.) Create a list of d3pd files into a text file
 
-command: NtMaker -s mc -f fileList.txt
-Notice the second option is 'mc'.  If you want to run over data, simply insert 'data' here.
-Also, NtMaker -h will show you the current list of options.  More will be added soon to turn on
-and off systematics
+command: NtMaker -s SAMPLE -f FILELIST.txt
 
-After you run NtMaker, it will spit out a susyNt.root which will contain the tree
+The '-s' option sets the sample name and is used to control data/MC toggle.
+If the sample name contains 'data' (case insensitive), the job will treat the input as data.
+This is necessary when running on data so the job will not try to access MC specific branches of the D3PD.
+
+Also, NtMaker -h will show you the current list of options.  
+
+After you run NtMaker, it will spit out a susyNt.root which will contain the tree.
 
 For more advanced grid production of SusyNt, please see the scripts under grid/
 

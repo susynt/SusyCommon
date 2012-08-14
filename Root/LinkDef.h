@@ -4,6 +4,7 @@
 #include "SusyCommon/SusyD3PDInterface.h"
 #include "SusyCommon/SusyD3PDAna.h"
 #include "SusyCommon/SusyNtMaker.h"
+#include "SusyCommon/SusyMetValidation.h"
 
 
 #ifdef __CINT__
@@ -18,6 +19,7 @@
 #pragma link C++ class SusyD3PDInterface;
 #pragma link C++ class SusyD3PDAna;
 #pragma link C++ class SusyNtMaker;
+#pragma link C++ class SusyMetValidation;
 
 
 #endif

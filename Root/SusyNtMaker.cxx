@@ -223,6 +223,7 @@ bool SusyNtMaker::selectEvent()
     // Bad jet cut
     if(m_evtFlag & PASS_BadJet){
       n_evt_badJet++;
+      cout << "Event " << d3pd.evt.EventNumber() << endl;
     }
   }
 

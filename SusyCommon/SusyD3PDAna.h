@@ -152,6 +152,12 @@ class SusyD3PDAna : public SusyD3PDInterface
     void matchMuonTriggers();
     bool matchMuonTrigger(const TLorentzVector* lv, std::vector<int>* trigBools);
 
+    //
+    // Event dumps
+    //
+    void dumpEvent();
+    void dumpBaselineObjects();
+    void dumpSignalObjects();
 
     // Debugging method
     void dump();
