@@ -34,8 +34,8 @@ SusyD3PDAna::SusyD3PDAna() :
         m_susyXsec(0),
         m_hforTool()
 {
-  // doesn't work
-  //m_hforTool.setVerbosity(3);
+  // Now works!
+  m_hforTool.setVerbosity(HforToolD3PD::ERROR);
 
   #ifdef USEPDFTOOL
   m_pdfTool = new PDFTool(3500000, 1, -1, 21000);
@@ -355,9 +355,8 @@ void SusyD3PDAna::buildMet(SusyNtSys sys)
   // That's fine though because SUSYObjDef specifically fills for electrons that
   // should enter the RefEle term
   vector<int> allElectrons = get_electrons_all(&d3pd.ele, m_susyObj);
-  TVector2 metVector = GetMetVector(&d3pd.jet, m_susyObj, &d3pd.muo, &d3pd.ele, &d3pd.met, 
-                                    m_preMuons, m_baseElectrons, allElectrons, "", susySys);
-                                    //m_preMuons, m_baseElectrons, allElectrons, m_metCalib, susySys
+  TVector2 metVector = GetMetVector(m_susyObj, &d3pd.jet, &d3pd.muo, &d3pd.ele, &d3pd.met, &d3pd.evt,
+                                    m_preMuons, m_baseElectrons, allElectrons, susySys);
   m_met.SetPxPyPzE(metVector.X(), metVector.Y(), 0, metVector.Mod());
 }
 
@@ -749,21 +748,19 @@ float SusyD3PDAna::getPDFWeight8TeV()
 /*--------------------------------------------------------------------------------*/
 int SusyD3PDAna::getHFORDecision()
 {
-  if(isHFORSample()){
-    return m_hforTool.getDecision(d3pd.truth.channel_number(),
-                                  d3pd.truth.n(),
-                                  d3pd.truth.pt(),
-                                  d3pd.truth.eta(),
-                                  d3pd.truth.phi(),
-                                  d3pd.truth.m(),
-                                  d3pd.truth.pdgId(),
-                                  d3pd.truth.status(),
-                                  d3pd.truth.vx_barcode(),
-                                  d3pd.truth.parent_index(),
-                                  d3pd.truth.child_index(),
-                                  HforToolD3PD::ALL);
-  }
-  return -1;  
+  //if(isHFORSample())
+  return m_hforTool.getDecision(d3pd.truth.channel_number(),
+                                d3pd.truth.n(),
+                                d3pd.truth.pt(),
+                                d3pd.truth.eta(),
+                                d3pd.truth.phi(),
+                                d3pd.truth.m(),
+                                d3pd.truth.pdgId(),
+                                d3pd.truth.status(),
+                                d3pd.truth.vx_barcode(),
+                                d3pd.truth.parent_index(),
+                                d3pd.truth.child_index(),
+                                HforToolD3PD::ALL);
 }
 
 /*--------------------------------------------------------------------------------*/

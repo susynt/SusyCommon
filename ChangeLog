@@ -1,5 +1,12 @@
 # vim: set noexpandtab:
 
+2012-08-17 Steve
+	* Updated to MultiLep-01-02-04 and SUSYTools-00-01-04
+		* GetMetVector usage changes slightly
+	* Updated HforToolD3PD usage, verbosity now works, 
+	  so we no longer need to check run number ourselves
+	* Tagging SusyCommon-00-00-32
+
 2012-08-13 Steve
 	* To make sure I'm allowing all samples allowed by the Hfor tool, I copied
 	  the whole function which checks the run number into SusyD3PDAna.isHFORSample()
