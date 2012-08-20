@@ -922,7 +922,7 @@ void SusyD3PDAna::dumpBaselineObjects()
       const TLorentzVector* lv = & m_susyObj.GetElecTLV(iEl);
       const ElectronElement* ele = & d3pd.ele[iEl];
       cout << "  El : " << fixed
-           << " q " << setw(2) << ele->charge()
+           << " q " << setw(2) << (int) ele->charge()
            << " pt " << setw(6) << lv->Pt()/GeV
            << " eta " << setw(5) << lv->Eta()
            << " phi " << setw(5) << lv->Phi();
@@ -937,7 +937,7 @@ void SusyD3PDAna::dumpBaselineObjects()
       const TLorentzVector* lv = & m_susyObj.GetMuonTLV(iMu);
       const MuonElement* muo = & d3pd.muo[iMu];
       cout << "  Mu : " << fixed
-           << " q " << setw(2) << muo->charge()
+           << " q " << setw(2) << (int) muo->charge()
            << " pt " << setw(6) << lv->Pt()/GeV
            << " eta " << setw(5) << lv->Eta()
            << " phi " << setw(5) << lv->Phi();
@@ -951,7 +951,7 @@ void SusyD3PDAna::dumpBaselineObjects()
       int iJet = m_baseJets[i];
       const TLorentzVector* lv = & m_susyObj.GetJetTLV(iJet);
       const JetElement* jet = & d3pd.jet[iJet];
-      cout << "  Mu : " << fixed
+      cout << "  Jet : " << fixed
            << " pt " << setw(6) << lv->Pt()/GeV
            << " eta " << setw(5) << lv->Eta()
            << " phi " << setw(5) << lv->Phi()
@@ -959,6 +959,7 @@ void SusyD3PDAna::dumpBaselineObjects()
       cout << endl;
     }
   }
+  cout.precision(6);
 }
 
 /*--------------------------------------------------------------------------------*/
@@ -979,7 +980,7 @@ void SusyD3PDAna::dumpSignalObjects()
       const TLorentzVector* lv = & m_susyObj.GetElecTLV(iEl);
       const ElectronElement* ele = & d3pd.ele[iEl];
       cout << "  El : " << fixed
-           << " q " << setw(2) << ele->charge()
+           << " q " << setw(2) << (int) ele->charge()
            << " pt " << setw(6) << lv->Pt()/GeV
            << " eta " << setw(5) << lv->Eta()
            << " phi " << setw(5) << lv->Phi();
@@ -994,7 +995,7 @@ void SusyD3PDAna::dumpSignalObjects()
       const TLorentzVector* lv = & m_susyObj.GetMuonTLV(iMu);
       const MuonElement* muo = & d3pd.muo[iMu];
       cout << "  Mu : " << fixed
-           << " q " << setw(2) << muo->charge()
+           << " q " << setw(2) << (int) muo->charge()
            << " pt " << setw(6) << lv->Pt()/GeV
            << " eta " << setw(5) << lv->Eta()
            << " phi " << setw(5) << lv->Phi();
@@ -1008,7 +1009,7 @@ void SusyD3PDAna::dumpSignalObjects()
       int iJet = m_sigJets[i];
       const TLorentzVector* lv = & m_susyObj.GetJetTLV(iJet);
       const JetElement* jet = & d3pd.jet[iJet];
-      cout << "  Mu : " << fixed
+      cout << "  Jet : " << fixed
            << " pt " << setw(6) << lv->Pt()/GeV
            << " eta " << setw(5) << lv->Eta()
            << " phi " << setw(5) << lv->Phi()
@@ -1016,6 +1017,7 @@ void SusyD3PDAna::dumpSignalObjects()
       cout << endl;
     }
   }
+  cout.precision(6);
 }
 
 /*--------------------------------------------------------------------------------*/

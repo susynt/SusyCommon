@@ -191,6 +191,7 @@ bool SusyMetValidation::selectEvent()
   n_sig_jet += m_sigJets.size();
   
   // Lepton multiplicity
+  /*
   uint nSigLep = m_sigElectrons.size() + m_sigMuons.size();
   //cout << "nSigLep " << nSigLep << endl;
   if(nSigLep < 1) return false;
@@ -200,6 +201,7 @@ bool SusyMetValidation::selectEvent()
   if(nSigLep == 3){
     n_evt_3Lep++;
   }
+  */
 
   return true;
 }
@@ -212,6 +214,11 @@ void SusyMetValidation::checkMet()
   
   if(dumpMet){
   
+    cout << endl;
+    dumpEvent();
+    dumpBaselineObjects();
+    //dumpSignalObjects();
+
     // Compare the total MET before and after SUSYTools
     cout << "Total MET" << endl;
 
