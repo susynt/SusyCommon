@@ -706,6 +706,23 @@ bool SusyD3PDAna::passCosmic()
 }
 
 /*--------------------------------------------------------------------------------*/
+// Get event weight, combine gen, pileup, xsec, and lumi weights
+// Default weight uses ICHEP dataset, A-B14 lumi
+// You can supply a different luminosity, but the pileup weights will still correspond to A-B14
+/*--------------------------------------------------------------------------------*/
+float SusyD3PDAna::getEventWeight(float lumi)
+{
+  if(!m_isMC) return 1;
+  return d3pd.truth.event_weight() * getXsecWeight() * getPileupWeight() * lumi / m_sumw;
+}
+/*--------------------------------------------------------------------------------*/
+float SusyD3PDAna::getEventWeightAtoB3()
+{
+  if(!m_isMC) return 1;
+  return d3pd.truth.event_weight() * getXsecWeight() * getPileupWeight1fb() * LUMI_A_B3 / m_sumw;
+}
+
+/*--------------------------------------------------------------------------------*/
 // Cross section and lumi scaling
 /*--------------------------------------------------------------------------------*/
 float SusyD3PDAna::getXsecWeight()

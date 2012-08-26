@@ -1,6 +1,7 @@
 #include "egammaAnalysisUtils/CaloIsoCorrection.h"
 #include "MultiLep/MuonTools.h"
 #include "MultiLep/ElectronTools.h"
+#include "MultiLep/CutflowTools.h"
 #include "SusyCommon/SusyMetValidation.h"
 
 #define GeV 1000.
@@ -33,8 +34,9 @@ SusyMetValidation::SusyMetValidation()
   n_evt_cosmic=0;
   n_evt_1Lep=0;
   n_evt_2Lep=0;
-  n_evt_3Lep=0;
-  n_evt_saved=0;
+  n_evt_ee=0;
+  n_evt_sfos=0;
+  n_evt_zMass=0;
 }
 /*--------------------------------------------------------------------------------*/
 // Destructor
@@ -74,7 +76,6 @@ Bool_t SusyMetValidation::Process(Long64_t entry)
   }
 
   if(selectEvent()){
-    n_evt_saved++;
     checkMet();
   }
 
@@ -116,7 +117,9 @@ void SusyMetValidation::Terminate()
   cout << "  Cosmic   " << n_evt_cosmic  << endl;
   cout << "  >=1 Lep  " << n_evt_1Lep    << endl;
   cout << "  >=2 Lep  " << n_evt_2Lep    << endl;
-  cout << "  ==3 Lep  " << n_evt_3Lep    << endl;
+  cout << "  Is EE    " << n_evt_ee      << endl;
+  cout << "  SFOS     " << n_evt_sfos    << endl;
+  cout << "  Z Mass   " << n_evt_zMass   << endl;
   cout << endl;
 
   // Report timer
@@ -132,7 +135,6 @@ void SusyMetValidation::Terminate()
 
   printf("---------------------------------------------------\n");
   printf(" Number of events processed: %d \n",n_evt_initial);
-  printf(" Number of events saved:     %d \n",n_evt_saved);
   printf("\t Analysis time: Real %d:%02d:%02d, CPU %.3f      \n", hours, min, sec, cpuTime);
   printf("\t Analysis speed [kHz]: %2.3f                     \n",speed);
   printf("---------------------------------------------------\n\n");
@@ -191,17 +193,29 @@ bool SusyMetValidation::selectEvent()
   n_sig_jet += m_sigJets.size();
   
   // Lepton multiplicity
-  /*
+  uint nBaseLep = m_baseElectrons.size() + m_baseMuons.size();
   uint nSigLep = m_sigElectrons.size() + m_sigMuons.size();
   //cout << "nSigLep " << nSigLep << endl;
   if(nSigLep < 1) return false;
   n_evt_1Lep++;
-  if(nSigLep < 2) return false;
+  if(nBaseLep != 2) return false;
+  if(nSigLep != 2) return false;
   n_evt_2Lep++;
-  if(nSigLep == 3){
-    n_evt_3Lep++;
-  }
-  */
+
+  // Get the signal leptons
+  const LeptonInfo* lep1 = & m_sigLeptons[0];
+  const LeptonInfo* lep2 = & m_sigLeptons[1];
+
+  // For now, only looking at the ee channel
+  if(!lep1->isElectron() || !lep2->isElectron()) return false;
+  n_evt_ee++;
+
+  if(!IsSFOS(lep1, lep2)) return false;
+  n_evt_sfos++;
+
+  float mll = GetMll(lep1, lep2)/GeV;
+  if(fabs(mll-MZ) > 10) return false;
+  n_evt_zMass++;
 
   return true;
 }
@@ -211,7 +225,6 @@ bool SusyMetValidation::selectEvent()
 /*--------------------------------------------------------------------------------*/
 void SusyMetValidation::checkMet()
 {
-  
   if(dumpMet){
   
     cout << endl;

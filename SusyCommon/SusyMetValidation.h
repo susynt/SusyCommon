@@ -62,8 +62,14 @@ class SusyMetValidation : public SusyD3PDAna
     uint                n_evt_cosmic;
     uint                n_evt_1Lep;
     uint                n_evt_2Lep;
-    uint                n_evt_3Lep;
-    uint                n_evt_saved;    // number of events save in the SusyNt
+    uint                n_evt_ee;
+    uint                n_evt_sfos;
+    uint                n_evt_zMass;
+
+    uint                n_evt_pileup;
+    uint                n_evt_lepSF;
+    uint                n_evt_btagSF;
+    uint                n_evt_lumi;
 
     // Timer
     TStopwatch          m_timer;
