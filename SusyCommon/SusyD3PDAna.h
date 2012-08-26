@@ -100,13 +100,15 @@ class SusyD3PDAna : public SusyD3PDInterface
     //
 
     // Full event weight includes generator, xsec, pileup, and lumi weights.
-    // Default weight uses ICHEP dataset, A-B14 lumi.
+    // Default weight uses A-D7 lumi.
     // You can supply a different integrated luminosity, 
-    // but the the pileup weights will still correspond to A-B14.
-    float getEventWeight(float lumi = LUMI_A_B14);
+    // but the the pileup weights will still correspond to A-D7.
+    float getEventWeight(float lumi = LUMI_A_D7);
     // This function will give the MC weight corresponding to the A-B3 unblinded dataset
     // with correct pileup weights 
     float getEventWeightAtoB3();
+    // MC weight corresponding to A-B dataset (5.83/fb)
+    float getEventWeightAtoB();
 
     // event weight (xsec*kfac) 
     float getXsecWeight();
@@ -121,7 +123,7 @@ class SusyD3PDAna : public SusyD3PDInterface
     // pileup weight for full dataset: currently A-D7
     float getPileupWeight();
     // pileup weight for A-B3 (1.037/fb)
-    float getPileupWeight1fb();
+    //float getPileupWeight1fb();
     // this will replace the above function soon
     float getPileupWeightAB3();
     // pileup weight for A-B (5.83/fb)

@@ -719,7 +719,13 @@ float SusyD3PDAna::getEventWeight(float lumi)
 float SusyD3PDAna::getEventWeightAtoB3()
 {
   if(!m_isMC) return 1;
-  return d3pd.truth.event_weight() * getXsecWeight() * getPileupWeight1fb() * LUMI_A_B3 / m_sumw;
+  return d3pd.truth.event_weight() * getXsecWeight() * getPileupWeightAB3() * LUMI_A_B3 / m_sumw;
+}
+/*--------------------------------------------------------------------------------*/
+float SusyD3PDAna::getEventWeightAtoB()
+{
+  if(!m_isMC) return 1;
+  return d3pd.truth.event_weight() * getXsecWeight() * getPileupWeightAB() * LUMI_A_B14 / m_sumw;
 }
 
 /*--------------------------------------------------------------------------------*/
@@ -752,10 +758,10 @@ float SusyD3PDAna::getPileupWeight()
   return m_pileup->GetCombinedWeight(d3pd.evt.RunNumber(), d3pd.truth.channel_number(), d3pd.evt.averageIntPerXing());
 }
 /*--------------------------------------------------------------------------------*/
-float SusyD3PDAna::getPileupWeight1fb()
-{
-  return m_pileup1fb->GetCombinedWeight(d3pd.evt.RunNumber(), d3pd.truth.channel_number(), d3pd.evt.averageIntPerXing());
-}
+//float SusyD3PDAna::getPileupWeight1fb()
+//{
+  //return m_pileup1fb->GetCombinedWeight(d3pd.evt.RunNumber(), d3pd.truth.channel_number(), d3pd.evt.averageIntPerXing());
+//}
 /*--------------------------------------------------------------------------------*/
 float SusyD3PDAna::getPileupWeightAB3()
 {
