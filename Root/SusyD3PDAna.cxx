@@ -31,6 +31,8 @@ SusyD3PDAna::SusyD3PDAna() :
         m_selectTaus(false),
         m_pileup(0),
         m_pileup1fb(0),
+        m_pileupAB3(0),
+        m_pileupAB(0),
         m_susyXsec(0),
         m_hforTool()
 {
@@ -111,23 +113,45 @@ void SusyD3PDAna::Begin(TTree* /*tree*/)
     m_pileup = new Root::TPileupReweighting("PileupReweighting");
     m_pileup->SetDataScaleFactors(1/1.11);
     m_pileup->AddConfigFile("$ROOTCOREDIR/data/PileupReweighting/mc12a_defaults.prw.root");
-    m_pileup->AddLumiCalcFile("$ROOTCOREDIR/data/MultiLep/ilumicalc_histograms_EF_e24vhi_medium1_200841-205113.root");
+    //m_pileup->AddLumiCalcFile("$ROOTCOREDIR/data/MultiLep/ilumicalc_histograms_EF_e24vhi_medium1_200841-205113.root");
+    m_pileup->AddLumiCalcFile("$ROOTCOREDIR/data/MultiLep/ilumicalc_histograms_EF_2e12Tvh_loose1_200841-208720.root");
     m_pileup->SetUnrepresentedDataAction(2);
     int pileupError = m_pileup->Initialize();
-
     if(pileupError){
       cout << "Problem in pileup initialization.  pileupError = " << pileupError << endl;
       abort();
     }
 
-    // pileup reweighting for 2012 A-B5 only
-    m_pileup1fb = new Root::TPileupReweighting("PileupReweighting2fb");
+    // pileup reweighting for 2012 A-B3 only
+    m_pileup1fb = new Root::TPileupReweighting("PileupReweighting1fb");
     m_pileup1fb->SetDataScaleFactors(1/1.11);
     m_pileup1fb->AddConfigFile("$ROOTCOREDIR/data/PileupReweighting/mc12a_defaults.prw.root");
     m_pileup1fb->AddLumiCalcFile("$ROOTCOREDIR/data/MultiLep/ilumicalc_histograms_EF_e24vhi_medium1_200842-203195.root");
     m_pileup1fb->SetUnrepresentedDataAction(2);
     pileupError = m_pileup1fb->Initialize();
+    if(pileupError){
+      cout << "Problem in pileup initialization.  pileupError = " << pileupError << endl;
+      abort();
+    }
 
+    // pileup reweighting for 2012 A-B3 only
+    m_pileupAB3 = new Root::TPileupReweighting("PileupReweightingAB3");
+    m_pileupAB3->SetDataScaleFactors(1/1.11);
+    m_pileupAB3->AddConfigFile("$ROOTCOREDIR/data/PileupReweighting/mc12a_defaults.prw.root");
+    m_pileupAB3->AddLumiCalcFile("$ROOTCOREDIR/data/MultiLep/ilumicalc_histograms_EF_2e12Tvh_loose1_200841-203195.root");
+    m_pileupAB3->SetUnrepresentedDataAction(2);
+    pileupError = m_pileupAB3->Initialize();
+    if(pileupError){
+      cout << "Problem in pileup initialization.  pileupError = " << pileupError << endl;
+      abort();
+    }
+    // pileup reweighting for 2012 A-B only
+    m_pileupAB = new Root::TPileupReweighting("PileupReweightingAB");
+    m_pileupAB->SetDataScaleFactors(1/1.11);
+    m_pileupAB->AddConfigFile("$ROOTCOREDIR/data/PileupReweighting/mc12a_defaults.prw.root");
+    m_pileupAB->AddLumiCalcFile("$ROOTCOREDIR/data/MultiLep/ilumicalc_histograms_EF_e24vhi_medium1_200841-205113.root");
+    m_pileupAB->SetUnrepresentedDataAction(2);
+    pileupError = m_pileupAB->Initialize();
     if(pileupError){
       cout << "Problem in pileup initialization.  pileupError = " << pileupError << endl;
       abort();
@@ -226,6 +250,8 @@ void SusyD3PDAna::Terminate()
     delete m_susyXsec;
     delete m_pileup;
     delete m_pileup1fb;
+    delete m_pileupAB3;
+    delete m_pileupAB;
   }
 }
 
@@ -712,6 +738,16 @@ float SusyD3PDAna::getPileupWeight()
 float SusyD3PDAna::getPileupWeight1fb()
 {
   return m_pileup1fb->GetCombinedWeight(d3pd.evt.RunNumber(), d3pd.truth.channel_number(), d3pd.evt.averageIntPerXing());
+}
+/*--------------------------------------------------------------------------------*/
+float SusyD3PDAna::getPileupWeightAB3()
+{
+  return m_pileupAB3->GetCombinedWeight(d3pd.evt.RunNumber(), d3pd.truth.channel_number(), d3pd.evt.averageIntPerXing());
+}
+/*--------------------------------------------------------------------------------*/
+float SusyD3PDAna::getPileupWeightAB()
+{
+  return m_pileupAB->GetCombinedWeight(d3pd.evt.RunNumber(), d3pd.truth.channel_number(), d3pd.evt.averageIntPerXing());
 }
 
 /*--------------------------------------------------------------------------------*/

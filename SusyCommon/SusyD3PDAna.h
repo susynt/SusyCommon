@@ -109,9 +109,14 @@ class SusyD3PDAna : public SusyD3PDInterface
     void setSumw(float sumw) { m_sumw = sumw; }
     // user cross section, overrides susy cross section
     void setXsec(float xsec) { m_xsec = xsec; }
-    // pileup weight, not included in event weight above
+    // pileup weight for full dataset: currently A-D7
     float getPileupWeight();
+    // pileup weight for A-B3 (1.037/fb)
     float getPileupWeight1fb();
+    // this will replace the above function soon
+    float getPileupWeightAB3();
+    // pileup weight for A-B (5.83/fb)
+    float getPileupWeightAB();
     // PDF reweighting of 7TeV -> 8TeV
     float getPDFWeight8TeV();
 
@@ -231,6 +236,8 @@ class SusyD3PDAna : public SusyD3PDInterface
 
     Root::TPileupReweighting*   m_pileup;       // pileup reweighting
     Root::TPileupReweighting*   m_pileup1fb;    // pileup reweighting for 2012 A-B3 only
+    Root::TPileupReweighting*   m_pileupAB3;    // pileup reweighting for 2012 A-B3 only
+    Root::TPileupReweighting*   m_pileupAB;     // pileup reweighting for 2012 A-B
 
     // The SUSY CrossSectionDB has its own map for retrieving xsec info, but
     // it has a lot of entries so lookup is slow.  Save our own xsec map

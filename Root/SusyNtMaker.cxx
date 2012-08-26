@@ -339,6 +339,8 @@ void SusyNtMaker::fillEventVars()
 
   evt->wPileup          = m_isMC? getPileupWeight() : 1;
   evt->wPileup1fb       = m_isMC? getPileupWeight1fb() : 1;
+  evt->wPileupAB3       = m_isMC? getPileupWeightAB3() : 1;
+  evt->wPileupAB        = m_isMC? getPileupWeightAB() : 1;
   evt->xsec             = m_isMC? getXsecWeight() : 1;
   evt->lumiSF           = m_isMC? getLumiWeight() : 1;             
   evt->sumw             = m_isMC? m_sumw : 1;
