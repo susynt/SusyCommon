@@ -3,6 +3,7 @@
 2012-08-26 Steve
 	* Added pileup tools for A-B3, A-B, and A-D7
 	* Filling the corresponding variables in the SusyNt
+	* Tagging SusyCommon-00-00-33
 
 2012-08-20 Steve
 	* Adding SusyMetValidation, a class for analyzing the MET in the d3pds
