@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Settings
-tag=n0044
+tag=n0046
 nickname=Steve
 nGBPerJob=MAX
 #nGBPerJob=14
