@@ -439,6 +439,30 @@ uint SusyD3PDAna::getNumGoodVtx()
 }
 
 /*--------------------------------------------------------------------------------*/
+// Match reco jet to a truth jet
+/*--------------------------------------------------------------------------------*/
+bool SusyD3PDAna::matchTruthJet(int iJet)
+{
+  //const JetElement* jet = & d3pd.jet[iJet];
+  const TLorentzVector* jetLV = & m_susyObj.GetJetTLV(iJet);
+
+  // Loop over truth jets looking for a match
+  //float minDR = -1;
+  for(int i=0; i<d3pd.truthJet.n(); i++){
+    const JetElement* trueJet = & d3pd.truthJet[i];
+    TLorentzVector trueJetLV;
+    trueJetLV.SetPtEtaPhiE(trueJet->pt(), trueJet->eta(), trueJet->phi(), trueJet->E());
+    if(jetLV->DeltaR(trueJetLV) < 0.3) return true;
+    //float dR = jetLV->DeltaR(trueJetLV);
+    //if(minDR < 0 || dR < minDR) minDR = dR;
+  }
+  //cout << "matchTruthJet minDR: " << minDR << endl;
+  //if(minDR > 0 && minDR < 0.3) return true;
+
+  return false;
+}
+
+/*--------------------------------------------------------------------------------*/
 // Event trigger flags
 /*--------------------------------------------------------------------------------*/
 void SusyD3PDAna::fillEventTriggers()

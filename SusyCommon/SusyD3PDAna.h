@@ -70,6 +70,30 @@ class SusyD3PDAna : public SusyD3PDInterface
     // Count number of good vertices
     uint getNumGoodVtx();
 
+    // Match a reco jet to a truth jet
+    bool matchTruthJet(int iJet);
+
+
+    //
+    // Trigger - check matching for all baseline leptons
+    //
+    void resetTriggers(){
+      m_evtTrigFlags = 0;
+      m_eleTrigFlags.clear();
+      m_muoTrigFlags.clear();
+    }
+    void matchTriggers(){
+      fillEventTriggers();
+      matchElectronTriggers();
+      matchMuonTriggers();
+    }
+    void fillEventTriggers();
+    void matchElectronTriggers();
+    bool matchElectronTrigger(const TLorentzVector* lv, std::vector<int>* trigBools);
+    void matchMuonTriggers();
+    bool matchMuonTrigger(const TLorentzVector* lv, std::vector<int>* trigBools);
+
+
     //
     // Event cleaning
     //
@@ -149,25 +173,6 @@ class SusyD3PDAna : public SusyD3PDInterface
     // Toggle tau selection and overlap removal
     void setSelectTaus(bool doIt) { m_selectTaus = doIt; }
     
-    //
-    // Trigger - check matching for all baseline leptons
-    //
-    void resetTriggers(){
-      m_evtTrigFlags = 0;
-      m_eleTrigFlags.clear();
-      m_muoTrigFlags.clear();
-    }
-    void matchTriggers(){
-      fillEventTriggers();
-      matchElectronTriggers();
-      matchMuonTriggers();
-    }
-    void fillEventTriggers();
-    void matchElectronTriggers();
-    bool matchElectronTrigger(const TLorentzVector* lv, std::vector<int>* trigBools);
-    void matchMuonTriggers();
-    bool matchMuonTrigger(const TLorentzVector* lv, std::vector<int>* trigBools);
-
     //
     // Event dumps
     //

@@ -63,6 +63,7 @@ class SusyD3PDContainer
     D3PDReader::GenEventD3PDObject      gen;
     D3PDReader::TruthParticleD3PDObject truth;
     D3PDReader::TruthMuonD3PDObject     truthMu;
+    D3PDReader::JetD3PDObject           truthJet;
 };
 
 

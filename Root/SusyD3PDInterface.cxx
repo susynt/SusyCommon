@@ -22,7 +22,8 @@ SusyD3PDContainer::SusyD3PDContainer(const Long64_t& entry) :
         trig(entry),
         gen(entry),
         truth(entry),
-        truthMu(entry)
+        truthMu(entry),
+        truthJet(entry)
 {
 }
 /*--------------------------------------------------------------------------------*/
@@ -43,6 +44,9 @@ void SusyD3PDContainer::ReadFrom(TTree* tree)
   gen.ReadFrom(tree);
   truth.ReadFrom(tree);
   truthMu.ReadFrom(tree);
+  truthJet.ReadFrom(tree);
+  // We use the JetD3PDObject class to read truth jets, so need to overwrite the prefix
+  truthJet.SetPrefix("jet_AntiKt4TruthJets_");
 }
 
 /*--------------------------------------------------------------------------------*/

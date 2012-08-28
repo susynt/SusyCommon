@@ -1,5 +1,10 @@
 # vim: set noexpandtab:
 
+2012-08-29 Steve
+	* Add truth jets to SusyD3PDInterface
+	* Add method to SusyD3PDAna for matching reco jets to truth jets with dR
+		* Used to set matchTruth flag in SusyNtMaker
+
 2012-08-26 Steve
 	* Added pileup tools for A-B3, A-B, and A-D7
 	* Filling the corresponding variables in the SusyNt
