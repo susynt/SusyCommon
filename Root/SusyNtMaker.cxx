@@ -669,6 +669,10 @@ void SusyNtMaker::fillTauVar(int tauIdx)
   tauOut->m     = m;
 
   tauOut->q                     = element->charge();
+  tauOut->author                = element->author();
+  tauOut->nTrack                = element->numTrack();
+  tauOut->eleBDT                = element->BDTEleScore();
+  tauOut->jetBDT                = element->BDTJetScore();
 
   tauOut->jetBDTSigLoose        = element->JetBDTSigLoose();
   tauOut->jetBDTSigMedium       = element->JetBDTSigMedium();
