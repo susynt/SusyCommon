@@ -5,6 +5,7 @@
 	A         data/modeA_hadW_MC1eqMN2.txt
 	A         data/modeA_lepW_MC1eqMN2.txt
 	A         data/modeC_lepW_MC1eqMN2.txt
+	* Updating susySamples with the current available p1032 noslep grids
 
 2012-08-29 Steve
 	* Add truth jets to SusyD3PDInterface
