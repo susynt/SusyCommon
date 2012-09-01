@@ -1,5 +1,11 @@
 # vim: set noexpandtab:
 
+2012-09-01 Steve
+	* Adding cross section files for noslep grids
+	A         data/modeA_hadW_MC1eqMN2.txt
+	A         data/modeA_lepW_MC1eqMN2.txt
+	A         data/modeC_lepW_MC1eqMN2.txt
+
 2012-08-29 Steve
 	* Add truth jets to SusyD3PDInterface
 	* Add method to SusyD3PDAna for matching reco jets to truth jets with dR
