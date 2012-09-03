@@ -1,4 +1,9 @@
 # vim: set noexpandtab:
+2012-09-02 Matt
+	* passLArHoleVeto() was reseting jet tlv causing issue with sys scale factor. 
+	  commented out this function as it is no longer used anyway. 
+	* Updated to SusyTools-00-01-05 
+	* Updated electron systematics updated to handle the 4 shifts
 
 2012-09-01 Steve
 	* Adding cross section files for noslep grids

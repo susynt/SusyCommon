@@ -561,6 +561,7 @@ void SusyNtMaker::fillJetVars()
 /*--------------------------------------------------------------------------------*/
 void SusyNtMaker::fillJetVar(int jetIdx)
 {
+
   const JetElement* element = & d3pd.jet[jetIdx];
   m_susyNt.jet()->push_back( Susy::Jet() );
   Susy::Jet* jetOut = & m_susyNt.jet()->back();
@@ -588,6 +589,7 @@ void SusyNtMaker::fillJetVar(int jetIdx)
   jetOut->sv0           = element->flavor_weight_SV0();
   jetOut->combNN        = element->flavor_weight_JetFitterCOMBNN();
   jetOut->mv1           = element->flavor_weight_MV1();
+
 }
 
 /*--------------------------------------------------------------------------------*/
@@ -745,6 +747,7 @@ void SusyNtMaker::doSystematic()
     else if( isJetSys(sys) )
       saveJetSF(sys);
 
+
     // Fill the Met for this sys
     fillMetVars(sys);
 
@@ -771,10 +774,18 @@ void SusyNtMaker::saveElectronSF(SusyNtSys sys)
 	match = true;
 	
 	float sf = lep->lv()->E() / GeV / ele->E();
-	if(sys == NtSys_EES_UP)      ele->ees_up = sf;
-	else if(sys == NtSys_EES_DN) ele->ees_dn = sf;
-	else if(sys == NtSys_EER_UP) ele->eer_up = sf;
-	else if(sys == NtSys_EER_DN) ele->eer_dn = sf;
+	//if(sys == NtSys_EES_UP)      ele->ees_up = sf;
+	//else if(sys == NtSys_EES_DN) ele->ees_dn = sf;
+	if(sys == NtSys_EES_Z_UP)        ele->ees_z_up = sf;
+	else if(sys == NtSys_EES_Z_DN)   ele->ees_z_dn = sf;
+	else if(sys == NtSys_EES_MAT_UP) ele->ees_mat_up = sf;
+	else if(sys == NtSys_EES_MAT_DN) ele->ees_mat_dn = sf;
+	else if(sys == NtSys_EES_PS_UP)  ele->ees_ps_up = sf;
+	else if(sys == NtSys_EES_PS_DN)  ele->ees_ps_dn = sf;
+	else if(sys == NtSys_EES_LOW_UP) ele->ees_low_up = sf;
+	else if(sys == NtSys_EES_LOW_DN) ele->ees_low_dn = sf;
+	else if(sys == NtSys_EER_UP)     ele->eer_up = sf;
+	else if(sys == NtSys_EER_DN)     ele->eer_dn = sf;
 	
       }// end if electron matches
     }// end loop over electrons in susyNt
@@ -807,7 +818,7 @@ void SusyNtMaker::saveMuonSF(SusyNtSys sys)
 	else if(sys == NtSys_MS_DN) mu->ms_dn = sf;
 	else if(sys == NtSys_ID_UP) mu->id_up = sf;
 	else if(sys == NtSys_ID_DN) mu->id_dn = sf;
-	
+
       }// end if muon matches
     }// end loop over muons in SusyNt
     
@@ -824,7 +835,8 @@ void SusyNtMaker::saveJetSF(SusyNtSys sys)
   // Loop over selected jets and fill output tree
   for(uint iJet=0; iJet<m_preJets.size(); iJet++){
     uint jetIdx = m_preJets[iJet];
-    const JetElement* element = & d3pd.jet[jetIdx];
+    //const JetElement* element = & d3pd.jet[jetIdx];
+    const TLorentzVector jetTLV = m_susyObj.GetJetTLV(jetIdx);
     
     bool match = false;
 
@@ -834,10 +846,11 @@ void SusyNtMaker::saveJetSF(SusyNtSys sys)
       if( jet->idx == jetIdx ){
 	match = true;
 	
-	float sf = element->E() / GeV / jet->E();
+	float sf = jetTLV.E() / GeV / jet->E();
 	if(sys == NtSys_JES_UP)      jet->jes_up = sf;
 	else if(sys == NtSys_JES_DN) jet->jes_dn = sf;
 	else if(sys == NtSys_JER)    jet->jer = sf;
+
       }// end if the leptons match	
     }// end loop over what we have saved
     
@@ -879,10 +892,17 @@ void SusyNtMaker::addMissingElectron(const LeptonInfo* lep, SusyNtSys sys)
   // Set the sf
   Susy::Electron* ele = & m_susyNt.ele()->back();
   float sf = tlv_sys.E() / GeV / ele->E();
-  if(sys == NtSys_EES_UP) ele->ees_up = sf;
-  else if(sys == NtSys_EES_DN) ele->ees_dn = sf;
-  else if(sys == NtSys_EER_UP) ele->eer_up = sf;
-  else if(sys == NtSys_EER_DN) ele->eer_dn = sf;
+  if(sys == NtSys_EES_Z_UP)        ele->ees_z_up = sf;
+  else if(sys == NtSys_EES_Z_DN)   ele->ees_z_dn = sf;
+  else if(sys == NtSys_EES_MAT_UP) ele->ees_mat_up = sf;
+  else if(sys == NtSys_EES_MAT_DN) ele->ees_mat_dn = sf;
+  else if(sys == NtSys_EES_PS_UP)  ele->ees_ps_up = sf;
+  else if(sys == NtSys_EES_PS_DN)  ele->ees_ps_dn = sf;
+  else if(sys == NtSys_EES_LOW_UP) ele->ees_low_up = sf;
+  else if(sys == NtSys_EES_LOW_DN) ele->ees_low_dn = sf;
+  else if(sys == NtSys_EER_UP)     ele->eer_up = sf;
+  else if(sys == NtSys_EER_DN)     ele->eer_dn = sf;
+  
 }
 
 /*--------------------------------------------------------------------------------*/

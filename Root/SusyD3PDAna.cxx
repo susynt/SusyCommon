@@ -269,18 +269,26 @@ void SusyD3PDAna::selectBaselineObjects(SusyNtSys sys)
   // Handle Systematic
   // New syntax for SUSYTools in mc12
   SystErr::Syste susySys = SystErr::NONE;
-  if(sys == NtSys_NOM);                                         // No need to check needlessly
-  else if(sys == NtSys_EES_UP) susySys = SystErr::EESUP;        // E scale up
-  else if(sys == NtSys_EES_DN) susySys = SystErr::EESDOWN;      // E scale down
-  else if(sys == NtSys_EER_UP) susySys = SystErr::ERESUP;       // E smear up
-  else if(sys == NtSys_EER_DN) susySys = SystErr::ERESDOWN;     // E smear down
-  else if(sys == NtSys_MS_UP ) susySys = SystErr::MMSUP;        // MS scale up
-  else if(sys == NtSys_MS_DN ) susySys = SystErr::MMSLOW;       // MS scale down
-  else if(sys == NtSys_ID_UP ) susySys = SystErr::MIDUP;        // ID scale up
-  else if(sys == NtSys_ID_DN ) susySys = SystErr::MIDLOW;       // ID scale down
-  else if(sys == NtSys_JES_UP) susySys = SystErr::JESUP;        // JES up
-  else if(sys == NtSys_JES_DN) susySys = SystErr::JESDOWN;      // JES down
-  else if(sys == NtSys_JER)    susySys = SystErr::JER;          // JER (gaussian)
+  if(sys == NtSys_NOM);                                           // No need to check needlessly
+  //else if(sys == NtSys_EES_UP) susySys = SystErr::EESUP;        // E scale up
+  //else if(sys == NtSys_EES_DN) susySys = SystErr::EESDOWN;      // E scale down
+  else if(sys == NtSys_EES_Z_UP  ) susySys = SystErr::EGZEEUP;    // E scale Zee up
+  else if(sys == NtSys_EES_Z_DN  ) susySys = SystErr::EGZEEDOWN;  // E scale Zee dn
+  else if(sys == NtSys_EES_MAT_UP) susySys = SystErr::EGMATUP;    // E scale material up
+  else if(sys == NtSys_EES_MAT_DN) susySys = SystErr::EGMATDOWN;  // E scale material down
+  else if(sys == NtSys_EES_PS_UP ) susySys = SystErr::EGPSUP;     // E scale presampler up
+  else if(sys == NtSys_EES_PS_DN ) susySys = SystErr::EGPSDOWN;   // E scale presampler down
+  else if(sys == NtSys_EES_LOW_UP) susySys = SystErr::EGLOWUP;    // E low pt up
+  else if(sys == NtSys_EES_LOW_DN) susySys = SystErr::EGLOWDOWN;  // E low pt down
+  else if(sys == NtSys_EER_UP    ) susySys = SystErr::EGRESUP;    // E smear up
+  else if(sys == NtSys_EER_DN    ) susySys = SystErr::EGRESDOWN;  // E smear down
+  else if(sys == NtSys_MS_UP     ) susySys = SystErr::MMSUP;      // MS scale up
+  else if(sys == NtSys_MS_DN     ) susySys = SystErr::MMSLOW;     // MS scale down
+  else if(sys == NtSys_ID_UP     ) susySys = SystErr::MIDUP;      // ID scale up
+  else if(sys == NtSys_ID_DN     ) susySys = SystErr::MIDLOW;     // ID scale down
+  else if(sys == NtSys_JES_UP    ) susySys = SystErr::JESUP;      // JES up
+  else if(sys == NtSys_JES_DN    ) susySys = SystErr::JESDOWN;    // JES down
+  else if(sys == NtSys_JER       ) susySys = SystErr::JER;        // JER (gaussian)
 
   // Preselection
   m_preElectrons = get_electrons_baseline( &d3pd.ele, !m_isMC, d3pd.evt.RunNumber(), m_susyObj, 10.*GeV, 2.47, susySys, isAF2 );
@@ -656,7 +664,8 @@ bool SusyD3PDAna::matchMuonTrigger(const TLorentzVector* lv, vector<int>* passTr
 void SusyD3PDAna::evtCheck()
 {
   // Lar Hole Veto - shouldn't be used
-  if(passLarHoleVeto()) m_evtFlag |= PASS_LAr;
+  //if(passLarHoleVeto()) m_evtFlag |= PASS_LAr;  
+  m_evtFlag |= PASS_LAr;
 
   // Tile hot spot
   if(passTileHotSpot()) m_evtFlag |= PASS_HotSpot;

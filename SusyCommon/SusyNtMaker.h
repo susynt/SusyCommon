@@ -65,14 +65,18 @@ class SusyNtMaker : public SusyD3PDAna
 
     // Systematic enum checks
     bool isElecSys(SusyNtSys s){ 
-      return (s == NtSys_EES_UP || s == NtSys_EES_DN || s == NtSys_EER_UP || s == NtSys_EER_DN); 
-    }
+      return (s == NtSys_EES_Z_UP   || s == NtSys_EES_Z_DN || 
+	      s == NtSys_EES_MAT_UP || s == NtSys_EES_MAT_DN || 
+	      s == NtSys_EES_PS_UP  || s == NtSys_EES_PS_DN || 
+	      s == NtSys_EES_LOW_UP || s == NtSys_EES_LOW_DN || 
+	      s == NtSys_EER_UP     || s == NtSys_EER_DN); 
+    };
     bool isMuonSys(SusyNtSys s){ 
       return (s == NtSys_MS_UP || s == NtSys_MS_DN || s == NtSys_ID_UP || s == NtSys_ID_DN); 
-    }
+    };
     bool isJetSys(SusyNtSys s){ 
       return (s == NtSys_JES_UP || s == NtSys_JES_DN || s == NtSys_JER); 
-    }
+    };
     
     void addEventFlag(SusyNtSys s, int eventFlag){ 
       m_susyNt.evt()->evtFlag[s] = eventFlag;
