@@ -1,6 +1,6 @@
 #!/bin/bash
 
-iteration=i3
+iteration=i4
 
 #
 # Submit counter job for all mc datasets in input file passed as argument

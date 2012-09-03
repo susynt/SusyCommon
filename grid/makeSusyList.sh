@@ -16,9 +16,12 @@ function getXsec {
         # extract dataset ID
         id=${ds#mc12_8TeV.}
         id=${id%.Herwigpp*}
-        #grep $id $TestArea/SusyCommon/data/modeA_lightslep_MC1eqMN2.txt | awk '{print $5}'
-        #cat $TestArea/SusyCommon/data/modeA_lightslep_MC1eqMN2.txt $TestArea/SusyCommon/data/modeC_lightslep_MC1eqMN2.txt | grep $id | awk '{print $5}'
-        cat $TestArea/SusyCommon/data/mode*_lightslep_MC1eqMN2.txt | grep $id | awk '{print $5}'
+        # slep and noslep files have different format
+        if [[ $ds = *_noslep_* ]]; then
+                cat $TestArea/SusyCommon/data/mode*W_MC1eqMN2.txt | grep $id | awk '{print $4}' | tr '*' ' ' | awk '{print $1*$2*$3}'
+        else
+                cat $TestArea/SusyCommon/data/mode*lightslep_MC1eqMN2.txt | grep $id | awk '{print $5}'
+        fi
 
 }
 
