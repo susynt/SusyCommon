@@ -84,8 +84,8 @@ void SusyD3PDAna::Begin(TTree* /*tree*/)
   // Setup SUSYTools
   //m_susyObj.initialize(!m_isMC);
   m_susyObj.initialize(!m_isMC, false,
-                       gSystem->ExpandPathName("$ROOTCOREDIR/data/MuonMomentumCorrections/"),
-                       gSystem->ExpandPathName("$ROOTCOREDIR/data/MuonEfficiencyCorrections/"));
+		       gSystem->ExpandPathName("$ROOTCOREDIR/data/MuonMomentumCorrections/"),
+		       gSystem->ExpandPathName("$ROOTCOREDIR/data/MuonEfficiencyCorrections/"));
   // Turn off jet calibration for now
   m_susyObj.SetJetCalib(false);
 
@@ -383,9 +383,13 @@ void SusyD3PDAna::buildMet(SusyNtSys sys)
   // Need the proper jet systematic for building systematic
   SystErr::Syste susySys = SystErr::NONE;
   if(sys == NtSys_NOM);
-  else if(sys == NtSys_JES_UP) susySys = SystErr::JESUP;        // JES up
-  else if(sys == NtSys_JES_DN) susySys = SystErr::JESDOWN;      // JES down
-  else if(sys == NtSys_JER)    susySys = SystErr::JER;          // JER (gaussian)
+  else if(sys == NtSys_JES_UP)      susySys = SystErr::JESUP;       // JES up
+  else if(sys == NtSys_JES_DN)      susySys = SystErr::JESDOWN;     // JES down
+  else if(sys == NtSys_JER)         susySys = SystErr::JER;         // JER (gaussian)
+  else if(sys == NtSys_SCALEST_UP)  susySys = SystErr::SCALESTUP;   // Met scale sys up
+  else if(sys == NtSys_SCALEST_DN)  susySys = SystErr::SCALESTDOWN; // Met scale sys down
+  else if(sys == NtSys_RESOST_UP)   susySys = SystErr::RESOSTUP;    // Met resolution sys up
+  else if(sys == NtSys_RESOST_DN)   susySys = SystErr::RESOSTDOWN;  // Met resolution sys down
 
   // Need ALL electrons in order to calculate the MET
   // Actually, I see common code uses all electrons that have lv.Pt() != 0
