@@ -82,7 +82,10 @@ void SusyD3PDAna::Begin(TTree* /*tree*/)
   //}
 
   // Setup SUSYTools
-  m_susyObj.initialize(!m_isMC);
+  //m_susyObj.initialize(!m_isMC);
+  m_susyObj.initialize(!m_isMC, false,
+                       gSystem->ExpandPathName("$ROOTCOREDIR/data/MuonMomentumCorrections/"),
+                       gSystem->ExpandPathName("$ROOTCOREDIR/data/MuonEfficiencyCorrections/"));
   // Turn off jet calibration for now
   m_susyObj.SetJetCalib(false);
 

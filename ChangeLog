@@ -1,4 +1,8 @@
 # vim: set noexpandtab:
+
+2012-09-03 Steve
+	* Fixed initialization of SUSYObjDef, setting paths to muon SF and smearing files
+
 2012-09-02 Matt
 	* passLArHoleVeto() was reseting jet tlv causing issue with sys scale factor. 
 	  commented out this function as it is no longer used anyway. 
