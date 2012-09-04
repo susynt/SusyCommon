@@ -539,7 +539,7 @@ void SusyNtMaker::fillMuonVars(const LeptonInfo* lepIn)
   muOut->trigFlags      = m_muoTrigFlags[ lepIn->idx() ];
 
   muOut->effSF          = m_susyObj.GetSignalMuonSF(lepIn->idx());
-  muOut->errEffSF       = m_susyObj.GetSignalMuonSFUnc(lepIn->idx());
+  muOut->errEffSF       = m_susyObj.GetSignalMuonSFUnc(lepIn->idx(), SystErr::MEFFUP);
   
   // Do we need this??
   muOut->idx            = lepIn->idx();
