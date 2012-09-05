@@ -4,3 +4,17 @@ group.phys-susy.data12_8TeV.periodB.physics_Egamma.PhysCont.NTUP_SUSY.t0pro13_v0
 group.phys-susy.data12_8TeV.periodB.physics_Muons.PhysCont.NTUP_SUSY.t0pro13_v01_p1032_p1033/
 group.phys-susy.data12_8TeV.periodC.physics_Egamma.PhysCont.NTUP_SUSY.t0pro13_v01_p1032/
 group.phys-susy.data12_8TeV.periodC.physics_Muons.PhysCont.NTUP_SUSY.t0pro13_v01_p1032/
+group.phys-susy.data12_8TeV.periodD1.physics_Egamma.PhysCont.NTUP_SUSY.t0pro13_v01_p1032_p1141/
+group.phys-susy.data12_8TeV.periodD1.physics_Muons.PhysCont.NTUP_SUSY.t0pro13_v01_p1032_p1141/
+group.phys-susy.data12_8TeV.periodD2.physics_Egamma.PhysCont.NTUP_SUSY.t0pro13_v01_p1032_p1141/
+group.phys-susy.data12_8TeV.periodD2.physics_Muons.PhysCont.NTUP_SUSY.t0pro13_v01_p1032_p1141/
+group.phys-susy.data12_8TeV.periodD3.physics_Egamma.PhysCont.NTUP_SUSY.t0pro13_v01_p1032_p1141/
+group.phys-susy.data12_8TeV.periodD3.physics_Muons.PhysCont.NTUP_SUSY.t0pro13_v01_p1032_p1141/
+group.phys-susy.data12_8TeV.periodD4.physics_Egamma.PhysCont.NTUP_SUSY.t0pro13_v01_p1032_p1141/
+group.phys-susy.data12_8TeV.periodD4.physics_Muons.PhysCont.NTUP_SUSY.t0pro13_v01_p1032_p1141/
+group.phys-susy.data12_8TeV.periodD5.physics_Egamma.PhysCont.NTUP_SUSY.t0pro13_v01_p1032_p1141/
+group.phys-susy.data12_8TeV.periodD5.physics_Muons.PhysCont.NTUP_SUSY.t0pro13_v01_p1032_p1141/
+group.phys-susy.data12_8TeV.periodD6.physics_Egamma.PhysCont.NTUP_SUSY.t0pro13_v01_p1032_p1141/
+group.phys-susy.data12_8TeV.periodD6.physics_Muons.PhysCont.NTUP_SUSY.t0pro13_v01_p1032_p1141/
+group.phys-susy.data12_8TeV.periodD7.physics_Egamma.PhysCont.NTUP_SUSY.t0pro13_v01_p1032_p1141/
+group.phys-susy.data12_8TeV.periodD7.physics_Muons.PhysCont.NTUP_SUSY.t0pro13_v01_p1032_p1141/
