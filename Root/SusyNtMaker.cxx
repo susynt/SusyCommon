@@ -23,6 +23,7 @@ SusyNtMaker::SusyNtMaker() : m_fillNt(true)
   n_sig_jet=0;
   n_evt_initial=0;
   n_evt_grl=0;
+  n_evt_ttcVeto=0;
   n_evt_larErr=0;
   n_evt_larHole=0;
   n_evt_hotSpot=0;
@@ -69,11 +70,12 @@ void SusyNtMaker::Begin(TTree* /*tree*/)
   }
 
   // create histogram for cutflow
-  h_cutFlow = new TH1F("cutFlow","Histogram storing cuts applied upstream",4,-0.5,3.5);
-  h_cutFlow->GetXaxis()->SetBinLabel(1,"total");
-  h_cutFlow->GetXaxis()->SetBinLabel(2,"GRL");
-  h_cutFlow->GetXaxis()->SetBinLabel(3,"LAr Error");
-  h_cutFlow->GetXaxis()->SetBinLabel(4,"Good Vertex");
+  h_cutFlow = new TH1F("cutFlow","Histogram storing cuts applied upstream", 5, -0.5, 3.5);
+  h_cutFlow->GetXaxis()->SetBinLabel(1, "total");
+  h_cutFlow->GetXaxis()->SetBinLabel(2, "GRL");
+  h_cutFlow->GetXaxis()->SetBinLabel(3, "LAr Error");
+  h_cutFlow->GetXaxis()->SetBinLabel(4, "TTC Veto");
+  h_cutFlow->GetXaxis()->SetBinLabel(5, "Good Vertex");
 
   // Start the timer
   m_timer.Start();
@@ -131,6 +133,7 @@ void SusyNtMaker::Terminate()
   cout << "Event counter" << endl;
   cout << "  Initial  " << n_evt_initial << endl;
   cout << "  GRL      " << n_evt_grl     << endl;
+  cout << "  TTC Veto " << n_evt_ttcVeto << endl;
   cout << "  LarErr   " << n_evt_larErr  << endl;
   //cout << "  LarHole  " << n_evt_larHole << endl;
   cout << "  HotSpot  " << n_evt_hotSpot << endl;
@@ -196,10 +199,15 @@ bool SusyNtMaker::selectEvent()
   n_evt_grl++;
   h_cutFlow->Fill(1);
 
+  // Incomplete TTC event veto
+  if(!passTTCVeto()) return false;
+  n_evt_ttcVeto++;
+  h_cutFlow->Fill(2);
+
   // larErr
   if(!passLarErr()) return false;
   n_evt_larErr++;
-  h_cutFlow->Fill(2);
+  h_cutFlow->Fill(3);
 
   //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-//  
   // Get Nominal Objects
@@ -229,7 +237,7 @@ bool SusyNtMaker::selectEvent()
 
   // primary vertex cut is actually filtered
   if(!passGoodVtx()) return false; 
-  h_cutFlow->Fill(3);
+  h_cutFlow->Fill(4);
 
   // More cuts just for cutflow
   // This is a little ugly, but it was the easiest way to check the cutflow locally.

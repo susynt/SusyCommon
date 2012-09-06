@@ -100,9 +100,11 @@ class SusyD3PDAna : public SusyD3PDInterface
 
     // grl
     void setGRLFile(TString fileName) { m_grlFileName = fileName; }
-    bool passGRL(){ return m_isMC || m_grl.HasRunLumiBlock(d3pd.evt.RunNumber(), d3pd.evt.lbn()); }
+    bool passGRL() { return m_isMC || m_grl.HasRunLumiBlock(d3pd.evt.RunNumber(), d3pd.evt.lbn()); }
+    // incomplete TTC event veto
+    bool passTTCVeto() { return (d3pd.evt.coreFlags() & 0x40000) == 0; }
     // lar error
-    bool passLarErr(){ return m_isMC || (d3pd.evt.larError()==0); }
+    bool passLarErr() { return m_isMC || (d3pd.evt.larError()==0); }
     // lar hole veto
     bool passLarHoleVeto();
     // tile hot spot

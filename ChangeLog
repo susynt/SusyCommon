@@ -1,5 +1,8 @@
 # vim: set noexpandtab:
 
+2012-09-06 Steve
+	* Added the TTC incomplete event veto to the SusyNtMaker cutflow
+
 2012-09-04 Matt
 	* Fixed muon eff error
 

@@ -107,6 +107,7 @@ class SusyNtMaker : public SusyD3PDAna
     // Some event counts
     uint                n_evt_initial;
     uint                n_evt_grl;
+    uint                n_evt_ttcVeto;
     uint                n_evt_larErr;
     uint                n_evt_larHole;
     uint                n_evt_hotSpot;
