@@ -158,7 +158,6 @@ int main(int argc, char** argv)
 
 
   // GRL
-  //TString grl = gSystem->ExpandPathName("$ROOTCOREDIR/data/MultiLep/data12_8TeV.periodAllYear_DetStatus-v47-pro13-01_CoolRunQuery-00-04-08_Susy.xml");
   TString grl = gSystem->ExpandPathName("$ROOTCOREDIR/data/MultiLep/data12_8TeV.periodAllYear_DetStatus-v52-pro13-04_CoolRunQuery-00-04-08_All_Good.xml");
   susyAna->setGRLFile(grl);
 

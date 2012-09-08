@@ -388,8 +388,10 @@ void SusyD3PDAna::buildMet(SusyNtSys sys)
   else if(sys == NtSys_JER)         susySys = SystErr::JER;         // JER (gaussian)
   else if(sys == NtSys_SCALEST_UP)  susySys = SystErr::SCALESTUP;   // Met scale sys up
   else if(sys == NtSys_SCALEST_DN)  susySys = SystErr::SCALESTDOWN; // Met scale sys down
-  else if(sys == NtSys_RESOST_UP)   susySys = SystErr::RESOSTUP;    // Met resolution sys up
-  else if(sys == NtSys_RESOST_DN)   susySys = SystErr::RESOSTDOWN;  // Met resolution sys down
+  // Only one of these now?
+  //else if(sys == NtSys_RESOST_UP)   susySys = SystErr::RESOSTUP;    // Met resolution sys up
+  //else if(sys == NtSys_RESOST_DN)   susySys = SystErr::RESOSTDOWN;  // Met resolution sys down
+  else if(sys == NtSys_RESOST)      susySys = SystErr::RESOST;      // Met resolution sys up
 
   // Need ALL electrons in order to calculate the MET
   // Actually, I see common code uses all electrons that have lv.Pt() != 0
