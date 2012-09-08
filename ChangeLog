@@ -1,5 +1,8 @@
 # vim: set noexpandtab:
 
+2012-09-08 Steve
+	* Fixed the GRL in NtMaker
+
 2012-09-06 Steve
 	* Added the TTC incomplete event veto to the SusyNtMaker cutflow
 
