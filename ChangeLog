@@ -1,5 +1,9 @@
 # vim: set noexpandtab:
 
+2012-09-11 Steve
+	* Now using get_electrons_met to get electrons for the MET
+	* Only match truth jets on MC
+
 2012-09-08 Steve
 	* Now updated to SUSYTools-00-01-06
 	* Fixed the GRL in NtMaker

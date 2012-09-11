@@ -590,7 +590,7 @@ void SusyNtMaker::fillJetVar(int jetIdx)
   jetOut->truthLabel    = m_isMC? element->flavor_truth_label() : 0;
 
   // truth jet matching
-  jetOut->matchTruth    = matchTruthJet(jetIdx);
+  jetOut->matchTruth    = m_isMC? matchTruthJet(jetIdx) : false;
   //cout << "matchTruth: " << jetOut->matchTruth << endl;
 
   // btag weights

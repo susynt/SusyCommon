@@ -397,9 +397,11 @@ void SusyD3PDAna::buildMet(SusyNtSys sys)
   // Actually, I see common code uses all electrons that have lv.Pt() != 0
   // That's fine though because SUSYObjDef specifically fills for electrons that
   // should enter the RefEle term
-  vector<int> allElectrons = get_electrons_all(&d3pd.ele, m_susyObj);
+  //vector<int> allElectrons = get_electrons_all(&d3pd.ele, m_susyObj);
+  vector<int> metElectrons = get_electrons_met(&d3pd.ele, m_susyObj);
+  cout << "metElectrons: " << metElectrons.size() << endl;
   TVector2 metVector = GetMetVector(m_susyObj, &d3pd.jet, &d3pd.muo, &d3pd.ele, &d3pd.met, &d3pd.evt,
-                                    m_preMuons, m_baseElectrons, allElectrons, susySys);
+                                    m_preMuons, m_baseElectrons, metElectrons, susySys);
   m_met.SetPxPyPzE(metVector.X(), metVector.Y(), 0, metVector.Mod());
 }
 
