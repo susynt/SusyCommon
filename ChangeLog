@@ -2,6 +2,7 @@
 
 2012-09-12 Matt
 	* Added pdf sys variables to the event class
+	* Tagging SusyCommon-00-00-36
 	
 2012-09-11 Steve
 	* Now using get_electrons_met to get electrons for the MET
