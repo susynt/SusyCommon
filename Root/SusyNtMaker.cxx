@@ -354,6 +354,12 @@ void SusyNtMaker::fillEventVars()
   evt->sumw             = m_isMC? m_sumw : 1;
   //cout << "lumi " << m_lumi << " sumw " << m_sumw << " lumiSF " << evt->lumiSF << endl;
 
+  evt->pdf_id1          = m_isMC? d3pd.gen.pdf_id1()->at(0)    : 0;
+  evt->pdf_id2          = m_isMC? d3pd.gen.pdf_id2()->at(0)    : 0;
+  evt->pdf_x1           = m_isMC? d3pd.gen.pdf_x1()->at(0)     : 0;
+  evt->pdf_x2           = m_isMC? d3pd.gen.pdf_x2()->at(0)     : 0;
+  evt->pdf_scale        = m_isMC? d3pd.gen.pdf_scale()->at(0)  : 0;
+
   evt->pdfSF            = m_isMC? getPDFWeight8TeV() : 1;
 
   addEventFlag(NtSys_NOM, m_evtFlag);
