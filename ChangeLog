@@ -1,5 +1,7 @@
 # vim: set noexpandtab:
-
+2012-09-12 Matt
+	* Print statement not commented in buildMet.  Commented out now.
+	
 2012-09-12 Matt
 	* Added pdf sys variables to the event class
 	* Tagging SusyCommon-00-00-36
