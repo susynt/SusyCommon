@@ -1,7 +1,8 @@
 # vim: set noexpandtab:
 2012-09-14 Matt
 	* Added fill method for susyFinalState for the event class.
-
+	* Added way to check sample name for saving susyFinalState
+	
 2012-09-12 Matt
 	* Print statement not commented in buildMet.  Commented out now.
 	
