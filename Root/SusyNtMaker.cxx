@@ -1,7 +1,10 @@
 #include "egammaAnalysisUtils/CaloIsoCorrection.h"
 //#include "SUSYTools/MV1.h"
+
 #include "MultiLep/MuonTools.h"
 #include "MultiLep/ElectronTools.h"
+#include "MultiLep/SusyGridCrossSectionTools.h"
+
 #include "SusyCommon/SusyNtMaker.h"
 
 using namespace std;
@@ -361,7 +364,7 @@ void SusyNtMaker::fillEventVars()
   evt->pdf_scale        = m_isMC? d3pd.gen.pdf_scale()->at(0)  : 0;
 
   bool isSusySample     = m_sample.Contains("DGemt") || m_sample.Contains("DGstau");
-  evt->susyFinalState   = isSusySample? get_finalState(&d3pd.truth)  : -1;
+  evt->susyFinalState   = isSusySample? get_finalState(&d3pd.truth) : -1;
 
   evt->pdfSF            = m_isMC? getPDFWeight8TeV() : 1;
 

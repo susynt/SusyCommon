@@ -1,15 +1,20 @@
 # vim: set noexpandtab:
+
+2012-09-17 Steve
+	* Updated pileup file for A-E1
+	* Added include of SusyGridCrossSectionTools.h for compiling
+
 2012-09-14 Matt
 	* Added fill method for susyFinalState for the event class.
 	* Added way to check sample name for saving susyFinalState
-	
+
 2012-09-12 Matt
 	* Print statement not commented in buildMet.  Commented out now.
-	
+
 2012-09-12 Matt
 	* Added pdf sys variables to the event class
 	* Tagging SusyCommon-00-00-36
-	
+
 2012-09-11 Steve
 	* Now using get_electrons_met to get electrons for the MET
 	* Only match truth jets on MC
