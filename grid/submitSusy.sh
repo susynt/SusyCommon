@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Settings
-tag=n0047
+tag=n0050
 nickname=Steve
 nGBPerJob=MAX
 #nGBPerJob=14
@@ -46,7 +46,7 @@ for line in ${matches[@]}; do
 
         # If output DS name is too long, need to trim it down.
         # For now, treat this on a case by case basis
-        echo $outDS
+        #echo $outDS
         if [[ ${#outDS} > 131 ]]; then
                 # For Powheg WZ samples
                 outDS=${outDS/UEEE3_CTEQ6L1_/}
