@@ -3,6 +3,7 @@
 2012-09-17 Steve
 	* Updated pileup file for A-E1
 	* Added include of SusyGridCrossSectionTools.h for compiling
+	* Tagging SusyCommon-00-00-37
 
 2012-09-14 Matt
 	* Added fill method for susyFinalState for the event class.
