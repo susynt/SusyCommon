@@ -1,5 +1,10 @@
 # vim: set noexpandtab:
 
+2012-09-18 Steve
+	* Added RecoTruthMatch tool, filling isChargeFlip flag
+		* Not yet using the reclassification, because at the 
+		  moment all it does is classify by type and origin...?
+
 2012-09-17 Steve
 	* Updated pileup file for A-E1
 	* Added include of SusyGridCrossSectionTools.h for compiling

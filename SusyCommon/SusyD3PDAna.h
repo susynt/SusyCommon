@@ -11,6 +11,8 @@
 #include "SUSYTools/SUSYCrossSection.h"
 #include "SUSYTools/HforToolD3PD.h"
 #include "PileupReweighting/TPileupReweighting.h"
+#include "LeptonTruthTools/RecoTruthMatch.h"
+
 #include "MultiLep/LeptonInfo.h"
 
 #ifdef USEPDFTOOL
@@ -268,6 +270,8 @@ class SusyD3PDAna : public SusyD3PDInterface
     #ifdef USEPDFTOOL
     PDFTool*                    m_pdfTool;      // PDF reweighting tool (In MultiLep pkg)
     #endif
+
+    RecoTruthMatch              m_recoTruthMatch;       // Lepton truth matching tool
 
 };
 

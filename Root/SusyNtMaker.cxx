@@ -284,6 +284,21 @@ bool SusyNtMaker::selectEvent()
   // Wait, this won't work for systematic leptons!
   matchTriggers();
 
+  // Setup reco truth matching
+  if(m_isMC){
+    m_recoTruthMatch = RecoTruthMatch(0.1, d3pd.truth.channel_number(), 
+                                      d3pd.truth.n(), 
+                                      d3pd.truth.barcode(), 
+                                      d3pd.truth.status(), 
+                                      d3pd.truth.pdgId(), 
+                                      d3pd.truth.parents(),
+                                      d3pd.truth.children(),
+                                      d3pd.truth.pt(),
+                                      d3pd.truth.eta(),
+                                      d3pd.truth.phi(),
+                                      d3pd.truth.m(), 0);
+  }
+
   if(m_fillNt){
 
     // This will fill the pre selected
@@ -413,6 +428,9 @@ void SusyNtMaker::fillElectronVars(const LeptonInfo* lepIn)
   eleOut->mcOrigin      = m_isMC? element->origin() : 0;
   eleOut->clusEta       = element->cl_eta();
   eleOut->clusE         = element->cl_E();
+
+  // Check for charge flip
+  eleOut->isChargeFlip  = m_isMC? m_recoTruthMatch.isChargeFlip(*lv, element->charge()) : false;
 
   // Need to recalculate these variables
   //eleOut->mediumPP      = element->mediumPP();
