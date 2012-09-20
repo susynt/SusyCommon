@@ -167,6 +167,9 @@ class SusyD3PDAna : public SusyD3PDInterface
     TString sample() { return m_sample; }
     void setSample(TString s) { m_sample = s; }
 
+    // AF2 flag
+    void setAF2(bool isAF2=true) { m_isAF2 = isAF2; }
+
     // Set SUSY D3PD tag to know which branches are ok
     void setD3PDTag(D3PDTag tag) { m_d3pdTag = tag; }
 
@@ -196,6 +199,8 @@ class SusyD3PDAna : public SusyD3PDInterface
 
     TString                     m_sample;       // sample name
     DataStream                  m_stream;       // data stream enum, taken from sample name
+    bool                        m_isAF2;        // flag for ATLFastII samples
+
     D3PDTag                     m_d3pdTag;      // SUSY D3PD tag
 
     bool                        m_selectPhotons;// Toggle photon selection

@@ -59,6 +59,9 @@ void help()
   cout << "  --saveTau will save taus"          << endl;
   cout << "     default: off"                   << endl;
 
+  cout << "  --af2 specifies AF2 samples"       << endl;
+  cout << "     default: off"                   << endl;
+
   cout << "  --d3pd1032 sets d3pd tag to p1032" << endl;
   cout << "     default: p1181"                 << endl;
 
@@ -84,6 +87,7 @@ int main(int argc, char** argv)
   bool sysOn      = false;
   bool savePh     = false;
   bool saveTau    = false;
+  bool isAF2      = false;
   bool writeNt    = true;
   D3PDTag tag     = D3PD_p1181;
   TString metFlav = "Egamma10NoTau";
@@ -117,6 +121,8 @@ int main(int argc, char** argv)
       savePh = true;
     else if (strcmp(argv[i], "--saveTau") == 0)
       saveTau = true;
+    else if (strcmp(argv[i], "--af2") == 0)
+      isAF2 = true;
     else if (strcmp(argv[i], "--d3pd1032") == 0)
       tag = D3PD_p1032;
     else if (strcmp(argv[i], "--metFlav") == 0)
@@ -139,6 +145,9 @@ int main(int argc, char** argv)
   cout << "  sys     " << sysOn    << endl;
   cout << "  savePh  " << savePh   << endl;
   cout << "  saveTau " << saveTau  << endl;
+  cout << "  isAF2   " << isAF2    << endl;
+  cout << "  d3pdtag " << tag      << endl;
+  cout << "  metFlav " << metFlav  << endl;
   cout << "  lumi    " << lumi     << endl;
   cout << "  xsec    " << xsec     << endl;
   cout << endl;
@@ -166,6 +175,7 @@ int main(int argc, char** argv)
   //susyAna->setSavePhotons(savePh);
   susyAna->setSelectPhotons(savePh);
   susyAna->setSelectTaus(saveTau);
+  susyAna->setAF2(isAF2);
   susyAna->setXsec(xsec);
   susyAna->setFillNt(writeNt);
   susyAna->setD3PDTag(tag);

@@ -21,6 +21,7 @@ using namespace std;
 /*--------------------------------------------------------------------------------*/
 SusyD3PDAna::SusyD3PDAna() : 
         m_sample(""),
+        m_isAF2(false),
         m_d3pdTag(D3PD_p1181),
         m_selectPhotons(false),
         m_selectTaus(false),
@@ -83,11 +84,11 @@ void SusyD3PDAna::Begin(TTree* /*tree*/)
 
   // Setup SUSYTools
   //m_susyObj.initialize(!m_isMC);
-  m_susyObj.initialize(!m_isMC, false,
+  m_susyObj.initialize(!m_isMC, m_isAF2,
 		       gSystem->ExpandPathName("$ROOTCOREDIR/data/MuonMomentumCorrections/"),
 		       gSystem->ExpandPathName("$ROOTCOREDIR/data/MuonEfficiencyCorrections/"));
   // Turn off jet calibration for now
-  m_susyObj.SetJetCalib(false);
+  m_susyObj.SetJetCalib(true);
 
   // Reserve space for taus
   m_tauLVs.reserve(10);

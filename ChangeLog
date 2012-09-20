@@ -1,11 +1,11 @@
 # vim: set noexpandtab:
 
 2012-09-19 Steve
-	* Added d3pd tag to SusyD3PDAna: m_d3pdTag
-	* Added metFlavor to SusyD3PDAna: m_metFlavor
+	* Added flags to SusyD3PDAna: m_d3pdTag, m_metFlavor, m_isAF2
+	* Added command line options to NtMaker: --d3pd1032, --metFlav, --af2
 	* Filling passMllForAlpgen flag using MultiLep/TruthTools
 	* Filling ptcone30ElStyle
-	* Added command line options to NtMaker: --d3pd1032, --metFlav
+	* Turned on jet calibration in SUSYTools
 
 2012-09-18 Steve
 	* Added RecoTruthMatch tool, filling isChargeFlip flag
