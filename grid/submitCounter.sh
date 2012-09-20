@@ -1,6 +1,6 @@
 #!/bin/bash
 
-iteration=i4
+iteration=i7
 nickname=Steve
 
 #
