@@ -1,1 +1,1 @@
-mc12_8TeV.105861.PowhegPythia_AUET2BCT10_ttbar_LeptonFilter.merge.NTUP_SUSY.e1317_a159_a165_r3549_p1032/	14977984
+mc12_8TeV.105861.PowhegPythia_AUET2BCT10_ttbar_LeptonFilter.merge.NTUP_SUSY.e1317_a159_a165_r3549_p1181/	14977984
