@@ -87,8 +87,12 @@ void SusyD3PDAna::Begin(TTree* /*tree*/)
   m_susyObj.initialize(!m_isMC, m_isAF2,
 		       gSystem->ExpandPathName("$ROOTCOREDIR/data/MuonMomentumCorrections/"),
 		       gSystem->ExpandPathName("$ROOTCOREDIR/data/MuonEfficiencyCorrections/"));
-  // Turn off jet calibration for now
+  // Turn on jet calibration
   m_susyObj.SetJetCalib(true);
+  // Set the MissingEt flag for STVF
+  if(m_metFlavor.Contains("STVF")){
+    m_susyObj.GetMETUtility()->configMissingET(true, true);
+  }
 
   // Reserve space for taus
   m_tauLVs.reserve(10);

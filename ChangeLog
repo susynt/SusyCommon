@@ -1,5 +1,9 @@
 # vim: set noexpandtab:
 
+2012-09-20 Steve
+	* Configure METUtility for STVF
+	* Tagging SusyCommon-00-00-39
+
 2012-09-19 Steve
 	* Added flags to SusyD3PDAna: m_d3pdTag, m_metFlavor, m_isAF2
 	* Added command line options to NtMaker: --d3pd1032, --metFlav, --af2
