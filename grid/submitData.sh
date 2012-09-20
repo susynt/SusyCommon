@@ -4,8 +4,8 @@
 tag=n0100
 nickname=Steve
 nGBPerJob=MAX
-#nGBPerJob=14
 athenaTag=17.3.1.1
+metFlav="Egamma10NoTau_STVF"
 
 # get the samples of interest
 if [[ $# = 0 ]]; then
@@ -36,7 +36,7 @@ for inDS in ${datasets[@]}; do
         outDS="user.$nickname.${inDS%/}_$tag/"
         outDS=${outDS/NTUP_SUSY/SusyNt}
 
-        command="./gridScript.sh %IN --saveTau -s $sample"
+        command="./gridScript.sh %IN --saveTau -s $sample --metFlav $metFlav"
 
 	echo 
         echo "__________________________________________________________________________________________________________"
