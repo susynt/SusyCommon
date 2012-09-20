@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Settings
-tag=n0050
+tag=n0100
 nickname=Steve
 nGBPerJob=MAX
 #nGBPerJob=14
@@ -43,6 +43,11 @@ for line in ${matches[@]}; do
         outDS="user.$nickname.${inDS%/}_$tag/"
         outDS=${outDS/merge.NTUP_SUSY/SusyNt}
 
+        # AF2 flag
+        if [[ $inDS = *_a???_* ]]; then
+                af2Opt="--af2"
+        fi
+
         # If output DS name is too long, need to trim it down.
         # For now, treat this on a case by case basis
         echo $outDS
@@ -51,7 +56,7 @@ for line in ${matches[@]}; do
                 outDS=${outDS/2LeptonFilter/2L}
         fi
 
-        command="./gridScript.sh %IN --saveTau -s $sample -w $sumw"
+        command="./gridScript.sh %IN --saveTau -s $sample -w $sumw $af2Opt"
 
 	echo 
 	echo "__________________________________________________________________________________________________________"

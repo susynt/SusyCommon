@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Settings
-tag=n0050
+tag=n0100
 nickname=Steve
 nGBPerJob=MAX
 #nGBPerJob=14
@@ -40,6 +40,11 @@ for line in ${matches[@]}; do
         sample=${inDS#mc12_8TeV.*.}
         sample=${sample%.merge.*/}
 
+        # AF2 flag
+        if [[ $inDS = *_a???_* ]]; then
+                af2Opt="--af2"
+        fi
+
         # Build the output dataset name
         outDS="user.$nickname.${inDS%/}_$tag/"
         outDS=${outDS/merge.NTUP_SUSY/SusyNt}
@@ -52,7 +57,7 @@ for line in ${matches[@]}; do
                 outDS=${outDS/UEEE3_CTEQ6L1_/}
         fi
 
-        command="./gridScript.sh %IN --saveTau -s $sample -w $sumw -x $xsec"
+        command="./gridScript.sh %IN --saveTau -s $sample -w $sumw -x $xsec $af2Opt"
 
 	echo 
 	echo "__________________________________________________________________________________________________________"
