@@ -6,6 +6,7 @@
 	* Filling passMllForAlpgen flag using MultiLep/TruthTools
 	* Filling ptcone30ElStyle
 	* Turned on jet calibration in SUSYTools
+	* Tagging SusyCommon-00-00-38
 
 2012-09-18 Steve
 	* Added RecoTruthMatch tool, filling isChargeFlip flag
