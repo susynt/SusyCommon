@@ -4,6 +4,7 @@
 #include "MultiLep/MuonTools.h"
 #include "MultiLep/ElectronTools.h"
 #include "MultiLep/SusyGridCrossSectionTools.h"
+#include "MultiLep/TruthTools.h"
 
 #include "SusyCommon/SusyNtMaker.h"
 
@@ -361,6 +362,12 @@ void SusyNtMaker::fillEventVars()
 
   evt->hfor             = m_isMC? getHFORDecision() : -1;
 
+  // SUSY final state
+  bool isSusySample     = m_sample.Contains("DGemt") || m_sample.Contains("DGstau");
+  evt->susyFinalState   = isSusySample? get_finalState(&d3pd.truth) : -1;
+
+  evt->passMllForAlpgen = m_isMC? PassMllForAlpgen(&d3pd.truth) : true;
+
   evt->trigFlags        = m_evtTrigFlags;
 
   evt->wPileup          = m_isMC? getPileupWeight() : 1;
@@ -377,9 +384,6 @@ void SusyNtMaker::fillEventVars()
   evt->pdf_x1           = m_isMC? d3pd.gen.pdf_x1()->at(0)     : 0;
   evt->pdf_x2           = m_isMC? d3pd.gen.pdf_x2()->at(0)     : 0;
   evt->pdf_scale        = m_isMC? d3pd.gen.pdf_scale()->at(0)  : 0;
-
-  bool isSusySample     = m_sample.Contains("DGemt") || m_sample.Contains("DGstau");
-  evt->susyFinalState   = isSusySample? get_finalState(&d3pd.truth) : -1;
 
   evt->pdfSF            = m_isMC? getPDFWeight8TeV() : 1;
 
@@ -553,6 +557,8 @@ void SusyNtMaker::fillMuonVars(const LeptonInfo* lepIn)
   muOut->ptcone20       = element->ptcone20()/GeV;
   muOut->ptcone30       = element->ptcone30()/GeV;
   muOut->etcone30       = element->etcone30()/GeV;
+
+  muOut->ptcone30ElStyle= m_d3pdTag>=D3PD_p1181? element->ptcone30_trkelstyle()/GeV : 0;
 
   muOut->d0             = element->d0_exPV();
   muOut->errD0          = sqrt(element->cov_d0_exPV());

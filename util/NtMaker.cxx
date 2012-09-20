@@ -11,6 +11,7 @@
 #include "SusyNtuple/ChainHelper.h"
 
 using namespace std;
+using namespace Susy;
 
 /*
 
@@ -58,6 +59,12 @@ void help()
   cout << "  --saveTau will save taus"          << endl;
   cout << "     default: off"                   << endl;
 
+  cout << "  --d3pd1032 sets d3pd tag to p1032" << endl;
+  cout << "     default: p1181"                 << endl;
+
+  cout << "  --metFlav set met flavor"          << endl;
+  cout << "     default: Egamma10NoTau"         << endl;
+
   cout << "  -h print this help"                << endl;
 }
 
@@ -78,6 +85,8 @@ int main(int argc, char** argv)
   bool savePh     = false;
   bool saveTau    = false;
   bool writeNt    = true;
+  D3PDTag tag     = D3PD_p1181;
+  TString metFlav = "Egamma10NoTau";
 
   cout << "SusyNtMaker" << endl;
   cout << endl;
@@ -108,6 +117,10 @@ int main(int argc, char** argv)
       savePh = true;
     else if (strcmp(argv[i], "--saveTau") == 0)
       saveTau = true;
+    else if (strcmp(argv[i], "--d3pd1032") == 0)
+      tag = D3PD_p1032;
+    else if (strcmp(argv[i], "--metFlav") == 0)
+      metFlav = argv[++i];
     //if (strcmp(argv[i], "-h") == 0)
     else
     {
@@ -155,7 +168,8 @@ int main(int argc, char** argv)
   susyAna->setSelectTaus(saveTau);
   susyAna->setXsec(xsec);
   susyAna->setFillNt(writeNt);
-
+  susyAna->setD3PDTag(tag);
+  susyAna->setMetFlavor(metFlav);
 
   // GRL
   TString grl = gSystem->ExpandPathName("$ROOTCOREDIR/data/MultiLep/data12_8TeV.periodAllYear_DetStatus-v52-pro13-04_CoolRunQuery-00-04-08_All_Good.xml");

@@ -43,10 +43,6 @@ class SusyD3PDAna : public SusyD3PDInterface
     // Terminate is called after looping is finished
     virtual void    Terminate();
 
-    // Sample name - used to set isMC flag
-    TString sample() { return m_sample; }
-    void setSample(TString s) { m_sample = s; }
-
     //
     // Object selection
     // Selected leptons have kinematic and cleaning cuts (no overlap removal)
@@ -167,15 +163,24 @@ class SusyD3PDAna : public SusyD3PDInterface
     // Running conditions
     //
 
+    // Sample name - used to set isMC flag
+    TString sample() { return m_sample; }
+    void setSample(TString s) { m_sample = s; }
+
+    // Set SUSY D3PD tag to know which branches are ok
+    void setD3PDTag(D3PDTag tag) { m_d3pdTag = tag; }
+
     // Set sys run
     void setSys(bool sysOn){ m_sys = sysOn; };
     
     // Toggle photon selection
-    //void setSavePhotons(bool phOn){ m_savePh = phOn; };
     void setSelectPhotons(bool doIt) { m_selectPhotons = doIt; }
 
     // Toggle tau selection and overlap removal
     void setSelectTaus(bool doIt) { m_selectTaus = doIt; }
+
+    // Set MET flavor (e.g. Egamma10NoTau)
+    void setMetFlavor(TString metFlav) { m_metFlavor = metFlav; }
     
     //
     // Event dumps
@@ -191,8 +196,12 @@ class SusyD3PDAna : public SusyD3PDInterface
 
     TString                     m_sample;       // sample name
     DataStream                  m_stream;       // data stream enum, taken from sample name
+    D3PDTag                     m_d3pdTag;      // SUSY D3PD tag
 
-    //std::string                 m_metCalib;     // Calibration string for MET (and jets)
+    bool                        m_selectPhotons;// Toggle photon selection
+    bool                        m_selectTaus;   // Toggle tau selection and overlap removal
+
+    TString                     m_metFlavor;    // Flavor string for MET (e.g. Egamma10NoTau)
 
     //
     // Object collections (usually just vectors of indices)
@@ -236,10 +245,8 @@ class SusyD3PDAna : public SusyD3PDInterface
     float                       m_lumi;         // normalized luminosity (defaults to 4.7/fb)
     float                       m_sumw;         // sum of mc weights for normalization, must be set by user
     float                       m_xsec;         // optional user cross section, to override susy xsec usage
+
     bool                        m_sys;          // True if you want sys for MC, must be set by user. 
-    //bool                        m_savePh;       // True if want to save photons
-    bool                        m_selectPhotons;// Toggle photon selection
-    bool                        m_selectTaus;   // Toggle tau selection and overlap removal
 
     uint                        m_evtFlag;      // Reset after each evt
 

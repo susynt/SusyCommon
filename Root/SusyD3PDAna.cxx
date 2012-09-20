@@ -21,14 +21,14 @@ using namespace std;
 /*--------------------------------------------------------------------------------*/
 SusyD3PDAna::SusyD3PDAna() : 
         m_sample(""),
-        //m_metCalib("RefFinal"),
+        m_d3pdTag(D3PD_p1181),
+        m_selectPhotons(false),
+        m_selectTaus(false),
+        m_metFlavor("Egamma10NoTau"),
         m_lumi(5831),
         m_sumw(1),
 	m_xsec(-1),
 	m_sys(false),
-	//m_savePh(false),
-        m_selectPhotons(false),
-        m_selectTaus(false),
         m_pileup(0),
         m_pileup1fb(0),
         m_pileupAB3(0),
@@ -400,7 +400,7 @@ void SusyD3PDAna::buildMet(SusyNtSys sys)
   vector<int> metElectrons = get_electrons_met(&d3pd.ele, m_susyObj);
   //cout << "metElectrons: " << metElectrons.size() << endl; // <--- Remember to comment out before committing!
   TVector2 metVector = GetMetVector(m_susyObj, &d3pd.jet, &d3pd.muo, &d3pd.ele, &d3pd.met, &d3pd.evt,
-                                    m_preMuons, m_baseElectrons, metElectrons, susySys);
+                                    m_preMuons, m_baseElectrons, metElectrons, susySys, m_metFlavor);
   m_met.SetPxPyPzE(metVector.X(), metVector.Y(), 0, metVector.Mod());
 }
 
