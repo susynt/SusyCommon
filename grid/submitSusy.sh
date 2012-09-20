@@ -52,7 +52,7 @@ for line in ${matches[@]}; do
         # If output DS name is too long, need to trim it down.
         # For now, treat this on a case by case basis
         if [[ ${#outDS} > 131 ]]; then
-                # For Powheg WZ samples
+                # For simplified model samples
                 outDS=${outDS/UEEE3_CTEQ6L1_/}
         fi
 

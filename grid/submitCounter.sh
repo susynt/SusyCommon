@@ -25,6 +25,13 @@ for inDS in `cat $1`; do
 	outDS="user.$nickname.$iteration.$inDS"
         outDS=${outDS/merge.NTUP_SUSY/eventCount}
 
+        # If output DS name is too long, need to trim it down.
+        # For now, treat this on a case by case basis
+        if [[ ${#outDS} > 131 ]]; then
+                # For Powheg WZ samples
+                outDS=${outDS/2LeptonFilter/2L}
+        fi
+
         command="./eventCounter.py %IN"
 
 	echo 
