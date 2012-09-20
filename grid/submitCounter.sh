@@ -1,6 +1,7 @@
 #!/bin/bash
 
 iteration=i4
+nickname=Steve
 
 #
 # Submit counter job for all mc datasets in input file passed as argument
@@ -20,7 +21,9 @@ for inDS in `cat $1`; do
         sample=${inDS#mc12_8TeV.*.}
         sample=${sample%.merge.*/}
 
-	outDS="user.Steve.$iteration.$sample.eventCounter/"
+	#outDS="user.$nickname.$iteration.$sample.eventCounter/"
+	outDS="user.$nickname.$iteration.$inDS"
+        outDS=${outDS/merge.NTUP_SUSY/eventCount}
 
         command="./eventCounter.py %IN"
 
