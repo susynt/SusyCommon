@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Settings
-tag=n0100
+tag=n0101
 nickname=Steve
 nGBPerJob=MAX
 athenaTag=17.3.1.1
@@ -35,6 +35,7 @@ for inDS in ${datasets[@]}; do
 	#outDS="user.Steve.$sample.SusyNt.$iteration/"
         outDS="user.$nickname.${inDS%/}_$tag/"
         outDS=${outDS/NTUP_SUSY/SusyNt}
+        outDS=${outDS/SKIM/}
 
         command="./gridScript.sh %IN --saveTau -s $sample --metFlav $metFlav"
 
