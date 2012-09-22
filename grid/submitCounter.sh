@@ -44,6 +44,7 @@ for inDS in `cat $1`; do
 	
 	# prun command
 	prun --exec "$command" --tmpDir /tmp --noBuild \
+                --nGBPerJob=MAX \
                 --excludedSite=RHUL,OX,SARA,SHEF,LRZ \
 		--outputs "sumWeights.root" \
                 --athenaTag=17.3.1.1 \

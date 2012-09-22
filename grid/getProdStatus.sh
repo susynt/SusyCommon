@@ -12,9 +12,8 @@ fi
 
 for ds in `cat $1`; do
 
-        prodStatus=`ami dataset info $ds | grep prodsysStatus | awk '{print $2,$3,$4}'`
-
         echo $ds
+        prodStatus=`ami dataset info $ds | grep prodsysStatus | awk '{print $2,$3,$4,$5,$6,$7}'`
         echo -e "        $prodStatus"
 
 done
