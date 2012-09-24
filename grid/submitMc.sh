@@ -34,8 +34,18 @@ for line in ${matches[@]}; do
 
         # Now replace the commas with normal whitespace
         info=(`echo $line | tr ',' ' '`)
+
+        # Extract dataset info
+        # By default, no cross section is needed and the xsec from SUSYTools will be used
+        # However, if the xsec column exists in the input file, that xsec will be used
         inDS=${info[0]}
         sumw=${info[1]}
+        xsec=-1
+        if [ ${#info[@]} -gt 2 ]; then
+                echo "Setting xsec"
+                xsec=${info[2]}
+        fi
+
         sample=${inDS#mc12_8TeV.*.}
         sample=${sample%.merge.*/}
 
@@ -55,7 +65,7 @@ for line in ${matches[@]}; do
                 outDS=${outDS/2LeptonFilter/2L}
         fi
 
-        command="./gridScript.sh %IN --saveTau -s $sample -w $sumw --metFlav $metFlav $af2Opt"
+        command="./gridScript.sh %IN --saveTau -s $sample -w $sumw -x $xsec --metFlav $metFlav $af2Opt"
 
 	echo 
 	echo "__________________________________________________________________________________________________________"
