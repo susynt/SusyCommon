@@ -434,7 +434,8 @@ void SusyNtMaker::fillElectronVars(const LeptonInfo* lepIn)
   eleOut->clusE         = element->cl_E();
 
   // Check for charge flip
-  eleOut->isChargeFlip  = m_isMC? m_recoTruthMatch.isChargeFlip(*lv, element->charge()) : false;
+  eleOut->isChargeFlip   = m_isMC? m_recoTruthMatch.isChargeFlip(*lv, element->charge()) : false;
+  eleOut->truthMatchType = m_isMC? m_recoTruthMatch.fakeType(*lv, element->origin(), element->type()) : -1;
 
   // Need to recalculate these variables
   //eleOut->mediumPP      = element->mediumPP();
@@ -572,6 +573,8 @@ void SusyNtMaker::fillMuonVars(const LeptonInfo* lepIn)
 
   muOut->isCombined     = element->isCombinedMuon();
 
+  muOut->truthMatchType = m_isMC? m_recoTruthMatch.fakeType(*lv, element->origin(), element->type()) : -1;
+  
   // theta_exPV.  Not sure if necessary.
   muOut->thetaPV        = element->theta_exPV();
 
