@@ -1,7 +1,11 @@
 # vim: set noexpandtab:
+
+2012-09-26 Steve
+	* Fix isAF2 calib flag for electrons
+
 2012-09-25 Matt
 	* Saving truth flag from LeptonTruthTools
-	
+
 2012-09-20 Steve
 	* Configure METUtility for STVF
 	* Tagging SusyCommon-00-00-39

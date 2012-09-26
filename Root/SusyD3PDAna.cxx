@@ -270,8 +270,8 @@ void SusyD3PDAna::selectBaselineObjects(SusyNtSys sys)
   if(m_dbg) cout << "selectBaselineObjects" << endl;
   vector<int> goodJets;  // What the hell is this??
 
-  // SUSYTools takes a flag for AF2. TODO: do we need to use it? 
-  bool isAF2 = false;
+  // SUSYTools takes a flag for AF2. Now set via command line flag
+  //bool isAF2 = false;
 
   // Handle Systematic
   // New syntax for SUSYTools in mc12
@@ -298,7 +298,7 @@ void SusyD3PDAna::selectBaselineObjects(SusyNtSys sys)
   else if(sys == NtSys_JER       ) susySys = SystErr::JER;        // JER (gaussian)
 
   // Preselection
-  m_preElectrons = get_electrons_baseline( &d3pd.ele, !m_isMC, d3pd.evt.RunNumber(), m_susyObj, 10.*GeV, 2.47, susySys, isAF2 );
+  m_preElectrons = get_electrons_baseline( &d3pd.ele, !m_isMC, d3pd.evt.RunNumber(), m_susyObj, 10.*GeV, 2.47, susySys, m_isAF2 );
   m_preMuons     = get_muons_baseline( &d3pd.muo, !m_isMC, m_susyObj, 10.*GeV, 2.4, susySys );
   m_preJets      = get_jet_baseline( &d3pd.jet, &d3pd.vtx, &d3pd.evt, !m_isMC, m_susyObj, 20.*GeV, 4.9, susySys, false, goodJets );
 
