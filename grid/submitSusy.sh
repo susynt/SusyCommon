@@ -6,6 +6,7 @@ nickname=Steve
 nGBPerJob=MAX
 athenaTag=17.3.1.1
 metFlav="Egamma10NoTau_STVF"
+sysOpt="--sys"
 
 
 # dataset file and grep pattern can be provided as arguments
@@ -59,7 +60,7 @@ for line in ${matches[@]}; do
                 outDS=${outDS/UEEE3_CTEQ6L1_/}
         fi
 
-        command="./gridScript.sh %IN --saveTau -s $sample -w $sumw -x $xsec --metFlav $metFlav $af2Opt"
+        command="./gridScript.sh %IN --saveTau -s $sample -w $sumw -x $xsec --metFlav $metFlav $af2Opt $sysOpt"
 
 	echo 
 	echo "__________________________________________________________________________________________________________"
