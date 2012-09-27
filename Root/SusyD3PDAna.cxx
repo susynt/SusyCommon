@@ -76,14 +76,7 @@ void SusyD3PDAna::Begin(TTree* /*tree*/)
 
   cout << "DataStream: " << streamName(m_stream) << endl;
 
-  // Setup Jet/MET calibration
-  // This no longer does anything. The common code only supports Egamma10NoTau at the moment!
-  //if(m_metCalib == "RefFinal"){
-    //d3pd.jet.SetPrefix("jet_AntiKt4LCTopo_");
-  //}
-
   // Setup SUSYTools
-  //m_susyObj.initialize(!m_isMC);
   m_susyObj.initialize(!m_isMC, m_isAF2,
 		       gSystem->ExpandPathName("$ROOTCOREDIR/data/MuonMomentumCorrections/"),
 		       gSystem->ExpandPathName("$ROOTCOREDIR/data/MuonEfficiencyCorrections/"));
@@ -121,25 +114,13 @@ void SusyD3PDAna::Begin(TTree* /*tree*/)
     m_pileup = new Root::TPileupReweighting("PileupReweighting");
     m_pileup->SetDataScaleFactors(1/1.11);
     m_pileup->AddConfigFile("$ROOTCOREDIR/data/PileupReweighting/mc12a_defaults.prw.root");
-    m_pileup->AddLumiCalcFile("$ROOTCOREDIR/data/MultiLep/ilumicalc_histograms_EF_2e12Tvh_loose1_200841-209109.root");
+    m_pileup->AddLumiCalcFile("$ROOTCOREDIR/data/MultiLep/ilumicalc_histograms_EF_2e12Tvh_loose1_200841-210308.root");
     m_pileup->SetUnrepresentedDataAction(2);
     int pileupError = m_pileup->Initialize();
     if(pileupError){
       cout << "Problem in pileup initialization.  pileupError = " << pileupError << endl;
       abort();
     }
-
-    // pileup reweighting for 2012 A-B3 only
-    //m_pileup1fb = new Root::TPileupReweighting("PileupReweighting1fb");
-    //m_pileup1fb->SetDataScaleFactors(1/1.11);
-    //m_pileup1fb->AddConfigFile("$ROOTCOREDIR/data/PileupReweighting/mc12a_defaults.prw.root");
-    //m_pileup1fb->AddLumiCalcFile("$ROOTCOREDIR/data/MultiLep/ilumicalc_histograms_EF_e24vhi_medium1_200842-203195.root");
-    //m_pileup1fb->SetUnrepresentedDataAction(2);
-    //pileupError = m_pileup1fb->Initialize();
-    //if(pileupError){
-      //cout << "Problem in pileup initialization.  pileupError = " << pileupError << endl;
-      //abort();
-    //}
 
     // pileup reweighting for 2012 A-B3 only
     m_pileupAB3 = new Root::TPileupReweighting("PileupReweightingAB3");

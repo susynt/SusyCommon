@@ -2,6 +2,7 @@
 
 2012-09-26 Steve
 	* Fix isAF2 calib flag for electrons
+	* Update pileup file and GRL for full HCP dataset (13/fb)
 
 2012-09-25 Matt
 	* Saving truth flag from LeptonTruthTools
