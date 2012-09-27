@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Settings
-tag=n0100
+tag=n0101
 nickname=Steve
 nGBPerJob=MAX
 athenaTag=17.3.1.1
@@ -25,7 +25,8 @@ done
 blackList=`cat blacklist.txt`
 
 # A trick to parse the text, first separate columns by commas
-matches=(`cat $dsFile | grep $pattern | tr '\t' ','`)
+# Do this by "translating" tabs into commas and spaces into commas
+matches=(`cat $dsFile | grep $pattern | tr '\t' ',' | tr ' ' ','`)
 echo "${#matches[@]} matches"
 
 
@@ -43,6 +44,8 @@ for line in ${matches[@]}; do
         # AF2 flag
         if [[ $inDS = *_a???_* ]]; then
                 af2Opt="--af2"
+        else
+                af2Opt=""
         fi
 
         # Build the output dataset name
