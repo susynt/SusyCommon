@@ -1,6 +1,6 @@
 #!/bin/bash
 
-iteration=i7
+iteration=i9
 nickname=Steve
 
 #
@@ -45,7 +45,7 @@ for inDS in `cat $1`; do
 	# prun command
 	prun --exec "$command" --tmpDir /tmp --noBuild \
                 --nGBPerJob=MAX \
-                --excludedSite=RHUL,OX,SARA,SHEF,LRZ \
+                --excludedSite=RHUL,OX,SARA,SHEF,LRZ,FZK \
 		--outputs "sumWeights.root" \
                 --athenaTag=17.3.1.1 \
 		--inDS  $inDS \
