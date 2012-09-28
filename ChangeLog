@@ -1,5 +1,8 @@
 # vim: set noexpandtab:
 
+2012-09-28 Matt
+	* Changed rel for calculating egamma SF dependent on isAF2
+	
 2012-09-26 Steve
 	* Fix isAF2 calib flag for electrons
 	* Update pileup file and GRL for full HCP dataset (13/fb)
