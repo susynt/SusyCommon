@@ -14,3 +14,5 @@ group.phys-susy.data12_8TeV.periodE3.physics_Egamma.PhysCont.NTUP_SUSY.t0pro13_v
 group.phys-susy.data12_8TeV.periodE3.physics_Muons.PhysCont.NTUP_SUSY.t0pro13_v01_p1181_p1182/
 group.phys-susy.data12_8TeV.periodE4.physics_Egamma.PhysCont.NTUP_SUSY.t0pro13_v01_p1181_p1182/
 group.phys-susy.data12_8TeV.periodE4.physics_Muons.PhysCont.NTUP_SUSY.t0pro13_v01_p1181_p1182/
+group.phys-susy.data12_8TeV.periodE5.physics_Egamma.PhysCont.NTUP_SUSY.t0pro13_v01_p1181_p1182/
+group.phys-susy.data12_8TeV.periodE5.physics_Muons.PhysCont.NTUP_SUSY.t0pro13_v01_p1181_p1182/
