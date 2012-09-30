@@ -89,27 +89,3 @@ After you run NtMaker, it will spit out a susyNt.root which will contain the tre
 For more advanced grid production of SusyNt, please see the scripts under grid/
 
 
-#------------------------------------------------------------------------------------
-# More stuff to come!
-#------------------------------------------------------------------------------------
-
-# Things needed to be addressed in the latest version:
-
-In SusyCommon:
-
-[ ] Add remaining systematics
-[ ] Add necessary MC information to do signal diagram selection, charge flip, ID decay (eg ttbar dilepton)
-[?] Add metadata: D3PD input list, D3PD tag, SusyTool tag, CommonCode tag, histogram with cutflow
-[?] Improve event weighting skim for lumi so that if not all job run on grid, still ok (see Common code for how it's done there)
-[ ] Add more cutflow counters to the SusyNtMaker so we can easily compare cutflows with the common code
-        * Might actually be better to make a separate d3pd cutflow class...
-
-In SusyNtuple:
-
-[ ] Compare systematic shifts with someone TBD.
-[ ] Add the rest of the systematic shifts (trigger eff, etc.)
-[ ] Right now the code is not setup to run just on d3pd. My modifications were done to
-    accomodate making SusyNt. We need to add option for either d3pd or SusyNt mode, which
-    will place back all the cuts on badJet, badMuon, etc.
-
-[ ] ... Anything else?
