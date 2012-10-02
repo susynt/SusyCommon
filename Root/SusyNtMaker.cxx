@@ -246,7 +246,7 @@ bool SusyNtMaker::selectEvent()
   // More cuts just for cutflow
   // This is a little ugly, but it was the easiest way to check the cutflow locally.
   if((m_evtFlag & PASS_HotSpot) && (m_evtFlag & PASS_BadJet)){
-  n_evt_goodVtx++;
+    n_evt_goodVtx++;
 
     // Bad muon veto
     if(m_evtFlag & PASS_BadMuon){
@@ -313,8 +313,6 @@ bool SusyNtMaker::selectEvent()
     // so that we don't keep committing conflicting changes...
 
     // For filling the output tree, require at least 2 pre-selected leptons (baseline before OR)
-    //if((m_susyNt.ele()->size() + m_susyNt.muo()->size()) < 2)  return false;
-
     // Now counting taus as well!
     if((m_susyNt.ele()->size() + m_susyNt.muo()->size() + m_susyNt.tau()->size()) < 2)  return false;
   

@@ -119,6 +119,11 @@ class SusyD3PDAna : public SusyD3PDInterface
     // Poorly named, checks some event cleaning cuts
     void evtCheck();
 
+    // Event level cleaning cuts
+    void checkEventCleaning();
+    // Object level cleaning cuts; these depend on sys
+    void checkObjectCleaning();
+
     //
     // Event weighting
     //
@@ -254,6 +259,8 @@ class SusyD3PDAna : public SusyD3PDInterface
     bool                        m_sys;          // True if you want sys for MC, must be set by user. 
 
     uint                        m_evtFlag;      // Reset after each evt
+
+    uint                        m_cutFlags;     // Event cleaning cut flags
 
     //
     // Tools

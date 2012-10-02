@@ -426,6 +426,7 @@ void SusyD3PDAna::clearObjects()
   m_sigLeptons.clear();
   m_sigJets.clear();
   m_evtFlag = 0;
+  m_cutFlags = 0;
 
   m_sigPhotons.clear();
 }
@@ -674,6 +675,29 @@ void SusyD3PDAna::evtCheck()
       (m_evtFlag & PASS_BadMuon) &&
       (m_evtFlag & PASS_Cosmic) )
     m_evtFlag |= PASS_Event;
+}
+
+/*--------------------------------------------------------------------------------*/
+// Check event level cleaning cuts like GRL, LarError, etc.
+/*--------------------------------------------------------------------------------*/
+unsigned int SusyD3PDAna::checkEventCleaning()
+{
+  if(passGRL()) m_cutFlags |= ECut_GRL;
+  if(passTTCVeto()) m_cutFlags |= ECut_TTC;
+  if(passLarErr()) m_cutFlags |= ECut_LarErr;
+  if(passGoodVtx()) m_cutFlags |= ECut_GoodVtx;
+}
+
+/*--------------------------------------------------------------------------------*/
+// Check object level cleaning cuts like BadJet, BadMu, etc.
+// SELECT OBJECTS BEFORE CALLING THIS!!
+/*--------------------------------------------------------------------------------*/
+unsigned int SusyD3PDAna::checkObjectCleaning()
+{
+  if(passTileHotSpot()) m_cutFlags |= ECut_HotSpot;
+  if(passBadJet()) m_cutFlags |= ECut_BadJet;
+  if(passBadMuon()) m_cutFlags |= ECut_BadMuon;
+  if(passCosmic()) m_cutFlags |= ECut_Cosmic;
 }
 
 /*--------------------------------------------------------------------------------*/
