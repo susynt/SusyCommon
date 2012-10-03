@@ -101,8 +101,11 @@ class SusyD3PDAna : public SusyD3PDInterface
     bool passGRL() { return m_isMC || m_grl.HasRunLumiBlock(d3pd.evt.RunNumber(), d3pd.evt.lbn()); }
     // incomplete TTC event veto
     bool passTTCVeto() { return (d3pd.evt.coreFlags() & 0x40000) == 0; }
+    // Tile error
+    bool passTileErr() { return m_isMC || (d3pd.evt.tileError()!=2); }
     // lar error
-    bool passLarErr() { return m_isMC || (d3pd.evt.larError()==0); }
+    //bool passLarErr() { return m_isMC || (d3pd.evt.larError()==0); }
+    bool passLarErr() { return m_isMC || (d3pd.evt.larError()!=2); }
     // lar hole veto
     bool passLarHoleVeto();
     // tile hot spot

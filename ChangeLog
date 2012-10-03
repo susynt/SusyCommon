@@ -1,5 +1,12 @@
 # vim: set noexpandtab:
 
+2012-10-03 Steve
+	* Added passTileErr method
+	* Added larError flag to ntuple
+	* Added tile err cut to the cutflow in SusyNtMaker
+	* Now using D3PD isEM variables for tag >= D3PD_p1181
+		* Updated MultiLep for this too
+
 2012-10-02 Steve
 	* Adding new event cleaning cut flags and methods, for more flexibility
 	* Added cutflow histograms for generator weights and signal subprocess

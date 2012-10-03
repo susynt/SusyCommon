@@ -29,6 +29,7 @@ SusyNtMaker::SusyNtMaker() : m_fillNt(true)
   n_evt_grl=0;
   n_evt_ttcVeto=0;
   n_evt_larErr=0;
+  n_evt_tileErr=0;
   n_evt_larHole=0;
   n_evt_hotSpot=0;
   n_evt_badJet=0;
@@ -95,19 +96,20 @@ void SusyNtMaker::Begin(TTree* /*tree*/)
 TH1F* SusyNtMaker::makeCutFlow(const char* name, const char* title)
 {
   //TH1F* h = new TH1F(name, title, 9, -0.5, 3.5);
-  TH1F* h = new TH1F(name, title, 12, 0., 12.);
+  TH1F* h = new TH1F(name, title, 13, 0., 13.);
   h->GetXaxis()->SetBinLabel(1, "Initial");
   h->GetXaxis()->SetBinLabel(2, "GRL");
   h->GetXaxis()->SetBinLabel(3, "LAr Error");
-  h->GetXaxis()->SetBinLabel(4, "TTC Veto");
-  h->GetXaxis()->SetBinLabel(5, "Good Vertex");
-  h->GetXaxis()->SetBinLabel(6, "Hot Spot");
-  h->GetXaxis()->SetBinLabel(7, "Bad Jet");
-  h->GetXaxis()->SetBinLabel(8, "Bad Muon");
-  h->GetXaxis()->SetBinLabel(9, "Cosmic");
-  h->GetXaxis()->SetBinLabel(10, ">=1 lep");
-  h->GetXaxis()->SetBinLabel(11, ">=2 lep");
-  h->GetXaxis()->SetBinLabel(12, "==3 lep");
+  h->GetXaxis()->SetBinLabel(4, "Tile Error");
+  h->GetXaxis()->SetBinLabel(5, "TTC Veto");
+  h->GetXaxis()->SetBinLabel(6, "Good Vertex");
+  h->GetXaxis()->SetBinLabel(7, "Hot Spot");
+  h->GetXaxis()->SetBinLabel(8, "Bad Jet");
+  h->GetXaxis()->SetBinLabel(9, "Bad Muon");
+  h->GetXaxis()->SetBinLabel(10, "Cosmic");
+  h->GetXaxis()->SetBinLabel(11, ">=1 lep");
+  h->GetXaxis()->SetBinLabel(12, ">=2 lep");
+  h->GetXaxis()->SetBinLabel(13, "==3 lep");
   return h;
 }
 /*--------------------------------------------------------------------------------*/
@@ -182,6 +184,7 @@ void SusyNtMaker::Terminate()
   cout << "  Initial  " << n_evt_initial << endl;
   cout << "  GRL      " << n_evt_grl     << endl;
   cout << "  LarErr   " << n_evt_larErr  << endl;
+  cout << "  TileErr  " << n_evt_tileErr  << endl;
   cout << "  TTC Veto " << n_evt_ttcVeto << endl;
   cout << "  GoodVtx  " << n_evt_goodVtx << endl;
   //cout << "  LarHole  " << n_evt_larHole << endl;
@@ -266,17 +269,22 @@ bool SusyNtMaker::selectEvent()
   FillCutFlow();
   n_evt_grl++;
 
-  // Incomplete TTC event veto
-  //if(!passTTCVeto()) return false;
-  if((m_cutFlags & ECut_TTC) == 0) return false;
-  FillCutFlow();
-  n_evt_ttcVeto++;
-
   // larErr
   //if(!passLarErr()) return false;
   if((m_cutFlags & ECut_LarErr) == 0) return false;
   FillCutFlow();
   n_evt_larErr++;
+
+  // tileErr
+  if((m_cutFlags & ECut_TileErr) == 0) return false;
+  FillCutFlow();
+  n_evt_tileErr++;
+
+  // Incomplete TTC event veto
+  //if(!passTTCVeto()) return false;
+  if((m_cutFlags & ECut_TTC) == 0) return false;
+  FillCutFlow();
+  n_evt_ttcVeto++;
 
   // primary vertex cut is actually filtered
   //if(!passGoodVtx()) return false; 
@@ -425,6 +433,8 @@ void SusyNtMaker::fillEventVars()
   evt->mcChannel        = m_isMC? d3pd.truth.channel_number() : 0;
   evt->w                = m_isMC? d3pd.truth.event_weight()   : 1;
 
+  evt->larError         = d3pd.evt.larError();
+
   evt->nVtx             = getNumGoodVtx();
   evt->avgMu            = d3pd.evt.averageIntPerXing();
 
@@ -506,22 +516,37 @@ void SusyNtMaker::fillElectronVars(const LeptonInfo* lepIn)
   eleOut->isChargeFlip   = m_isMC? m_recoTruthMatch.isChargeFlip(*lv, element->charge()) : false;
   eleOut->truthMatchType = m_isMC? m_recoTruthMatch.fakeType(*lv, element->origin(), element->type()) : -1;
 
-  // Need to recalculate these variables
-  //eleOut->mediumPP      = element->mediumPP();
-  //eleOut->tightPP       = element->tightPP();
-  ////
-  double DEmaxs1 = 0;
-  double rHad = 0;
-  double rHad1 = 0;
-  double ele_et = element->cl_E()/cosh(element->etas2());
-  if(element->emaxs1()+element->Emax2() !=0)
-    DEmaxs1 = (element->emaxs1()-element->Emax2())/(element->emaxs1()+element->Emax2());
-  if(ele_et !=0){
-    rHad = element->Ethad()/ele_et;
-    rHad1 = element->Ethad1()/ele_et;
+  // Need to recalculate these variables for p1032 only
+  if(m_d3pdTag >= D3PD_p1181){
+    eleOut->mediumPP      = element->mediumPP();
+    eleOut->tightPP       = element->tightPP();
   }
+  else{
+    double DEmaxs1 = 0;
+    double rHad = 0;
+    double rHad1 = 0;
+    double ele_et = element->cl_E()/cosh(element->etas2());
+    if(element->emaxs1()+element->Emax2() !=0)
+      DEmaxs1 = (element->emaxs1()-element->Emax2())/(element->emaxs1()+element->Emax2());
+    if(ele_et !=0){
+      rHad = element->Ethad()/ele_et;
+      rHad1 = element->Ethad1()/ele_et;
+    }
   
-  eleOut->mediumPP = m_susyObj.ST_isMediumPlusPlus(element->etas2(), ele_et, element->f3(),
+    eleOut->mediumPP = m_susyObj.ST_isMediumPlusPlus(element->etas2(), ele_et, element->f3(),
+						     rHad, rHad1, element->reta(), element->weta2(),
+						     element->f1(), element->wstot(), DEmaxs1, 
+						     element->deltaeta1(), 
+						     element->trackd0_physics(),
+						     element->TRTHighTOutliersRatio(), 
+						     element->nTRTHits(), element->nTRTOutliers(),
+						     element->nSiHits(), 
+						     element->nSCTOutliers()+
+						     element->nPixelOutliers(), element->nPixHits(),
+						     element->nPixelOutliers(), element->nBLHits(),
+						     element->nBLayerOutliers(),
+						     element->expectHitInBLayer());
+    eleOut->tightPP = m_susyObj.ST_isTightPlusPlus(element->etas2(), ele_et, element->f3(),
 						   rHad, rHad1, element->reta(), element->weta2(),
 						   element->f1(), element->wstot(), DEmaxs1, 
 						   element->deltaeta1(), 
@@ -533,24 +558,11 @@ void SusyNtMaker::fillElectronVars(const LeptonInfo* lepIn)
 						   element->nPixelOutliers(), element->nPixHits(),
 						   element->nPixelOutliers(), element->nBLHits(),
 						   element->nBLayerOutliers(),
-						   element->expectHitInBLayer());
-  eleOut->tightPP = m_susyObj.ST_isTightPlusPlus(element->etas2(), ele_et, element->f3(),
-						 rHad, rHad1, element->reta(), element->weta2(),
-						 element->f1(), element->wstot(), DEmaxs1, 
-						 element->deltaeta1(), 
-						 element->trackd0_physics(),
-						 element->TRTHighTOutliersRatio(), 
-						 element->nTRTHits(), element->nTRTOutliers(),
-						 element->nSiHits(), 
-						 element->nSCTOutliers()+
-						 element->nPixelOutliers(), element->nPixHits(),
-						 element->nPixelOutliers(), element->nBLHits(),
-						 element->nBLayerOutliers(),
-						 element->expectHitInBLayer(),
-						 element->cl_E()*fabs(element->trackqoverp()),
-						 element->deltaphi2(), 
-						 m_susyObj.GetConvBit(element->isEM()));
-						 
+						   element->expectHitInBLayer(),
+						   element->cl_E()*fabs(element->trackqoverp()),
+						   element->deltaphi2(), 
+						   m_susyObj.GetConvBit(element->isEM()));
+  }
 
   eleOut->d0            = element->trackd0pv();
   eleOut->errD0         = element->tracksigd0pv();
