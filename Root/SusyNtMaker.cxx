@@ -119,7 +119,7 @@ TH1F* SusyNtMaker::getProcCutFlow(int signalProcess)
   map<int,TH1F*>::const_iterator it = m_procCutFlows.find(signalProcess);
   // New process
   if(it == m_procCutFlows.end()){
-    static stringstream stream;
+    stringstream stream;
     stream << signalProcess;
     string name = "procCutFlow" + stream.str();
     return m_procCutFlows[signalProcess] = makeCutFlow(name.c_str(), 
