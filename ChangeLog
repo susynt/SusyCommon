@@ -1,9 +1,9 @@
 # vim: set noexpandtab:
 
 2012-10-02 Steve
-	* Adding new event cleaning cut flags and methods, so that we are 
-	  able to turn off all filtering in the SusyNtMaker and still be
-	  able to apply the cuts later
+	* Adding new event cleaning cut flags and methods, for more flexibility
+	* Added cutflow histograms for generator weights and signal subprocess
+	* Changed cut order slightly to be more logical. Event only cuts first.
 
 2012-09-28 Steve
 	* Tagging SusyCommon-00-00-41

@@ -73,16 +73,62 @@ void SusyNtMaker::Begin(TTree* /*tree*/)
 
   }
 
+  m_isSusySample = m_sample.Contains("DGemt") || m_sample.Contains("DGstau");
+
+  // We need:
+  // Function to initialize cutflow histo
+  // Initialize raw and weighted
+  // Function to fetch/create proc cutflow
+
   // create histogram for cutflow
-  h_cutFlow = new TH1F("cutFlow","Histogram storing cuts applied upstream", 5, -0.5, 3.5);
-  h_cutFlow->GetXaxis()->SetBinLabel(1, "total");
-  h_cutFlow->GetXaxis()->SetBinLabel(2, "GRL");
-  h_cutFlow->GetXaxis()->SetBinLabel(3, "LAr Error");
-  h_cutFlow->GetXaxis()->SetBinLabel(4, "TTC Veto");
-  h_cutFlow->GetXaxis()->SetBinLabel(5, "Good Vertex");
+  //h_cutFlow = new TH1F("cutFlow","Histogram storing cuts applied upstream", 5, -0.5, 3.5);
+  //h_cutFlow->GetXaxis()->SetBinLabel(1, "total");
+  //h_cutFlow->GetXaxis()->SetBinLabel(2, "GRL");
+  //h_cutFlow->GetXaxis()->SetBinLabel(3, "LAr Error");
+  //h_cutFlow->GetXaxis()->SetBinLabel(4, "TTC Veto");
+  //h_cutFlow->GetXaxis()->SetBinLabel(5, "Good Vertex");
+
+  // Raw event weights
+  h_rawCutFlow = makeCutFlow("rawCutFlow", "rawCutFlow;Cuts;Events");
+  // Generator event weights
+  h_genCutFlow = makeCutFlow("genCutFlow", "genCutFlow;Cuts;Events");
 
   // Start the timer
   m_timer.Start();
+}
+/*--------------------------------------------------------------------------------*/
+TH1F* SusyNtMaker::makeCutFlow(const char* name, const char* title)
+{
+  //TH1F* h = new TH1F(name, title, 9, -0.5, 3.5);
+  TH1F* h = new TH1F(name, title, 9, 0., 9.);
+  h->GetXaxis()->SetBinLabel(1, "Initial");
+  h->GetXaxis()->SetBinLabel(2, "GRL");
+  h->GetXaxis()->SetBinLabel(3, "LAr Error");
+  h->GetXaxis()->SetBinLabel(4, "TTC Veto");
+  h->GetXaxis()->SetBinLabel(5, "Good Vertex");
+  h->GetXaxis()->SetBinLabel(6, "Hot Spot");
+  h->GetXaxis()->SetBinLabel(7, "Bad Jet");
+  h->GetXaxis()->SetBinLabel(8, "Bad Muon");
+  h->GetXaxis()->SetBinLabel(9, "Cosmic");
+  return h;
+}
+/*--------------------------------------------------------------------------------*/
+TH1F* SusyNtMaker::getProcCutFlow(int signalProcess)
+{
+  // Look for it on the map
+  map<int,TH1F*>::const_iterator it = m_procCutFlows.find(signalProcess);
+  // New process
+  if(it == m_procCutFlows.end()){
+    static stringstream stream;
+    stream << signalProcess;
+    string name = "procCutFlow" + stream.str();
+    return m_procCutFlows[signalProcess] = makeCutFlow(name.c_str(), 
+                                                       (name+";Cuts;Events").c_str());
+  }
+  // Already saved process
+  else{
+    return it->second;
+  }
 }
 
 /*--------------------------------------------------------------------------------*/
@@ -137,12 +183,12 @@ void SusyNtMaker::Terminate()
   cout << "Event counter" << endl;
   cout << "  Initial  " << n_evt_initial << endl;
   cout << "  GRL      " << n_evt_grl     << endl;
-  cout << "  TTC Veto " << n_evt_ttcVeto << endl;
   cout << "  LarErr   " << n_evt_larErr  << endl;
+  cout << "  TTC Veto " << n_evt_ttcVeto << endl;
+  cout << "  GoodVtx  " << n_evt_goodVtx << endl;
   //cout << "  LarHole  " << n_evt_larHole << endl;
   cout << "  HotSpot  " << n_evt_hotSpot << endl;
   cout << "  BadJet   " << n_evt_badJet  << endl;
-  cout << "  GoodVtx  " << n_evt_goodVtx << endl;
   cout << "  BadMuon  " << n_evt_badMu   << endl;
   cout << "  Cosmic   " << n_evt_cosmic  << endl;
   cout << "  >=1 Lep  " << n_evt_1Lep    << endl;
@@ -186,94 +232,117 @@ bool SusyNtMaker::selectEvent()
 {
   if(m_dbg) cout << "selectEvent" << endl;
 
-  n_evt_initial++;
 
   m_susyObj.Reset();
   clearObjects();
   m_susyNt.clear();
+
+  // Susy final state
+  m_susyFinalState = m_isSusySample? get_finalState(&d3pd.truth) : -1;
+  TH1F* h_procCutFlow = m_isSusySample? getProcCutFlow(m_susyFinalState) : 0;
+  float w = m_isMC? d3pd.truth.event_weight() : 1;
+
+  // Cut index
+  int cut = 0;
+
+  // Use a preprocessor macro to assist in filling the cutflow hists
+  #define FillCutFlow()             \
+    do{                             \
+      h_rawCutFlow->Fill(cut);      \
+      h_genCutFlow->Fill(cut, w);   \
+      if(m_isSusySample) h_procCutFlow->Fill(cut, w);  \
+      cut++;                        \
+    } while(0)
+
+  n_evt_initial++;
+  FillCutFlow();
  
   //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-//
   // Obj Independent checks
 
-  // Total events
-  h_cutFlow->Fill(0);
+  checkEventCleaning();
 
   // grl
-  if(!passGRL()) return false;
+  //if(!passGRL()) return false;
+  if((m_cutFlags & ECut_GRL) == 0) return false;
+  FillCutFlow();
   n_evt_grl++;
-  h_cutFlow->Fill(1);
 
   // Incomplete TTC event veto
-  if(!passTTCVeto()) return false;
+  //if(!passTTCVeto()) return false;
+  if((m_cutFlags & ECut_TTC) == 0) return false;
+  FillCutFlow();
   n_evt_ttcVeto++;
-  h_cutFlow->Fill(2);
 
   // larErr
-  if(!passLarErr()) return false;
+  //if(!passLarErr()) return false;
+  if((m_cutFlags & ECut_LarErr) == 0) return false;
+  FillCutFlow();
   n_evt_larErr++;
-  h_cutFlow->Fill(3);
+
+  // primary vertex cut is actually filtered
+  //if(!passGoodVtx()) return false; 
+  if((m_cutFlags & ECut_GoodVtx) == 0) return false;
+  FillCutFlow();
+  n_evt_goodVtx++;
 
   //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-//  
   // Get Nominal Objects
   
   selectObjects();
-  // Now using m_selectPhotons flag to toggle selection in SusyD3PDAna
-  //if(m_savePh) selectSignalPhotons();
   buildMet();
-  evtCheck();
-
+  //evtCheck();
+  checkObjectCleaning();
 
   // These next cuts are not used to filter the SusyNt because they depend on systematics.
   // Instead, they are simply used for the counters, for comparing the cutflow
 
-  // Lar hole veto - not applied anymore
-  //if(m_evtFlag & PASS_LAr) n_evt_larHole++;
-
   // Tile hot spot
-  if(m_evtFlag & PASS_HotSpot){
+  //if(m_evtFlag & PASS_HotSpot)
+  if(m_cutFlags & ECut_HotSpot)
+  {
+    FillCutFlow();
     n_evt_hotSpot++;
     // Bad jet cut
-    if(m_evtFlag & PASS_BadJet){
+    //if(m_evtFlag & PASS_BadJet)
+    if(m_cutFlags & ECut_BadJet)
+    {
+      FillCutFlow();
       n_evt_badJet++;
-      //cout << "Event " << d3pd.evt.EventNumber() << endl;
-    }
-  }
 
-  // primary vertex cut is actually filtered
-  if(!passGoodVtx()) return false; 
-  h_cutFlow->Fill(4);
-
-  // More cuts just for cutflow
-  // This is a little ugly, but it was the easiest way to check the cutflow locally.
-  if((m_evtFlag & PASS_HotSpot) && (m_evtFlag & PASS_BadJet)){
-    n_evt_goodVtx++;
-
-    // Bad muon veto
-    if(m_evtFlag & PASS_BadMuon){
-      n_evt_badMu++;
-      // Cosmic muon veto
-      if(m_evtFlag & PASS_Cosmic){
-        n_evt_cosmic++;
+      // Bad muon veto
+      //if(m_evtFlag & PASS_BadMuon)
+      if(m_cutFlags & ECut_BadMuon)
+      {
+        FillCutFlow();
+        n_evt_badMu++;
+        // Cosmic muon veto
+        //if(m_evtFlag & PASS_Cosmic)
+        if(m_cutFlags & ECut_Cosmic)
+        {
+          FillCutFlow();
+          n_evt_cosmic++;
   
-        n_base_ele += m_baseElectrons.size();
-        n_base_muo += m_baseMuons.size();
-        n_base_tau += m_baseTaus.size();
-        n_base_jet += m_baseJets.size();
-        n_sig_ele += m_sigElectrons.size();
-        n_sig_muo += m_sigMuons.size();
-        n_sig_tau += m_sigTaus.size();
-        n_sig_jet += m_sigJets.size();
+          n_base_ele += m_baseElectrons.size();
+          n_base_muo += m_baseMuons.size();
+          n_base_tau += m_baseTaus.size();
+          n_base_jet += m_baseJets.size();
+          n_sig_ele += m_sigElectrons.size();
+          n_sig_muo += m_sigMuons.size();
+          n_sig_tau += m_sigTaus.size();
+          n_sig_jet += m_sigJets.size();
   
-        // Lepton multiplicity
-        uint nSigLep = m_sigElectrons.size() + m_sigMuons.size();
-        //cout << "nSigLep " << nSigLep << endl;
-        if(nSigLep >= 1){
-          n_evt_1Lep++;
-          if(nSigLep >= 2){
-            n_evt_2Lep++;
-            if(nSigLep == 3){
-              n_evt_3Lep++;
-              //cout << "Event " << d3pd.evt.EventNumber() << endl;
+          // Lepton multiplicity
+          uint nSigLep = m_sigElectrons.size() + m_sigMuons.size();
+          //cout << "nSigLep " << nSigLep << endl;
+          if(nSigLep >= 1){
+            n_evt_1Lep++;
+            if(nSigLep >= 2){
+              n_evt_2Lep++;
+              if(nSigLep == 3){
+                n_evt_3Lep++;
+                //cout << "Event " << d3pd.evt.EventNumber() << endl;
+              }
             }
           }
         }
@@ -361,8 +430,8 @@ void SusyNtMaker::fillEventVars()
   evt->hfor             = m_isMC? getHFORDecision() : -1;
 
   // SUSY final state
-  bool isSusySample     = m_sample.Contains("DGemt") || m_sample.Contains("DGstau");
-  evt->susyFinalState   = isSusySample? get_finalState(&d3pd.truth) : -1;
+  //bool isSusySample     = m_sample.Contains("DGemt") || m_sample.Contains("DGstau");
+  evt->susyFinalState   = m_isSusySample? get_finalState(&d3pd.truth) : -1;
 
   evt->passMllForAlpgen = m_isMC? PassMllForAlpgen(&d3pd.truth) : true;
 
@@ -385,7 +454,8 @@ void SusyNtMaker::fillEventVars()
 
   evt->pdfSF            = m_isMC? getPDFWeight8TeV() : 1;
 
-  addEventFlag(NtSys_NOM, m_evtFlag);
+  //addEventFlag(NtSys_NOM, m_evtFlag);
+  m_susyNt.evt()->cutFlags[NtSys_NOM] = m_cutFlags;
 }
 
 /*--------------------------------------------------------------------------------*/
@@ -783,7 +853,10 @@ void SusyNtMaker::doSystematic()
 
     selectObjects(sys);
     buildMet(sys);                   
-    evtCheck();
+    //evtCheck();
+
+    checkEventCleaning();
+    checkObjectCleaning();
 
     // Lepton Specific sys    
     if( isElecSys(sys) )
@@ -798,7 +871,8 @@ void SusyNtMaker::doSystematic()
     fillMetVars(sys);
 
     // Add the event flag for this event
-    addEventFlag(sys, m_evtFlag);
+    //addEventFlag(sys, m_evtFlag);
+    m_susyNt.evt()->cutFlags[sys] = m_cutFlags;
 
   }// end loop over systematic
 }

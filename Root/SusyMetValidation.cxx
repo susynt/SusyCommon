@@ -163,13 +163,16 @@ bool SusyMetValidation::selectEvent()
   // Get Nominal Objects
   selectObjects();
   buildMet();
-  evtCheck();
+  //evtCheck();
+  checkEventCleaning();
+  checkObjectCleaning();
 
   // Tile hot spot
-  if((m_evtFlag & PASS_HotSpot) == 0) return false;
+  //if((m_evtFlag & PASS_HotSpot) == 0) return false;
+  if((m_cutFlags & ECut_HotSpot) == 0) return false;
   n_evt_hotSpot++;
   // Bad jet cut
-  if((m_evtFlag & PASS_BadJet) == 0) return false;
+  if((m_cutFlags & ECut_BadJet) == 0) return false;
   n_evt_badJet++;
 
   // primary vertex cut 
@@ -177,10 +180,10 @@ bool SusyMetValidation::selectEvent()
   n_evt_goodVtx++;
 
   // Bad muon veto
-  if((m_evtFlag & PASS_BadMuon) == 0) return false;
+  if((m_cutFlags & ECut_BadMuon) == 0) return false;
   n_evt_badMu++;
   // Cosmic muon veto
-  if((m_evtFlag & PASS_Cosmic) == 0) return false;
+  if((m_cutFlags & ECut_Cosmic) == 0) return false;
   n_evt_cosmic++;
   
   n_base_ele += m_baseElectrons.size();

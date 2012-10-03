@@ -425,7 +425,7 @@ void SusyD3PDAna::clearObjects()
   m_sigMuons.clear();
   m_sigLeptons.clear();
   m_sigJets.clear();
-  m_evtFlag = 0;
+  //m_evtFlag = 0;
   m_cutFlags = 0;
 
   m_sigPhotons.clear();
@@ -650,7 +650,7 @@ bool SusyD3PDAna::matchMuonTrigger(const TLorentzVector* lv, vector<int>* passTr
 /*--------------------------------------------------------------------------------*/
 // Check event level cuts, like LArHole veto, badJet, etc.
 /*--------------------------------------------------------------------------------*/
-void SusyD3PDAna::evtCheck()
+/*void SusyD3PDAna::evtCheck()
 {
   // Lar Hole Veto - shouldn't be used
   //if(passLarHoleVeto()) m_evtFlag |= PASS_LAr;  
@@ -675,12 +675,12 @@ void SusyD3PDAna::evtCheck()
       (m_evtFlag & PASS_BadMuon) &&
       (m_evtFlag & PASS_Cosmic) )
     m_evtFlag |= PASS_Event;
-}
+}*/
 
 /*--------------------------------------------------------------------------------*/
 // Check event level cleaning cuts like GRL, LarError, etc.
 /*--------------------------------------------------------------------------------*/
-unsigned int SusyD3PDAna::checkEventCleaning()
+void SusyD3PDAna::checkEventCleaning()
 {
   if(passGRL()) m_cutFlags |= ECut_GRL;
   if(passTTCVeto()) m_cutFlags |= ECut_TTC;
@@ -692,7 +692,7 @@ unsigned int SusyD3PDAna::checkEventCleaning()
 // Check object level cleaning cuts like BadJet, BadMu, etc.
 // SELECT OBJECTS BEFORE CALLING THIS!!
 /*--------------------------------------------------------------------------------*/
-unsigned int SusyD3PDAna::checkObjectCleaning()
+void SusyD3PDAna::checkObjectCleaning()
 {
   if(passTileHotSpot()) m_cutFlags |= ECut_HotSpot;
   if(passBadJet()) m_cutFlags |= ECut_BadJet;

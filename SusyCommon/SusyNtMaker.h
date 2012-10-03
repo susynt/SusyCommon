@@ -35,6 +35,10 @@ class SusyNtMaker : public SusyD3PDAna
     // Event selection - loose object/event cuts for filling tree
     virtual bool    selectEvent();
 
+    // Initialize a cutflow histo
+    TH1F* makeCutFlow(const char* name, const char* title);
+    TH1F* getProcCutFlow(int signalProcess);
+
     //
     // SusyNt Fill methods
     //
@@ -78,9 +82,9 @@ class SusyNtMaker : public SusyD3PDAna
       return (s == NtSys_JES_UP || s == NtSys_JES_DN || s == NtSys_JER); 
     };
     
-    void addEventFlag(SusyNtSys s, int eventFlag){ 
-      m_susyNt.evt()->evtFlag[s] = eventFlag;
-    };
+    //void addEventFlag(SusyNtSys s, int eventFlag){ 
+      //m_susyNt.evt()->evtFlag[s] = eventFlag;
+    //};
 
     // Toggle SusyNt file writing
     void setFillNt(bool fill=true) { m_fillNt = fill; }
@@ -121,7 +125,18 @@ class SusyNtMaker : public SusyD3PDAna
     uint                n_evt_saved;    // number of events save in the SusyNt
 
     // histogram to save cutflow 
-    TH1F*               h_cutFlow;
+    //TH1F*               h_cutFlow;
+
+    // We are currently changing the procedure for counting events in the cutflow!
+    // We would like to have a histogram with total raw numbers, as above, but in 
+    // addition we would like a similar histo filled with the generator weights.
+    // Finally, for samples with multiple signal processes, we want to be able to keep
+    // track of the weighted number of events for each process!
+
+    // So, we'll use a map of histos for signal processes
+    TH1F*               h_rawCutFlow;           // cutflow filled always with weight=1
+    TH1F*               h_genCutFlow;           // cutflow filled with generator weights
+    std::map<int,TH1F*> m_procCutFlows;         // cutflows, one for each subprocess
 
     // Timer
     TStopwatch          m_timer;

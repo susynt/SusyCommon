@@ -117,7 +117,7 @@ class SusyD3PDAna : public SusyD3PDInterface
     bool passCosmic();
 
     // Poorly named, checks some event cleaning cuts
-    void evtCheck();
+    //void evtCheck();
 
     // Event level cleaning cuts
     void checkEventCleaning();
@@ -206,6 +206,9 @@ class SusyD3PDAna : public SusyD3PDInterface
     DataStream                  m_stream;       // data stream enum, taken from sample name
     bool                        m_isAF2;        // flag for ATLFastII samples
 
+    bool                        m_isSusySample; // is susy grid sample
+    int                         m_susyFinalState;// susy subprocess
+
     D3PDTag                     m_d3pdTag;      // SUSY D3PD tag
 
     bool                        m_selectPhotons;// Toggle photon selection
@@ -258,8 +261,7 @@ class SusyD3PDAna : public SusyD3PDInterface
 
     bool                        m_sys;          // True if you want sys for MC, must be set by user. 
 
-    uint                        m_evtFlag;      // Reset after each evt
-
+    //uint                        m_evtFlag;      // Reset after each evt
     uint                        m_cutFlags;     // Event cleaning cut flags
 
     //
