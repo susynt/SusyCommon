@@ -4,6 +4,7 @@
 	* Adding new event cleaning cut flags and methods, for more flexibility
 	* Added cutflow histograms for generator weights and signal subprocess
 	* Changed cut order slightly to be more logical. Event only cuts first.
+	* Tagging SusyCommon-00-00-42
 
 2012-09-28 Steve
 	* Tagging SusyCommon-00-00-41

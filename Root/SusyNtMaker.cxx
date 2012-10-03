@@ -73,12 +73,7 @@ void SusyNtMaker::Begin(TTree* /*tree*/)
 
   }
 
-  m_isSusySample = m_sample.Contains("DGemt") || m_sample.Contains("DGstau");
-
-  // We need:
-  // Function to initialize cutflow histo
-  // Initialize raw and weighted
-  // Function to fetch/create proc cutflow
+  m_isSusySample = m_sample.Contains("DGemt") || m_sample.Contains("DGstau") || m_sample.Contains("RPV");
 
   // create histogram for cutflow
   //h_cutFlow = new TH1F("cutFlow","Histogram storing cuts applied upstream", 5, -0.5, 3.5);
@@ -100,7 +95,7 @@ void SusyNtMaker::Begin(TTree* /*tree*/)
 TH1F* SusyNtMaker::makeCutFlow(const char* name, const char* title)
 {
   //TH1F* h = new TH1F(name, title, 9, -0.5, 3.5);
-  TH1F* h = new TH1F(name, title, 9, 0., 9.);
+  TH1F* h = new TH1F(name, title, 12, 0., 12.);
   h->GetXaxis()->SetBinLabel(1, "Initial");
   h->GetXaxis()->SetBinLabel(2, "GRL");
   h->GetXaxis()->SetBinLabel(3, "LAr Error");
@@ -110,6 +105,9 @@ TH1F* SusyNtMaker::makeCutFlow(const char* name, const char* title)
   h->GetXaxis()->SetBinLabel(7, "Bad Jet");
   h->GetXaxis()->SetBinLabel(8, "Bad Muon");
   h->GetXaxis()->SetBinLabel(9, "Cosmic");
+  h->GetXaxis()->SetBinLabel(10, ">=1 lep");
+  h->GetXaxis()->SetBinLabel(11, ">=2 lep");
+  h->GetXaxis()->SetBinLabel(12, "==3 lep");
   return h;
 }
 /*--------------------------------------------------------------------------------*/
@@ -294,6 +292,7 @@ bool SusyNtMaker::selectEvent()
   //evtCheck();
   checkObjectCleaning();
 
+
   // These next cuts are not used to filter the SusyNt because they depend on systematics.
   // Instead, they are simply used for the counters, for comparing the cutflow
 
@@ -303,21 +302,20 @@ bool SusyNtMaker::selectEvent()
   {
     FillCutFlow();
     n_evt_hotSpot++;
+
     // Bad jet cut
-    //if(m_evtFlag & PASS_BadJet)
     if(m_cutFlags & ECut_BadJet)
     {
       FillCutFlow();
       n_evt_badJet++;
 
       // Bad muon veto
-      //if(m_evtFlag & PASS_BadMuon)
       if(m_cutFlags & ECut_BadMuon)
       {
         FillCutFlow();
         n_evt_badMu++;
+
         // Cosmic muon veto
-        //if(m_evtFlag & PASS_Cosmic)
         if(m_cutFlags & ECut_Cosmic)
         {
           FillCutFlow();
@@ -336,10 +334,13 @@ bool SusyNtMaker::selectEvent()
           uint nSigLep = m_sigElectrons.size() + m_sigMuons.size();
           //cout << "nSigLep " << nSigLep << endl;
           if(nSigLep >= 1){
+            FillCutFlow();
             n_evt_1Lep++;
             if(nSigLep >= 2){
+              FillCutFlow();
               n_evt_2Lep++;
               if(nSigLep == 3){
+                FillCutFlow();
                 n_evt_3Lep++;
                 //cout << "Event " << d3pd.evt.EventNumber() << endl;
               }
