@@ -6,6 +6,7 @@
 	* Added tile err cut to the cutflow in SusyNtMaker
 	* Now using D3PD isEM variables for tag >= D3PD_p1181
 		* Updated MultiLep for this too
+	* Tagging SusyCommon-00-00-43
 
 2012-10-02 Steve
 	* Adding new event cleaning cut flags and methods, for more flexibility
