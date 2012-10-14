@@ -1,2 +1,1 @@
-/gdata/atlas/ucintprod/susyd3pd/mc12a/mc12_8TeV.126893.Sherpa_CT10_lllnu_WZ.merge.NTUP_SUSY.e1243_s1469_s1470_r3542_r3549_p1032/NTUP_SUSY.00823183._000001.root.1
-/gdata/atlas/ucintprod/susyd3pd/mc12a/mc12_8TeV.126893.Sherpa_CT10_lllnu_WZ.merge.NTUP_SUSY.e1243_s1469_s1470_r3542_r3549_p1032/NTUP_SUSY.00823183._000168.root.1
+root://eosatlas//eos/atlas/user/s/sfarrell/d3pd/mc12_8TeV.126893.Sherpa_CT10_lllnu_WZ.merge.NTUP_SUSY.e1243_s1469_s1470_r3542_r3549_p1181/NTUP_SUSY.00950346._000201.root.1
