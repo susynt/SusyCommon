@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Settings
-tag=n0102
+tag=n0107
 nickname=Steve
 nGBPerJob=MAX
 athenaTag=17.3.1.1
