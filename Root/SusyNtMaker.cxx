@@ -840,13 +840,24 @@ void SusyNtMaker::fillMetVars(SusyNtSys sys)
   metOut->phi = phi;
   metOut->sys = sys;  
 
-  // MET comp terms - should we work the systematics into here as well?
-  metOut->refEle        = m_susyObj.computeMETComponent(METUtil::RefEle).Mod()/GeV;
-  metOut->refMuo        = m_susyObj.computeMETComponent(METUtil::MuonTotal).Mod()/GeV;
-  metOut->refJet        = m_susyObj.computeMETComponent(METUtil::RefJet).Mod()/GeV;
-  metOut->refGamma      = m_susyObj.computeMETComponent(METUtil::RefGamma).Mod()/GeV;
-  metOut->softJet       = m_susyObj.computeMETComponent(METUtil::SoftJets).Mod()/GeV;
-  metOut->refCell       = m_susyObj.computeMETComponent(METUtil::CellOutEflow).Mod()/GeV;
+  // MET comp terms 
+  // Need to save these for the MET systematics as well.
+  // Use the sys enum to determine which argument to pass to SUSYTools
+  METUtil::Systematics metSys = METUtil::None;
+
+  // I guess these are the only ones we need to specify, the ones specified in SUSYTools...
+  // All the rest should be automatic (I think), e.g. JES
+  if(sys == NtSys_SCALEST_UP) metSys = METUtil::ScaleSoftTermsUp;
+  else if(sys == NtSys_SCALEST_DN) metSys = METUtil::ScaleSoftTermsDown;
+  else if(sys == NtSys_RESOST) metSys = METUtil::ResoSoftTermsUp;
+
+  // Save the MET terms
+  metOut->refEle        = m_susyObj.computeMETComponent(METUtil::RefEle, metSys).Mod()/GeV;
+  metOut->refMuo        = m_susyObj.computeMETComponent(METUtil::MuonTotal, metSys).Mod()/GeV;
+  metOut->refJet        = m_susyObj.computeMETComponent(METUtil::RefJet, metSys).Mod()/GeV;
+  metOut->refGamma      = m_susyObj.computeMETComponent(METUtil::RefGamma, metSys).Mod()/GeV;
+  metOut->softJet       = m_susyObj.computeMETComponent(METUtil::SoftJets, metSys).Mod()/GeV;
+  metOut->refCell       = m_susyObj.computeMETComponent(METUtil::CellOutEflow, metSys).Mod()/GeV;
 }
 
 /*--------------------------------------------------------------------------------*/
@@ -1014,10 +1025,9 @@ void SusyNtMaker::addMissingElectron(const LeptonInfo* lep, SusyNtSys sys)
   float nPixHits = e->nPixHits()->at(index);
   float nSCTHits = e->nSCTHits()->at(index);
   bool isData    = !m_isMC;
-  bool isAF2     = false; 
 
   // Reset the Nominal TLV
-  m_susyObj.SetElecTLV(index, cl_eta, cl_phi, cl_E, trk_eta, trk_phi, nPixHits, nSCTHits, isData, SystErr::NONE, isAF2);
+  m_susyObj.SetElecTLV(index, cl_eta, cl_phi, cl_E, trk_eta, trk_phi, nPixHits, nSCTHits, isData, SystErr::NONE);
 
   // Now push it back onto to susyNt
   fillElectronVars(lep);
