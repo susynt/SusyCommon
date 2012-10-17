@@ -6,6 +6,7 @@ nickname=Steve
 nGBPerJob=MAX
 athenaTag=17.3.1.1
 metFlav="Egamma10NoTau_STVF"
+destSE="SLACXRD_SCRATCHDISK"
 
 # get the samples of interest
 if [[ $# = 0 ]]; then
@@ -50,6 +51,7 @@ for inDS in ${datasets[@]}; do
 	# prun command
 	prun --exec "$command" --useRootCore --tmpDir /tmp --inTarBall=area.tar \
              --extFile '*.so,*.root' --match "*root*" --outputs "susyNt.root" \
+             --destSE=$destSE \
              --excludedSite=$blackList \
              --nGBPerJob=$nGBPerJob \
              --athenaTag=$athenaTag \

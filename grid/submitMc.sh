@@ -7,6 +7,7 @@ nGBPerJob=MAX
 athenaTag=17.3.1.1
 metFlav="Egamma10NoTau_STVF"
 sysOpt="--sys"
+destSE="SLACXRD_SCRATCHDISK"
 
 # dataset file and grep pattern can be provided as arguments
 pattern="mc12"
@@ -82,6 +83,7 @@ for line in ${matches[@]}; do
 	# prun command
 	prun --exec "$command" --useRootCore --tmpDir /tmp --inTarBall=area.tar \
              --extFile '*.so,*.root' --match "*root*" --outputs "susyNt.root" \
+             --destSE=$destSE \
              --excludedSite=$blackList \
              --nGBPerJob=$nGBPerJob \
              --athenaTag=$athenaTag \
