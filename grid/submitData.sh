@@ -50,7 +50,7 @@ for inDS in ${datasets[@]}; do
 
 	# prun command
 	prun --exec "$command" --useRootCore --tmpDir /tmp --inTarBall=area.tar \
-             --extFile '*.so,*.root' --match "*root*" --outputs "susyNt.root" \
+             --extFile '*.so,*.root' --match "*root*" --outputs susyNt.root,gridFileList.txt \
              --destSE=$destSE \
              --excludedSite=$blackList \
              --nGBPerJob=$nGBPerJob \
