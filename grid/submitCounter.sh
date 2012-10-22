@@ -1,6 +1,6 @@
 #!/bin/bash
 
-iteration=i10
+iteration=i13
 nickname=Steve
 
 #
@@ -23,7 +23,9 @@ for inDS in `cat $1`; do
 
 	#outDS="user.$nickname.$iteration.$sample.eventCounter/"
 	outDS="user.$nickname.$iteration.$inDS"
-        outDS=${outDS/merge.NTUP_SUSY/eventCount}
+        outDS=${outDS/NTUP_SUSY/eventCount}
+        outDS=${outDS/merge./}
+        outDS=${outDS/SKIM/}
 
         # If output DS name is too long, need to trim it down.
         # For now, treat this on a case by case basis
