@@ -67,6 +67,7 @@ def main():
 
     # Write out the histo
     h.Write()
+    hRaw.Write()
     f.Close()
 
     print 'eventCounter end'
