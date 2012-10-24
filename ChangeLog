@@ -1,5 +1,9 @@
 # vim: set noexpandtab:
 
+2012-10-24 Steve
+	* Update to SUSYTools-00-01-10
+	* Tagging SusyCommon-00-00-45
+
 2012-10-14 Steve
 	* Added MET systematics to the MET Ref terms
 	* Fixed isAF2 flag usage in m_susyObj.SetElecTLV

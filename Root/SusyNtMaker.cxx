@@ -412,8 +412,6 @@ void SusyNtMaker::fillNtVars()
   fillJetVars();
   fillTauVars();
   fillMetVars();
-  // If photon selection is turned off, there are no photons to save anyway
-  //if(m_savePh) fillPhotonVars();
   fillPhotonVars();
 }
 
@@ -441,7 +439,6 @@ void SusyNtMaker::fillEventVars()
   evt->hfor             = m_isMC? getHFORDecision() : -1;
 
   // SUSY final state
-  //bool isSusySample     = m_sample.Contains("DGemt") || m_sample.Contains("DGstau");
   evt->susyFinalState   = m_isSusySample? get_finalState(&d3pd.truth) : -1;
 
   evt->passMllForAlpgen = m_isMC? PassMllForAlpgen(&d3pd.truth) : true;
@@ -449,13 +446,11 @@ void SusyNtMaker::fillEventVars()
   evt->trigFlags        = m_evtTrigFlags;
 
   evt->wPileup          = m_isMC? getPileupWeight() : 1;
-  //evt->wPileup1fb       = m_isMC? getPileupWeight1fb() : 1;
   evt->wPileupAB3       = m_isMC? getPileupWeightAB3() : 1;
   evt->wPileupAB        = m_isMC? getPileupWeightAB() : 1;
   evt->xsec             = m_isMC? getXsecWeight() : 1;
   evt->lumiSF           = m_isMC? getLumiWeight() : 1;             
   evt->sumw             = m_isMC? m_sumw : 1;
-  //cout << "lumi " << m_lumi << " sumw " << m_sumw << " lumiSF " << evt->lumiSF << endl;
 
   evt->pdf_id1          = m_isMC? d3pd.gen.pdf_id1()->at(0)    : 0;
   evt->pdf_id2          = m_isMC? d3pd.gen.pdf_id2()->at(0)    : 0;
@@ -465,7 +460,6 @@ void SusyNtMaker::fillEventVars()
 
   evt->pdfSF            = m_isMC? getPDFWeight8TeV() : 1;
 
-  //addEventFlag(NtSys_NOM, m_evtFlag);
   m_susyNt.evt()->cutFlags[NtSys_NOM] = m_cutFlags;
 }
 
@@ -1027,7 +1021,7 @@ void SusyNtMaker::addMissingElectron(const LeptonInfo* lep, SusyNtSys sys)
   bool isData    = !m_isMC;
 
   // Reset the Nominal TLV
-  m_susyObj.SetElecTLV(index, cl_eta, cl_phi, cl_E, trk_eta, trk_phi, nPixHits, nSCTHits, isData, SystErr::NONE);
+  m_susyObj.SetElecTLV(index, cl_eta, cl_phi, cl_E, trk_eta, trk_phi, nPixHits, nSCTHits, isData, d3pd.evt.RunNumber(), SystErr::NONE);
 
   // Now push it back onto to susyNt
   fillElectronVars(lep);
