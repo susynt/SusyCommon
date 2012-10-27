@@ -4,6 +4,7 @@
 	* Fixed usage of GetSignalElecSF
 		* rel argument no longer exists
 	* Changed default lumi in d3pd code
+	* Tagging SusyCommon-00-00-46
 
 2012-10-24 Steve
 	* Update to SUSYTools-00-01-10
