@@ -172,7 +172,6 @@ int main(int argc, char** argv)
   susyAna->setLumi(lumi);
   susyAna->setSumw(sumw);
   susyAna->setSys(sysOn);
-  //susyAna->setSavePhotons(savePh);
   susyAna->setSelectPhotons(savePh);
   susyAna->setSelectTaus(saveTau);
   susyAna->setAF2(isAF2);
