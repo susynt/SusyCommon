@@ -48,6 +48,26 @@ void SusyD3PDContainer::ReadFrom(TTree* tree)
   // We use the JetD3PDObject class to read truth jets, so need to overwrite the prefix
   truthJet.SetPrefix("jet_AntiKt4TruthJets_");
 }
+/*--------------------------------------------------------------------------------*/
+// Connect tree to the D3PD objects in container
+/*--------------------------------------------------------------------------------*/
+void SusyD3PDContainer::WriteTo(TTree* tree)
+{
+  evt.WriteTo(tree);
+  ele.WriteTo(tree);
+  muo.WriteTo(tree);
+  jet.WriteTo(tree);
+  pho.WriteTo(tree);
+  tau.WriteTo(tree);
+  met.WriteTo(tree);
+  trk.WriteTo(tree);
+  vtx.WriteTo(tree);
+  trig.WriteTo(tree);
+  gen.WriteTo(tree);
+  truth.WriteTo(tree);
+  truthMu.WriteTo(tree);
+  truthJet.WriteTo(tree);
+}
 
 /*--------------------------------------------------------------------------------*/
 // SusyD3PDInterface Constructor

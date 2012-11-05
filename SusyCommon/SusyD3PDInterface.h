@@ -50,6 +50,9 @@ class SusyD3PDContainer
     // Connect the objects to an input tree
     void ReadFrom( TTree* tree );
 
+    // Connect the objects to an output tree
+    void WriteTo( TTree* tree );
+
     D3PDReader::EventInfoD3PDObject     evt;
     D3PDReader::ElectronD3PDObject      ele;
     D3PDReader::MuonD3PDObject          muo;

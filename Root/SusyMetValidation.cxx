@@ -8,7 +8,7 @@
 
 using namespace std;
 
-const bool dumpMet = true;
+const bool dumpMet = false;
 
 /*--------------------------------------------------------------------------------*/
 // SusyMetValidation Constructor

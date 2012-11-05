@@ -1,7 +1,7 @@
 #!/bin/bash
 
 outDS="user.Steve.group.phys-susy.data12_8TeV.eventSkim.NTUP_SUSY.t0pro13_v01_p1181_i0001/"
-exclude=RHUL,OX,SARA,SHEF,LRZ,GOEGRID,GRIF,IFIC,CERN,IFAE,INFN
+exclude=MWT2,SARA,GRIF,MANC,TRIUMF,AGLT2
 
 # get the samples of interest
 pattern="data"
@@ -25,7 +25,7 @@ for inDS in `cat dataSamples.txt | grep "$pattern"`; do
                 --nGBPerJob=MAX \
                 --excludedSite=$exclude \
 		--outputs "d3pd.root" \
-                --athenaTag=17.0.5.5 \
+                --athenaTag=17.3.1.1 \
 		--inDS  $inDS \
 		--outDS $outDS
         
