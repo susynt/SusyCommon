@@ -1,5 +1,18 @@
 # vim: set noexpandtab:
 
+2012-11-12 Steve
+	* Adding methods to SusyD3PDAna for d3pd based analysis
+		* getLepSF, getBTagSF (not done) 
+		* I may want to add some equivalent to SusyNtTools, which will mostly just have kinematic functions such as Mll
+	* Removing some obsolete SusyD3PDAna code which was commented out anyway
+		* evtCheck, isHFORSample, dump, truth muon dump, getPileupWeight1fb
+	* Updates for SusyMetValidation, for checking the 3L met bump
+		* Implemented the VR selection, variable dumps, and histos
+			* Using TriggerMatch package for multilepton trigger logic
+		* Eventually I'd like to make the event selection more flexible, but this
+		  should probably be done by adding event selection functionality in either
+		  SusyD3PDAna or a new base class
+
 2012-10-27 Steve
 	* Fixed usage of GetSignalElecSF
 		* rel argument no longer exists

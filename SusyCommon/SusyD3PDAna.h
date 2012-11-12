@@ -65,12 +65,6 @@ class SusyD3PDAna : public SusyD3PDInterface
     // Clear object selection
     void clearObjects();
 
-    // Count number of good vertices
-    uint getNumGoodVtx();
-
-    // Match a reco jet to a truth jet
-    bool matchTruthJet(int iJet);
-
 
     //
     // Trigger - check matching for all baseline leptons
@@ -155,17 +149,36 @@ class SusyD3PDAna : public SusyD3PDInterface
     // pileup weight for full dataset: currently A-D7
     float getPileupWeight();
     // pileup weight for A-B3 (1.037/fb)
-    //float getPileupWeight1fb();
-    // this will replace the above function soon
     float getPileupWeightAB3();
     // pileup weight for A-B (5.83/fb)
     float getPileupWeightAB();
     // PDF reweighting of 7TeV -> 8TeV
     float getPDFWeight8TeV();
 
+    // Lepton efficiency SF
+    float getLepSF(const std::vector<LeptonInfo>& leptons);
+
+    // BTag efficiency SF
+    float getBTagSF(const std::vector<int>& jets);
+
+
+    //
+    // Utility methods
+    //
+
+    // Mass helpers
+    //float Mll();
+    //bool isZ();
+    //bool hasZ();
+
     // HF overlap removal decision
     int getHFORDecision();
-    bool isHFORSample();
+
+    // Count number of good vertices
+    uint getNumGoodVtx();
+
+    // Match a reco jet to a truth jet
+    bool matchTruthJet(int iJet);
 
     //
     // Running conditions
@@ -200,8 +213,6 @@ class SusyD3PDAna : public SusyD3PDInterface
     void dumpBaselineObjects();
     void dumpSignalObjects();
 
-    // Debugging method
-    void dump();
 
   protected:
 
@@ -264,7 +275,6 @@ class SusyD3PDAna : public SusyD3PDInterface
 
     bool                        m_sys;          // True if you want sys for MC, must be set by user. 
 
-    //uint                        m_evtFlag;      // Reset after each evt
     uint                        m_cutFlags;     // Event cleaning cut flags
 
     //
@@ -279,7 +289,6 @@ class SusyD3PDAna : public SusyD3PDInterface
     FakeMetEstimator            m_fakeMetEst;   // fake met estimator for lar hole veto
 
     Root::TPileupReweighting*   m_pileup;       // pileup reweighting
-    Root::TPileupReweighting*   m_pileup1fb;    // pileup reweighting for 2012 A-B3 only
     Root::TPileupReweighting*   m_pileupAB3;    // pileup reweighting for 2012 A-B3 only
     Root::TPileupReweighting*   m_pileupAB;     // pileup reweighting for 2012 A-B
 

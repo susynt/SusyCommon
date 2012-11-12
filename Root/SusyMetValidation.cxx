@@ -15,6 +15,12 @@ const bool dumpMet = false;
 /*--------------------------------------------------------------------------------*/
 SusyMetValidation::SusyMetValidation()
 {
+  // Met names
+  metNames[Met_susy_stvf] = "susy_stvf";
+  metNames[Met_d3pd_stvf] = "d3pd_stvf";
+  metNames[Met_d3pd_reff] = "d3pd_reff";
+
+  // Initialize counters
   n_base_ele=0;
   n_base_muo=0;
   n_base_tau=0;
@@ -25,6 +31,7 @@ SusyMetValidation::SusyMetValidation()
   n_sig_jet=0;
   n_evt_initial=0;
   n_evt_grl=0;
+  n_evt_hfor=0;
   n_evt_larErr=0;
   n_evt_larHole=0;
   n_evt_hotSpot=0;
@@ -32,17 +39,25 @@ SusyMetValidation::SusyMetValidation()
   n_evt_goodVtx=0;
   n_evt_badMu=0;
   n_evt_cosmic=0;
-  n_evt_1Lep=0;
-  n_evt_2Lep=0;
-  n_evt_ee=0;
+  n_evt_3Lep=0;
+  n_evt_trig=0;
   n_evt_sfos=0;
   n_evt_zMass=0;
+  n_evt_met=0;
+  n_evt_bJet=0;
+  n_evt_mt=0;
+  n_evt_lepPt=0;
+  n_evt_pileup=0;
+  n_evt_lepSF=0;
+  n_evt_bTagSF=0;
+  n_evt_lumi=0;
 }
 /*--------------------------------------------------------------------------------*/
 // Destructor
 /*--------------------------------------------------------------------------------*/
 SusyMetValidation::~SusyMetValidation()
 {
+  delete m_triggerMatch;
 }
 /*--------------------------------------------------------------------------------*/
 // The Begin() function is called at the start of the query.
@@ -53,6 +68,12 @@ void SusyMetValidation::Begin(TTree* /*tree*/)
 {
   SusyD3PDAna::Begin(0);
   if(m_dbg) cout << "SusyMetValidation::Begin" << endl;
+
+  // Initialize trigger match tool
+  m_triggerMatch = new TriggerMatchMultiLep();
+
+  // Histograms
+  bookHistos();
 
   // Start the timer
   m_timer.Start();
@@ -75,9 +96,8 @@ Bool_t SusyMetValidation::Process(Long64_t entry)
          << " event " << setw(7) << d3pd.evt.EventNumber() << " ****" << endl;
   }
 
-  if(selectEvent()){
-    checkMet();
-  }
+  // Event selection
+  selectEvent();
 
   return kTRUE;
 }
@@ -109,17 +129,30 @@ void SusyMetValidation::Terminate()
   cout << "Event counter" << endl;
   cout << "  Initial  " << n_evt_initial << endl;
   cout << "  GRL      " << n_evt_grl     << endl;
+  cout << "  HFOR     " << n_evt_hfor    << endl;
   cout << "  LarErr   " << n_evt_larErr  << endl;
   cout << "  HotSpot  " << n_evt_hotSpot << endl;
   cout << "  BadJet   " << n_evt_badJet  << endl;
   cout << "  GoodVtx  " << n_evt_goodVtx << endl;
   cout << "  BadMuon  " << n_evt_badMu   << endl;
   cout << "  Cosmic   " << n_evt_cosmic  << endl;
-  cout << "  >=1 Lep  " << n_evt_1Lep    << endl;
-  cout << "  >=2 Lep  " << n_evt_2Lep    << endl;
-  cout << "  Is EE    " << n_evt_ee      << endl;
+  cout << "  ==3 Lep  " << n_evt_3Lep    << endl;
+  cout << "  Trig     " << n_evt_trig    << endl;
+  
+  // Add here the rest of the event selection
   cout << "  SFOS     " << n_evt_sfos    << endl;
   cout << "  Z Mass   " << n_evt_zMass   << endl;
+  cout << "  MET      " << n_evt_met     << endl;
+  cout << "  BJet     " << n_evt_bJet    << endl;
+  cout << "  MT       " << n_evt_mt      << endl;
+  cout << "  LepPt    " << n_evt_lepPt   << endl;
+
+  // Weighted events
+  //cout << "  Pileup   " << n_evt_pileup  << endl;
+  cout << "  LepSF    " << n_evt_lepSF   << endl;
+  cout << "  BTagSF   " << n_evt_bTagSF  << endl;
+  cout << "  A-E Lumi " << n_evt_lumi    << endl;
+
   cout << endl;
 
   // Report timer
@@ -131,17 +164,86 @@ void SusyMetValidation::Terminate()
   realTime -= min * 60;
   int sec   = int(realTime);
 
-  float speed = n_evt_initial/m_timer.RealTime()/1000;
+  float speed = n_evt_initial/m_timer.RealTime();
 
   printf("---------------------------------------------------\n");
   printf(" Number of events processed: %d \n",n_evt_initial);
   printf("\t Analysis time: Real %d:%02d:%02d, CPU %.3f      \n", hours, min, sec, cpuTime);
-  printf("\t Analysis speed [kHz]: %2.3f                     \n",speed);
+  printf("\t Analysis speed [Hz]: %2.1f                      \n",speed);
   printf("---------------------------------------------------\n\n");
+
+  // Save histograms
+  saveHistos();
+}
+
+/*--------------------------------------------------------------------------------*/
+// Book histograms
+/*--------------------------------------------------------------------------------*/
+void SusyMetValidation::bookHistos()
+{
+  system("mkdir -p rootFiles/MetVal");
+  if(m_histFileName.empty()) m_histFileName = "rootFiles/MetVal/"+m_sample+".metVal.root";
+  m_histFile = new TFile(m_histFileName.c_str(), "recreate");
+  TH1::SetDefaultSumw2(true);
+
+  // Preprocessor convenience
+  #define NEWHIST(name, xLbl, nBin, min, max) \
+    new TH1F(name, name ";" xLbl ";Events", nBin, min, max)
+
+  // Met flavor histos
+  for(uint i=0; i<Met_N; i++){
+    string metName = metNames[i];
+
+    #define NEWMETHIST(name, xLbl, nBin, min, max) \
+      new TH1F((metName+"_"+name).c_str(), (metName+"_"+name+";"+xLbl+";Events").c_str(), nBin, min, max)
+    #define NEWVARMETHIST(name, xLbl, nBin, bins) \
+      new TH1F((metName+"_"+name).c_str(), (metName+"_"+name+";"+xLbl+";Events").c_str(), nBin, bins)
+
+    // MET terms
+    h_met[i] = NEWMETHIST("met", "MET [GeV]", 20, 0, 100);
+    h_metEle[i] = NEWMETHIST("metEle", "MET Electron [GeV]", 20, 0, 100);
+    h_metMuo[i] = NEWMETHIST("metMuo", "MET Muon [GeV]", 20, 0, 100);
+    h_metJet[i] = NEWMETHIST("metJet", "MET Jet [GeV]", 20, 0, 100);
+    h_metCell[i] = NEWMETHIST("metCell", "MET Cell [GeV]", 20, 0, 100);
+
+    // MET leptons
+    h_nMetLep[i] = NEWMETHIST("nMetLep", "Number of MET leptons", 10, -0.5, 9.5);
+    h_nMetMu[i] = NEWMETHIST("nMetMu", "Number of MET muons", 10, -0.5, 9.5);
+    h_nMetEl[i] = NEWMETHIST("nMetEl", "Number of MET electrons", 10, -0.5, 9.5);
+
+    h_metLepPt[i] = NEWMETHIST("metLepPt", "MET lepton_{} P_{T} [GeV]", 25, 0, 500);
+    h_metMuPt[i] = NEWMETHIST("metMuPt", "MET muon_{} P_{T} [GeV]", 25, 0, 500);
+    h_metElPt[i] = NEWMETHIST("metElPt", "MET electron_{} P_{T} [GeV]", 25, 0, 500);
+
+    h_metLepEta[i] = NEWMETHIST("metLepEta", "MET lepton_{} #eta", 20, -5.0, 5.0);
+    //h_metMuEta[i] = NEWMETHIST("metMuEta", "MET muon_{} #eta", 10, -2.5, 2.5);
+    h_metMuEta[i] = NEWMETHIST("metMuEta", "MET muon_{} #eta", 20, -4.8, 4.8);
+    h_metElEta[i] = NEWMETHIST("metElEta", "MET electron_{} #eta", 20, -5.0, 5.0);
+
+    // MET muon weights
+    h_muWet[i] = NEWMETHIST("muWet", "MET muon E_{T} weight", 55, 0, 1.1);
+    h_muWpx[i] = NEWMETHIST("muWpx", "MET muon P_{X} weight", 55, 0, 1.1);
+    h_muWpy[i] = NEWMETHIST("muWpy", "MET muon P_{Y} weight", 55, 0, 1.1);
+  }
+
+  // Other histos
+  //h_nMuRaw = NEWHIST("nMuRaw", "Number of D3PD muons", 10, -0.5, 9.5);
+  h_nMu = NEWHIST("nMu", "Signal muon multiplicity", 6, -0.5, 5.5);
+}
+
+/*--------------------------------------------------------------------------------*/
+// Save histograms
+/*--------------------------------------------------------------------------------*/
+void SusyMetValidation::saveHistos()
+{
+  m_histFile->Write();
+  cout << endl << "Histograms written to " << m_histFile->GetName() << endl;
+  m_histFile->Close();
 }
 
 /*--------------------------------------------------------------------------------*/
 // Select event
+// The selection is currently setup to evaluate the 3L met bump
 /*--------------------------------------------------------------------------------*/
 bool SusyMetValidation::selectEvent()
 {
@@ -156,6 +258,10 @@ bool SusyMetValidation::selectEvent()
   if(!passGRL()) return false;
   n_evt_grl++;
 
+  // HF overlap removal
+  if(m_isMC && getHFORDecision()==4) return false;
+  n_evt_hfor++;
+
   // larErr
   if(!passLarErr()) return false;
   n_evt_larErr++;
@@ -163,12 +269,10 @@ bool SusyMetValidation::selectEvent()
   // Get Nominal Objects
   selectObjects();
   buildMet();
-  //evtCheck();
   checkEventCleaning();
   checkObjectCleaning();
 
   // Tile hot spot
-  //if((m_evtFlag & PASS_HotSpot) == 0) return false;
   if((m_cutFlags & ECut_HotSpot) == 0) return false;
   n_evt_hotSpot++;
   // Bad jet cut
@@ -195,54 +299,300 @@ bool SusyMetValidation::selectEvent()
   n_sig_tau += m_sigTaus.size();
   n_sig_jet += m_sigJets.size();
   
+
   // Lepton multiplicity
   uint nBaseLep = m_baseElectrons.size() + m_baseMuons.size();
-  uint nSigLep = m_sigElectrons.size() + m_sigMuons.size();
-  //cout << "nSigLep " << nSigLep << endl;
-  if(nSigLep < 1) return false;
-  n_evt_1Lep++;
-  if(nBaseLep != 2) return false;
-  if(nSigLep != 2) return false;
-  n_evt_2Lep++;
+  uint nSigEle = m_sigElectrons.size();
+  uint nSigMuo = m_sigMuons.size();
+  uint nSigLep = nSigEle + nSigMuo;
+  if(nBaseLep != 3) return false;
+  if(nSigLep != 3) return false;
+  n_evt_3Lep++;
 
-  // Get the signal leptons
-  const LeptonInfo* lep1 = & m_sigLeptons[0];
-  const LeptonInfo* lep2 = & m_sigLeptons[1];
+  // Trigger cut
+  if(!passTrigger()) return false;
+  n_evt_trig++;
 
-  // For now, only looking at the ee channel
-  if(!lep1->isElectron() || !lep2->isElectron()) return false;
-  n_evt_ee++;
-
-  if(!IsSFOS(lep1, lep2)) return false;
+  // SFOS
+  if(!HasSFOS(m_sigLeptons)) return false;
   n_evt_sfos++;
 
-  float mll = GetMll(lep1, lep2)/GeV;
-  if(fabs(mll-MZ) > 10) return false;
+  // Z mass
+  static vector<float> msfos;
+  msfos.clear();
+  msfos = MassesOfSFOSPairs(m_susyObj, &d3pd.muo, m_sigMuons, &d3pd.ele, m_sigElectrons);
+  bool hasZ = false;
+  for(uint i=0; i<msfos.size(); i++){
+    if(fabs(msfos[i]-91.2*GeV) < 10*GeV){
+      hasZ = true;
+      break;
+    }
+  }
+  if(!hasZ) return false;
   n_evt_zMass++;
+
+  // MET
+  if(m_met.Et() < 30*GeV || m_met.Et() > 75*GeV) return false;
+  n_evt_met++;
+
+  // Bjet veto
+  if(IsBJetEvent(m_susyObj, &d3pd.jet, m_sigJets, SUSYBTagger::MV1, make_pair("0_122", 0.122))) return false;
+  n_evt_bJet++;
+
+  // Mt
+  float mt = getMt(m_susyObj, &d3pd.muo, m_sigMuons, &d3pd.ele, m_sigElectrons, 
+                   m_met.Vect().XYvector(), m_met.Et());
+  if(mt < 50*GeV || mt > 110*GeV) return false;
+  n_evt_mt++;
+
+  // Lepton pt
+  if(m_sigLeptons[2].lv()->Pt() < 20*GeV) return false;
+  n_evt_lepPt++;
+
+  // Get the event weight
+  float w = getEventWeight();
+  // Lepton eff SF
+  float lepSF = getLepSF(m_sigLeptons);
+  n_evt_lepSF += lepSF;
+  // B-tag eff SF
+  float bTagSF = getBTagSF(m_sigJets);
+  n_evt_bTagSF += bTagSF;
+  // Full weight
+  float wTotal = w * lepSF * bTagSF;
+  n_evt_lumi += wTotal;
+
+  //
+  // Calculate all of the met variables we will want to look at here
+  //
+
+  // The MET terms
+  TVector2 met[Met_N];
+  TVector2 metEle[Met_N];
+  TVector2 metMuo[Met_N];
+  TVector2 metJet[Met_N];
+  TVector2 metCell[Met_N];
+
+  // SUSYTools Egamma10NoTau_STVF_RefFinal
+  met[Met_susy_stvf]     = m_met.Vect().XYvector();
+  metEle[Met_susy_stvf]  = m_susyObj.computeMETComponent(METUtil::RefEle);
+  metMuo[Met_susy_stvf]  = m_susyObj.computeMETComponent(METUtil::MuonTotal);
+  metJet[Met_susy_stvf]  = m_susyObj.computeMETComponent(METUtil::RefJet);
+  metCell[Met_susy_stvf] = m_susyObj.computeMETComponent(METUtil::CellOutEflow);
+
+  // D3PD Egamma10NoTau_STVF_RefFinal
+  met[Met_d3pd_stvf]     = TVector2(d3pd.met.Egamma10NoTau_STVF_RefFinal_etx(), 
+                                    d3pd.met.Egamma10NoTau_STVF_RefFinal_ety());
+  metEle[Met_d3pd_stvf]  = TVector2(d3pd.met.Egamma10NoTau_STVF_RefEle_etx(), 
+                                    d3pd.met.Egamma10NoTau_STVF_RefEle_ety());
+  metMuo[Met_d3pd_stvf]  = TVector2(d3pd.met.Egamma10NoTau_STVF_Muon_Total_Staco_etx(), 
+                                    d3pd.met.Egamma10NoTau_STVF_Muon_Total_Staco_ety());
+  metJet[Met_d3pd_stvf]  = TVector2(d3pd.met.Egamma10NoTau_STVF_RefJet_etx(), 
+                                    d3pd.met.Egamma10NoTau_STVF_RefJet_ety());
+  metCell[Met_d3pd_stvf] = TVector2(d3pd.met.Egamma10NoTau_STVF_CellOutCorr_etx(), 
+                                    d3pd.met.Egamma10NoTau_STVF_CellOutCorr_ety());
+
+  // D3PD RefFinal
+  met[Met_d3pd_reff]     = TVector2(d3pd.met.Egamma10NoTau_RefFinal_etx(), 
+                                    d3pd.met.Egamma10NoTau_RefFinal_ety());
+  metEle[Met_d3pd_reff]  = TVector2(d3pd.met.Egamma10NoTau_RefEle_etx(), 
+                                    d3pd.met.Egamma10NoTau_RefEle_ety());
+  metMuo[Met_d3pd_reff]  = TVector2(d3pd.met.Egamma10NoTau_Muon_Total_Staco_etx(), 
+                                    d3pd.met.Egamma10NoTau_Muon_Total_Staco_ety());
+  metJet[Met_d3pd_reff]  = TVector2(d3pd.met.Egamma10NoTau_RefJet_etx(), 
+                                    d3pd.met.Egamma10NoTau_RefJet_ety());
+  metCell[Met_d3pd_reff] = TVector2(d3pd.met.Egamma10NoTau_CellOut_etx(), 
+                                    d3pd.met.Egamma10NoTau_CellOut_ety());
+
+  // Dump variables
+  if(dumpMet){
+    cout << endl;
+    cout << "--------------------------------------------------------------------------------" << endl;
+    dumpEvent();
+    dumpBaselineObjects();
+    dumpSignalObjects();
+
+    // Compare the total MET
+    cout << "Total MET" << endl;
+    cout << "  SUSY STVF:     " << met[Met_susy_stvf].Mod()/GeV << endl;
+    cout << "  D3PD STVF:     " << met[Met_d3pd_stvf].Mod()/GeV << endl;
+    cout << "  D3PD RefFinal: " << met[Met_d3pd_reff].Mod()/GeV  << endl;
+
+    cout << "Ref Electron" << endl;
+    cout << "  SUSY STVF:     " << metEle[Met_susy_stvf].Mod()/GeV << endl;
+    cout << "  D3PD STVF:     " << metEle[Met_d3pd_stvf].Mod()/GeV << endl;
+    cout << "  D3PD RefFinal: " << metEle[Met_d3pd_reff].Mod()/GeV  << endl;
+
+    cout << "Total Muon" << endl;
+    cout << "  SUSY STVF:     " << metMuo[Met_susy_stvf].Mod()/GeV << endl;
+    cout << "  D3PD STVF:     " << metMuo[Met_d3pd_stvf].Mod()/GeV << endl;
+    cout << "  D3PD RefFinal: " << metMuo[Met_d3pd_reff].Mod()/GeV  << endl;
+
+    cout << "Ref Jet" << endl;
+    cout << "  SUSY STVF:     " << metJet[Met_susy_stvf].Mod()/GeV << endl;
+    cout << "  D3PD STVF:     " << metJet[Met_d3pd_stvf].Mod()/GeV << endl;
+    cout << "  D3PD RefFinal: " << metJet[Met_d3pd_reff].Mod()/GeV  << endl;
+
+    cout << "Cell Out" << endl;
+    cout << "  SUSY STVF:     " << metCell[Met_susy_stvf].Mod()/GeV << endl;
+    cout << "  D3PD STVF:     " << metCell[Met_d3pd_stvf].Mod()/GeV << endl;
+    cout << "  D3PD RefFinal: " << metCell[Met_d3pd_reff].Mod()/GeV  << endl;
+
+    // Dump muon weights
+    cout.precision(2);
+    for(int iMu=0; iMu<d3pd.muo.n(); iMu++){
+      const MuonElement* mu = & d3pd.muo[iMu];
+      const TLorentzVector* lv = & m_susyObj.GetMuonTLV(iMu);
+      cout << "  Mu : " << fixed
+           << " q " << setw(2) << (int) mu->charge()
+           << " pt " << setw(6) << lv->Pt()/GeV
+           << " eta " << setw(5) << lv->Eta()
+           << endl;
+      // Dump the met weights
+      //cout << "       stvf weights: " << mu->MET_Egamma10NoTau_STVF_wet().size() << endl;
+      for(uint iW = 0; iW < mu->MET_Egamma10NoTau_STVF_wet().size(); iW++)
+      {
+        cout << "       stvf weights:" 
+             << " wet " << mu->MET_Egamma10NoTau_STVF_wet()[iW] 
+             << " wpx " << mu->MET_Egamma10NoTau_STVF_wpx()[iW] 
+             << " wpy " << mu->MET_Egamma10NoTau_STVF_wpy()[iW]
+             << endl;
+      }
+      //cout << "       reff weights: " << mu->MET_Egamma10NoTau_wet().size() << endl;
+      for(uint iW = 0; iW < mu->MET_Egamma10NoTau_wet().size(); iW++)
+      {
+        cout << "       reff weights:"
+             << " wet " << mu->MET_Egamma10NoTau_wet()[iW] 
+             << " wpx " << mu->MET_Egamma10NoTau_wpx()[iW] 
+             << " wpy " << mu->MET_Egamma10NoTau_wpy()[iW]
+             << endl;
+      }
+    }
+    cout.precision(6);
+    cout.unsetf(ios_base::fixed);
+  }
+
+  // Fill histograms here
+
+  // Fill MET histograms by looping over met indices
+  for(uint i=0; i<Met_N; i++){
+    h_met[i]->Fill(met[i].Mod()/GeV, w);
+    h_metEle[i]->Fill(metEle[i].Mod()/GeV, w);
+    h_metMuo[i]->Fill(metMuo[i].Mod()/GeV, w);
+    h_metJet[i]->Fill(metJet[i].Mod()/GeV, w);
+    h_metCell[i]->Fill(metCell[i].Mod()/GeV, w);
+  }
+
+  // Fill muon MET variables
+
+  // susy_stvf met
+  // Use the preMuons for the susy_stvf met, and all weights are 1
+  for(uint i=0; i<m_preMuons.size(); i++){
+
+    const TLorentzVector* muLV = & m_susyObj.GetMuonTLV(m_preMuons[i]);
+
+    // muon met weights - I think these three are identical
+    h_muWet[Met_susy_stvf]->Fill(1, w);
+    h_muWpx[Met_susy_stvf]->Fill(1, w);
+    h_muWpy[Met_susy_stvf]->Fill(1, w);
+
+    // muon kinematics
+    h_metMuPt[Met_susy_stvf]->Fill(muLV->Pt()/GeV, w);
+    h_metLepPt[Met_susy_stvf]->Fill(muLV->Pt()/GeV, w);
+    h_metMuEta[Met_susy_stvf]->Fill(muLV->Eta(), w);
+    h_metLepEta[Met_susy_stvf]->Fill(muLV->Eta(), w);
+
+  }
+
+  h_nMetMu[Met_susy_stvf]->Fill(m_preMuons.size(), w);
+
+  // Use d3pd muons for the d3pd_* met, with d3pd weights
+  // Each weight is a vector, but perhaps only one entry?
+  // For now, just use the first entry.  Assume 1 entry.
+  uint nMuStvf = 0;
+  uint nMuReff = 0;
+  for(int i=0; i<d3pd.muo.n(); i++){
+
+    const MuonElement* mu = & d3pd.muo[i];
+    //const TLorentzVector* muLV = & m_susyObj.GetMuonTLV(i);
+
+    // muon met weights
+    h_muWet[Met_d3pd_stvf]->Fill(mu->MET_Egamma10NoTau_STVF_wet().at(0), w);
+    h_muWpx[Met_d3pd_stvf]->Fill(mu->MET_Egamma10NoTau_STVF_wpx().at(0), w);
+    h_muWpy[Met_d3pd_stvf]->Fill(mu->MET_Egamma10NoTau_STVF_wpy().at(0), w);
+    h_muWet[Met_d3pd_reff]->Fill(mu->MET_Egamma10NoTau_wet().at(0), w);
+    h_muWpx[Met_d3pd_reff]->Fill(mu->MET_Egamma10NoTau_wpx().at(0), w);
+    h_muWpy[Met_d3pd_reff]->Fill(mu->MET_Egamma10NoTau_wpy().at(0), w);
+
+    // muon kinematics
+    if(mu->MET_Egamma10NoTau_STVF_wet().at(0) != 0){
+      nMuStvf++;
+      h_metMuPt[Met_d3pd_stvf]->Fill(mu->pt()/GeV, w);
+      h_metLepPt[Met_d3pd_stvf]->Fill(mu->pt()/GeV, w);
+      h_metMuEta[Met_d3pd_stvf]->Fill(mu->eta(), w);
+      h_metLepEta[Met_d3pd_stvf]->Fill(mu->eta(), w);
+    }
+    if(mu->MET_Egamma10NoTau_wet().at(0) != 0){
+      nMuReff++;
+      h_metMuPt[Met_d3pd_reff]->Fill(mu->pt()/GeV, w);
+      h_metLepPt[Met_d3pd_reff]->Fill(mu->pt()/GeV, w);
+      h_metMuEta[Met_d3pd_reff]->Fill(mu->eta(), w);
+      h_metLepEta[Met_d3pd_reff]->Fill(mu->eta(), w);
+    }
+
+  }
+  h_nMetMu[Met_d3pd_stvf]->Fill(nMuStvf, w);
+  h_nMetMu[Met_d3pd_reff]->Fill(nMuReff, w);
+
+  // Fill electron MET variables
+  // TODO
+
+  // Fill other histos
+
+  h_nMu->Fill(nSigMuo, w);
 
   return true;
 }
 
 /*--------------------------------------------------------------------------------*/
-// Check the MET
+// Trigger cut
 /*--------------------------------------------------------------------------------*/
-void SusyMetValidation::checkMet()
+bool SusyMetValidation::passTrigger()
 {
-  if(dumpMet){
-  
-    cout << endl;
-    dumpEvent();
-    dumpBaselineObjects();
-    //dumpSignalObjects();
-
-    // Compare the total MET before and after SUSYTools
-    cout << "Total MET" << endl;
-
-    // The D3PD MET
-    cout << "  D3PD: " << d3pd.met.RefFinal_et()/GeV << endl;
-    cout << "  SUSY: " << m_met.Et()/GeV << endl;
-
+  // Vectors of the signal leptons
+  static vector<TLorentzVector> elLVs;
+  static vector<TLorentzVector> muLVs;
+  elLVs.clear();
+  muLVs.clear();
+  for(uint iEl=0; iEl<m_sigElectrons.size(); iEl++){
+    elLVs.push_back(m_susyObj.GetElecTLV(m_sigElectrons[iEl]));
   }
+  for(uint iMu=0; iMu<m_sigMuons.size(); iMu++){
+    muLVs.push_back(m_susyObj.GetMuonTLV(m_sigMuons[iMu]));
+  }
+  return m_triggerMatch->passesMultiLepTrigger(&elLVs, &muLVs, m_sigElectrons, m_sigMuons,
+                                               !m_isMC, d3pd.evt.RunNumber(), streamName(m_stream),
+                                               d3pd.trig.trig_EF_el_n(), d3pd.trig.trig_EF_el_px(), 
+                                               d3pd.trig.trig_EF_el_py(), 
+                                               d3pd.trig.trig_EF_el_pz(), d3pd.trig.trig_EF_el_E(),
+                                               d3pd.trig.trig_EF_el_EF_e24vh_medium1(), 
+                                               d3pd.trig.trig_EF_el_EF_e24vh_medium1_e7_medium1(),
+                                               d3pd.trig.trig_EF_el_EF_2e12Tvh_loose1(), 
+                                               d3pd.trig.trig_EF_el_EF_e7T_medium1(),
+                                               d3pd.trig.trig_EF_el_EF_e12Tvh_medium1_mu8(), 
+                                               d3pd.trig.trig_EF_trigmuonef_n(),
+                                               d3pd.trig.trig_EF_trigmuonef_track_CB_eta(),
+                                               d3pd.trig.trig_EF_trigmuonef_track_CB_phi(),
+                                               d3pd.trig.trig_EF_trigmuonef_track_CB_hasCB(),
+                                               d3pd.trig.trig_EF_trigmuonef_EF_mu18_tight(),
+                                               d3pd.trig.trig_EF_trigmuonef_EF_mu18_tight_mu8_EFFS(),
+                                               d3pd.trig.trig_EF_trigmuonef_EF_2mu13(), 
+                                               d3pd.trig.trig_EF_trigmuonef_EF_mu8(),
+                                               d3pd.trig.trig_EF_trigmuonef_EF_mu18_tight_e7_medium1(),
+                                               d3pd.trig.EF_e24vh_medium1_e7_medium1(), 
+                                               d3pd.trig.EF_mu18_tight_mu8_EFFS(),
+                                               d3pd.trig.EF_2mu13(), d3pd.trig.EF_2e12Tvh_loose1(),
+                                               d3pd.trig.EF_e12Tvh_medium1_mu8(), 
+                                               d3pd.trig.EF_mu18_tight_e7_medium1(), false);
 }
 
 

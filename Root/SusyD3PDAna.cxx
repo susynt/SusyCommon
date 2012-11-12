@@ -26,12 +26,11 @@ SusyD3PDAna::SusyD3PDAna() :
         m_selectPhotons(false),
         m_selectTaus(false),
         m_metFlavor("Egamma10NoTau"),
-        m_lumi(5831),
+        m_lumi(LUMI_A_E),
         m_sumw(1),
 	m_xsec(-1),
 	m_sys(false),
         m_pileup(0),
-        m_pileup1fb(0),
         m_pileupAB3(0),
         m_pileupAB(0),
         m_susyXsec(0),
@@ -170,57 +169,6 @@ Bool_t SusyD3PDAna::Process(Long64_t entry)
   selectObjects();
   buildMet();
 
-  //
-  // This next bit was used to do some quick truth checks for muons.
-  // I'm going to leave it here in case I need something like this again.
-  // It serves as another example of how to use this code on d3pds.
-  //
-
-  /*
-  // Loop over baseline muons, looking for ones with type and origin unknown
-  uint nBaseMu = m_baseMuons.size();
-  for(uint i=0; i<nBaseMu; i++){
-    int muIdx = m_baseMuons[i];
-    const MuonElement* muon = & d3pd.muo[muIdx];
-    const TLorentzVector* muLV = & m_susyObj.GetMuonTLV(muIdx);
-
-    cout << endl << "Event " << d3pd.evt.EventNumber() << endl;
-
-    cout.precision(3);
-    cout << "Muon  -" << fixed
-         << " pt " << setw(6) << muLV->Pt()/GeV
-         << " type " << muon->type() 
-         << " origin " << muon->origin() 
-         << endl;
-
-    //if(muon->type()==0 && muon->origin()==0)
-    if(true)
-    {
-      // Loop over truth particles and dump those that are close to this muon
-      for(int iMc=0; iMc<d3pd.truth.n(); iMc++){
-        TLorentzVector mcLV;
-        mcLV.SetPtEtaPhiM(d3pd.truth.pt()->at(iMc), d3pd.truth.eta()->at(iMc), d3pd.truth.phi()->at(iMc), d3pd.truth.m()->at(iMc));
-        if(mcLV.Pt()==0) continue;
-
-        float dR = muLV->DeltaR(mcLV);
-
-        if(dR < 0.3){
-          
-          // dump info
-          cout << "Truth -" << fixed
-               << " dR " << setw(4) << dR
-               << " pdg " << setw(5) << d3pd.truth.pdgId()->at(iMc) 
-               << " status " << setw(3) << d3pd.truth.status()->at(iMc)
-               << " pt " << setw(6) << d3pd.truth.pt()->at(iMc) / GeV
-               << endl;
-
-        }
-      }
-    }
-    cout.precision(6);
-  }
-  */
-
   return kTRUE;
 }
 
@@ -237,7 +185,6 @@ void SusyD3PDAna::Terminate()
   if(m_isMC){
     delete m_susyXsec;
     delete m_pileup;
-    //delete m_pileup1fb;
     delete m_pileupAB3;
     delete m_pileupAB;
   }
@@ -650,36 +597,6 @@ bool SusyD3PDAna::matchMuonTrigger(const TLorentzVector* lv, vector<int>* passTr
 }
 
 /*--------------------------------------------------------------------------------*/
-// Check event level cuts, like LArHole veto, badJet, etc.
-/*--------------------------------------------------------------------------------*/
-/*void SusyD3PDAna::evtCheck()
-{
-  // Lar Hole Veto - shouldn't be used
-  //if(passLarHoleVeto()) m_evtFlag |= PASS_LAr;  
-  m_evtFlag |= PASS_LAr;
-
-  // Tile hot spot
-  if(passTileHotSpot()) m_evtFlag |= PASS_HotSpot;
-
-  // Bad Jet
-  if(passBadJet()) m_evtFlag |= PASS_BadJet;
-  
-  // Bad Muon
-  if(passBadMuon()) m_evtFlag |= PASS_BadMuon;
-  
-  // Cosmic muon check
-  if(passCosmic()) m_evtFlag |= PASS_Cosmic;
-
-  // Now store the pass all
-  if( (m_evtFlag & PASS_HotSpot) &&
-      //(m_evtFlag & PASS_LAr) &&
-      (m_evtFlag & PASS_BadJet)  &&
-      (m_evtFlag & PASS_BadMuon) &&
-      (m_evtFlag & PASS_Cosmic) )
-    m_evtFlag |= PASS_Event;
-}*/
-
-/*--------------------------------------------------------------------------------*/
 // Check event level cleaning cuts like GRL, LarError, etc.
 /*--------------------------------------------------------------------------------*/
 void SusyD3PDAna::checkEventCleaning()
@@ -806,11 +723,6 @@ float SusyD3PDAna::getPileupWeight()
   return m_pileup->GetCombinedWeight(d3pd.evt.RunNumber(), d3pd.truth.channel_number(), d3pd.evt.averageIntPerXing());
 }
 /*--------------------------------------------------------------------------------*/
-//float SusyD3PDAna::getPileupWeight1fb()
-//{
-  //return m_pileup1fb->GetCombinedWeight(d3pd.evt.RunNumber(), d3pd.truth.channel_number(), d3pd.evt.averageIntPerXing());
-//}
-/*--------------------------------------------------------------------------------*/
 float SusyD3PDAna::getPileupWeightAB3()
 {
   return m_pileupAB3->GetCombinedWeight(d3pd.evt.RunNumber(), d3pd.truth.channel_number(), d3pd.evt.averageIntPerXing());
@@ -851,11 +763,45 @@ float SusyD3PDAna::getPDFWeight8TeV()
 }
 
 /*--------------------------------------------------------------------------------*/
+// Lepton efficiency SF
+/*--------------------------------------------------------------------------------*/
+float SusyD3PDAna::getLepSF(const vector<LeptonInfo>& leptons)
+{
+  // TODO: incorporate systematics
+  float lepSF = 1;
+
+  if(m_isMC){
+    // Loop over leptons
+    for(uint iLep=0; iLep<leptons.size(); iLep++){
+      const LeptonInfo* lep = & leptons[iLep];
+      // Electrons
+      if(lep->isElectron()){
+        const ElectronElement* el = lep->getElectronElement();
+        lepSF *= m_susyObj.GetSignalElecSF(el->cl_eta(), lep->lv()->Pt());
+      }
+      // Muons
+      else{
+        lepSF *= m_susyObj.GetSignalMuonSF(lep->idx());
+      }
+    }
+  }
+
+  return lepSF;
+}
+
+/*--------------------------------------------------------------------------------*/
+// BTag efficiency SF
+/*--------------------------------------------------------------------------------*/
+float SusyD3PDAna::getBTagSF(const vector<int>& jets)
+{
+  return 1;
+}
+
+/*--------------------------------------------------------------------------------*/
 // Get the heavy flavor overlap removal decision
 /*--------------------------------------------------------------------------------*/
 int SusyD3PDAna::getHFORDecision()
 {
-  //if(isHFORSample())
   return m_hforTool.getDecision(d3pd.truth.channel_number(),
                                 d3pd.truth.n(),
                                 d3pd.truth.pt(),
@@ -868,132 +814,6 @@ int SusyD3PDAna::getHFORDecision()
                                 d3pd.truth.parent_index(),
                                 d3pd.truth.child_index(),
                                 HforToolD3PD::ALL);
-}
-
-/*--------------------------------------------------------------------------------*/
-// Check if this sample cat be used with HforD3PDTool.
-// This code was copied from HforD3PDTool::checkSampleType.
-// It is needed to be able to run blindly on samples without 
-// getting a ton of error messages (the verbosity is broken).
-/*--------------------------------------------------------------------------------*/
-bool SusyD3PDAna::isHFORSample()
-{
-  if(m_isMC){
-    int id = d3pd.truth.channel_number();
-
-    // W inclusive samples
-    //// HERWIG
-    if ( (id >= 107680 && id <= 107685) // enu
-         || (id >= 107690 && id <= 107695) // munu
-         || (id >= 107700 && id <= 107705) // taunu
-         || (id >= 144018 && id <= 144020) // Np5_excl
-         || (id >= 144022 && id <= 144024) // Np6
-         || (id >= 144196 && id <= 144207) // susyfilt 
-         ){ 
-      return true;
-    }
-    //// PYTHIA
-    if ( (id >= 117680 && id <= 117685) // enu 
-         || (id >= 117690 && id <= 117695) // munu
-         || (id >= 117700 && id <= 117705) // taunu
-         ){
-      return true;
-    }
-   
-    // Z inclusive samples
-    //// HERWIG
-    if ( (id >= 107650 && id <= 107655) // ee
-         || (id >= 107660 && id <= 107665) // mumu
-         || (id >= 107670 && id <= 107675) // tautau
-         || (id >= 107710 && id <= 107715) // nunu
-         || (id == 144017) // nunuNp5_exl
-         || (id == 144021) // nunuNp6
-         || (id >= 144192 && id <= 144195) // nunu_susyfilt
-         || (id >= 116250 && id <= 116275) // DY Mll10to40
-         ){ 
-      return true;
-    }
-    //// PYTHIA
-    if ( (id >= 117650 && id <= 117655) // ee
-         || (id >= 117660 && id <= 117665) // mumu
-         || (id >= 117670 && id <= 117675) // tautau
-         ){
-       return true;  
-     } 
-
-    // Wc samples
-    //// HERWIG
-    if (id >= 117288 && id <= 117297) {
-      return true;
-    }
-    //// PYTHIA
-    if (id >= 126601 && id <= 126605) {
-      return true;
-    }
-  
-    // Wcc samples
-    //// HERWIG
-    if (id >= 117284 && id <= 117287) {
-      return true;
-    }
-    //// PYTHIA
-    if (id >= 126606 && id <= 126609) {
-      return true;
-    }
-    
-    // Wbb samples
-    //// HERWIG
-    if ( (id >= 106280 && id <= 106283)
-         || (id >= 107280 && id <= 107283) ) {
-      return true;
-    }
-    //// PYTHIA
-    if( id >= 126530 && id <= 126533) {
-      return true;
-    }
-  
-    // Zcc samples
-    //// HERWIG
-    if ( (id >= 126414 && id <= 126421) // ee or mumu
-         || (id >= 117706 && id <= 117709) // tautau
-         ) {
-      return true;
-    }
-  
-    // Zbb samples
-    //// HERWIG
-    if ( (id >= 109300 && id <= 109313) // ee, mumu, tautau
-         || (id >= 118962 && id <= 118965) // nunu
-         || (id >= 128130 && id <= 128143) // DY Mll10to30
-         ) {
-      return true;
-    }
-    //// PYTHIA
-    if ( id >= 126560 && id <= 126563 ) {
-      return true;  
-    }
-  
-    // ttbar inclusive samples
-    //// HERWIG
-    if ( (id >= 105890 && id <= 105897) 
-         || (id >= 117887 && id <= 117899) ){
-      return true;
-    }
-
-    // ttbb sample
-    //// HERWIG
-    if ( id == 116108 ) {
-      return true;
-    }
-  
-    // ttcc sample
-    //// HERWIG
-    if ( id == 116109 ) {
-      return true;
-    }
-  }
-
-  return false;
 }
 
 /*--------------------------------------------------------------------------------*/
@@ -1067,6 +887,7 @@ void SusyD3PDAna::dumpBaselineObjects()
     }
   }
   cout.precision(6);
+  cout.unsetf(ios_base::fixed);
 }
 
 /*--------------------------------------------------------------------------------*/
@@ -1125,19 +946,7 @@ void SusyD3PDAna::dumpSignalObjects()
     }
   }
   cout.precision(6);
-}
-
-/*--------------------------------------------------------------------------------*/
-// Method for quick debuggin'
-/*--------------------------------------------------------------------------------*/
-void SusyD3PDAna::dump()
-{
-  // Right now I need to debug the jets, so that is what I will dump
-  for(uint i=0; i<m_preJets.size(); ++i){
-    int idx = m_preJets.at(i);
-    TLorentzVector tlv = m_susyObj.GetJetTLV( idx );
-    cout<<"Jet index: "<<idx<<" Pt: "<<tlv.Pt()/GeV<<" Eta: "<<tlv.Eta()<<" Phi: "<<tlv.Phi()<<endl;
-  }
+  cout.unsetf(ios_base::fixed);
 }
 
 #undef GeV

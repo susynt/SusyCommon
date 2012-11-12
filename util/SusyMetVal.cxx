@@ -34,8 +34,26 @@ void help()
   cout << "  -f name of input filelist"         << endl;
   cout << "     defaults: fileList.txt"         << endl;
 
+  cout << "  -o name of output hist file"       << endl;
+  cout << "     defaults: ''"                   << endl;
+
   cout << "  -s sample name, sets isMC flag"    << endl;
   cout << "     use e.g. 'ttbar', 'DataG', etc" << endl;
+
+  cout << "  -w set sum of mc weights for norm" << endl;
+  cout << "     default: 1"                     << endl;
+
+  cout << "  -x set cross section"              << endl;
+  cout << "     default: -1 (use susy db)"      << endl;
+
+  //cout << "  -l set lumi"                       << endl;
+  //out << "     default: 5312/pb"               << endl;
+
+  cout << "  --af2 specifies AF2 samples"       << endl;
+  cout << "     default: off"                   << endl;
+
+  cout << "  --metFlav set met flavor"          << endl;
+  cout << "     default: Egamma10NoTau_STVF"    << endl;
 
   cout << "  -h print this help"                << endl;
 }
@@ -50,6 +68,11 @@ int main(int argc, char** argv)
   int dbg         = 0;
   string sample;
   string fileList = "fileList.txt";
+  float xsec      = -1;
+  float sumw      = 1;
+  bool isAF2      = false;
+  TString metFlav = "Egamma10NoTau_STVF";
+  string histFileName = "";
 
   cout << "SusyMetValidation" << endl;
   cout << endl;
@@ -64,8 +87,18 @@ int main(int argc, char** argv)
       dbg = atoi(argv[++i]);
     else if (strcmp(argv[i], "-f") == 0)
       fileList = argv[++i];
+    else if (strcmp(argv[i], "-o") == 0)
+      histFileName = argv[++i];
     else if (strcmp(argv[i], "-s") == 0)
       sample = argv[++i];
+    else if (strcmp(argv[i], "-w") == 0)
+      sumw = atof(argv[++i]);
+    else if (strcmp(argv[i], "-x") == 0)
+      xsec = atof(argv[++i]);
+    else if (strcmp(argv[i], "--af2") == 0)
+      isAF2 = true;
+    else if (strcmp(argv[i], "--metFlav") == 0)
+      metFlav = argv[++i];
     //if (strcmp(argv[i], "-h") == 0)
     else
     {
@@ -80,6 +113,10 @@ int main(int argc, char** argv)
   cout << "  nSkip   " << nSkip    << endl;
   cout << "  dbg     " << dbg      << endl;
   cout << "  input   " << fileList << endl;
+  cout << "  sumw    " << sumw     << endl;
+  cout << "  xsec    " << xsec     << endl;
+  cout << "  isAF2   " << isAF2    << endl;
+  cout << "  metFlav " << metFlav  << endl;
   cout << endl;
 
   // Build the input chain
@@ -97,11 +134,16 @@ int main(int argc, char** argv)
 
   // Build the TSelector
   SusyMetValidation* susyAna = new SusyMetValidation();
+  susyAna->setHistFileName(histFileName);
   susyAna->setDebug(dbg);
   susyAna->setSample(sample);
+  susyAna->setSumw(sumw);
+  susyAna->setAF2(isAF2);
+  susyAna->setXsec(xsec);
+  susyAna->setMetFlavor(metFlav);
 
   // GRL
-  TString grl = gSystem->ExpandPathName("$ROOTCOREDIR/data/MultiLep/data12_8TeV.periodAllYear_DetStatus-v47-pro13-01_CoolRunQuery-00-04-08_Susy.xml");
+  TString grl = gSystem->ExpandPathName("$ROOTCOREDIR/data/MultiLep/data12_8TeV.periodAllYear_DetStatus-v53-pro13-04_CoolRunQuery-00-04-08_All_Good_HCP.xml");
   susyAna->setGRLFile(grl);
 
   // Run the job

@@ -360,7 +360,8 @@ bool SusyNtMaker::selectEvent()
   }
 
   // Match the triggers
-  // Wait, this won't work for systematic leptons!
+  // Will this work for systematic leptons?
+  // I think so.
   matchTriggers();
 
   // Setup reco truth matching
@@ -439,7 +440,8 @@ void SusyNtMaker::fillEventVars()
   evt->hfor             = m_isMC? getHFORDecision() : -1;
 
   // SUSY final state
-  evt->susyFinalState   = m_isSusySample? get_finalState(&d3pd.truth) : -1;
+  //evt->susyFinalState   = m_isSusySample? get_finalState(&d3pd.truth) : -1;
+  evt->susyFinalState   = m_susyFinalState;
 
   evt->passMllForAlpgen = m_isMC? PassMllForAlpgen(&d3pd.truth) : true;
 
