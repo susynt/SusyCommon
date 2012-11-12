@@ -400,7 +400,7 @@ bool SusyD3PDAna::matchTruthJet(int iJet)
   // Loop over truth jets looking for a match
   const TLorentzVector* jetLV = & m_susyObj.GetJetTLV(iJet);
   for(int i=0; i<d3pd.truthJet.n(); i++){
-    const JetElement* trueJet = & d3pd.truthJet[i];
+    const TruthJetElement* trueJet = & d3pd.truthJet[i];
     TLorentzVector trueJetLV;
     trueJetLV.SetPtEtaPhiE(trueJet->pt(), trueJet->eta(), trueJet->phi(), trueJet->E());
     if(jetLV->DeltaR(trueJetLV) < 0.3) return true;

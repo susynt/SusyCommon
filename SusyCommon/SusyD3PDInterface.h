@@ -21,6 +21,7 @@
 #include "MultiLep/GenEventD3PDObject.h"
 #include "MultiLep/TruthParticleD3PDObject.h"
 #include "MultiLep/TruthMuonD3PDObject.h"
+#include "MultiLep/TruthJetD3PDObject.h"
 
 
 #include "SusyNtuple/SusyDefs.h"
@@ -37,8 +38,9 @@ typedef D3PDReader::ElectronD3PDObjectElement ElectronElement;
 typedef D3PDReader::MuonD3PDObjectElement MuonElement;
 typedef D3PDReader::TauD3PDObjectElement TauElement;
 typedef D3PDReader::JetD3PDObjectElement JetElement;
-typedef D3PDReader::TruthMuonD3PDObjectElement TruthMuonElement;
 typedef D3PDReader::PhotonD3PDObjectElement PhotonElement;
+typedef D3PDReader::TruthMuonD3PDObjectElement TruthMuonElement;
+typedef D3PDReader::TruthJetD3PDObjectElement TruthJetElement;
 
 class SusyD3PDContainer
 {
@@ -53,6 +55,9 @@ class SusyD3PDContainer
     // Connect the objects to an output tree
     void WriteTo( TTree* tree );
 
+    // Read in all variables that we need to write out as well
+    void ReadAllActive();
+
     D3PDReader::EventInfoD3PDObject     evt;
     D3PDReader::ElectronD3PDObject      ele;
     D3PDReader::MuonD3PDObject          muo;
@@ -66,7 +71,7 @@ class SusyD3PDContainer
     D3PDReader::GenEventD3PDObject      gen;
     D3PDReader::TruthParticleD3PDObject truth;
     D3PDReader::TruthMuonD3PDObject     truthMu;
-    D3PDReader::JetD3PDObject           truthJet;
+    D3PDReader::TruthJetD3PDObject      truthJet;
 };
 
 

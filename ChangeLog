@@ -12,6 +12,8 @@
 		* Eventually I'd like to make the event selection more flexible, but this
 		  should probably be done by adding event selection functionality in either
 		  SusyD3PDAna or a new base class
+	* Now using TruthJetD3PDObject for truth jets
+	* Added SusyD3PDSkimmer for D3PD -> D3PD jobs
 
 2012-10-27 Steve
 	* Fixed usage of GetSignalElecSF

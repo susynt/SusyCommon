@@ -45,8 +45,9 @@ void SusyD3PDContainer::ReadFrom(TTree* tree)
   truth.ReadFrom(tree);
   truthMu.ReadFrom(tree);
   truthJet.ReadFrom(tree);
-  // We use the JetD3PDObject class to read truth jets, so need to overwrite the prefix
-  truthJet.SetPrefix("jet_AntiKt4TruthJets_");
+  // We use the JetD3PDObject class to read truth jets, so need to overwrite the prefix.
+  // Not anymore!
+  //truthJet.SetPrefix("jet_AntiKt4TruthJets_");
 }
 /*--------------------------------------------------------------------------------*/
 // Connect tree to the D3PD objects in container
@@ -67,6 +68,26 @@ void SusyD3PDContainer::WriteTo(TTree* tree)
   truth.WriteTo(tree);
   truthMu.WriteTo(tree);
   truthJet.WriteTo(tree);
+}
+/*--------------------------------------------------------------------------------*/
+// Read in all variables that we need to write out as well
+/*--------------------------------------------------------------------------------*/
+void SusyD3PDContainer::ReadAllActive()
+{
+  evt.ReadAllActive();
+  ele.ReadAllActive();
+  muo.ReadAllActive();
+  jet.ReadAllActive();
+  pho.ReadAllActive();
+  tau.ReadAllActive();
+  met.ReadAllActive();
+  trk.ReadAllActive();
+  vtx.ReadAllActive();
+  trig.ReadAllActive();
+  gen.ReadAllActive();
+  truth.ReadAllActive();
+  truthMu.ReadAllActive();
+  truthJet.ReadAllActive();
 }
 
 /*--------------------------------------------------------------------------------*/
