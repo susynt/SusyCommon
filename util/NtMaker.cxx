@@ -53,8 +53,8 @@ void help()
   cout << "  --sys will turn on systematic run" << endl;
   cout << "     default: off"                   << endl;
 
-  cout << "  --savePh will save photons"        << endl;
-  cout << "     default: off"                   << endl;
+  //cout << "  --savePh will save photons"        << endl;
+  //cout << "     default: off"                   << endl;
 
   cout << "  --saveTau will save taus"          << endl;
   cout << "     default: off"                   << endl;
@@ -85,7 +85,7 @@ int main(int argc, char** argv)
   string sample;
   string fileList = "fileList.txt";
   bool sysOn      = false;
-  bool savePh     = false;
+  //bool savePh     = false;
   bool saveTau    = false;
   bool isAF2      = false;
   bool writeNt    = true;
@@ -117,8 +117,8 @@ int main(int argc, char** argv)
       writeNt = atoi(argv[++i]);
     else if (strcmp(argv[i], "--sys") == 0)
       sysOn = true;
-    else if (strcmp(argv[i], "--savePh") == 0)
-      savePh = true;
+    //else if (strcmp(argv[i], "--savePh") == 0)
+    //savePh = true;
     else if (strcmp(argv[i], "--saveTau") == 0)
       saveTau = true;
     else if (strcmp(argv[i], "--af2") == 0)
@@ -143,7 +143,7 @@ int main(int argc, char** argv)
   cout << "  input   " << fileList << endl;
   cout << "  sumw    " << sumw     << endl;
   cout << "  sys     " << sysOn    << endl;
-  cout << "  savePh  " << savePh   << endl;
+  //cout << "  savePh  " << savePh   << endl;
   cout << "  saveTau " << saveTau  << endl;
   cout << "  isAF2   " << isAF2    << endl;
   cout << "  d3pdtag " << tag      << endl;
@@ -172,7 +172,7 @@ int main(int argc, char** argv)
   susyAna->setLumi(lumi);
   susyAna->setSumw(sumw);
   susyAna->setSys(sysOn);
-  susyAna->setSelectPhotons(savePh);
+  //susyAna->setSelectPhotons(savePh);
   susyAna->setSelectTaus(saveTau);
   susyAna->setAF2(isAF2);
   susyAna->setXsec(xsec);

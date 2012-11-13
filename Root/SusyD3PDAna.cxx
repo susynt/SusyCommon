@@ -23,7 +23,7 @@ SusyD3PDAna::SusyD3PDAna() :
         m_sample(""),
         m_isAF2(false),
         m_d3pdTag(D3PD_p1181),
-        m_selectPhotons(false),
+        m_selectPhotons(true),
         m_selectTaus(false),
         m_metFlavor("Egamma10NoTau"),
         m_lumi(LUMI_A_E),
@@ -349,8 +349,13 @@ void SusyD3PDAna::selectSignalPhotons()
   int phoQual = 2;      // Quality::Tight
   uint isoType = 1;     // Corresponds to PTED corrected isolation 
   float etcone40CorrCut = 3*GeV; 
+
   vector<int> base_photons = get_photons_baseline(&d3pd.pho, !m_isMC, d3pd.evt.RunNumber(), m_susyObj, 
-                                                  20.*GeV, 2.47, SystErr::NONE, phoQual);
+						  20.*GeV, 2.47, SystErr::NONE, phoQual, false);
+
+  // Uncomment when PhotonTools Updated in MultiLep
+  //vector<int> base_photons = get_photons_baseline(&d3pd.pho, !m_isMC, d3pd.evt.RunNumber(), m_susyObj, 
+  //20.*GeV, 2.47, SystErr::NONE, phoQual, true);
 
   // Latest and Greatest
   int nPV = getNumGoodVtx();
