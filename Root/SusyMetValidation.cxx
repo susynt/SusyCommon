@@ -47,6 +47,7 @@ SusyMetValidation::SusyMetValidation()
   n_evt_bJet=0;
   n_evt_mt=0;
   n_evt_lepPt=0;
+  n_evt_2mu=0;
   n_evt_pileup=0;
   n_evt_lepSF=0;
   n_evt_bTagSF=0;
@@ -97,7 +98,10 @@ Bool_t SusyMetValidation::Process(Long64_t entry)
   }
 
   // Event selection
-  selectEvent();
+  if(selectEvent()){
+    d3pd.ReadAllActive();
+    m_outputTree->Fill();
+  }
 
   return kTRUE;
 }
@@ -146,6 +150,7 @@ void SusyMetValidation::Terminate()
   cout << "  BJet     " << n_evt_bJet    << endl;
   cout << "  MT       " << n_evt_mt      << endl;
   cout << "  LepPt    " << n_evt_lepPt   << endl;
+  cout << "  2 Muons  " << n_evt_2mu     << endl;
 
   // Weighted events
   //cout << "  Pileup   " << n_evt_pileup  << endl;
@@ -229,6 +234,14 @@ void SusyMetValidation::bookHistos()
   // Other histos
   //h_nMuRaw = NEWHIST("nMuRaw", "Number of D3PD muons", 10, -0.5, 9.5);
   h_nMu = NEWHIST("nMu", "Signal muon multiplicity", 6, -0.5, 5.5);
+
+  // Output d3pd, just to save the run and event numbers
+  // Testing out the new skimmer!
+  m_outputTree = new TTree("susy", "susy");
+  d3pd.evt.SetActive(true, "RunNumber");
+  d3pd.evt.SetActive(true, "EventNumber");
+  if(m_isMC) d3pd.truth.SetActive(true, "mc_channel_number");
+  d3pd.WriteTo(m_outputTree);
 }
 
 /*--------------------------------------------------------------------------------*/
@@ -348,6 +361,10 @@ bool SusyMetValidation::selectEvent()
   // Lepton pt
   if(m_sigLeptons[2].lv()->Pt() < 20*GeV) return false;
   n_evt_lepPt++;
+
+  // Select emm and mmm channels by requiring at least 2 muons
+  if(m_sigMuons.size() < 2) return false;
+  n_evt_2mu++;
 
   // Get the event weight
   float w = getEventWeight();

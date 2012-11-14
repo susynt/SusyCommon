@@ -8,7 +8,7 @@
 
 #include "TriggerMatch/TriggerMatchMultiLep.h"
 
-#include "SusyCommon/SusyD3PDAna.h"
+#include "SusyCommon/SusyD3PDSkimmer.h"
 
 
 /*
@@ -17,7 +17,8 @@
     
 */
 
-class SusyMetValidation : public SusyD3PDAna
+//class SusyMetValidation : public SusyD3PDAna
+class SusyMetValidation : public SusyD3PDSkimmer
 {
   
   public:
@@ -95,6 +96,7 @@ class SusyMetValidation : public SusyD3PDAna
     uint                n_evt_bJet;
     uint                n_evt_mt;
     uint                n_evt_lepPt;
+    uint                n_evt_2mu;
 
     float               n_evt_pileup;
     float               n_evt_lepSF;
