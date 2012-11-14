@@ -25,7 +25,7 @@ SusyD3PDAna::SusyD3PDAna() :
         m_d3pdTag(D3PD_p1181),
         m_selectPhotons(true),
         m_selectTaus(false),
-        m_metFlavor("Egamma10NoTau"),
+        m_metFlavor("Egamma10NoTau_STVF"),
         m_lumi(LUMI_A_E),
         m_sumw(1),
 	m_xsec(-1),
