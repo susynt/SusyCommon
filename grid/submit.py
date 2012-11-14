@@ -33,6 +33,7 @@ def main():
     add_arg('-f', '--input-file', help='input file with datasets')
     add_arg('-p', '--pattern', help='grep pattern to select datasets')
     add_arg('-t', '--tag', default=defaultTag, help='SusyNt tag to assign')
+    add_arg('-v', '--verbose', action='store_true', help='verbose output')
     add_arg('--athenaTag', default='17.3.1.1', help='athena tag')
     add_arg('--nickname', default=defaultNickname, help='grid nickname, for naming output DS')
     add_arg('--destSE', default='SLACXRD_SCRATCHDISK', help='replicate output dataset to specified site')
@@ -130,7 +131,7 @@ def main():
             if(args.noSubmit): prunCommand += ' --noSubmit'
 
             # Execute prun command
-            print prunCommand
+            if args.verbose: print prunCommand
             subprocess.call(prunCommand, shell=True)
 
 if __name__ == '__main__':
