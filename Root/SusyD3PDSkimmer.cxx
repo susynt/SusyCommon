@@ -8,7 +8,7 @@ using namespace std;
 SusyD3PDSkimmer::SusyD3PDSkimmer()
 {
   m_nBaseLepMin = 3;
-  m_nSigLepMin = 1;
+  m_nSigLepMin = 3;
 
   // Initialize counters
   n_evt_initial = 0;
@@ -52,6 +52,9 @@ void SusyD3PDSkimmer::Begin(TTree* /*tree*/)
   if(m_isMC) d3pd.truthMu.SetActive();
   if(m_isMC) d3pd.truthJet.SetActive();
   d3pd.WriteTo(m_outputTree);
+
+  // Try saving the meta data to the output chain
+  m_metaChain->Merge(m_outputFile, 0, "keep");
 }
 
 /*--------------------------------------------------------------------------------*/

@@ -45,6 +45,9 @@ class SusyD3PDSkimmer : public SusyD3PDAna
       m_outputTree = new TTree("susy", "susy");
     }
 
+    // Set the meta data chain
+    virtual void setMetaChain(TChain* metaChain) { m_metaChain = metaChain; }
+
     bool selectEvent();
 
   protected:
@@ -52,6 +55,7 @@ class SusyD3PDSkimmer : public SusyD3PDAna
     // Outputs
     TFile*      m_outputFile;           // output file
     TTree*      m_outputTree;           // skimmed output d3pd
+    TChain*     m_metaChain;            // d3pd meta data to be written out
 
     // Skim cuts
     int         m_nBaseLepMin;          // minimum number of baseline leptons

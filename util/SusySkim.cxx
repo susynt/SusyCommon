@@ -87,10 +87,18 @@ int main(int argc, char** argv)
   Long64_t nEntries = chain->GetEntries();
   chain->ls();
 
+  // Build the meta data chain
+  TChain* metaChain = new TChain("susyMeta/CutFlowTree");
+  fileErr = ChainHelper::addFileList(metaChain, fileList);
+  if(fileErr) return 1;
+  cout << endl;
+  metaChain->ls();
+
   // Build the TSelector
   SusyD3PDSkimmer* susyAna = new SusyD3PDSkimmer();
   susyAna->setDebug(dbg);
   susyAna->setSample(sample);
+  susyAna->setMetaChain(metaChain);
 
   // GRL
   TString grl = gSystem->ExpandPathName("$ROOTCOREDIR/data/MultiLep/data12_8TeV.periodAllYear_DetStatus-v47-pro13-01_CoolRunQuery-00-04-08_Susy.xml");
@@ -107,5 +115,6 @@ int main(int argc, char** argv)
   cout << "SusyD3PDSkimmer job done" << endl;
 
   delete chain;
+  delete metaChain;
   return 0;
 }
