@@ -10,6 +10,11 @@
 		* Might replace the bash submission scripts
 		* Run with '-h' to see the available options
 	* Minor updates for SusyMetValidation
+	* Changed HforToolD3PD removal mode to DEFAULT
+		* Takashi says this is recommended over ALL, because
+		  it will take into account the availability of samples.
+		  He also says difference is small right now.  
+		  It probably doesn't affect us with the samples we use.
 
 2012-11-13 Matt
 	* Photons now saved by default (only tight ones, so size should not increase by much).

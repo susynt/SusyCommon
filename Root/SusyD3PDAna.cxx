@@ -818,7 +818,7 @@ int SusyD3PDAna::getHFORDecision()
                                 d3pd.truth.vx_barcode(),
                                 d3pd.truth.parent_index(),
                                 d3pd.truth.child_index(),
-                                HforToolD3PD::ALL);
+                                HforToolD3PD::DEFAULT);
 }
 
 /*--------------------------------------------------------------------------------*/
