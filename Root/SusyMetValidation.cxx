@@ -586,8 +586,10 @@ bool SusyMetValidation::passTrigger()
   for(uint iMu=0; iMu<m_sigMuons.size(); iMu++){
     muLVs.push_back(m_susyObj.GetMuonTLV(m_sigMuons[iMu]));
   }
+  string stream = streamName(m_stream);
+  if(stream == "Egamma") stream = "EGamma";
   return m_triggerMatch->passesMultiLepTrigger(&elLVs, &muLVs, m_sigElectrons, m_sigMuons,
-                                               !m_isMC, d3pd.evt.RunNumber(), streamName(m_stream),
+                                               !m_isMC, d3pd.evt.RunNumber(), stream,
                                                d3pd.trig.trig_EF_el_n(), d3pd.trig.trig_EF_el_px(), 
                                                d3pd.trig.trig_EF_el_py(), 
                                                d3pd.trig.trig_EF_el_pz(), d3pd.trig.trig_EF_el_E(),
