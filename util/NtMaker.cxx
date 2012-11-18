@@ -66,7 +66,7 @@ void help()
   cout << "     default: p1181"                 << endl;
 
   cout << "  --metFlav set met flavor"          << endl;
-  cout << "     default: Egamma10NoTau"         << endl;
+  cout << "     default: Egamma10NoTau_STVF"    << endl;
 
   cout << "  -h print this help"                << endl;
 }
@@ -82,7 +82,7 @@ int main(int argc, char** argv)
   float lumi      = 5831;
   float xsec      = -1;
   float sumw      = 1;
-  string sample;
+  string sample   = "";
   string fileList = "fileList.txt";
   bool sysOn      = false;
   //bool savePh     = false;
@@ -90,7 +90,7 @@ int main(int argc, char** argv)
   bool isAF2      = false;
   bool writeNt    = true;
   D3PDTag tag     = D3PD_p1181;
-  TString metFlav = "Egamma10NoTau";
+  TString metFlav = "Egamma10NoTau_STVF";
 
   cout << "SusyNtMaker" << endl;
   cout << endl;
@@ -180,9 +180,9 @@ int main(int argc, char** argv)
   susyAna->setD3PDTag(tag);
   susyAna->setMetFlavor(metFlav);
 
-  // GRL
-  TString grl = gSystem->ExpandPathName("$ROOTCOREDIR/data/MultiLep/data12_8TeV.periodAllYear_DetStatus-v53-pro13-04_CoolRunQuery-00-04-08_All_Good_HCP.xml");
-  susyAna->setGRLFile(grl);
+  // GRL - now setting this in SusyD3PDAna::Begin
+  //TString grl = gSystem->ExpandPathName("$ROOTCOREDIR/data/MultiLep/data12_8TeV.periodAllYear_DetStatus-v53-pro13-04_CoolRunQuery-00-04-08_All_Good_HCP.xml");
+  //susyAna->setGRLFile(grl);
 
   // Run the job
   if(nEvt<0) nEvt = nEntries;

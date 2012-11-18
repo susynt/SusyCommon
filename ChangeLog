@@ -1,5 +1,10 @@
 # vim: set noexpandtab:
 
+2012-11-19 Steve
+	* Now setting default GRL path in SusyD3PDAna.Begin
+	* Changed default met in NtMaker.cxx to STVF
+	* Added more options to SusySkim
+
 2012-11-14 Steve
 	* Updated SusyD3PDSkimmer
 		* Saving D3PD meta data cutflow tree

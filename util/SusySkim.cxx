@@ -36,6 +36,12 @@ void help()
   cout << "  -s sample name, sets isMC flag"    << endl;
   cout << "     use e.g. 'ttbar', 'DataG', etc" << endl;
 
+  cout << "  --af2 specifies AF2 samples"       << endl;
+  cout << "     default: off"                   << endl;
+
+  cout << "  --metFlav set met flavor"          << endl;
+  cout << "     default: Egamma10NoTau_STVF"    << endl;
+
   cout << "  -h print this help"                << endl;
 }
 
@@ -47,8 +53,10 @@ int main(int argc, char** argv)
   int nEvt        = -1;
   int nSkip       = 0;
   int dbg         = 0;
-  string sample;
+  string sample   = "";
   string fileList = "fileList.txt";
+  bool isAF2      = false;
+  TString metFlav = "Egamma10NoTau_STVF";
 
   cout << "SusyD3PDSkimmer" << endl;
   cout << endl;
@@ -65,6 +73,10 @@ int main(int argc, char** argv)
       fileList = argv[++i];
     else if (strcmp(argv[i], "-s") == 0)
       sample = argv[++i];
+    else if (strcmp(argv[i], "--af2") == 0)
+      isAF2 = true;
+    else if (strcmp(argv[i], "--metFlav") == 0)
+      metFlav = argv[++i];
     else
     {
       help();
@@ -78,6 +90,8 @@ int main(int argc, char** argv)
   cout << "  nSkip   " << nSkip    << endl;
   cout << "  dbg     " << dbg      << endl;
   cout << "  input   " << fileList << endl;
+  cout << "  isAF2   " << isAF2    << endl;
+  cout << "  metFlav " << metFlav  << endl;
   cout << endl;
 
   // Build the input chain
@@ -99,10 +113,12 @@ int main(int argc, char** argv)
   susyAna->setDebug(dbg);
   susyAna->setSample(sample);
   susyAna->setMetaChain(metaChain);
+  susyAna->setAF2(isAF2);
+  susyAna->setMetFlavor(metFlav);
 
-  // GRL
-  TString grl = gSystem->ExpandPathName("$ROOTCOREDIR/data/MultiLep/data12_8TeV.periodAllYear_DetStatus-v47-pro13-01_CoolRunQuery-00-04-08_Susy.xml");
-  susyAna->setGRLFile(grl);
+  // GRL - now set in SusyD3PDAna::Begin
+  //TString grl = gSystem->ExpandPathName("$ROOTCOREDIR/data/MultiLep/data12_8TeV.periodAllYear_DetStatus-v47-pro13-01_CoolRunQuery-00-04-08_Susy.xml");
+  //susyAna->setGRLFile(grl);
 
   // Run the job
   if(nEvt<0) nEvt = nEntries;
