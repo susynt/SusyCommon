@@ -4,6 +4,7 @@
 	* Now setting default GRL path in SusyD3PDAna.Begin
 	* Changed default met in NtMaker.cxx to STVF
 	* Added more options to SusySkim
+	* Tagging SusyCommon-00-00-47
 
 2012-11-14 Steve
 	* Updated SusyD3PDSkimmer
