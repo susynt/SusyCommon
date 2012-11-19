@@ -1,0 +1,9 @@
+mc12_8TeV.117800.Sherpa_CT10_TtbarLeptLept.merge.NTUP_SUSY.e1434_s1499_s1504_r3658_r3549_p1181/		        1799288
+mc12_8TeV.117801.Sherpa_CT10_TtbarLeptTaulept.merge.NTUP_SUSY.e1434_s1499_s1504_r3658_r3549_p1181/	        599698
+mc12_8TeV.117802.Sherpa_CT10_TtbarTauleptTaulept.merge.NTUP_SUSY.e1434_s1499_s1504_r3658_r3549_p1181/	        55000
+mc12_8TeV.117803.Sherpa_CT10_TtbarLeptHad.merge.NTUP_SUSY.e1434_s1499_s1504_r3658_r3549_p1181/                  4748866
+mc12_8TeV.117804.Sherpa_CT10_TtbarLeptTauhad.merge.NTUP_SUSY.e1434_s1499_s1504_r3658_r3549_p1181/	        1099994
+mc12_8TeV.117805.Sherpa_CT10_TtbarTauleptHad.merge.NTUP_SUSY.e1434_s1499_s1504_r3658_r3549_p1181/	        1797891
+mc12_8TeV.117806.Sherpa_CT10_TtbarTauleptTauhad.merge.NTUP_SUSY.e1434_s1499_s1504_r3658_r3549_p1181/	        200000
+mc12_8TeV.117808.Sherpa_CT10_TtbarHadTauhad.merge.NTUP_SUSY.e1434_s1499_s1504_r3658_r3549_p1181/	        3199884
+mc12_8TeV.117809.Sherpa_CT10_TtbarTauhadTauhad.merge.NTUP_SUSY.e1434_s1499_s1504_r3658_r3549_p1181/	        179900
