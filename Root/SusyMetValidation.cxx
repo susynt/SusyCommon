@@ -235,6 +235,9 @@ void SusyMetValidation::bookHistos()
   //h_nMuRaw = NEWHIST("nMuRaw", "Number of D3PD muons", 10, -0.5, 9.5);
   h_nMu = NEWHIST("nMu", "Signal muon multiplicity", 6, -0.5, 5.5);
 
+  h_rawMuPt = NEWHIST("rawMuPt", "D3PD raw muon p_{T} [GeV]", 25, 0, 500);
+  h_rawMuEta = NEWHIST("rawMuEta", "D3PD raw muon #eta", 20, -4.8, 4.8);
+
   // Output d3pd, just to save the run and event numbers
   // Testing out the new skimmer!
   m_outputTree = new TTree("susy", "susy");
@@ -556,6 +559,10 @@ bool SusyMetValidation::selectEvent()
       h_metLepEta[Met_d3pd_reff]->Fill(mu->eta(), w);
     }
 
+    // raw muon histos
+    h_rawMuPt->Fill(mu->pt()/GeV, w);
+    h_rawMuEta->Fill(mu->eta(), w);
+
   }
   h_nMetMu[Met_d3pd_stvf]->Fill(nMuStvf, w);
   h_nMetMu[Met_d3pd_reff]->Fill(nMuReff, w);
@@ -564,8 +571,9 @@ bool SusyMetValidation::selectEvent()
   // TODO
 
   // Fill other histos
-
   h_nMu->Fill(nSigMuo, w);
+
+  // Raw muons
 
   return true;
 }

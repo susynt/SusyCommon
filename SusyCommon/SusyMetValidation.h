@@ -143,6 +143,9 @@ class SusyMetValidation : public SusyD3PDSkimmer
     //TH1F*               h_nMuRaw;               // number of raw d3pd muons
     TH1F*               h_nMu;                  // Number of signal muons (same as lepton channel)
 
+    TH1F*               h_rawMuPt;              // pt of raw muons
+    TH1F*               h_rawMuEta;             // eta of raw muons
+
 };
 
 #endif
