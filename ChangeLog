@@ -1,5 +1,8 @@
 # vim: set noexpandtab:
 
+2012-11-27 Steve
+	* Added tau triggers, event flags and object matching
+
 2012-11-19 Steve
 	* Now setting default GRL path in SusyD3PDAna.Begin
 	* Changed default met in NtMaker.cxx to STVF

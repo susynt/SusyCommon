@@ -73,17 +73,22 @@ class SusyD3PDAna : public SusyD3PDInterface
       m_evtTrigFlags = 0;
       m_eleTrigFlags.clear();
       m_muoTrigFlags.clear();
+      m_tauTrigFlags.clear();
     }
     void matchTriggers(){
       fillEventTriggers();
       matchElectronTriggers();
       matchMuonTriggers();
+      matchTauTriggers();
     }
     void fillEventTriggers();
     void matchElectronTriggers();
     bool matchElectronTrigger(const TLorentzVector* lv, std::vector<int>* trigBools);
     void matchMuonTriggers();
     bool matchMuonTrigger(const TLorentzVector* lv, std::vector<int>* trigBools);
+    void matchTauTriggers();
+    bool matchTauTrigger(const TLorentzVector* lv, std::vector<int>* trigBools);
+
 
 
     //
@@ -268,6 +273,7 @@ class SusyD3PDAna : public SusyD3PDInterface
     // Key: d3pd index, Val: trig bit word
     std::map<int, uint>         m_eleTrigFlags; // electron trigger matching flags
     std::map<int, uint>         m_muoTrigFlags; // muon trigger matching flags
+    std::map<int, uint>         m_tauTrigFlags; // tau trigger matching flags
     
     float                       m_lumi;         // normalized luminosity (defaults to 4.7/fb)
     float                       m_sumw;         // sum of mc weights for normalization, must be set by user

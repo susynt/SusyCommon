@@ -810,6 +810,8 @@ void SusyNtMaker::fillTauVar(int tauIdx)
 
   tauOut->muonVeto              = element->muonVeto();
   tauOut->trueTau               = m_isMC? element->trueTauAssocSmall_matched() : false;
+
+  tauOut->trigFlags             = m_tauTrigFlags[tauIdx];
   
   tauOut->idx   = tauIdx;
 }

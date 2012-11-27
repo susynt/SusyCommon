@@ -443,6 +443,13 @@ void SusyD3PDAna::fillEventTriggers()
   if(d3pd.trig.EF_mu18_tight_mu8_EFFS())        m_evtTrigFlags |= TRIG_mu18_tight_mu8_EFFS;
   if(d3pd.trig.EF_e12Tvh_medium1_mu8())         m_evtTrigFlags |= TRIG_e12Tvh_medium1_mu8;
   if(d3pd.trig.EF_mu18_tight_e7_medium1())      m_evtTrigFlags |= TRIG_mu18_tight_e7_medium1;
+
+  if(d3pd.trig.EF_tau20_medium1())                   m_evtTrigFlags |= TRIG_tau20_medium1;
+  if(d3pd.trig.EF_tau20Ti_medium1())                 m_evtTrigFlags |= TRIG_tau20Ti_medium1;
+  if(d3pd.trig.EF_tau29Ti_medium1())                 m_evtTrigFlags |= TRIG_tau29Ti_medium1;
+  if(d3pd.trig.EF_tau29Ti_medium1_tau20Ti_medium1()) m_evtTrigFlags |= TRIG_tau29Ti_medium1_tau20Ti_medium1;
+  if(d3pd.trig.EF_tau20Ti_medium1_e18vh_medium1())   m_evtTrigFlags |= TRIG_tau20Ti_medium1_e18vh_medium1;
+  if(d3pd.trig.EF_tau20_medium1_mu15())              m_evtTrigFlags |= TRIG_tau20_medium1_mu15;
 }
 
 /*--------------------------------------------------------------------------------*/
@@ -602,6 +609,70 @@ bool SusyD3PDAna::matchMuonTrigger(const TLorentzVector* lv, vector<int>* passTr
     } // trigger object passes chain?
   } // loop over trigger objects
 
+  // matching failed
+  return false;
+}
+
+/*--------------------------------------------------------------------------------*/
+// Tau trigger matching
+/*--------------------------------------------------------------------------------*/
+void SusyD3PDAna::matchTauTriggers()
+{
+  if(m_dbg) cout << "matchTauTriggers" << endl;
+
+  //int run = d3pd.evt.RunNumber();
+
+  // loop over all pre taus
+  for(uint i=0; i<m_preTaus.size(); i++){
+
+    int iTau = m_preTaus[i];
+    const TLorentzVector* lv = & m_tauLVs[iTau];
+    
+    // trigger flags
+    uint flags = 0;
+
+    // tau20_medium1
+    if( matchTauTrigger(lv, d3pd.trig.trig_EF_tau_EF_tau20_medium1()) ){
+      flags |= TRIG_tau20_medium1;
+    }
+    // tau20Ti_medium1
+    if( matchTauTrigger(lv, d3pd.trig.trig_EF_tau_EF_tau20Ti_medium1()) ){
+      flags |= TRIG_tau20Ti_medium1;
+    }
+    // tau29Ti_medium1
+    if( matchTauTrigger(lv, d3pd.trig.trig_EF_tau_EF_tau29Ti_medium1()) ){
+      flags |= TRIG_tau29Ti_medium1;
+    }
+    // tau29Ti_medium1_tau20Ti_medium1
+    if( matchTauTrigger(lv, d3pd.trig.trig_EF_tau_EF_tau29Ti_medium1_tau20Ti_medium1()) ){
+      flags |= TRIG_tau29Ti_medium1_tau20Ti_medium1;
+    }
+    // tau20Ti_medium1_e18vh_medium1
+    if( matchTauTrigger(lv, d3pd.trig.trig_EF_tau_EF_tau20Ti_medium1_e18vh_medium1()) ){
+      flags |= TRIG_tau20Ti_medium1_e18vh_medium1;
+    }
+    // tau20_medium1_mu15
+    if( matchTauTrigger(lv, d3pd.trig.trig_EF_tau_EF_tau20_medium1_mu15()) ){
+      flags |= TRIG_tau20_medium1_mu15;
+    }
+
+  }
+}
+/*--------------------------------------------------------------------------------*/
+bool SusyD3PDAna::matchTauTrigger(const TLorentzVector* lv, vector<int>* passTrig)
+{
+  // loop over tau trigger features
+  for(int iTrig=0; iTrig < d3pd.trig.trig_EF_tau_n(); iTrig++){
+    // Check to see if this feature passed chain we want
+    if(passTrig->at(iTrig)){
+      // Now, try to match offline tau to this online tau
+      static TLorentzVector trigLV;
+      trigLV.SetPtEtaPhiM(d3pd.trig.trig_EF_tau_pt()->at(iTrig), d3pd.trig.trig_EF_tau_eta()->at(iTrig), 
+                          d3pd.trig.trig_EF_tau_phi()->at(iTrig), d3pd.trig.trig_EF_tau_m()->at(iTrig));
+      float dR = lv->DeltaR(trigLV);
+      if(dR < 0.15) return true;
+    }
+  }
   // matching failed
   return false;
 }
