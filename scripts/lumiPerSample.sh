@@ -27,11 +27,11 @@ function getSusyXsec {
 
 
 # A trick to parse the text, first separate columns by commas
-matches=(`cat $dsFile | grep "$pattern" | tr '\t' ','`)
+matches=(`cat $dsFile | grep "$pattern" | tr '\t' ',' | tr ' ' ','`)
 echo "${#matches[@]} matches"
 
 echo
-echo -e "\tsumw     \txsec     \tlumi [1/pb]"
+echo -e "\tsumw     \txsec     \tlumi [1/fb]"
 
 # Loop over samples
 for line in ${matches[@]}; do
