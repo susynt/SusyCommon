@@ -20,8 +20,8 @@ import re
 import subprocess
 
 # Some grid option defaults
-defaultTag='n0111'
-defaultNickname='Steve'
+defaultTag='n0114'
+defaultNickname='sfarrell'
 defaultMet='Egamma10NoTau_STVF'
 
 def main():
@@ -109,6 +109,9 @@ def main():
             # Grid command
             gridCommand = './gridScript.sh %IN --saveTau --metFlav ' + args.met
             gridCommand += ' -w ' + sumw + ' -x ' + xsec + ' -s ' + sample
+
+            # Systematics
+            if args.sys: gridCommand += ' --sys'
 
             # AF2 sample option
             if re.search('_a[0-9]*_', inDS): gridCommand += ' --af2'
