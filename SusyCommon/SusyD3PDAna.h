@@ -11,7 +11,7 @@
 #include "SUSYTools/SUSYCrossSection.h"
 #include "SUSYTools/HforToolD3PD.h"
 #include "PileupReweighting/TPileupReweighting.h"
-#include "LeptonTruthTools/RecoTruthMatch.h"
+#include "LeptonTruthTools/RecoTauMatch.h"
 
 #include "MultiLep/LeptonInfo.h"
 
@@ -261,9 +261,6 @@ class SusyD3PDAna : public SusyD3PDInterface
     std::vector<int>            m_sigPhotons;   // signal photons
     std::vector<int>            m_sigJets;      // signal jets
 
-    // Tau TLorentzVectors, because they are not stored in SUSYTools
-    std::vector<TLorentzVector> m_tauLVs;
-
     // MET
     TLorentzVector              m_met;          // fully corrected MET
 
@@ -310,7 +307,8 @@ class SusyD3PDAna : public SusyD3PDInterface
     PDFTool*                    m_pdfTool;      // PDF reweighting tool (In MultiLep pkg)
     #endif
 
-    RecoTruthMatch              m_recoTruthMatch;       // Lepton truth matching tool
+    //RecoTruthMatch              m_recoTruthMatch;       // Lepton truth matching tool
+    RecoTauMatch                m_recoTruthMatch;       // Lepton truth matching tool
 
 };
 

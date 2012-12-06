@@ -1,5 +1,15 @@
 # vim: set noexpandtab:
 
+2012-12-06 Steve
+	* Updated to SUSYTools revision 528837
+	* Updated tau usage with SUSYTools and MultiLep
+	* Updated LeptonTruthTools tag and usage
+	* Now saving tau truth match info from LeptonTruthTools
+	* Now saving electron clusPhi, trackPt
+	* Now saving muon idTrackPt, idTrackEta, idTrackPhi,
+	* Code cleanup
+	* Tagging SusyCommon-00-00-48
+
 2012-11-27 Steve
 	* Added tau triggers, event flags and object matching
 

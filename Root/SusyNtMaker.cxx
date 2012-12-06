@@ -366,6 +366,7 @@ bool SusyNtMaker::selectEvent()
 
   // Setup reco truth matching
   if(m_isMC){
+    /*
     m_recoTruthMatch = RecoTruthMatch(0.1, d3pd.truth.channel_number(), 
                                       d3pd.truth.n(), 
                                       d3pd.truth.barcode(), 
@@ -377,6 +378,20 @@ bool SusyNtMaker::selectEvent()
                                       d3pd.truth.eta(),
                                       d3pd.truth.phi(),
                                       d3pd.truth.m(), 0);
+    */
+    m_recoTruthMatch = RecoTauMatch(0.1, d3pd.truth.channel_number(),
+                                    d3pd.truth.n(), d3pd.truth.barcode(), d3pd.truth.status(), d3pd.truth.pdgId(),
+                                    d3pd.truth.parents(), d3pd.truth.children(),
+                                    d3pd.truth.pt(), d3pd.truth.eta(), d3pd.truth.phi(), d3pd.truth.m(),
+                                    d3pd.jet.pt(), d3pd.jet.eta(), d3pd.jet.phi(), d3pd.jet.m(),
+                                    d3pd.jet.flavor_truth_label(),
+                                    d3pd.ele.pt(), d3pd.ele.eta(), d3pd.ele.phi(), d3pd.ele.m(),
+                                    d3pd.ele.type(), d3pd.ele.origin(),
+                                    d3pd.truthMu.pt(), d3pd.truthMu.eta(), d3pd.truthMu.phi(), d3pd.truthMu.m(),
+                                    d3pd.truthMu.type(), d3pd.truthMu.origin(),
+                                    d3pd.trk.pt(), d3pd.trk.eta(), d3pd.trk.phi_wrtPV(), d3pd.trk.mc_barcode());
+
+                                    
   }
 
   if(m_fillNt){
@@ -505,14 +520,16 @@ void SusyNtMaker::fillElectronVars(const LeptonInfo* lepIn)
   eleOut->q             = element->charge();
   eleOut->mcType        = m_isMC? element->type() : 0;
   eleOut->mcOrigin      = m_isMC? element->origin() : 0;
+  eleOut->clusE         = element->cl_E()/GeV;
   eleOut->clusEta       = element->cl_eta();
-  eleOut->clusE         = element->cl_E();
+  eleOut->clusPhi       = element->cl_phi();
+  eleOut->trackPt       = element->trackpt()/GeV;
 
   // Check for charge flip
   eleOut->isChargeFlip   = m_isMC? m_recoTruthMatch.isChargeFlip(*lv, element->charge()) : false;
   eleOut->truthMatchType = m_isMC? m_recoTruthMatch.fakeType(*lv, element->origin(), element->type()) : -1;
 
-  // Need to recalculate these variables for p1032 only
+  // IsEM quality flags - need to recalculate these variables for p1032 only
   if(m_d3pdTag >= D3PD_p1181){
     eleOut->mediumPP      = element->mediumPP();
     eleOut->tightPP       = element->tightPP();
@@ -570,13 +587,6 @@ void SusyNtMaker::fillElectronVars(const LeptonInfo* lepIn)
   eleOut->z0Unbiased    = element->trackIPEstimate_z0_unbiasedpvunbiased();
   eleOut->errZ0Unbiased = element->trackIPEstimate_sigz0_unbiasedpvunbiased();
 
-  // Get d0 from track - old procedure before the d3pd branches were directly available
-  //int trkIdx            = get_electron_track( &d3pd.ele, lepIn->idx(), &d3pd.trk );
-  //if(trkIdx!=-99){
-    //eleOut->d0          = d3pd.trk.d0_wrtPV()->at(trkIdx);
-    //eleOut->errD0       = sqrt(d3pd.trk.cov_d0_wrtPV()->at(trkIdx));
-  //}
-
   // New iso variables!! 
   // Corrected topo iso is available in the susy d3pd, apparently calculated using the cluster E.
   // However, the CaloIsoCorrection header says to use the energy after scaling/smearing...
@@ -585,15 +595,17 @@ void SusyNtMaker::fillElectronVars(const LeptonInfo* lepIn)
   // For now, I will just use the cluster E, which I suspect people will use anyway (even if mistaken)
 
   // Corrected etcone has Pt and ED corrections
-  //eleOut->etcone30Corr  = CaloIsoCorrection::GetPtEDCorrectedIsolation(element->Etcone40(), element->Etcone40_ED_corrected(), lv->E(), element->etas2(), 
-  //                                                                     element->etap(), element->cl_eta(), 0.3, m_isMC, element->Etcone30())/GeV;
-  eleOut->etcone30Corr  = CaloIsoCorrection::GetPtEDCorrectedIsolation(element->Etcone40(), element->Etcone40_ED_corrected(), element->cl_E(), 
-                                                                       element->etas2(), element->etap(), element->cl_eta(), 0.3, m_isMC, 
-                                                                       element->Etcone30())/GeV;
+  eleOut->etcone30Corr  = CaloIsoCorrection::GetPtEDCorrectedIsolation(element->Etcone40(), 
+                                                                       element->Etcone40_ED_corrected(), 
+                                                                       element->cl_E(), element->etas2(), 
+                                                                       element->etap(), element->cl_eta(), 0.3, 
+                                                                       m_isMC, element->Etcone30())/GeV;
 
   // Corrected topoEtcone has Pt and ED corrections.  Use D3PD branch for now
-  //float topo            = CaloIsoCorrection::GetPtEDCorrectedTopoIsolation(element->ED_median(), element->cl_E(), element->etas2(), element->etap(), 
-  //                                                                         element->cl_eta(), 0.3, m_isMC, element->topoEtcone30())/GeV;
+  //float topo            = CaloIsoCorrection::GetPtEDCorrectedTopoIsolation(element->ED_median(), element->cl_E(), 
+  //                                                                         element->etas2(), element->etap(), 
+  //                                                                         element->cl_eta(), 0.3, m_isMC, 
+  //                                                                         element->topoEtcone30())/GeV;
   eleOut->topoEtcone30Corr      = element->topoEtcone30_corrected()/GeV;
   
   // Trigger flags
@@ -601,7 +613,6 @@ void SusyNtMaker::fillElectronVars(const LeptonInfo* lepIn)
 
   // Efficiency scale factor.  For now, use tightPP if electrons is tightPP, otherwise mediumPP
   int set               = eleOut->tightPP? 7 : 6;
-  //int rel               = m_isAF2 ? 9 : 8;
   eleOut->effSF         = m_isMC? m_susyObj.GetSignalElecSF   ( element->cl_eta(), lepIn->lv()->Pt(), set ) : 1;
   eleOut->errEffSF      = m_isMC? m_susyObj.GetSignalElecSFUnc( element->cl_eta(), lepIn->lv()->Pt(), set ) : 1;
 
@@ -616,9 +627,6 @@ void SusyNtMaker::fillMuonVars(const LeptonInfo* lepIn)
   m_susyNt.muo()->push_back( Susy::Muon() );
   Susy::Muon* muOut = & m_susyNt.muo()->back();
   const MuonElement* element = lepIn->getMuonElement();
-
-  // need truthMuon for type and origin - not anymore!
-  //const TruthMuonElement* trueMuon = m_isMC? getMuonTruth( &d3pd.muo, lepIn->idx(), &d3pd.truthMu ) : 0;
 
   // LorentzVector
   const TLorentzVector* lv = lepIn->lv();
@@ -639,6 +647,12 @@ void SusyNtMaker::fillMuonVars(const LeptonInfo* lepIn)
 
   muOut->ptcone30ElStyle= m_d3pdTag>=D3PD_p1181? element->ptcone30_trkelstyle()/GeV : 0;
 
+  // ID coordinates
+  muOut->idTrackPt      = element->id_qoverp_exPV() != 0.? 
+                          fabs(sin(element->id_theta_exPV()/element->id_qoverp_exPV()))/GeV : 0.;
+  muOut->idTrackEta     = -1.*log(tan(element->id_theta_exPV()/2.));
+  muOut->idTrackPhi     = element->id_phi_exPV();
+
   muOut->d0             = element->d0_exPV();
   muOut->errD0          = sqrt(element->cov_d0_exPV());
   muOut->z0             = element->z0_exPV();
@@ -651,15 +665,27 @@ void SusyNtMaker::fillMuonVars(const LeptonInfo* lepIn)
 
   muOut->isCombined     = element->isCombinedMuon();
 
-  muOut->truthMatchType = m_isMC? m_recoTruthMatch.fakeType(*lv, element->origin(), element->type()) : -1;
   
   // theta_exPV.  Not sure if necessary.
   muOut->thetaPV        = element->theta_exPV();
 
-  //muOut->mcType         = trueMuon? trueMuon->type()   : 0;
-  //muOut->mcOrigin       = trueMuon? trueMuon->origin() : 0;
-  muOut->mcType         = m_isMC? element->type()   : 0;
-  muOut->mcOrigin       = m_isMC? element->origin() : 0;
+  // Truth flags
+  if(m_isMC){
+    muOut->mcType     = element->type();
+    muOut->mcOrigin   = element->origin();
+    // If type and origin are zero, try matching to the muons in the truthMuon block
+    // This might not actually do anything
+    if(element->type()==0 && element->origin()==0 && element->truth_barcode()!=0){
+      const TruthMuonElement* trueMuon = getMuonTruth(&d3pd.muo, lepIn->idx(), &d3pd.truthMu);
+      muOut->mcType   = trueMuon? trueMuon->type()   : 0;
+      muOut->mcOrigin = trueMuon? trueMuon->origin() : 0;
+    }
+    muOut->truthMatchType = m_recoTruthMatch.fakeType(*lv, muOut->mcOrigin, muOut->mcType);
+  }
+  else{
+    muOut->mcType = muOut->mcOrigin = 0;
+    muOut->truthMatchType = -1;
+  }
 
   muOut->trigFlags      = m_muoTrigFlags[ lepIn->idx() ];
 
@@ -783,7 +809,8 @@ void SusyNtMaker::fillTauVar(int tauIdx)
   const TauElement* element = & d3pd.tau[tauIdx];
 
   // Set TLV
-  const TLorentzVector* tauLV = & m_tauLVs.at(tauIdx);
+  //const TLorentzVector* tauLV = & m_tauLVs.at(tauIdx);
+  const TLorentzVector* tauLV = & m_susyObj.GetTauTLV(tauIdx);
   float pt  = tauLV->Pt() / GeV;
   float eta = tauLV->Eta();
   float phi = tauLV->Phi();
@@ -810,6 +837,9 @@ void SusyNtMaker::fillTauVar(int tauIdx)
 
   tauOut->muonVeto              = element->muonVeto();
   tauOut->trueTau               = m_isMC? element->trueTauAssocSmall_matched() : false;
+
+  tauOut->detailedTruthType     = m_isMC? m_recoTruthMatch.TauDetailedFakeType(*tauLV) : -1;
+  tauOut->truthType             = m_isMC? m_recoTruthMatch.TauFakeType(tauOut->detailedTruthType) : -1;
 
   tauOut->trigFlags             = m_tauTrigFlags[tauIdx];
   

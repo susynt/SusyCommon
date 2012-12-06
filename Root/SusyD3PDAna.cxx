@@ -86,9 +86,6 @@ void SusyD3PDAna::Begin(TTree* /*tree*/)
     m_susyObj.GetMETUtility()->configMissingET(true, true);
   }
 
-  // Reserve space for taus
-  m_tauLVs.reserve(10);
-
   m_fakeMetEst.initialize("$ROOTCOREDIR/data/MultiLep/fest_periodF_v1.root");
 
   // SUSY cross sections
@@ -238,7 +235,7 @@ void SusyD3PDAna::selectBaselineObjects(SusyNtSys sys)
 
   // Preselect taus
   if(m_selectTaus){
-    m_preTaus    = get_taus_baseline( &d3pd.tau, m_tauLVs );
+    m_preTaus    = get_taus_baseline(&d3pd.tau, m_susyObj);
   }
   else{
     m_preTaus.clear();
@@ -268,6 +265,7 @@ void SusyD3PDAna::performOverlapRemoval()
     // tau-mu overlap removal
     m_baseTaus    = overlap_removal(m_susyObj, &d3pd.tau, m_baseTaus, &d3pd.muo, m_preMuons, 0.2, false, false);
     // jet-tau overlap removal
+    // TODO: Figure out how to deal with this!!
     // Oops, this actually screws up the bad jet veto.  I can't apply this here...
     //m_baseJets    = overlap_removal(m_susyObj, &d3pd.jet, m_baseJets, &d3pd.tau, m_baseTaus, 0.2, false, false);
   }
@@ -303,7 +301,7 @@ void SusyD3PDAna::selectSignalObjects()
                                         m_d3pdTag<D3PD_p1181);
   m_sigMuons     = get_muons_signal(&d3pd.muo, m_baseMuons, nVtx, !m_isMC, m_susyObj, 10.*GeV, .12, 3., 1.);
   m_sigJets      = get_jet_signal(&d3pd.jet, m_susyObj, m_baseJets, 20.*GeV, 2.5, 0.75);
-  m_sigTaus      = get_taus_signal(&d3pd.tau, m_baseTaus);
+  m_sigTaus      = get_taus_signal(&d3pd.tau, m_baseTaus, m_susyObj);
 
   // combine light leptons
   m_sigLeptons   = buildLeptonInfos(&d3pd.ele, m_sigElectrons, &d3pd.muo, m_sigMuons, m_susyObj);
@@ -332,13 +330,8 @@ void SusyD3PDAna::buildMet(SusyNtSys sys)
   //else if(sys == NtSys_RESOST_DN)   susySys = SystErr::RESOSTDOWN;  // Met resolution sys down
   else if(sys == NtSys_RESOST)      susySys = SystErr::RESOST;      // Met resolution sys up
 
-  // Need ALL electrons in order to calculate the MET
-  // Actually, I see common code uses all electrons that have lv.Pt() != 0
-  // That's fine though because SUSYObjDef specifically fills for electrons that
-  // should enter the RefEle term
-  //vector<int> allElectrons = get_electrons_all(&d3pd.ele, m_susyObj);
+  // Need electrons with nonzero met weight in order to calculate the MET
   vector<int> metElectrons = get_electrons_met(&d3pd.ele, m_susyObj);
-  //cout << "metElectrons: " << metElectrons.size() << endl; // <--- Remember to comment out before committing!
   TVector2 metVector = GetMetVector(m_susyObj, &d3pd.jet, &d3pd.muo, &d3pd.ele, &d3pd.met, &d3pd.evt,
                                     m_preMuons, m_baseElectrons, metElectrons, susySys, m_metFlavor);
   m_met.SetPxPyPzE(metVector.X(), metVector.Y(), 0, metVector.Mod());
@@ -384,7 +377,6 @@ void SusyD3PDAna::clearObjects()
   m_sigMuons.clear();
   m_sigLeptons.clear();
   m_sigJets.clear();
-  //m_evtFlag = 0;
   m_cutFlags = 0;
 
   m_sigPhotons.clear();
@@ -626,7 +618,8 @@ void SusyD3PDAna::matchTauTriggers()
   for(uint i=0; i<m_preTaus.size(); i++){
 
     int iTau = m_preTaus[i];
-    const TLorentzVector* lv = & m_tauLVs[iTau];
+    //const TLorentzVector* lv = & m_tauLVs[iTau];
+    const TLorentzVector* lv = & m_susyObj.GetTauTLV(iTau);
     
     // trigger flags
     uint flags = 0;
@@ -872,6 +865,7 @@ float SusyD3PDAna::getLepSF(const vector<LeptonInfo>& leptons)
 
 /*--------------------------------------------------------------------------------*/
 // BTag efficiency SF
+// TODO: finish me!
 /*--------------------------------------------------------------------------------*/
 float SusyD3PDAna::getBTagSF(const vector<int>& jets)
 {
