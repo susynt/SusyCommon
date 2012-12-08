@@ -20,7 +20,7 @@ import re
 import subprocess
 
 # Some grid option defaults
-defaultTag='n0114'
+defaultTag='n0115'
 defaultNickname='sfarrell'
 defaultMet='Egamma10NoTau_STVF'
 
@@ -30,7 +30,7 @@ def main():
     parser = ArgumentParser(description='SusyCommon grid submission')
     add_arg = parser.add_argument
     add_arg('job', choices=['data', 'mc', 'susy'], help='specifies some default settings, like input file')
-    add_arg('-f', '--input-file', help='input file with datasets')
+    add_arg('-f', '--input-files', nargs='*', help='input file with datasets, can specify more than one')
     add_arg('-p', '--pattern', help='grep pattern to select datasets')
     add_arg('-t', '--tag', default=defaultTag, help='SusyNt tag to assign')
     add_arg('-v', '--verbose', action='store_true', help='verbose output')
@@ -45,21 +45,21 @@ def main():
 
     # Standard options for data
     if args.job == 'data':
-        input_file = 'dataSamples.txt'
+        input_files = ['dataSamples.txt']
         pattern = 'data'
 
     # Standard options for standard model mc
     elif args.job == 'mc':
-        input_file = 'mcSamples.txt'
+        input_files = ['mcSamples.txt']
         pattern = 'mc'
 
     # Standard options for susy signals
     else:
-        input_file = 'susySamples.txt'
+        input_files = ['susySamples.txt']
         pattern = 'mc'
 
     # Override standards
-    if args.input_file: input_file = args.input_file
+    if args.input_files: input_files = args.input_files
     if args.pattern: pattern = args.pattern
 
     # Blacklisted sites
@@ -69,73 +69,75 @@ def main():
 
     # Print job
     print 'Submitting', args.job, args.tag
-    print 'input file:', input_file
+    print 'input file:', input_files
     print 'pattern:   ', pattern
 
     # Loop over inputs
-    with open(input_file) as inputs:
-        for line in inputs:
+    for input_file in input_files:
+        with open(input_file) as inputs:
+            for line in inputs:
 
-            info = line.split()
-            if len(info) == 0: continue
+                info = line.split()
+                if len(info) == 0: continue
 
-            # Match pattern
-            if re.search(pattern, line) == None: continue
+                # Match pattern
+                if re.search(pattern, line) == None: continue
 
-            inDS = info[0]
-            sumw, xsec = '1', '-1'
-            if len(info) > 1: sumw = info[1]
-            if len(info) > 2: xsec = info[2]
+                inDS = info[0]
+                sumw, xsec = '1', '-1'
+                if len(info) > 1: sumw = info[1]
+                if len(info) > 2: xsec = info[2]
 
-            # Get sample name
-            sample = re.sub('.merge.*', '', inDS)
-            sample = re.sub('mc12_8TeV\.[0-9]*\.', '', sample)
-            sample = re.sub('.*phys-susy\.', '', sample)
-            sample = re.sub('\.PhysCont.*', '', sample)
-            sample = re.sub('physics_', '', sample)
+                # Get sample name
+                sample = re.sub('.merge.*', '', inDS)
+                sample = re.sub('mc12_8TeV\.[0-9]*\.', '', sample)
+                sample = re.sub('.*phys-susy\.', '', sample)
+                sample = re.sub('\.PhysCont.*', '', sample)
+                sample = re.sub('physics_', '', sample)
 
-            # Output dataset
-            outDS = 'user.'+args.nickname+'.'+re.sub('/', '', inDS)+'_'+args.tag+'/'
-            outDS = re.sub('NTUP_SUSY', 'SusyNt', outDS)
-            outDS = re.sub('SKIM', '', outDS)
-            outDS = re.sub('merge\.', '', outDS)
+                # Output dataset
+                outDS = 'user.'+args.nickname+'.'+re.sub('/', '', inDS)+'_'+args.tag+'/'
+                outDS = re.sub('NTUP_SUSY', 'SusyNt', outDS)
+                outDS = re.sub('SKIM', '', outDS)
+                outDS = re.sub('merge\.', '', outDS)
 
-            # Filter output dataset names that are too long
-            # Do this on a case by case basis
-            if len(outDS) > 131:
-                outDS = re.sub('2LeptonFilter', '2L', outDS)
-                outDS = re.sub('UEEE3_CTEQ6L1_', '', outDS)
+                # Filter output dataset names that are too long
+                # Do this on a case by case basis
+                if len(outDS) > 131:
+                    outDS = re.sub('2LeptonFilter', '2L', outDS)
+                    outDS = re.sub('UEEE3_CTEQ6L1_', '', outDS)
 
-            # Grid command
-            gridCommand = './gridScript.sh %IN --saveTau --metFlav ' + args.met
-            gridCommand += ' -w ' + sumw + ' -x ' + xsec + ' -s ' + sample
+                # Grid command
+                gridCommand = './gridScript.sh %IN --saveTau --metFlav ' + args.met
+                gridCommand += ' -w ' + sumw + ' -x ' + xsec + ' -s ' + sample
 
-            # Systematics
-            if args.sys: gridCommand += ' --sys'
+                # Systematics
+                if args.sys: gridCommand += ' --sys'
 
-            # AF2 sample option
-            if re.search('_a[0-9]*_', inDS): gridCommand += ' --af2'
+                # AF2 sample option
+                if re.search('_a[0-9]*_', inDS): gridCommand += ' --af2'
 
-            print '\n______________________________________________________________________________________________'
-            print 'Input   ', inDS
-            print 'Output  ', outDS
-            print 'Sample  ', sample
-            print 'Command ', gridCommand
-            print ''
+                print '\n__________________________________________________________________________________________'
+                print 'Input   ', inDS
+                print 'Output  ', outDS
+                print 'Sample  ', sample
+                print 'Command ', gridCommand
+                print ''
 
-            # The prun command
-            prunCommand = 'prun --exec "' + gridCommand + '" --useRootCore --tmpDir /tmp --inTarBall=area.tar ' + \
-                          '--extFile "*.so,*.root" --match "*root*" --outputs "susyNt.root,gridFileList.txt" ' + \
-                          '--destSE=' + args.destSE + ' --nGBPerJob=' + args.nGBPerJob + \
-                          ' --athenaTag=' + args.athenaTag + ' --excludedSite=' + blacklist + \
-                          ' --inDS ' + inDS + ' --outDS ' + outDS
+                # The prun command
+                prunCommand = 'prun --exec "' + gridCommand + '" --useRootCore --tmpDir /tmp ' \
+                              '--inTarBall=area.tar --extFile "*.so,*.root" --match "*root*" ' \
+                              '--outputs "susyNt.root,gridFileList.txt" ' + \
+                              '--destSE=' + args.destSE + ' --nGBPerJob=' + args.nGBPerJob + \
+                              ' --athenaTag=' + args.athenaTag + ' --excludedSite=' + blacklist + \
+                              ' --inDS ' + inDS + ' --outDS ' + outDS
 
-            # For testing
-            if(args.noSubmit): prunCommand += ' --noSubmit'
+                # For testing
+                if(args.noSubmit): prunCommand += ' --noSubmit'
 
-            # Execute prun command
-            if args.verbose: print prunCommand
-            subprocess.call(prunCommand, shell=True)
+                # Execute prun command
+                if args.verbose: print prunCommand
+                subprocess.call(prunCommand, shell=True)
 
 if __name__ == '__main__':
     main()
