@@ -1,5 +1,8 @@
 # vim: set noexpandtab:
 
+2012-12-13 Steve
+	* Fixed tau trigger flag saving (thanks Matt Gignac)
+
 2012-12-06 Steve
 	* Updated to SUSYTools revision 528837
 	* Updated tau usage with SUSYTools and MultiLep

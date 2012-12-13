@@ -501,7 +501,7 @@ void SusyD3PDAna::matchElectronTriggers()
       //flags |= TRIG_mu18_tight_e7_medium1;
     //}
 
-    // assign the flags in the map
+    // assign the trigger flags for this electron
     m_eleTrigFlags[iEl] = flags;
   }
 }
@@ -569,7 +569,7 @@ void SusyD3PDAna::matchMuonTriggers()
       flags |= TRIG_mu18_tight_e7_medium1;
     }
 
-    // assign the flags for this muon
+    // assign the trigger flags for this muon
     m_muoTrigFlags[iMu] = flags;
   }
 }
@@ -649,6 +649,8 @@ void SusyD3PDAna::matchTauTriggers()
       flags |= TRIG_tau20_medium1_mu15;
     }
 
+    // assign the trigger flags for this tau
+    m_tauTrigFlags[iTau] = flags;
   }
 }
 /*--------------------------------------------------------------------------------*/
