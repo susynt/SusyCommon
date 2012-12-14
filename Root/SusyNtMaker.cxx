@@ -466,7 +466,7 @@ void SusyNtMaker::fillEventVars()
   evt->wPileupAB3       = m_isMC? getPileupWeightAB3() : 1;
   evt->wPileupAB        = m_isMC? getPileupWeightAB() : 1;
   evt->xsec             = m_isMC? getXsecWeight() : 1;
-  evt->lumiSF           = m_isMC? getLumiWeight() : 1;             
+  //evt->lumiSF           = m_isMC? getLumiWeight() : 1;             
   evt->sumw             = m_isMC? m_sumw : 1;
 
   evt->pdf_id1          = m_isMC? d3pd.gen.pdf_id1()->at(0)    : 0;
@@ -526,13 +526,15 @@ void SusyNtMaker::fillElectronVars(const LeptonInfo* lepIn)
   eleOut->trackPt       = element->trackpt()/GeV;
 
   // Check for charge flip
-  eleOut->isChargeFlip   = m_isMC? m_recoTruthMatch.isChargeFlip(*lv, element->charge()) : false;
-  eleOut->truthMatchType = m_isMC? m_recoTruthMatch.fakeType(*lv, element->origin(), element->type()) : -1;
+  eleOut->isChargeFlip          = m_isMC? m_recoTruthMatch.isChargeFlip(*lv, element->charge()) : false;
+  eleOut->matched2TruthLepton   = m_isMC? m_recoTruthMatch.Matched2TruthLepton(*lv) : false;
+  //eleOut->truthMatchType      = m_isMC? m_recoTruthMatch.fakeType(*lv, element->origin(), element->type()) : -1;
+  eleOut->truthType             = m_isMC? m_recoTruthMatch.fakeType(*lv, element->origin(), element->type()) : -1;
 
   // IsEM quality flags - need to recalculate these variables for p1032 only
   if(m_d3pdTag >= D3PD_p1181){
-    eleOut->mediumPP      = element->mediumPP();
-    eleOut->tightPP       = element->tightPP();
+    eleOut->mediumPP    = element->mediumPP();
+    eleOut->tightPP     = element->tightPP();
   }
   else{
     double DEmaxs1 = 0;
@@ -666,25 +668,22 @@ void SusyNtMaker::fillMuonVars(const LeptonInfo* lepIn)
   muOut->isCombined     = element->isCombinedMuon();
 
   
-  // theta_exPV.  Not sure if necessary.
+  // theta_exPV. Not sure if necessary.
   muOut->thetaPV        = element->theta_exPV();
 
   // Truth flags
   if(m_isMC){
-    muOut->mcType     = element->type();
-    muOut->mcOrigin   = element->origin();
+    muOut->mcType       = element->type();
+    muOut->mcOrigin     = element->origin();
     // If type and origin are zero, try matching to the muons in the truthMuon block
     // This might not actually do anything
     if(element->type()==0 && element->origin()==0 && element->truth_barcode()!=0){
       const TruthMuonElement* trueMuon = getMuonTruth(&d3pd.muo, lepIn->idx(), &d3pd.truthMu);
-      muOut->mcType   = trueMuon? trueMuon->type()   : 0;
-      muOut->mcOrigin = trueMuon? trueMuon->origin() : 0;
+      muOut->mcType     = trueMuon? trueMuon->type()   : 0;
+      muOut->mcOrigin   = trueMuon? trueMuon->origin() : 0;
     }
-    muOut->truthMatchType = m_recoTruthMatch.fakeType(*lv, muOut->mcOrigin, muOut->mcType);
-  }
-  else{
-    muOut->mcType = muOut->mcOrigin = 0;
-    muOut->truthMatchType = -1;
+    muOut->matched2TruthLepton  = m_recoTruthMatch.Matched2TruthLepton(*lv);
+    muOut->truthType            = m_recoTruthMatch.fakeType(*lv, muOut->mcOrigin, muOut->mcType);
   }
 
   muOut->trigFlags      = m_muoTrigFlags[ lepIn->idx() ];
@@ -838,6 +837,7 @@ void SusyNtMaker::fillTauVar(int tauIdx)
   tauOut->muonVeto              = element->muonVeto();
   tauOut->trueTau               = m_isMC? element->trueTauAssocSmall_matched() : false;
 
+  tauOut->matched2TruthLepton   = m_isMC? m_recoTruthMatch.Matched2TruthLepton(*tauLV, true) : false;
   tauOut->detailedTruthType     = m_isMC? m_recoTruthMatch.TauDetailedFakeType(*tauLV) : -1;
   tauOut->truthType             = m_isMC? m_recoTruthMatch.TauFakeType(tauOut->detailedTruthType) : -1;
 

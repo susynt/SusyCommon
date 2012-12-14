@@ -1,5 +1,9 @@
 # vim: set noexpandtab:
 
+2012-12-14 Steve
+	* Filling matched2TruthLepton for all leptons
+	* Tagging SusyCommon-00-00-49
+
 2012-12-13 Steve
 	* Fixed tau trigger flag saving (thanks Matt Gignac)
 
