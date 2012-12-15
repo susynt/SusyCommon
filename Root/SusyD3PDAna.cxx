@@ -66,8 +66,9 @@ void SusyD3PDAna::Begin(TTree* /*tree*/)
 
   // Use sample name to set data stream
   if(m_isMC) m_stream = Stream_MC;
-  else if(m_sample.Contains("muons", TString::kIgnoreCase))  m_stream = Stream_Muons;
+  else if(m_sample.Contains("muons", TString::kIgnoreCase)) m_stream = Stream_Muons;
   else if(m_sample.Contains("egamma", TString::kIgnoreCase)) m_stream = Stream_Egamma;
+  else if(m_sample.Contains("jettauetmiss", TString::kIgnoreCase)) m_stream = Stream_JetTauEtmiss;
   else m_stream = Stream_Unknown;
 
   if(m_isMC) cout << "Processing as MC"   << endl;

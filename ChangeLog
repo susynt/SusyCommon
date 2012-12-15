@@ -1,5 +1,9 @@
 # vim: set noexpandtab:
 
+2012-12-15 Steve
+	* Added support for JetTauEtmiss stream
+	* Tagging SusyCommon-00-00-50
+
 2012-12-14 Steve
 	* Filling matched2TruthLepton for all leptons
 	* Tagging SusyCommon-00-00-49
