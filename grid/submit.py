@@ -20,7 +20,7 @@ import re
 import subprocess
 
 # Some grid option defaults
-defaultTag='n0115'
+defaultTag='n0117'
 defaultNickname='sfarrell'
 defaultMet='Egamma10NoTau_STVF'
 
@@ -41,6 +41,7 @@ def main():
     add_arg('--nGBPerJob', default='MAX', help='prun option')
     add_arg('--sys', type=bool, default=True, help='toggle systematics')
     add_arg('--noSubmit', action='store_true', help='test prun without submitting')
+    add_arg('--useShortLivedReplicas', action='store_true', help='prun option')
     args = parser.parse_args()
 
     # Standard options for data
@@ -50,7 +51,7 @@ def main():
 
     # Standard options for standard model mc
     elif args.job == 'mc':
-        input_files = ['mcSamples.txt']
+        input_files = ['mcSamples.txt', 'mcSecondary.txt']
         pattern = 'mc'
 
     # Standard options for susy signals
@@ -106,6 +107,7 @@ def main():
                 if len(outDS) > 131:
                     outDS = re.sub('2LeptonFilter', '2L', outDS)
                     outDS = re.sub('UEEE3_CTEQ6L1_', '', outDS)
+                    outDS = re.sub('AUET2CTEQ6L1_', '', outDS)
 
                 # Grid command
                 gridCommand = './gridScript.sh %IN --saveTau --metFlav ' + args.met
@@ -134,6 +136,7 @@ def main():
 
                 # For testing
                 if(args.noSubmit): prunCommand += ' --noSubmit'
+                if(args.useShortLivedReplicas): prunCommand += ' --useShortLivedReplicas'
 
                 # Execute prun command
                 if args.verbose: print prunCommand
