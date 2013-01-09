@@ -1,5 +1,10 @@
 # vim: set noexpandtab:
 
+2013-01-09 Steve
+	* Commented out most of the event selection in SusyMetValidation
+	* Updated SusyMetValidation branch usage to p1328 D3PDs
+	* Changed debug level for some print statements
+
 2012-12-15 Steve
 	* Added support for JetTauEtmiss stream
 	* Tagging SusyCommon-00-00-50

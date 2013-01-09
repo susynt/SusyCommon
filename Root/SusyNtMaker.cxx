@@ -231,7 +231,7 @@ void SusyNtMaker::Terminate()
 /*--------------------------------------------------------------------------------*/
 bool SusyNtMaker::selectEvent()
 {
-  if(m_dbg) cout << "selectEvent" << endl;
+  if(m_dbg>=5) cout << "selectEvent" << endl;
 
 
   m_susyObj.Reset();
@@ -366,19 +366,6 @@ bool SusyNtMaker::selectEvent()
 
   // Setup reco truth matching
   if(m_isMC){
-    /*
-    m_recoTruthMatch = RecoTruthMatch(0.1, d3pd.truth.channel_number(), 
-                                      d3pd.truth.n(), 
-                                      d3pd.truth.barcode(), 
-                                      d3pd.truth.status(), 
-                                      d3pd.truth.pdgId(), 
-                                      d3pd.truth.parents(),
-                                      d3pd.truth.children(),
-                                      d3pd.truth.pt(),
-                                      d3pd.truth.eta(),
-                                      d3pd.truth.phi(),
-                                      d3pd.truth.m(), 0);
-    */
     m_recoTruthMatch = RecoTauMatch(0.1, d3pd.truth.channel_number(),
                                     d3pd.truth.n(), d3pd.truth.barcode(), d3pd.truth.status(), d3pd.truth.pdgId(),
                                     d3pd.truth.parents(), d3pd.truth.children(),
@@ -409,9 +396,6 @@ bool SusyNtMaker::selectEvent()
     // For filling the output tree, require at least 2 pre-selected leptons (baseline before OR)
     // Now counting taus as well!
     if((m_susyNt.ele()->size() + m_susyNt.muo()->size() + m_susyNt.tau()->size()) < 2)  return false;
-  
-    // For Fake studies
-    //if((m_susyNt.ele()->size() + m_susyNt.muo()->size()) < 1)  return false;
 
   }
   
@@ -495,7 +479,7 @@ void SusyNtMaker::fillLeptonVars()
 /*--------------------------------------------------------------------------------*/
 void SusyNtMaker::fillElectronVars(const LeptonInfo* lepIn)
 {
-  if(m_dbg) cout << "fillElectronVars" << endl;
+  if(m_dbg>=5) cout << "fillElectronVars" << endl;
   m_susyNt.ele()->push_back( Susy::Electron() );
   Susy::Electron* eleOut = & m_susyNt.ele()->back();
   const ElectronElement* element = lepIn->getElectronElement();
@@ -625,7 +609,7 @@ void SusyNtMaker::fillElectronVars(const LeptonInfo* lepIn)
 /*--------------------------------------------------------------------------------*/
 void SusyNtMaker::fillMuonVars(const LeptonInfo* lepIn)
 {
-  if(m_dbg) cout << "fillMuonVars" << endl;
+  if(m_dbg>=5) cout << "fillMuonVars" << endl;
   m_susyNt.muo()->push_back( Susy::Muon() );
   Susy::Muon* muOut = & m_susyNt.muo()->back();
   const MuonElement* element = lepIn->getMuonElement();
@@ -700,7 +684,7 @@ void SusyNtMaker::fillMuonVars(const LeptonInfo* lepIn)
 /*--------------------------------------------------------------------------------*/
 void SusyNtMaker::fillJetVars()
 {
-  if(m_dbg) cout << "fillJetVars" << endl;
+  if(m_dbg>=5) cout << "fillJetVars" << endl;
   // Loop over selected jets and fill output tree
   for(uint iJet=0; iJet<m_preJets.size(); iJet++){
     int jetIndex = m_preJets[iJet];  
@@ -711,7 +695,6 @@ void SusyNtMaker::fillJetVars()
 /*--------------------------------------------------------------------------------*/
 void SusyNtMaker::fillJetVar(int jetIdx)
 {
-
   const JetElement* element = & d3pd.jet[jetIdx];
   m_susyNt.jet()->push_back( Susy::Jet() );
   Susy::Jet* jetOut = & m_susyNt.jet()->back();
@@ -747,7 +730,7 @@ void SusyNtMaker::fillJetVar(int jetIdx)
 /*--------------------------------------------------------------------------------*/
 void SusyNtMaker::fillPhotonVars()
 {
-  if(m_dbg) cout << "fillPhotonVars" << endl;
+  if(m_dbg>=5) cout << "fillPhotonVars" << endl;
 
   // Loop over photons
   for(uint iPh=0; iPh<m_sigPhotons.size(); iPh++){
@@ -759,7 +742,7 @@ void SusyNtMaker::fillPhotonVars()
 /*--------------------------------------------------------------------------------*/
 void SusyNtMaker::fillPhotonVar(int phIdx)
 {
-  if(m_dbg) cout << "fillPhotonVars" << endl;
+  if(m_dbg>=5) cout << "fillPhotonVar" << endl;
   m_susyNt.pho()->push_back( Susy::Photon() );
   Susy::Photon* phoOut = & m_susyNt.pho()->back();
   const PhotonElement* element = & d3pd.pho[phIdx];
@@ -790,7 +773,7 @@ void SusyNtMaker::fillPhotonVar(int phIdx)
 /*--------------------------------------------------------------------------------*/
 void SusyNtMaker::fillTauVars()
 {
-  if(m_dbg) cout << "fillTauVars" << endl;
+  if(m_dbg>=5) cout << "fillTauVars" << endl;
 
   // Loop over selected taus
   for(uint iTau=0; iTau<m_preTaus.size(); iTau++){
@@ -802,7 +785,7 @@ void SusyNtMaker::fillTauVars()
 /*--------------------------------------------------------------------------------*/
 void SusyNtMaker::fillTauVar(int tauIdx)
 {
-  if(m_dbg) cout << "fillTauVars" << endl;
+  if(m_dbg>=5) cout << "fillTauVar" << endl;
   m_susyNt.tau()->push_back( Susy::Tau() );
   Susy::Tau* tauOut = & m_susyNt.tau()->back();
   const TauElement* element = & d3pd.tau[tauIdx];
@@ -851,7 +834,7 @@ void SusyNtMaker::fillTauVar(int tauIdx)
 /*--------------------------------------------------------------------------------*/
 void SusyNtMaker::fillMetVars(SusyNtSys sys)
 {
-  if(m_dbg) cout << "fillMetVars" << endl;
+  if(m_dbg>=5) cout << "fillMetVars" << endl;
 
   // Just fill the lv for now
   double Et  = m_met.Et()/GeV;
@@ -898,6 +881,7 @@ void SusyNtMaker::doSystematic()
   for(int i = 1; i < NtSys_N; i++){
 
     SusyNtSys sys = (SusyNtSys) i;
+    if(m_dbg>=5) cout << "Doing sys " << SusyNtSystNames[sys] << endl;
 
     // Reset Objects 
     m_susyObj.Reset();

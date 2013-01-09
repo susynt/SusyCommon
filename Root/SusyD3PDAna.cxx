@@ -198,7 +198,7 @@ void SusyD3PDAna::Terminate()
 /*--------------------------------------------------------------------------------*/
 void SusyD3PDAna::selectBaselineObjects(SusyNtSys sys)
 {
-  if(m_dbg) cout << "selectBaselineObjects" << endl;
+  if(m_dbg>=5) cout << "selectBaselineObjects" << endl;
   vector<int> goodJets;  // What the hell is this??
 
   // SUSYTools takes a flag for AF2. Now set via command line flag
@@ -296,7 +296,7 @@ void SusyD3PDAna::performOverlapRemoval()
 /*--------------------------------------------------------------------------------*/
 void SusyD3PDAna::selectSignalObjects()
 {
-  if(m_dbg) cout << "selectSignalObjects" << endl;
+  if(m_dbg>=5) cout << "selectSignalObjects" << endl;
   uint nVtx = getNumGoodVtx();
   m_sigElectrons = get_electrons_signal(&d3pd.ele, m_baseElectrons, nVtx, !m_isMC, m_susyObj, 10.*GeV, 0.16, 0.18, 5., 0.4, 
                                         m_d3pdTag<D3PD_p1181);
@@ -316,7 +316,7 @@ void SusyD3PDAna::selectSignalObjects()
 /*--------------------------------------------------------------------------------*/
 void SusyD3PDAna::buildMet(SusyNtSys sys)
 {
-  if(m_dbg) cout << "buildMet" << endl;
+  if(m_dbg>=5) cout << "buildMet" << endl;
  
   // Need the proper jet systematic for building systematic
   SystErr::Syste susySys = SystErr::NONE;
@@ -343,7 +343,7 @@ void SusyD3PDAna::buildMet(SusyNtSys sys)
 /*--------------------------------------------------------------------------------*/
 void SusyD3PDAna::selectSignalPhotons()
 {
-  if(m_dbg) cout << "selectSignalPhotons" << endl;
+  if(m_dbg>=5) cout << "selectSignalPhotons" << endl;
 
   int phoQual = 2;      // Quality::Tight
   uint isoType = 1;     // Corresponds to PTED corrected isolation 
@@ -416,7 +416,7 @@ bool SusyD3PDAna::matchTruthJet(int iJet)
 /*--------------------------------------------------------------------------------*/
 void SusyD3PDAna::fillEventTriggers()
 {
-  if(m_dbg) cout << "fillEventTriggers" << endl;
+  if(m_dbg>=5) cout << "fillEventTriggers" << endl;
   
   m_evtTrigFlags = 0;
   // e7_medium1 not available at the moment, so use e7T for now
@@ -450,7 +450,7 @@ void SusyD3PDAna::fillEventTriggers()
 /*--------------------------------------------------------------------------------*/
 void SusyD3PDAna::matchElectronTriggers()
 {
-  if(m_dbg) cout << "matchElectronTriggers" << endl;
+  if(m_dbg>=5) cout << "matchElectronTriggers" << endl;
   //int run = d3pd.evt.RunNumber();
 
   // loop over all pre electrons
@@ -522,7 +522,7 @@ bool SusyD3PDAna::matchElectronTrigger(const TLorentzVector* lv, vector<int>* tr
 /*--------------------------------------------------------------------------------*/
 void SusyD3PDAna::matchMuonTriggers()
 {
-  if(m_dbg) cout << "matchMuonTriggers" << endl;
+  if(m_dbg>=5) cout << "matchMuonTriggers" << endl;
 
   //int run = d3pd.evt.RunNumber();
 
@@ -611,7 +611,7 @@ bool SusyD3PDAna::matchMuonTrigger(const TLorentzVector* lv, vector<int>* passTr
 /*--------------------------------------------------------------------------------*/
 void SusyD3PDAna::matchTauTriggers()
 {
-  if(m_dbg) cout << "matchTauTriggers" << endl;
+  if(m_dbg>=5) cout << "matchTauTriggers" << endl;
 
   //int run = d3pd.evt.RunNumber();
 
