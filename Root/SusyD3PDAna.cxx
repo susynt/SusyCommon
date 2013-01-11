@@ -25,7 +25,8 @@ SusyD3PDAna::SusyD3PDAna() :
         m_d3pdTag(D3PD_p1181),
         m_selectPhotons(true),
         m_selectTaus(false),
-        m_metFlavor("Egamma10NoTau_STVF"),
+        //m_metFlavor("Egamma10NoTau_STVF"),
+        m_metFlavor(SUSYMet::STVF),
         m_lumi(LUMI_A_E),
         m_sumw(1),
 	m_xsec(-1),
@@ -82,10 +83,10 @@ void SusyD3PDAna::Begin(TTree* /*tree*/)
 		       gSystem->ExpandPathName("$ROOTCOREDIR/data/MuonEfficiencyCorrections/"));
   // Turn on jet calibration
   m_susyObj.SetJetCalib(true);
+
   // Set the MissingEt flag for STVF
-  if(m_metFlavor.Contains("STVF")){
-    m_susyObj.GetMETUtility()->configMissingET(true, true);
-  }
+  // This is now done automatically when you call SUSYObjDef::GetMET
+  //if(m_metFlavor.Contains("STVF")) m_susyObj.GetMETUtility()->configMissingET(true, true);
 
   m_fakeMetEst.initialize("$ROOTCOREDIR/data/MultiLep/fest_periodF_v1.root");
 
@@ -892,6 +893,19 @@ int SusyD3PDAna::getHFORDecision()
                                 d3pd.truth.parent_index(),
                                 d3pd.truth.child_index(),
                                 HforToolD3PD::DEFAULT);
+}
+
+/*--------------------------------------------------------------------------------*/
+// Set MET flavor via a string. Only a couple of options available so far
+/*--------------------------------------------------------------------------------*/
+void SusyD3PDAna::setMetFlavor(string metFlav)
+{
+  if(metFlav=="STVF") m_metFlavor = SUSYMet::STVF;
+  else if(metFlav=="STVF_JVF") m_metFlavor = SUSYMet::STVF_JVF;
+  else{
+    cout << "SusyD3PDAna::setMetFlavor : ERROR : MET flavor " << metFlav << " is not supported!" << endl;
+    abort();
+  }
 }
 
 /*--------------------------------------------------------------------------------*/

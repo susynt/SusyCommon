@@ -56,7 +56,7 @@ int main(int argc, char** argv)
   string sample   = "";
   string fileList = "fileList.txt";
   bool isAF2      = false;
-  TString metFlav = "Egamma10NoTau_STVF";
+  string metFlav = "STVF";
 
   cout << "SusyD3PDSkimmer" << endl;
   cout << endl;

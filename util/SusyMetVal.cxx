@@ -71,7 +71,7 @@ int main(int argc, char** argv)
   float xsec      = -1;
   float sumw      = 1;
   bool isAF2      = false;
-  TString metFlav = "Egamma10NoTau_STVF";
+  string metFlav = "STVF";
   string histFileName = "";
 
   cout << "SusyMetValidation" << endl;

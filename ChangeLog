@@ -1,5 +1,10 @@
 # vim: set noexpandtab:
 
+2013-01-11 Steve
+	* MET flavor now controlled by the SUSYMet enum
+		* Still set by a string in setMetFlavor method
+		* 2 flavors supported in SUSYTools: STVF and STVF_JVF
+
 2013-01-09 Steve
 	* Commented out most of the event selection in SusyMetValidation
 	* Updated SusyMetValidation branch usage to p1328 D3PDs

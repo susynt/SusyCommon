@@ -208,8 +208,10 @@ class SusyD3PDAna : public SusyD3PDInterface
     // Toggle tau selection and overlap removal
     void setSelectTaus(bool doIt) { m_selectTaus = doIt; }
 
-    // Set MET flavor (e.g. Egamma10NoTau)
-    void setMetFlavor(TString metFlav) { m_metFlavor = metFlav; }
+    // Set MET flavor - at the moment, only STVF and STVF_JVF are available.
+    // Anything else will raise an error.
+    void setMetFlavor(std::string metFlav);
+    //void setMetFlavor(TString metFlav) { m_metFlavor = metFlav; }
     
     //
     // Event dumps
@@ -233,7 +235,8 @@ class SusyD3PDAna : public SusyD3PDInterface
     bool                        m_selectPhotons;// Toggle photon selection
     bool                        m_selectTaus;   // Toggle tau selection and overlap removal
 
-    TString                     m_metFlavor;    // Flavor string for MET (e.g. Egamma10NoTau)
+    //TString                   m_metFlavor;    // Flavor string for MET (e.g. Egamma10NoTau)
+    SUSYMet::met_definition     m_metFlavor;    // MET flavor enum (e.g. STVF, STVF_JVF)
 
     //
     // Object collections (usually just vectors of indices)

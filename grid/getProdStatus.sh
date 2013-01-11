@@ -10,7 +10,7 @@ if [[ $# < 1 ]]; then
         exit 1
 fi
 
-for ds in `cat $1`; do
+for ds in `cat $1 | awk '{print $1}'`; do
 
         echo $ds
         prodStatus=`ami dataset info $ds | grep prodsysStatus | awk '{print $2,$3,$4,$5,$6,$7}'`
