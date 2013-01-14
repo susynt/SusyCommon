@@ -1,7 +1,7 @@
 #!/bin/bash
 
-iteration=i14
-nickname=Steve
+iteration=i15
+nickname=sfarrell
 
 #
 # Submit counter job for all mc datasets in input file passed as argument
