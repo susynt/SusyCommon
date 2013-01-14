@@ -1,5 +1,8 @@
 # vim: set noexpandtab:
 
+2013-01-14 Steve
+	* Tagging SusyCommon-00-00-51
+
 2013-01-11 Steve
 	* MET flavor now controlled by the SUSYMet enum
 		* Still set by a string in setMetFlavor method

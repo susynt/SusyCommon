@@ -470,18 +470,24 @@ bool SusyMetValidation::selectEvent()
     cout << "  D3PD RefFinal: " << metSoftJet[Met_d3pd_reff].Mod()/GeV  << endl;
 
     // TESTING, more explicit dump of D3PD vars
-    //cout << "Egamma10NoTau_RefFinal_STVF_etx      " << d3pd.met.Egamma10NoTau_RefFinal_STVF_etx()/GeV << endl;
-    //cout << "Egamma10NoTau_RefFinal_STVF_ety      " << d3pd.met.Egamma10NoTau_RefFinal_STVF_ety()/GeV << endl;
-    //cout << "Egamma10NoTau_RefEle_etx             " << d3pd.met.Egamma10NoTau_RefEle_etx()/GeV << endl;
-    //cout << "Egamma10NoTau_RefEle_ety             " << d3pd.met.Egamma10NoTau_RefEle_ety()/GeV << endl;
-    //cout << "Egamma10NoTau_Muon_Total_Staco_etx   " << d3pd.met.Egamma10NoTau_Muon_Total_Staco_etx()/GeV << endl;
-    //cout << "Egamma10NoTau_Muon_Total_Staco_ety   " << d3pd.met.Egamma10NoTau_Muon_Total_Staco_ety()/GeV << endl;
-    //cout << "Egamma10NoTau_RefJet_etx             " << d3pd.met.Egamma10NoTau_RefJet_etx()/GeV << endl;
-    //cout << "Egamma10NoTau_RefJet_ety             " << d3pd.met.Egamma10NoTau_RefJet_ety()/GeV << endl;
-    //cout << "Egamma10NoTau_CellOut_Eflow_STVF_etx " << d3pd.met.Egamma10NoTau_CellOut_Eflow_STVF_etx()/GeV << endl;
-    //cout << "Egamma10NoTau_CellOut_Eflow_STVF_ety " << d3pd.met.Egamma10NoTau_CellOut_Eflow_STVF_ety()/GeV << endl;
-    //cout << "Egamma10NoTau_SoftJets_etx           " << d3pd.met.Egamma10NoTau_SoftJets_etx()/GeV << endl;
-    //cout << "Egamma10NoTau_SoftJets_ety           " << d3pd.met.Egamma10NoTau_SoftJets_ety()/GeV << endl;
+    cout << "Egamma10NoTau_RefFinal_STVF_etx        " << d3pd.met.Egamma10NoTau_RefFinal_STVF_etx()/GeV << endl;
+    cout << "Egamma10NoTau_RefFinal_STVF_ety        " << d3pd.met.Egamma10NoTau_RefFinal_STVF_ety()/GeV << endl;
+    cout << "Egamma10NoTau_RefFinal_STVF_sumet      " << d3pd.met.Egamma10NoTau_RefFinal_STVF_sumet()/GeV << endl;
+    cout << "Egamma10NoTau_RefEle_etx               " << d3pd.met.Egamma10NoTau_RefEle_etx()/GeV << endl;
+    cout << "Egamma10NoTau_RefEle_ety               " << d3pd.met.Egamma10NoTau_RefEle_ety()/GeV << endl;
+    cout << "Egamma10NoTau_RefEle_sumet             " << d3pd.met.Egamma10NoTau_RefEle_sumet()/GeV << endl;
+    cout << "Egamma10NoTau_Muon_Total_Staco_etx     " << d3pd.met.Egamma10NoTau_Muon_Total_Staco_etx()/GeV << endl;
+    cout << "Egamma10NoTau_Muon_Total_Staco_ety     " << d3pd.met.Egamma10NoTau_Muon_Total_Staco_ety()/GeV << endl;
+    cout << "Egamma10NoTau_Muon_Total_Staco_sumet   " << d3pd.met.Egamma10NoTau_Muon_Total_Staco_sumet()/GeV << endl;
+    cout << "Egamma10NoTau_RefJet_etx               " << d3pd.met.Egamma10NoTau_RefJet_etx()/GeV << endl;
+    cout << "Egamma10NoTau_RefJet_ety               " << d3pd.met.Egamma10NoTau_RefJet_ety()/GeV << endl;
+    cout << "Egamma10NoTau_RefJet_sumet             " << d3pd.met.Egamma10NoTau_RefJet_sumet()/GeV << endl;
+    cout << "Egamma10NoTau_CellOut_Eflow_STVF_etx   " << d3pd.met.Egamma10NoTau_CellOut_Eflow_STVF_etx()/GeV << endl;
+    cout << "Egamma10NoTau_CellOut_Eflow_STVF_ety   " << d3pd.met.Egamma10NoTau_CellOut_Eflow_STVF_ety()/GeV << endl;
+    cout << "Egamma10NoTau_CellOut_Eflow_STVF_sumet " << d3pd.met.Egamma10NoTau_CellOut_Eflow_STVF_sumet()/GeV << endl;
+    cout << "Egamma10NoTau_SoftJets_etx             " << d3pd.met.Egamma10NoTau_SoftJets_etx()/GeV << endl;
+    cout << "Egamma10NoTau_SoftJets_ety             " << d3pd.met.Egamma10NoTau_SoftJets_ety()/GeV << endl;
+    cout << "Egamma10NoTau_SoftJets_sumet           " << d3pd.met.Egamma10NoTau_SoftJets_sumet()/GeV << endl;
 
     // Dump muon weights
     cout.precision(2);
