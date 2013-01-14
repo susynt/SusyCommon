@@ -22,7 +22,7 @@ using namespace std;
 SusyD3PDAna::SusyD3PDAna() : 
         m_sample(""),
         m_isAF2(false),
-        m_d3pdTag(D3PD_p1181),
+        m_d3pdTag(D3PD_p1328),
         m_selectPhotons(true),
         m_selectTaus(false),
         //m_metFlavor("Egamma10NoTau_STVF"),

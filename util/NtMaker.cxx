@@ -89,7 +89,7 @@ int main(int argc, char** argv)
   bool saveTau    = false;
   bool isAF2      = false;
   bool writeNt    = true;
-  D3PDTag tag     = D3PD_p1181;
+  D3PDTag tag     = D3PD_p1328;
   string metFlav  = "STVF";
 
   cout << "SusyNtMaker" << endl;

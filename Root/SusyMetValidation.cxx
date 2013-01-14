@@ -317,8 +317,8 @@ bool SusyMetValidation::selectEvent()
   
 
   // Lepton multiplicity
-  uint nBaseLep = m_baseElectrons.size() + m_baseMuons.size();
-  uint nSigEle = m_sigElectrons.size();
+  //uint nBaseLep = m_baseElectrons.size() + m_baseMuons.size();
+  //uint nSigEle = m_sigElectrons.size();
   uint nSigMuo = m_sigMuons.size();
   uint nSigLep = nSigEle + nSigMuo;
   //if(nBaseLep != 3) return false;
@@ -356,8 +356,8 @@ bool SusyMetValidation::selectEvent()
   n_evt_bJet++;
 
   // Mt
-  float mt = getMt(m_susyObj, &d3pd.muo, m_sigMuons, &d3pd.ele, m_sigElectrons, 
-                   m_met.Vect().XYvector(), m_met.Et());
+  //float mt = getMt(m_susyObj, &d3pd.muo, m_sigMuons, &d3pd.ele, m_sigElectrons, 
+                   //m_met.Vect().XYvector(), m_met.Et());
   //if(mt < 50*GeV || mt > 110*GeV) return false;
   n_evt_mt++;
 
