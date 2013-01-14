@@ -6,12 +6,10 @@ else
         input=mcSamples.txt
 fi
 
-for line in `cat $input | tr '\t' ','`; do
+# Loop over dataset names in the input file
+# The awk command just helps in case it's a multi-column file, only grabbing the first column
+for ds in `cat $input | awk '{print $1}'`; do
 
-        info=(`echo $line | tr ',' ' '`)
-
-        #sample=${info[0]}
-        ds=${info[0]}
         sumw=`ami dataset info $ds | grep totalEvents | awk '{print $2}'`
         echo -e "$ds\t$sumw"
 
