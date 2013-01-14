@@ -66,7 +66,7 @@ void help()
   cout << "     default: p1181"                 << endl;
 
   cout << "  --metFlav set met flavor"          << endl;
-  cout << "     default: Egamma10NoTau_STVF"    << endl;
+  cout << "     default: STVF"                  << endl;
 
   cout << "  -h print this help"                << endl;
 }
