@@ -320,7 +320,7 @@ bool SusyMetValidation::selectEvent()
   //uint nBaseLep = m_baseElectrons.size() + m_baseMuons.size();
   //uint nSigEle = m_sigElectrons.size();
   uint nSigMuo = m_sigMuons.size();
-  uint nSigLep = nSigEle + nSigMuo;
+  //uint nSigLep = nSigEle + nSigMuo;
   //if(nBaseLep != 3) return false;
   //if(nSigLep != 3) return false;
   n_evt_3Lep++;
