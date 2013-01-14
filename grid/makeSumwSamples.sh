@@ -1,5 +1,12 @@
 #!/bin/bash
 
+# This script takes a file input with a list of datasets, one per line.
+# It will spit out DATASET SUMW
+
+# Setup pyAMI before using this script.  You might also need a voms proxy.
+# On lxplus, do
+# source /afs/cern.ch/atlas/software/tools/pyAMI/setup.sh
+
 if [[ $# > 0 ]]; then
         input=$1
 else
