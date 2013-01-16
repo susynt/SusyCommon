@@ -2,6 +2,7 @@
 2013-01-16 Matt
 	* Added 'smart veto' back to event flags
 	* Added bch_corr_jet to jet class
+	* Update muon variables for id and ms (not me) after email with Beate
 	
 2013-01-15 Matt
 	* Added qoverp for id and me
