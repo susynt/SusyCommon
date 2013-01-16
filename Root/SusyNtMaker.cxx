@@ -727,6 +727,8 @@ void SusyNtMaker::fillJetVar(int jetIdx)
   jetOut->combNN        = element->flavor_weight_JetFitterCOMBNN();
   jetOut->mv1           = element->flavor_weight_MV1();
 
+  jetOut->bch_corr_jet  = element->BCH_CORR_JET();
+
 }
 
 /*--------------------------------------------------------------------------------*/

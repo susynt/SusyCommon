@@ -679,9 +679,9 @@ bool SusyD3PDAna::matchTauTrigger(const TLorentzVector* lv, vector<int>* passTri
 /*--------------------------------------------------------------------------------*/
 void SusyD3PDAna::checkEventCleaning()
 {
-  if(passGRL()) m_cutFlags |= ECut_GRL;
+  if(passGRL())     m_cutFlags |= ECut_GRL;
   if(passTTCVeto()) m_cutFlags |= ECut_TTC;
-  if(passLarErr()) m_cutFlags |= ECut_LarErr;
+  if(passLarErr())  m_cutFlags |= ECut_LarErr;
   if(passTileErr()) m_cutFlags |= ECut_TileErr;
   if(passGoodVtx()) m_cutFlags |= ECut_GoodVtx;
 }
@@ -693,9 +693,10 @@ void SusyD3PDAna::checkEventCleaning()
 void SusyD3PDAna::checkObjectCleaning()
 {
   if(passTileHotSpot()) m_cutFlags |= ECut_HotSpot;
-  if(passBadJet()) m_cutFlags |= ECut_BadJet;
-  if(passBadMuon()) m_cutFlags |= ECut_BadMuon;
-  if(passCosmic()) m_cutFlags |= ECut_Cosmic;
+  if(passBadJet())      m_cutFlags |= ECut_BadJet;
+  if(passBadMuon())     m_cutFlags |= ECut_BadMuon;
+  if(passCosmic())      m_cutFlags |= ECut_Cosmic;
+  if(passLarHoleVeto()) m_cutFlags |= ECut_SmartVeto;
 }
 
 /*--------------------------------------------------------------------------------*/

@@ -1,4 +1,8 @@
 # vim: set noexpandtab:
+2013-01-16 Matt
+	* Added 'smart veto' back to event flags
+	* Added bch_corr_jet to jet class
+	
 2013-01-15 Matt
 	* Added qoverp for id and me
 	
