@@ -675,6 +675,10 @@ void SusyNtMaker::fillMuonVars(const LeptonInfo* lepIn)
   muOut->effSF          = m_susyObj.GetSignalMuonSF(lepIn->idx());
   muOut->errEffSF       = m_susyObj.GetSignalMuonSFUnc(lepIn->idx(), SystErr::MEFFUP);
   
+  // q/p needed for charge mis-id measurement
+  muOut->id_qoverp_exPV = element->id_qoverp_exPV() * GeV; 
+  muOut->me_qoverp_exPV = element->me_qoverp_exPV() * GeV; 
+
   // Do we need this??
   muOut->idx            = lepIn->idx();
 }
