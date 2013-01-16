@@ -638,6 +638,15 @@ void SusyNtMaker::fillMuonVars(const LeptonInfo* lepIn)
                           fabs(sin(element->id_theta_exPV()/element->id_qoverp_exPV()))/GeV : 0.;
   muOut->idTrackEta     = -1.*log(tan(element->id_theta_exPV()/2.));
   muOut->idTrackPhi     = element->id_phi_exPV();
+  muOut->idTrackQ       = element->id_qoverp_exPV() < 0 ? -1 : 1;
+
+  // MS coordinates
+  muOut->msTrackPt      = element->ms_qoverp() != 0.? 
+                          fabs(sin(element->ms_theta()/element->ms_qoverp()))/GeV : 0.;
+  muOut->msTrackEta     = -1.*log(tan(element->ms_theta()/2.));
+  muOut->msTrackPhi     = element->ms_phi();
+  muOut->msTrackQ       = element->ms_qoverp() < 0 ? -1 : 1;
+
 
   muOut->d0             = element->d0_exPV();
   muOut->errD0          = sqrt(element->cov_d0_exPV());
@@ -675,14 +684,6 @@ void SusyNtMaker::fillMuonVars(const LeptonInfo* lepIn)
   muOut->effSF          = m_susyObj.GetSignalMuonSF(lepIn->idx());
   muOut->errEffSF       = m_susyObj.GetSignalMuonSFUnc(lepIn->idx(), SystErr::MEFFUP);
   
-  // Needed for Charge mis-id measurement
-  muOut->id_qoverp = element->id_qoverp() * GeV; 
-  muOut->id_theta  = element->id_theta();
-  muOut->id_phi    = element->id_phi();
-  muOut->ms_qoverp = element->ms_qoverp() * GeV; 
-  muOut->ms_theta  = element->ms_theta();
-  muOut->ms_phi    = element->ms_phi();
-
   // Do we need this??
   muOut->idx            = lepIn->idx();
 }
