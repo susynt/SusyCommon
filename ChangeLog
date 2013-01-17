@@ -4,6 +4,8 @@
 	* Adding grl command line option to NtMaker
 	* Updated default grl to Moriond version
 	* Adding missing triggers for lep-tau trigger matching: EF_e18vh_medium1, EF_mu15
+	* Added pileup weights for periods I+L
+		* probably temporary
 	* Tagging SusyCommon-00-00-52
 
 2013-01-16 Matt
