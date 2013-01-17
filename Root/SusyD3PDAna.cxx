@@ -443,6 +443,9 @@ void SusyD3PDAna::fillEventTriggers()
   if(d3pd.trig.EF_tau29Ti_medium1_tau20Ti_medium1()) m_evtTrigFlags |= TRIG_tau29Ti_medium1_tau20Ti_medium1;
   if(d3pd.trig.EF_tau20Ti_medium1_e18vh_medium1())   m_evtTrigFlags |= TRIG_tau20Ti_medium1_e18vh_medium1;
   if(d3pd.trig.EF_tau20_medium1_mu15())              m_evtTrigFlags |= TRIG_tau20_medium1_mu15;
+
+  if(d3pd.trig.EF_e18vh_medium1())              m_evtTrigFlags |= TRIG_e18vh_medium1;
+  if(d3pd.trig.EF_mu15())                       m_evtTrigFlags |= TRIG_mu15;
 }
 
 /*--------------------------------------------------------------------------------*/
@@ -502,12 +505,16 @@ void SusyD3PDAna::matchElectronTriggers()
       //flags |= TRIG_mu18_tight_e7_medium1;
     //}
 
+    // e18vh_medium1
+    if( matchElectronTrigger(lv, d3pd.trig.trig_EF_el_EF_e18vh_medium1()) ){
+      flags |= TRIG_e18vh_medium1;
+    }
+
     // assign the trigger flags for this electron
     m_eleTrigFlags[iEl] = flags;
   }
 }
 /*--------------------------------------------------------------------------------*/
-//bool SusyD3PDAna::matchElectronTrigger(float eta, float phi, vector<int>* trigBools)
 bool SusyD3PDAna::matchElectronTrigger(const TLorentzVector* lv, vector<int>* trigBools)
 {
   // matched trigger index - not used
@@ -568,6 +575,11 @@ void SusyD3PDAna::matchMuonTriggers()
     // mu18_tight_e7_medium1
     if( matchMuonTrigger(lv, d3pd.trig.trig_EF_trigmuonef_EF_mu18_tight_e7_medium1()) ) {
       flags |= TRIG_mu18_tight_e7_medium1;
+    }
+
+    // mu15
+    if( matchMuonTrigger(lv, d3pd.trig.trig_EF_trigmuonef_EF_mu15()) ) {
+      flags |= TRIG_mu15;
     }
 
     // assign the trigger flags for this muon
