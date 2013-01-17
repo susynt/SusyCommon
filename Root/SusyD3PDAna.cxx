@@ -101,8 +101,7 @@ void SusyD3PDAna::Begin(TTree* /*tree*/)
   // GRL
   if(!m_isMC){
     if(m_grlFileName.Length() == 0){
-      m_grlFileName = gSystem->ExpandPathName(
-        "$ROOTCOREDIR/data/MultiLep/data12_8TeV.periodAllYear_DetStatus-v53-pro13-04_CoolRunQuery-00-04-08_All_Good_HCP.xml");
+      m_grlFileName = gSystem->ExpandPathName("$ROOTCOREDIR/data/MultiLep/data12_8TeV.periodAllYear_DetStatus-v58-pro14-01_DQDefects-00-00-33_PHYS_StandardGRL_All_Good.xml");
     }
     
     Root::TGoodRunsListReader* grlReader = new Root::TGoodRunsListReader();

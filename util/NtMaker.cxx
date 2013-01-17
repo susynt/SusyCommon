@@ -50,6 +50,9 @@ void help()
   cout << "  -m write output ntuple"            << endl;
   cout << "     default: 1 (true)"              << endl;
 
+  cout << "  --grl specify GRL"                 << endl;
+  cout << "     default: set in cxx"            << endl;
+
   cout << "  --sys will turn on systematic run" << endl;
   cout << "     default: off"                   << endl;
 
@@ -84,6 +87,7 @@ int main(int argc, char** argv)
   float sumw      = 1;
   string sample   = "";
   string fileList = "fileList.txt";
+  string grl      = "";
   bool sysOn      = false;
   //bool savePh     = false;
   bool saveTau    = false;
@@ -115,6 +119,8 @@ int main(int argc, char** argv)
       lumi = atof(argv[++i]);
     else if (strcmp(argv[i], "-m") == 0)
       writeNt = atoi(argv[++i]);
+    else if (strcmp(argv[i], "--grl") == 0)
+      grl = argv[++i];
     else if (strcmp(argv[i], "--sys") == 0)
       sysOn = true;
     //else if (strcmp(argv[i], "--savePh") == 0)
@@ -142,6 +148,7 @@ int main(int argc, char** argv)
   cout << "  dbg     " << dbg      << endl;
   cout << "  input   " << fileList << endl;
   cout << "  sumw    " << sumw     << endl;
+  cout << "  grl     " << grl      << endl;
   cout << "  sys     " << sysOn    << endl;
   //cout << "  savePh  " << savePh   << endl;
   cout << "  saveTau " << saveTau  << endl;
@@ -180,9 +187,9 @@ int main(int argc, char** argv)
   susyAna->setD3PDTag(tag);
   susyAna->setMetFlavor(metFlav);
 
-  // GRL - now setting this in SusyD3PDAna::Begin
+  // GRL - default is set in SusyD3PDAna::Begin, but now we can override it here
   //TString grl = gSystem->ExpandPathName("$ROOTCOREDIR/data/MultiLep/data12_8TeV.periodAllYear_DetStatus-v53-pro13-04_CoolRunQuery-00-04-08_All_Good_HCP.xml");
-  //susyAna->setGRLFile(grl);
+  susyAna->setGRLFile(grl);
 
   // Run the job
   if(nEvt<0) nEvt = nEntries;
