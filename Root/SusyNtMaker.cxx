@@ -719,7 +719,7 @@ void SusyNtMaker::fillJetVar(int jetIdx)
   jetOut->eta = eta;
   jetOut->phi = phi;
   jetOut->m   = m;
-  
+
   jetOut->idx           = jetIdx;
   jetOut->jvf           = element->jvtxf();
   jetOut->truthLabel    = m_isMC? element->flavor_truth_label() : 0;
@@ -830,6 +830,7 @@ void SusyNtMaker::fillTauVar(int tauIdx)
   tauOut->eleBDTTight           = element->EleBDTTight();
 
   tauOut->muonVeto              = element->muonVeto();
+
   tauOut->trueTau               = m_isMC? element->trueTauAssocSmall_matched() : false;
 
   tauOut->matched2TruthLepton   = m_isMC? m_recoTruthMatch.Matched2TruthLepton(*tauLV, true) : false;
@@ -1119,16 +1120,32 @@ void SusyNtMaker::addMissingJet(int index, SusyNtSys sys)
 {
   // Get the tlv with the sys
   TLorentzVector tlv_sys = m_susyObj.GetJetTLV(index);
-  
-  D3PDReader::JetD3PDObject* jets = & d3pd.jet;
 
-  float pt  = jets->pt()->at(index);
-  float eta = jets->eta()->at(index);
-  float phi = jets->phi()->at(index);
-  float E   = jets->E()->at(index);
+  // Bug Fix: Need to save the calibrated TLV
+  TLorentzVector tlv_nom;
+  m_susyObj.RecalibrateJet(&tlv_nom, 
+			   d3pd.jet.constscale_E()->at(index),
+			   d3pd.jet.constscale_eta()->at(index),
+			   d3pd.jet.constscale_phi()->at(index),
+			   d3pd.jet.constscale_m()->at(index),
+			   d3pd.jet.ActiveAreaPx()->at(index),
+			   d3pd.jet.ActiveAreaPy()->at(index),
+			   d3pd.jet.ActiveAreaPz()->at(index),
+			   d3pd.jet.ActiveAreaE()->at(index),
+			   d3pd.evt.Eventshape_rhoKt4LC(),
+			   d3pd.evt.averageIntPerXing(),
+			   d3pd.vtx.nTracks());
   
-  // Reset TLV
+  //D3PDReader::JetD3PDObject* jets = & d3pd.jet;
+
+  float pt  = tlv_nom.Pt() / GeV;  //jets->pt()->at(index);
+  float eta = tlv_nom.Eta();       //jets->eta()->at(index);
+  float phi = tlv_nom.Phi();       //jets->phi()->at(index);
+  float E   = tlv_nom.E() / GeV;   //jets->E()->at(index);
+  
+  // Reset TLV 
   m_susyObj.SetJetTLV(index, pt, eta, phi, E);
+
 
   // Fill the Jet vars for this guy
   fillJetVar(index);
@@ -1139,6 +1156,7 @@ void SusyNtMaker::addMissingJet(int index, SusyNtSys sys)
   if(sys == NtSys_JER)         j->jer = sf;
   else if(sys == NtSys_JES_UP) j->jes_up = sf;
   else if(sys == NtSys_JES_DN) j->jes_dn = sf;
+  
 }
 
 #undef GeV
