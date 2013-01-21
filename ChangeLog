@@ -3,6 +3,7 @@
 2013-01-21 Steve
 	* Added EF_2mu8_EFxe40wMu_tclcw trigger check
 		* Only used in data with run>=206248 (Period C and onwards)
+	* Tagging SusyCommon-00-00-54
 
 2013-01-20 Steve
 	* Tagging SusyCommon-00-00-53
