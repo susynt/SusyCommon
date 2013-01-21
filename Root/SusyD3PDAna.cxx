@@ -459,6 +459,10 @@ void SusyD3PDAna::fillEventTriggers()
 
   if(d3pd.trig.EF_e18vh_medium1())              m_evtTrigFlags |= TRIG_e18vh_medium1;
   if(d3pd.trig.EF_mu15())                       m_evtTrigFlags |= TRIG_mu15;
+
+  // EF_2mu8_EFxe40wMu_tclcw trigger only available for data, in periods > B
+  if(!m_isMC && d3pd.evt.RunNumber()>=206248 && d3pd.trig.EF_2mu8_EFxe40wMu_tclcw()) 
+    m_evtTrigFlags |= TRIG_2mu8_EFxe40wMu_tclcw;
 }
 
 /*--------------------------------------------------------------------------------*/
