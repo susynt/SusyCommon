@@ -1,5 +1,15 @@
 # vim: set noexpandtab:
 
+2012-01-22 Serhan Mete <amete@cern.ch>
+	* Implementing the newly added truth variables.
+	* Still work in progress...
+	* Files affected are:
+	* M       Root/SusyD3PDAna.cxx
+	* M       Root/SusyNtMaker.cxx
+	* M       SusyCommon/SusyD3PDAna.h
+	* M       SusyCommon/SusyNtMaker.h
+	* M       util/NtMaker.cxx
+
 2013-01-21 Steve
 	* Added EF_2mu8_EFxe40wMu_tclcw trigger check
 		* Only used in data with run>=206248 (Period C and onwards)

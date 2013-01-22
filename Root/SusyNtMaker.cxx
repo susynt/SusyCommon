@@ -413,6 +413,11 @@ void SusyNtMaker::fillNtVars()
   fillTauVars();
   fillMetVars();
   fillPhotonVars();
+  if(m_isMC && getSelectTruthObjects() ) {
+    fillTruthParticleVars();
+    fillTruthJetVars();
+    fillTruthMetVars();
+  }
 }
 
 /*--------------------------------------------------------------------------------*/
@@ -882,6 +887,83 @@ void SusyNtMaker::fillMetVars(SusyNtSys sys)
   metOut->refGamma      = m_susyObj.computeMETComponent(METUtil::RefGamma, metSys).Mod()/GeV;
   metOut->softJet       = m_susyObj.computeMETComponent(METUtil::SoftJets, metSys).Mod()/GeV;
   metOut->refCell       = m_susyObj.computeMETComponent(METUtil::CellOutEflow, metSys).Mod()/GeV;
+}
+/*--------------------------------------------------------------------------------*/
+// Fill Truth Particle variables
+/*--------------------------------------------------------------------------------*/
+void SusyNtMaker::fillTruthParticleVars()
+{
+  if(m_dbg>=5) cout << "fillTruthParticleVars" << endl;
+
+  // Loop over selected truth particles
+  for(uint iTruPar=0; iTruPar<m_truParticles.size(); iTruPar++){
+    int truParIdx = m_truParticles[iTruPar];  
+
+    m_susyNt.tpr()->push_back( Susy::TruthParticle() );
+    Susy::TruthParticle* tprOut         = & m_susyNt.tpr()->back();
+
+    // Set TLV
+    float pt  = d3pd.truth.pt() ->at(truParIdx) / GeV;
+    float eta = d3pd.truth.eta()->at(truParIdx);
+    float phi = d3pd.truth.phi()->at(truParIdx);
+    float m   = d3pd.truth.m()  ->at(truParIdx) / GeV;
+  
+    tprOut->SetPtEtaPhiM(pt, eta, phi, m);
+    tprOut->pt          = pt;
+    tprOut->eta         = eta;
+    tprOut->phi         = phi;
+    tprOut->m           = m;
+
+    tprOut->charge      = d3pd.truth.charge()->at(truParIdx);
+    tprOut->pdgId       = d3pd.truth.pdgId() ->at(truParIdx);
+    tprOut->status      = d3pd.truth.status()->at(truParIdx);
+    tprOut->motherPdgId = -999; // TO BE IMPLEMENTED
+  }
+}
+/*--------------------------------------------------------------------------------*/
+// Fill Truth Jet variables
+/*--------------------------------------------------------------------------------*/
+void SusyNtMaker::fillTruthJetVars()
+{
+  if(m_dbg>=5) cout << "fillTruthJetVars" << endl;
+
+  for(uint iTruJet=0; iTruJet<m_truJets.size(); iTruJet++){
+    int truJetIdx = m_truJets[iTruJet];  
+  
+    m_susyNt.tjt()->push_back( Susy::TruthJet() );
+    Susy::TruthJet* truJetOut = & m_susyNt.tjt()->back();
+    const TruthJetElement* element = & d3pd.truthJet[truJetIdx];
+
+    // Set TLV
+    float pt  = element->pt() / GeV;
+    float eta = element->eta();
+    float phi = element->phi();
+    float m   = element->m()  / GeV;
+  
+    truJetOut->SetPtEtaPhiM(pt, eta, phi, m);
+    truJetOut->pt     = pt;
+    truJetOut->eta    = eta;
+    truJetOut->phi    = phi;
+    truJetOut->m      = m;
+
+    truJetOut->flavor = element->flavor_truth_label();
+  }
+}
+/*--------------------------------------------------------------------------------*/
+// Fill Truth Met variables
+/*--------------------------------------------------------------------------------*/
+void SusyNtMaker::fillTruthMetVars()
+{
+  if(m_dbg>=5) cout << "fillTruthMetVars" << endl;
+
+  // Just fill the lv for now
+  double Et  = m_truMet.Et()/GeV;
+  double phi = m_truMet.Phi(); 
+
+  m_susyNt.tmt()->push_back( Susy::TruthMet() );
+  Susy::TruthMet* truMetOut = & m_susyNt.tmt()->back();
+  truMetOut->Et  = Et;
+  truMetOut->phi = phi;
 }
 
 /*--------------------------------------------------------------------------------*/

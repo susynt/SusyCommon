@@ -25,6 +25,7 @@ SusyD3PDAna::SusyD3PDAna() :
         m_d3pdTag(D3PD_p1328),
         m_selectPhotons(true),
         m_selectTaus(false),
+        m_selectTruth(false),
         //m_metFlavor("Egamma10NoTau_STVF"),
         m_metFlavor(SUSYMet::STVF),
         m_lumi(LUMI_A_E),
@@ -373,6 +374,27 @@ void SusyD3PDAna::selectSignalPhotons()
   int nPV = getNumGoodVtx();
   m_sigPhotons = get_photons_signal(&d3pd.pho, base_photons, m_susyObj, nPV, !m_isMC, 20.*GeV, etcone40CorrCut, isoType);
 }
+/*--------------------------------------------------------------------------------*/
+// Truth object selection
+/*--------------------------------------------------------------------------------*/
+void SusyD3PDAna::selectTruthObjects()
+{
+  if(m_dbg>=5) cout << "selectTruthObjects" << endl;
+
+  // First the truth particles
+  // DOESN't WORK AT THE MOMENT
+  // m_truParticles = m_recoTruthMatch.LepFromHS_McIdx();
+  // m_truParticles.insert(m_truParticles.end(),m_recoTruthMatch.TauFromHS_McIdx().begin(),m_recoTruthMatch.TauFromHS_McIdx().end());
+
+  // Second the truth jets
+  for(int index=0; index < d3pd.truthJet.n(); index++) {
+    const TruthJetElement* trueJet = & d3pd.truthJet[index];
+    if( trueJet->pt()/GeV > 15. && fabs(trueJet->eta()) < 4.5) m_truJets.push_back(index);
+  }
+
+  // Third and last the truth met
+  m_truMet.SetPxPyPzE(d3pd.met.Truth_NonInt_etx(), d3pd.met.Truth_NonInt_ety(), 0, d3pd.met.Truth_NonInt_sumet());
+}
 
 /*--------------------------------------------------------------------------------*/
 // Clear selected objects
@@ -394,6 +416,8 @@ void SusyD3PDAna::clearObjects()
   m_cutFlags = 0;
 
   m_sigPhotons.clear();
+  m_truParticles.clear();
+  m_truJets.clear();
 }
 
 /*--------------------------------------------------------------------------------*/

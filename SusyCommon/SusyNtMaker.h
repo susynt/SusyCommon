@@ -55,6 +55,9 @@ class SusyNtMaker : public SusyD3PDAna
     void fillTauVars();
     void fillTauVar(int tauIdx);
     void fillMetVars(SusyNtSys sys = NtSys_NOM);
+    void fillTruthParticleVars();
+    void fillTruthJetVars();
+    void fillTruthMetVars();
 
     // Systematic Methods
     void doSystematic();

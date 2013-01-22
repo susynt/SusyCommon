@@ -53,11 +53,13 @@ class SusyD3PDAna : public SusyD3PDInterface
     void selectObjects(SusyNtSys sys = NtSys_NOM){
       selectBaselineObjects(sys);
       selectSignalObjects();
+      if(m_selectTruth) selectTruthObjects();
     }
     void selectBaselineObjects(SusyNtSys sys = NtSys_NOM);
     void selectSignalObjects();
     void performOverlapRemoval();
     void selectSignalPhotons();
+    void selectTruthObjects();
 
     // MissingEt
     void buildMet(SusyNtSys sys = NtSys_NOM);
@@ -209,6 +211,10 @@ class SusyD3PDAna : public SusyD3PDInterface
     // Toggle tau selection and overlap removal
     void setSelectTaus(bool doIt) { m_selectTaus = doIt; }
 
+    // Set-Get truth selection
+    void setSelectTruthObjects(bool doIt) { m_selectTruth = doIt; }
+    bool getSelectTruthObjects(         ) { return m_selectTruth; }
+
     // Set MET flavor - at the moment, only STVF and STVF_JVF are available.
     // Anything else will raise an error.
     void setMetFlavor(std::string metFlav);
@@ -235,6 +241,7 @@ class SusyD3PDAna : public SusyD3PDInterface
 
     bool                        m_selectPhotons;// Toggle photon selection
     bool                        m_selectTaus;   // Toggle tau selection and overlap removal
+    bool                        m_selectTruth;  // Toggle truth selection
 
     //TString                   m_metFlavor;    // Flavor string for MET (e.g. Egamma10NoTau)
     SUSYMet::met_definition     m_metFlavor;    // MET flavor enum (e.g. STVF, STVF_JVF)
@@ -267,6 +274,11 @@ class SusyD3PDAna : public SusyD3PDInterface
 
     // MET
     TLorentzVector              m_met;          // fully corrected MET
+
+    // Truth Objects
+    std::vector<int>            m_truParticles; // selected truth particles
+    std::vector<int>            m_truJets;      // selected truth jets
+    TLorentzVector              m_truMet;       // Truth MET
 
     uint                        m_evtTrigFlags; // Event trigger flags
     

@@ -62,6 +62,9 @@ void help()
   cout << "  --saveTau will save taus"          << endl;
   cout << "     default: off"                   << endl;
 
+  cout << "  --saveTruth will save truth"       << endl;
+  cout << "     default: off"                   << endl;
+
   cout << "  --af2 specifies AF2 samples"       << endl;
   cout << "     default: off"                   << endl;
 
@@ -91,6 +94,7 @@ int main(int argc, char** argv)
   bool sysOn      = false;
   //bool savePh     = false;
   bool saveTau    = false;
+  bool saveTruth  = false;
   bool isAF2      = false;
   bool writeNt    = true;
   D3PDTag tag     = D3PD_p1328;
@@ -127,6 +131,8 @@ int main(int argc, char** argv)
     //savePh = true;
     else if (strcmp(argv[i], "--saveTau") == 0)
       saveTau = true;
+    else if (strcmp(argv[i], "--saveTruth") == 0)
+      saveTruth = true;
     else if (strcmp(argv[i], "--af2") == 0)
       isAF2 = true;
     else if (strcmp(argv[i], "--d3pd1032") == 0)
@@ -152,6 +158,7 @@ int main(int argc, char** argv)
   cout << "  sys     " << sysOn    << endl;
   //cout << "  savePh  " << savePh   << endl;
   cout << "  saveTau " << saveTau  << endl;
+  cout << "  saveTru " << saveTruth<< endl;
   cout << "  isAF2   " << isAF2    << endl;
   cout << "  d3pdtag " << tag      << endl;
   cout << "  metFlav " << metFlav  << endl;
@@ -186,6 +193,7 @@ int main(int argc, char** argv)
   susyAna->setFillNt(writeNt);
   susyAna->setD3PDTag(tag);
   susyAna->setMetFlavor(metFlav);
+  susyAna->setSelectTruthObjects(saveTruth);
 
   // GRL - default is set in SusyD3PDAna::Begin, but now we can override it here
   //TString grl = gSystem->ExpandPathName("$ROOTCOREDIR/data/MultiLep/data12_8TeV.periodAllYear_DetStatus-v53-pro13-04_CoolRunQuery-00-04-08_All_Good_HCP.xml");
