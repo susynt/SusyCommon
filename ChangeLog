@@ -1,5 +1,8 @@
 # vim: set noexpandtab:
 
+2012-01-23 Serhan Mete <amete@cern.ch>
+	* Added truth leptons (both light and taus)
+
 2012-01-22 Serhan Mete <amete@cern.ch>
 	* Implementing the newly added truth variables.
 	* Still work in progress...

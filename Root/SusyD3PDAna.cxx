@@ -381,18 +381,16 @@ void SusyD3PDAna::selectTruthObjects()
 {
   if(m_dbg>=5) cout << "selectTruthObjects" << endl;
 
-  // First the truth particles
-  // DOESN't WORK AT THE MOMENT
-  // m_truParticles = m_recoTruthMatch.LepFromHS_McIdx();
-  // m_truParticles.insert(m_truParticles.end(),m_recoTruthMatch.TauFromHS_McIdx().begin(),m_recoTruthMatch.TauFromHS_McIdx().end());
+  // ==>> First the truth particles
+  // Done under SusyNtMaker::fillTruthParticleVars
 
-  // Second the truth jets
+  // ==>> Second the truth jets
   for(int index=0; index < d3pd.truthJet.n(); index++) {
     const TruthJetElement* trueJet = & d3pd.truthJet[index];
     if( trueJet->pt()/GeV > 15. && fabs(trueJet->eta()) < 4.5) m_truJets.push_back(index);
   }
 
-  // Third and last the truth met
+  // ==>> Third and last the truth met
   m_truMet.SetPxPyPzE(d3pd.met.Truth_NonInt_etx(), d3pd.met.Truth_NonInt_ety(), 0, d3pd.met.Truth_NonInt_sumet());
 }
 
