@@ -1,5 +1,12 @@
 # vim: set noexpandtab:
 
+2012-01-23 Steve
+	* Updated code for SUSYTools-00-02-03
+	* Update default pileup to full 2012 dataset
+	* Added pileup weight for A-E (HCP dataset)
+	* Added TElectronEfficiencyCorrectionTool for medium electron SFs.
+	  From SUSYTools we can only easily get SFs for tight electrons
+
 2012-01-23 Serhan Mete <amete@cern.ch>
 	* Added truth leptons (both light and taus)
 

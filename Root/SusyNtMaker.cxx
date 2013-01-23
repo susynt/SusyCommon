@@ -453,6 +453,7 @@ void SusyNtMaker::fillEventVars()
   evt->wPileupAB3       = m_isMC? getPileupWeightAB3() : 1;
   evt->wPileupAB        = m_isMC? getPileupWeightAB() : 1;
   evt->wPileupIL        = m_isMC? getPileupWeightIL() : 1;
+  evt->wPileupAE        = m_isMC? getPileupWeightAE() : 1;
   evt->xsec             = m_isMC? getXsecWeight() : 1;
   //evt->lumiSF           = m_isMC? getLumiWeight() : 1;             
   evt->sumw             = m_isMC? m_sumw : 1;
@@ -519,53 +520,9 @@ void SusyNtMaker::fillElectronVars(const LeptonInfo* lepIn)
   //eleOut->truthMatchType      = m_isMC? m_recoTruthMatch.fakeType(*lv, element->origin(), element->type()) : -1;
   eleOut->truthType             = m_isMC? m_recoTruthMatch.fakeType(*lv, element->origin(), element->type()) : -1;
 
-  // IsEM quality flags - need to recalculate these variables for p1032 only
-  if(m_d3pdTag >= D3PD_p1181){
-    eleOut->mediumPP    = element->mediumPP();
-    eleOut->tightPP     = element->tightPP();
-  }
-  else{
-    double DEmaxs1 = 0;
-    double rHad = 0;
-    double rHad1 = 0;
-    double ele_et = element->cl_E()/cosh(element->etas2());
-    if(element->emaxs1()+element->Emax2() !=0)
-      DEmaxs1 = (element->emaxs1()-element->Emax2())/(element->emaxs1()+element->Emax2());
-    if(ele_et !=0){
-      rHad = element->Ethad()/ele_et;
-      rHad1 = element->Ethad1()/ele_et;
-    }
-  
-    eleOut->mediumPP = m_susyObj.ST_isMediumPlusPlus(element->etas2(), ele_et, element->f3(),
-						     rHad, rHad1, element->reta(), element->weta2(),
-						     element->f1(), element->wstot(), DEmaxs1, 
-						     element->deltaeta1(), 
-						     element->trackd0_physics(),
-						     element->TRTHighTOutliersRatio(), 
-						     element->nTRTHits(), element->nTRTOutliers(),
-						     element->nSiHits(), 
-						     element->nSCTOutliers()+
-						     element->nPixelOutliers(), element->nPixHits(),
-						     element->nPixelOutliers(), element->nBLHits(),
-						     element->nBLayerOutliers(),
-						     element->expectHitInBLayer());
-    eleOut->tightPP = m_susyObj.ST_isTightPlusPlus(element->etas2(), ele_et, element->f3(),
-						   rHad, rHad1, element->reta(), element->weta2(),
-						   element->f1(), element->wstot(), DEmaxs1, 
-						   element->deltaeta1(), 
-						   element->trackd0_physics(),
-						   element->TRTHighTOutliersRatio(), 
-						   element->nTRTHits(), element->nTRTOutliers(),
-						   element->nSiHits(), 
-						   element->nSCTOutliers()+
-						   element->nPixelOutliers(), element->nPixHits(),
-						   element->nPixelOutliers(), element->nBLHits(),
-						   element->nBLayerOutliers(),
-						   element->expectHitInBLayer(),
-						   element->cl_E()*fabs(element->trackqoverp()),
-						   element->deltaphi2(), 
-						   m_susyObj.GetConvBit(element->isEM()));
-  }
+  // IsEM quality flags - no need to recalculate them
+  eleOut->mediumPP    = element->mediumPP();
+  eleOut->tightPP     = element->tightPP();
 
   eleOut->d0            = element->trackd0pv();
   eleOut->errD0         = element->tracksigd0pv();
@@ -602,9 +559,28 @@ void SusyNtMaker::fillElectronVars(const LeptonInfo* lepIn)
   eleOut->trigFlags     = m_eleTrigFlags[ lepIn->idx() ];
 
   // Efficiency scale factor.  For now, use tightPP if electrons is tightPP, otherwise mediumPP
-  int set               = eleOut->tightPP? 7 : 6;
-  eleOut->effSF         = m_isMC? m_susyObj.GetSignalElecSF   ( element->cl_eta(), lepIn->lv()->Pt(), set ) : 1;
-  eleOut->errEffSF      = m_isMC? m_susyObj.GetSignalElecSFUnc( element->cl_eta(), lepIn->lv()->Pt(), set ) : 1;
+  //int set               = eleOut->tightPP? 7 : 6;
+  //eleOut->effSF         = m_isMC? m_susyObj.GetSignalElecSF   ( element->cl_eta(), lepIn->lv()->Pt(), set ) : 1;
+  //eleOut->errEffSF      = m_isMC? m_susyObj.GetSignalElecSFUnc( element->cl_eta(), lepIn->lv()->Pt(), set ) : 1;
+
+  // Tight electron SFs can come directly from SUSYTools
+  // To get the SF uncert using GetSignalElecSF, we must get the shifted value and take the difference
+  if(eleOut->tightPP){
+    eleOut->effSF       = m_isMC? 
+                          m_susyObj.GetSignalElecSF(element->cl_eta(), lepIn->lv()->Pt(), true, true, false) : 1;
+    eleOut->errEffSF    = m_isMC?
+                          m_susyObj.GetSignalElecSF(element->cl_eta(), lepIn->lv()->Pt(), true, true, false, 
+                                                    200841, SystErr::EEFFUP) - eleOut->effSF : 0;
+  }
+
+  // For the medium SF, need to use our own function
+  else{
+    float sf = 1, uncert = 0;
+    if (m_isMC) get_electron_eff_sf(sf, uncert, element->cl_eta(), lepIn->lv()->Pt(), true, true, false, m_isAF2,
+                                    m_susyObj.GetElectron_recoSF_Class(), m_eleMediumSFTool, 0);
+    eleOut->effSF       = sf;
+    eleOut->errEffSF    = uncert;
+  }
 
   // Do we need this??
   eleOut->idx           = lepIn->idx();

@@ -32,15 +32,20 @@ SusyD3PDAna::SusyD3PDAna() :
         m_sumw(1),
 	m_xsec(-1),
 	m_sys(false),
+        m_eleMediumSFTool(0),
         m_pileup(0),
         m_pileupAB3(0),
         m_pileupAB(0),
         m_pileupIL(0),
+        m_pileupAE(0),
         m_susyXsec(0),
         m_hforTool()
 {
   // Now works!
   m_hforTool.setVerbosity(HforToolD3PD::ERROR);
+
+  // Create the addition electron efficiency SF tool for medium SFs
+  m_eleMediumSFTool = new Root::TElectronEfficiencyCorrectionTool;
 
   #ifdef USEPDFTOOL
   m_pdfTool = new PDFTool(3500000, 1, -1, 21000);
@@ -52,6 +57,10 @@ SusyD3PDAna::SusyD3PDAna() :
 /*--------------------------------------------------------------------------------*/
 SusyD3PDAna::~SusyD3PDAna()
 {
+  if(m_eleMediumSFTool) delete m_eleMediumSFTool;
+  #ifdef USEPDFTOOL
+  if(m_pdfTool) delete m_pdfTool;
+  #endif
 }
 /*--------------------------------------------------------------------------------*/
 // The Begin() function is called at the start of the query.
@@ -86,6 +95,16 @@ void SusyD3PDAna::Begin(TTree* /*tree*/)
   // Turn on jet calibration
   m_susyObj.SetJetCalib(true);
 
+  // Initialize electron medium SF
+  string eleMedFile = getenv("TestArea");
+  eleMedFile += "/ElectronEfficiencyCorrection/data/efficiencySF.offline.Medium.2012.8TeV.rel17p2.v01.root";
+  m_eleMediumSFTool->addFileName(eleMedFile.c_str());
+  if(!m_eleMediumSFTool->initialize()){
+    cout << "SusyD3PDAna::Begin : ERROR initializing TElectronEfficiencyCorrectionTool with file "
+         << eleMedFile << endl;
+    abort();
+  }
+
   // Set the MissingEt flag for STVF
   // This is now done automatically when you call SUSYObjDef::GetMET
   //if(m_metFlavor.Contains("STVF")) m_susyObj.GetMETUtility()->configMissingET(true, true);
@@ -118,7 +137,7 @@ void SusyD3PDAna::Begin(TTree* /*tree*/)
     m_pileup = new Root::TPileupReweighting("PileupReweighting");
     m_pileup->SetDataScaleFactors(1/1.11);
     m_pileup->AddConfigFile("$ROOTCOREDIR/data/PileupReweighting/mc12a_defaults.prw.root");
-    m_pileup->AddLumiCalcFile("$ROOTCOREDIR/data/MultiLep/ilumicalc_histograms_EF_2e12Tvh_loose1_200841-210308.root");
+    m_pileup->AddLumiCalcFile("$ROOTCOREDIR/data/MultiLep/ilumicalc_histograms_EF_2e12Tvh_loose1_200842-215643.root");
     m_pileup->SetUnrepresentedDataAction(2);
     int pileupError = m_pileup->Initialize();
     if(pileupError){
@@ -155,6 +174,17 @@ void SusyD3PDAna::Begin(TTree* /*tree*/)
     m_pileupIL->AddLumiCalcFile("$ROOTCOREDIR/data/MultiLep/ilumicalc_histograms_EF_mu18_tight_mu8_EFFS_213431-215643.root");
     m_pileupIL->SetUnrepresentedDataAction(2);
     pileupError = m_pileupIL->Initialize();
+    if(pileupError){
+      cout << "Problem in pileup initialization.  pileupError = " << pileupError << endl;
+      abort();
+    }
+    // pileup reweighting for 2012 A-E only
+    m_pileupAE = new Root::TPileupReweighting("PileupReweightingAE");
+    m_pileupAE->SetDataScaleFactors(1/1.11);
+    m_pileupAE->AddConfigFile("$ROOTCOREDIR/data/PileupReweighting/mc12a_defaults.prw.root");
+    m_pileupAE->AddLumiCalcFile("$ROOTCOREDIR/data/MultiLep/ilumicalc_histograms_EF_2e12Tvh_loose1_200841-210308.root");
+    m_pileupAE->SetUnrepresentedDataAction(2);
+    pileupError = m_pileupAE->Initialize();
     if(pileupError){
       cout << "Problem in pileup initialization.  pileupError = " << pileupError << endl;
       abort();
@@ -204,6 +234,7 @@ void SusyD3PDAna::Terminate()
     delete m_pileupAB3;
     delete m_pileupAB;
     delete m_pileupIL;
+    delete m_pileupAE;
   }
 }
 
@@ -243,10 +274,12 @@ void SusyD3PDAna::selectBaselineObjects(SusyNtSys sys)
   else if(sys == NtSys_JER       ) susySys = SystErr::JER;        // JER (gaussian)
 
   // Preselection
-  m_preElectrons = get_electrons_baseline( &d3pd.ele, !m_isMC, d3pd.evt.RunNumber(), m_susyObj, 10.*GeV, 2.47, susySys, 
-                                           m_isAF2, m_d3pdTag<D3PD_p1181 );
-  m_preMuons     = get_muons_baseline( &d3pd.muo, !m_isMC, m_susyObj, 10.*GeV, 2.4, susySys );
-  m_preJets      = get_jet_baseline( &d3pd.jet, &d3pd.vtx, &d3pd.evt, !m_isMC, m_susyObj, 20.*GeV, 4.9, susySys, false, goodJets );
+  m_preElectrons = get_electrons_baseline(&d3pd.ele, !m_isMC, d3pd.evt.RunNumber(), m_susyObj, 
+                                          10.*GeV, 2.47, susySys);
+  m_preMuons     = get_muons_baseline(&d3pd.muo, !m_isMC, m_susyObj, 
+                                      10.*GeV, 2.4, susySys);
+  m_preJets      = get_jet_baseline(&d3pd.jet, &d3pd.vtx, &d3pd.evt, !m_isMC, m_susyObj, 
+                                    20.*GeV, 4.9, susySys, false, goodJets);
 
   // Preselect taus
   if(m_selectTaus){
@@ -269,10 +302,12 @@ void SusyD3PDAna::selectBaselineObjects(SusyNtSys sys)
 void SusyD3PDAna::performOverlapRemoval()
 {
   // e-e overlap removal
-  m_baseElectrons = overlap_removal(m_susyObj, &d3pd.ele, m_preElectrons, &d3pd.ele, m_preElectrons, 0.1, true, true);
+  m_baseElectrons = overlap_removal(m_susyObj, &d3pd.ele, m_preElectrons, &d3pd.ele, m_preElectrons, 
+                                    0.1, true, true);
 
   // jet-e overlap removal
-  m_baseJets      = overlap_removal(m_susyObj, &d3pd.jet, m_preJets, &d3pd.ele, m_baseElectrons, 0.2, false, false);
+  m_baseJets      = overlap_removal(m_susyObj, &d3pd.jet, m_preJets, &d3pd.ele, m_baseElectrons, 
+                                    0.2, false, false);
 
   if(m_selectTaus) {
     // tau-e overlap removal
@@ -286,14 +321,16 @@ void SusyD3PDAna::performOverlapRemoval()
   }
 
   // e-jet overlap removal
-  m_baseElectrons = overlap_removal(m_susyObj, &d3pd.ele, m_baseElectrons, &d3pd.jet, m_baseJets, 0.4, false, false);
+  m_baseElectrons = overlap_removal(m_susyObj, &d3pd.ele, m_baseElectrons, &d3pd.jet, m_baseJets, 
+                                    0.4, false, false);
 
   // m-jet overlap removal
   m_baseMuons     = overlap_removal(m_susyObj, &d3pd.muo, m_preMuons, &d3pd.jet, m_baseJets, 0.4, false, false);
 
   // e-m overlap removal
   vector<int> copyElectrons = m_baseElectrons;
-  m_baseElectrons = overlap_removal(m_susyObj, &d3pd.ele, m_baseElectrons, &d3pd.muo, m_baseMuons, 0.1, false, false);
+  m_baseElectrons = overlap_removal(m_susyObj, &d3pd.ele, m_baseElectrons, &d3pd.muo, m_baseMuons, 
+                                    0.1, false, false);
   m_baseMuons     = overlap_removal(m_susyObj, &d3pd.muo, m_baseMuons, &d3pd.ele, copyElectrons, 0.1, false, false);
 
   // m-m overlap removal - need to validate this!!
@@ -312,8 +349,8 @@ void SusyD3PDAna::selectSignalObjects()
 {
   if(m_dbg>=5) cout << "selectSignalObjects" << endl;
   uint nVtx = getNumGoodVtx();
-  m_sigElectrons = get_electrons_signal(&d3pd.ele, m_baseElectrons, nVtx, !m_isMC, m_susyObj, 10.*GeV, 0.16, 0.18, 5., 0.4, 
-                                        m_d3pdTag<D3PD_p1181);
+  m_sigElectrons = get_electrons_signal(&d3pd.ele, m_baseElectrons, nVtx, !m_isMC, m_susyObj, 
+                                        10.*GeV, 0.16, 0.18, 5., 0.4);
   m_sigMuons     = get_muons_signal(&d3pd.muo, m_baseMuons, nVtx, !m_isMC, m_susyObj, 10.*GeV, .12, 3., 1.);
   m_sigJets      = get_jet_signal(&d3pd.jet, m_susyObj, m_baseJets, 20.*GeV, 2.5, 0.75);
   m_sigTaus      = get_taus_signal(&d3pd.tau, m_baseTaus, m_susyObj);
@@ -866,6 +903,11 @@ float SusyD3PDAna::getPileupWeightIL()
 {
   return m_pileupIL->GetCombinedWeight(d3pd.evt.RunNumber(), d3pd.truth.channel_number(), d3pd.evt.averageIntPerXing());
 }
+/*--------------------------------------------------------------------------------*/
+float SusyD3PDAna::getPileupWeightAE()
+{
+  return m_pileupAE->GetCombinedWeight(d3pd.evt.RunNumber(), d3pd.truth.channel_number(), d3pd.evt.averageIntPerXing());
+}
 
 /*--------------------------------------------------------------------------------*/
 // PDF reweighting of 7TeV -> 8TeV
@@ -911,7 +953,7 @@ float SusyD3PDAna::getLepSF(const vector<LeptonInfo>& leptons)
       // Electrons
       if(lep->isElectron()){
         const ElectronElement* el = lep->getElectronElement();
-        lepSF *= m_susyObj.GetSignalElecSF(el->cl_eta(), lep->lv()->Pt());
+        lepSF *= m_susyObj.GetSignalElecSF(el->cl_eta(), lep->lv()->Pt(), true, true, false);
       }
       // Muons
       else{
