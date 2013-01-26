@@ -56,6 +56,9 @@ void help()
   cout << "  --sys will turn on systematic run" << endl;
   cout << "     default: off"                   << endl;
 
+  cout << "  --errXsec set cross section uncert"<< endl;
+  cout << "     default: -1"                    << endl;
+
   //cout << "  --savePh will save photons"        << endl;
   //cout << "     default: off"                   << endl;
 
@@ -87,6 +90,7 @@ int main(int argc, char** argv)
   int dbg         = 0;
   float lumi      = 5831;
   float xsec      = -1;
+  float errXsec   = -1;
   float sumw      = 1;
   string sample   = "";
   string fileList = "fileList.txt";
@@ -127,6 +131,8 @@ int main(int argc, char** argv)
       grl = argv[++i];
     else if (strcmp(argv[i], "--sys") == 0)
       sysOn = true;
+    else if (strcmp(argv[i], "--errXsec") == 0)
+      errXsec = atof(argv[++i]);
     //else if (strcmp(argv[i], "--savePh") == 0)
     //savePh = true;
     else if (strcmp(argv[i], "--saveTau") == 0)
@@ -190,6 +196,7 @@ int main(int argc, char** argv)
   susyAna->setSelectTaus(saveTau);
   susyAna->setAF2(isAF2);
   susyAna->setXsec(xsec);
+  susyAna->setErrXsec(errXsec);
   susyAna->setFillNt(writeNt);
   susyAna->setD3PDTag(tag);
   susyAna->setMetFlavor(metFlav);

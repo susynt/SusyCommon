@@ -455,7 +455,7 @@ void SusyNtMaker::fillEventVars()
   evt->wPileupIL        = m_isMC? getPileupWeightIL() : 1;
   evt->wPileupAE        = m_isMC? getPileupWeightAE() : 1;
   evt->xsec             = m_isMC? getXsecWeight() : 1;
-  //evt->lumiSF           = m_isMC? getLumiWeight() : 1;             
+  evt->errXsec          = m_isMC? m_errXsec : 1;
   evt->sumw             = m_isMC? m_sumw : 1;
 
   evt->pdf_id1          = m_isMC? d3pd.gen.pdf_id1()->at(0)    : 0;

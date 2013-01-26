@@ -31,6 +31,7 @@ SusyD3PDAna::SusyD3PDAna() :
         m_lumi(LUMI_A_E),
         m_sumw(1),
 	m_xsec(-1),
+	m_errXsec(-1),
 	m_sys(false),
         m_eleMediumSFTool(0),
         m_pileup(0),

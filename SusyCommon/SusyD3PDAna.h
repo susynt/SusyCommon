@@ -153,6 +153,8 @@ class SusyD3PDAna : public SusyD3PDInterface
     void setSumw(float sumw) { m_sumw = sumw; }
     // user cross section, overrides susy cross section
     void setXsec(float xsec) { m_xsec = xsec; }
+    // user cross section uncert
+    void setErrXsec(float err) { m_errXsec = err; }
     // pileup weight for full dataset: currently A-D7
     float getPileupWeight();
     // pileup weight for A-B3 (1.037/fb)
@@ -293,6 +295,7 @@ class SusyD3PDAna : public SusyD3PDInterface
     float                       m_lumi;         // normalized luminosity (defaults to 4.7/fb)
     float                       m_sumw;         // sum of mc weights for normalization, must be set by user
     float                       m_xsec;         // optional user cross section, to override susy xsec usage
+    float                       m_errXsec;      // user cross section uncertainty
 
     bool                        m_sys;          // True if you want sys for MC, must be set by user. 
 

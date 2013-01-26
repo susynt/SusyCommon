@@ -1,5 +1,9 @@
 # vim: set noexpandtab:
 
+2012-01-27 Steve
+	* Added errXsec to SusyD3PDAna, saved in SusyNt with NtMaker --errXsec X
+	* Tagging SusyCommon-00-00-56
+
 2012-01-26 Steve
 	* Added support for Default susy MET
 	* Tagging SusyCommon-00-00-55
