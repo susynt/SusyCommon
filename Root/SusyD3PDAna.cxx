@@ -1000,6 +1000,7 @@ void SusyD3PDAna::setMetFlavor(string metFlav)
 {
   if(metFlav=="STVF") m_metFlavor = SUSYMet::STVF;
   else if(metFlav=="STVF_JVF") m_metFlavor = SUSYMet::STVF_JVF;
+  else if(metFlav=="Default") m_metFlavor = SUSYMet::Default;
   else{
     cout << "SusyD3PDAna::setMetFlavor : ERROR : MET flavor " << metFlav << " is not supported!" << endl;
     abort();

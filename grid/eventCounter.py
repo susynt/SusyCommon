@@ -1,7 +1,10 @@
 #!/bin/env python
 
 import sys
-from ROOT import *
+import ROOT
+from ROOT import TChain, TFile, TH1F, TObjString
+
+from argparse import ArgumentParser
 
 ##
 ## eventCounter - a tool for summing MC generator weights
@@ -9,14 +12,22 @@ from ROOT import *
 
 def main():
 
-    if len(sys.argv) < 2:
-        print 'usage:  eventCounter file1,file2,...'
-        return
+    #if len(sys.argv) < 2:
+        #print 'usage:  eventCounter file1,file2,...'
+        #return
+
+    # Job arguments
+    parser = ArgumentParser(description='SUSY D3PD event counter')
+    add_arg = parser.add_argument
+    add_arg('inputfiles', help='comma separated list of input D3PD files')
+    #add_arg('-d', '--dataset', help='input dataset name')
+    args = parser.parse_args()
 
     print 'eventCounter begin'
 
     # parse files
-    files = sys.argv[1].split(',')
+    #files = sys.argv[1].split(',')
+    files = args.inputfiles.split(',')
     print 'files:', files
 
     # d3pd chain
@@ -37,6 +48,7 @@ def main():
     f = TFile('sumWeights.root', 'recreate')
     hRaw = TH1F('rawEntries', 'rawEntries', 1, 0, 2)
     h = TH1F('sumw', 'sumw', 1, 0, 2)
+    #dataset = TObjString('args.dataset')
 
     # Take raw entries directly from chain
     hRaw.Fill(1, d3pdEntries)
@@ -68,6 +80,7 @@ def main():
     # Write out the histo
     h.Write()
     hRaw.Write()
+    #dataset.Write('dataset')
     f.Close()
 
     print 'eventCounter end'

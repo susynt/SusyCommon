@@ -20,7 +20,7 @@ import re
 import subprocess
 
 # Some grid option defaults
-defaultTag='n0118'
+defaultTag='n0122'
 defaultNickname='sfarrell'
 defaultMet='STVF'
 
@@ -38,7 +38,7 @@ def main():
     add_arg('--nickname', default=defaultNickname, help='grid nickname, for naming output DS')
     add_arg('--destSE', default='SLACXRD_SCRATCHDISK', help='replicate output dataset to specified site')
     add_arg('--met', default=defaultMet, help='MET flavor to use', choices=['STVF', 'STVF_JVF'])
-    add_arg('--nGBPerJob', default='MAX', help='prun option')
+    add_arg('--nGBPerJob', default='12', help='prun option')
     add_arg('--sys', type=bool, default=True, help='toggle systematics')
     add_arg('--noSubmit', action='store_true', help='test prun without submitting')
     add_arg('--useShortLivedReplicas', action='store_true', help='prun option')
@@ -84,6 +84,7 @@ def main():
                 # Match pattern
                 if re.search(pattern, line) == None: continue
 
+                # Extract sumw and xsec, if provided
                 inDS = info[0]
                 sumw, xsec = '1', '-1'
                 if len(info) > 1: sumw = info[1]

@@ -1,5 +1,9 @@
 # vim: set noexpandtab:
 
+2012-01-26 Steve
+	* Added support for Default susy MET
+	* Tagging SusyCommon-00-00-55
+
 2012-01-23 Steve
 	* Updated code for SUSYTools-00-02-03
 	* Update default pileup to full 2012 dataset
