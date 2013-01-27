@@ -86,9 +86,10 @@ def main():
 
                 # Extract sumw and xsec, if provided
                 inDS = info[0]
-                sumw, xsec = '1', '-1'
+                sumw, xsec, errXsec = '1', '-1', '-1'
                 if len(info) > 1: sumw = info[1]
                 if len(info) > 2: xsec = info[2]
+                if len(info) > 3: errXsec = info[3]
 
                 # Get sample name
                 sample = re.sub('.merge.*', '', inDS)
@@ -112,7 +113,7 @@ def main():
 
                 # Grid command
                 gridCommand = './gridScript.sh %IN --saveTau --metFlav ' + args.met
-                gridCommand += ' -w ' + sumw + ' -x ' + xsec + ' -s ' + sample
+                gridCommand += ' -w ' + sumw + ' -x ' + xsec + ' -s ' + sample + ' --errXsec ' + errXsec
 
                 # Systematics
                 if args.sys: gridCommand += ' --sys'
