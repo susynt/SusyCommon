@@ -97,8 +97,8 @@ void SusyD3PDAna::Begin(TTree* /*tree*/)
   m_susyObj.SetJetCalib(true);
 
   // Initialize electron medium SF
-  string eleMedFile = getenv("TestArea");
-  eleMedFile += "/ElectronEfficiencyCorrection/data/efficiencySF.offline.Medium.2012.8TeV.rel17p2.v01.root";
+  string eleMedFile = getenv("ROOTCOREDIR");
+  eleMedFile += "/data/ElectronEfficiencyCorrection/efficiencySF.offline.Medium.2012.8TeV.rel17p2.v01.root";
   m_eleMediumSFTool->addFileName(eleMedFile.c_str());
   if(!m_eleMediumSFTool->initialize()){
     cout << "SusyD3PDAna::Begin : ERROR initializing TElectronEfficiencyCorrectionTool with file "

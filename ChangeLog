@@ -1,6 +1,11 @@
 # vim: set noexpandtab:
 
 2012-01-27 Steve
+	* Fixed path for electron med SF file
+		* I was using $TestArea instead of $ROOTCOREDIR, which isn't setup the same way on the grid
+	* Tagging SusyCommon-00-00-57
+
+2012-01-27 Steve
 	* Added errXsec to SusyD3PDAna, saved in SusyNt with NtMaker --errXsec X
 	* Tagging SusyCommon-00-00-56
 
