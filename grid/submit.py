@@ -34,7 +34,7 @@ def main():
     add_arg('-p', '--pattern', help='grep pattern to select datasets')
     add_arg('-t', '--tag', default=defaultTag, help='SusyNt tag to assign')
     add_arg('-v', '--verbose', action='store_true', help='verbose output')
-    add_arg('--athenaTag', default='17.3.1.1', help='athena tag')
+    add_arg('--athenaTag', default='17.3.4.6', help='athena tag')
     add_arg('--nickname', default=defaultNickname, help='grid nickname, for naming output DS')
     add_arg('--destSE', default='SLACXRD_SCRATCHDISK', help='replicate output dataset to specified site')
     add_arg('--met', default=defaultMet, help='MET flavor to use', choices=['STVF', 'STVF_JVF'])
