@@ -37,7 +37,7 @@ def main():
     add_arg('--athenaTag', default='17.3.4.6', help='athena tag')
     add_arg('--nickname', default=defaultNickname, help='grid nickname, for naming output DS')
     add_arg('--destSE', default='SLACXRD_SCRATCHDISK', help='replicate output dataset to specified site')
-    add_arg('--met', default=defaultMet, help='MET flavor to use', choices=['STVF', 'STVF_JVF'])
+    add_arg('--met', default=defaultMet, help='MET flavor to use', choices=['STVF', 'STVF_JVF', 'Default'])
     add_arg('--nGBPerJob', default='12', help='prun option')
     add_arg('--sys', type=bool, default=True, help='toggle systematics')
     add_arg('--noSubmit', action='store_true', help='test prun without submitting')
