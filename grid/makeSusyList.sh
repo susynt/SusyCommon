@@ -24,6 +24,19 @@ function getXsec {
         fi
 
 }
+function getXsecUnc {
+
+        ds=$1
+        # extract dataset ID
+        id=${ds#mc12_8TeV.}
+        id=${id%.Herwigpp*}
+        # slep and noslep files have different format
+        if [[ $ds = *_noslep_* ]]; then
+                cat $TestArea/SusyCommon/data/mode*W_MC1eqMN2.txt | grep $id | awk '{print $5}' | awk '{print 0.01*$1}'
+        else
+                cat $TestArea/SusyCommon/data/mode*lightslep_MC1eqMN2.txt | grep $id | awk '{print $6}' | awk '{print 0.01*$1}' 
+        fi
+}
 
 
 input=$1
@@ -34,8 +47,10 @@ for ds in `cat $input`; do
         sumw=`ami dataset info $ds | grep totalEvents | awk '{print $2}'`
         # Get the cross section from the text file (for now)
         xsec=`getXsec $ds`
+        # Get the cross section uncertainty from the text file (for now)
+        xsecunc=`getXsecUnc $ds`
 
-        echo -e "$ds\t$sumw\t$xsec"
+        echo -e "$ds\t$sumw\t$xsec\t$xsecunc"
 
 done
 
