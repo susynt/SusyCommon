@@ -179,11 +179,13 @@ int main(int argc, char** argv)
   Long64_t nEntries = chain->GetEntries();
   chain->ls();
 
-  // Try to catch cache errors that give empty files
-  if(nEntries == 0 && nEvt != 0){
-    cerr << "ERROR - zero input entries! Probably a problem. Aborting!" << endl;
-    abort();
-  }
+  // Try to catch cache errors that give empty files.
+  // No, empty d3pds can apparently happen in data occasionally.
+  // It's possibliy an error upstream, but not our problem.
+  //if(nEntries == 0 && nEvt != 0){
+    //cerr << "ERROR - zero input entries! Probably a problem. Aborting!" << endl;
+    //abort();
+  //}
 
   // Build the TSelector
   SusyNtMaker* susyAna = new SusyNtMaker();

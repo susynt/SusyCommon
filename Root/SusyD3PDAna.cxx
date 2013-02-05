@@ -537,7 +537,7 @@ void SusyD3PDAna::matchElectronTriggers()
   for(uint i=0; i<m_preElectrons.size(); i++){
     int iEl = m_preElectrons[i];
     const TLorentzVector* lv = & m_susyObj.GetElecTLV(iEl);
-    
+
     // trigger flags
     uint flags = 0;
 

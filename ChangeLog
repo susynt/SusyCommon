@@ -1,29 +1,36 @@
 # vim: set noexpandtab:
 
-2012-01-27 Steve
+2013-02-05 Steve
+	* Updated to SUSYTools-00-02-04
+	* Updated GetSignalMuonSF usage to get the errEffSF
+	* Now saving corrected tau ele BDT flags, using SUSYObjDef.GetCorrectedEleBDTFlag
+	* Removed nEntries==0 abort in NtMaker
+	* Tagging SusyCommon-00-00-58
+
+2013-01-27 Steve
 	* Fixed path for electron med SF file
 		* I was using $TestArea instead of $ROOTCOREDIR, which isn't setup the same way on the grid
 	* Tagging SusyCommon-00-00-57
 
-2012-01-27 Steve
+2013-01-27 Steve
 	* Added errXsec to SusyD3PDAna, saved in SusyNt with NtMaker --errXsec X
 	* Tagging SusyCommon-00-00-56
 
-2012-01-26 Steve
+2013-01-26 Steve
 	* Added support for Default susy MET
 	* Tagging SusyCommon-00-00-55
 
-2012-01-23 Steve
+2013-01-23 Steve
 	* Updated code for SUSYTools-00-02-03
 	* Update default pileup to full 2012 dataset
 	* Added pileup weight for A-E (HCP dataset)
 	* Added TElectronEfficiencyCorrectionTool for medium electron SFs.
 	  From SUSYTools we can only easily get SFs for tight electrons
 
-2012-01-23 Serhan Mete <amete@cern.ch>
+2013-01-23 Serhan Mete <amete@cern.ch>
 	* Added truth leptons (both light and taus)
 
-2012-01-22 Serhan Mete <amete@cern.ch>
+2013-01-22 Serhan Mete <amete@cern.ch>
 	* Implementing the newly added truth variables.
 	* Still work in progress...
 	* Files affected are:

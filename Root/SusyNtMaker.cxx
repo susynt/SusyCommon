@@ -661,9 +661,11 @@ void SusyNtMaker::fillMuonVars(const LeptonInfo* lepIn)
 
   muOut->trigFlags      = m_muoTrigFlags[ lepIn->idx() ];
 
-  muOut->effSF          = m_susyObj.GetSignalMuonSF(lepIn->idx());
-  muOut->errEffSF       = m_susyObj.GetSignalMuonSFUnc(lepIn->idx(), SystErr::MEFFUP);
-  
+  // Syntax of the GetSignalMuonSF has changed.  Now, the same method is used to get the nominal and shifted value.
+  // So, in order to store the uncert, I take the shifted value minus the nominal, and save that.
+  muOut->effSF          = m_isMC? m_susyObj.GetSignalMuonSF(lepIn->idx()) : 1;
+  muOut->errEffSF       = m_isMC? m_susyObj.GetSignalMuonSF(lepIn->idx(), SystErr::MEFFUP) - muOut->effSF : 1;
+
   // Do we need this??
   muOut->idx            = lepIn->idx();
 }
@@ -804,9 +806,20 @@ void SusyNtMaker::fillTauVar(int tauIdx)
   tauOut->jetBDTSigLoose        = element->JetBDTSigLoose();
   tauOut->jetBDTSigMedium       = element->JetBDTSigMedium();
   tauOut->jetBDTSigTight        = element->JetBDTSigTight();
-  tauOut->eleBDTLoose           = element->EleBDTLoose();
-  tauOut->eleBDTMedium          = element->EleBDTMedium();
-  tauOut->eleBDTTight           = element->EleBDTTight();
+
+  // New ele BDT corrections 
+  //tauOut->eleBDTLoose           = element->EleBDTLoose();
+  //tauOut->eleBDTMedium          = element->EleBDTMedium();
+  //tauOut->eleBDTTight           = element->EleBDTTight();
+  tauOut->eleBDTLoose           = m_susyObj.GetCorrectedEleBDTFlag(SUSYTau::TauLoose, element->EleBDTLoose(), 
+                                                                   element->BDTEleScore(), element->numTrack(), 
+                                                                   tauLV->Pt(), element->leadTrack_eta());
+  tauOut->eleBDTMedium          = m_susyObj.GetCorrectedEleBDTFlag(SUSYTau::TauMedium, element->EleBDTMedium(), 
+                                                                   element->BDTEleScore(), element->numTrack(), 
+                                                                   tauLV->Pt(), element->leadTrack_eta());
+  tauOut->eleBDTTight           = m_susyObj.GetCorrectedEleBDTFlag(SUSYTau::TauTight, element->EleBDTTight(), 
+                                                                   element->BDTEleScore(), element->numTrack(), 
+                                                                   tauLV->Pt(), element->leadTrack_eta());
 
   tauOut->muonVeto              = element->muonVeto();
 
