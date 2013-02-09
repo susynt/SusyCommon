@@ -701,6 +701,8 @@ void SusyNtMaker::fillJetVar(int jetIdx)
   jetOut->phi = phi;
   jetOut->m   = m;
 
+  jetOut->detEta        = element->constscale_eta();
+
   jetOut->idx           = jetIdx;
   jetOut->jvf           = element->jvtxf();
   jetOut->truthLabel    = m_isMC? element->flavor_truth_label() : 0;
