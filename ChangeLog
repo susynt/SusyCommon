@@ -1,6 +1,14 @@
 # vim: set noexpandtab:
 
 2013-02-10 Steve
+	* Changed path of muon trigger sf file to new location in MultiLep package.
+		* Default file is on afs, which doesn't work on the grid.
+	* Commented out all usage of period I+L pileup reweighting.
+		* I don't think this will be used anymore, and we already have
+		  too many of these.
+	* Tagging SusyCommon-00-00-60
+
+2013-02-10 Steve
 	* Added tau systematics TES_UP and TES_DN
 	* Added tau efficiency and electron veto scale factors
 	* Tagging SusyCommon-00-00-59

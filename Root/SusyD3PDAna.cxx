@@ -37,7 +37,7 @@ SusyD3PDAna::SusyD3PDAna() :
         m_pileup(0),
         m_pileupAB3(0),
         m_pileupAB(0),
-        m_pileupIL(0),
+        //m_pileupIL(0),
         m_pileupAE(0),
         m_susyXsec(0),
         m_hforTool()
@@ -90,9 +90,16 @@ void SusyD3PDAna::Begin(TTree* /*tree*/)
   cout << "DataStream: " << streamName(m_stream) << endl;
 
   // Setup SUSYTools
+  // TODO: FINISH ME
   m_susyObj.initialize(!m_isMC, m_isAF2,
 		       gSystem->ExpandPathName("$ROOTCOREDIR/data/MuonMomentumCorrections/"),
-		       gSystem->ExpandPathName("$ROOTCOREDIR/data/MuonEfficiencyCorrections/"));
+		       gSystem->ExpandPathName("$ROOTCOREDIR/data/MuonEfficiencyCorrections/"),
+                       "STACO_CB_plus_ST",
+                       "efficiencySF.offline.RecoTrk.2012.8TeV.rel17p2.v02.root",
+                       "efficiencySF.offline.Tight.2012.8TeV.rel17p2.v02.root",
+                       "efficiencySF.e24vhi_medium1_e60_medium1.Tight.2012.8TeV.rel17p2.v02.root",
+                       gSystem->ExpandPathName("$ROOTCOREDIR/data/MultiLep"));
+                       
   // Turn on jet calibration
   m_susyObj.SetJetCalib(true);
 
@@ -169,6 +176,7 @@ void SusyD3PDAna::Begin(TTree* /*tree*/)
       abort();
     }
     // pileup reweighting for 2012 I+L only
+    /*
     m_pileupIL = new Root::TPileupReweighting("PileupReweightingIL");
     m_pileupIL->SetDataScaleFactors(1/1.11);
     m_pileupIL->AddConfigFile("$ROOTCOREDIR/data/PileupReweighting/mc12a_defaults.prw.root");
@@ -178,7 +186,7 @@ void SusyD3PDAna::Begin(TTree* /*tree*/)
     if(pileupError){
       cout << "Problem in pileup initialization.  pileupError = " << pileupError << endl;
       abort();
-    }
+    }*/
     // pileup reweighting for 2012 A-E only
     m_pileupAE = new Root::TPileupReweighting("PileupReweightingAE");
     m_pileupAE->SetDataScaleFactors(1/1.11);
@@ -234,7 +242,7 @@ void SusyD3PDAna::Terminate()
     delete m_pileup;
     delete m_pileupAB3;
     delete m_pileupAB;
-    delete m_pileupIL;
+    //delete m_pileupIL;
     delete m_pileupAE;
   }
 }
@@ -903,10 +911,10 @@ float SusyD3PDAna::getPileupWeightAB()
   return m_pileupAB->GetCombinedWeight(d3pd.evt.RunNumber(), d3pd.truth.channel_number(), d3pd.evt.averageIntPerXing());
 }
 /*--------------------------------------------------------------------------------*/
-float SusyD3PDAna::getPileupWeightIL()
+/*float SusyD3PDAna::getPileupWeightIL()
 {
   return m_pileupIL->GetCombinedWeight(d3pd.evt.RunNumber(), d3pd.truth.channel_number(), d3pd.evt.averageIntPerXing());
-}
+}*/
 /*--------------------------------------------------------------------------------*/
 float SusyD3PDAna::getPileupWeightAE()
 {

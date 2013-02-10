@@ -161,7 +161,8 @@ class SusyD3PDAna : public SusyD3PDInterface
     float getPileupWeightAB3();
     // pileup weight for A-B (5.83/fb)
     float getPileupWeightAB();
-    float getPileupWeightIL();
+    // pileup weight for I+L
+    //float getPileupWeightIL();
     // pileup weight for A-E HCP dataset
     float getPileupWeightAE();
     // PDF reweighting of 7TeV -> 8TeV
@@ -316,7 +317,7 @@ class SusyD3PDAna : public SusyD3PDInterface
     Root::TPileupReweighting*   m_pileup;       // pileup reweighting
     Root::TPileupReweighting*   m_pileupAB3;    // pileup reweighting for 2012 A-B3 only
     Root::TPileupReweighting*   m_pileupAB;     // pileup reweighting for 2012 A-B
-    Root::TPileupReweighting*   m_pileupIL;     // pileup reweighting for 2012 I,L (NOT A RANGE)
+    //Root::TPileupReweighting*   m_pileupIL;     // pileup reweighting for 2012 I,L (NOT A RANGE)
     Root::TPileupReweighting*   m_pileupAE;     // pileup reweighting for 2012 A-H (HCP dataset)
 
     // The SUSY CrossSectionDB has its own map for retrieving xsec info, but
