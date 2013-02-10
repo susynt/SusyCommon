@@ -1,7 +1,8 @@
 # vim: set noexpandtab:
 
 2013-02-10 Steve
-	* Adding tau systematics TES_UP and TES_DN
+	* Added tau systematics TES_UP and TES_DN
+	* Added tau efficiency and electron veto scale factors
 	* Tagging SusyCommon-00-00-59
 
 2013-02-09 Steve
