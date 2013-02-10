@@ -274,6 +274,9 @@ void SusyD3PDAna::selectBaselineObjects(SusyNtSys sys)
   else if(sys == NtSys_JES_DN    ) susySys = SystErr::JESDOWN;    // JES down
   else if(sys == NtSys_JER       ) susySys = SystErr::JER;        // JER (gaussian)
 
+  else if(sys == NtSys_TES_UP    ) susySys = SystErr::TESUP;      // TES up
+  else if(sys == NtSys_TES_DN    ) susySys = SystErr::TESDOWN;    // TES down
+
   // Preselection
   m_preElectrons = get_electrons_baseline(&d3pd.ele, !m_isMC, d3pd.evt.RunNumber(), m_susyObj, 
                                           10.*GeV, 2.47, susySys);

@@ -1,9 +1,12 @@
 # vim: set noexpandtab:
 
+2013-02-10 Steve
+	* Adding tau systematics TES_UP and TES_DN
+	* Tagging SusyCommon-00-00-59
+
 2013-02-09 Steve
 	* Updated to SUSYTools-00-02-05 (no change here)
 	* Added detEta to Jet
-	* Tagging SusyCommon-00-00-59
 
 2013-02-05 Steve
 	* Updated to SUSYTools-00-02-04
