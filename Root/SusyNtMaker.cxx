@@ -616,7 +616,7 @@ void SusyNtMaker::fillMuonVars(const LeptonInfo* lepIn)
 
   // ID coordinates
   muOut->idTrackPt      = element->id_qoverp_exPV() != 0.? 
-                          fabs(sin(element->id_theta_exPV()/element->id_qoverp_exPV()))/GeV : 0.;
+                          fabs(sin(element->id_theta_exPV())/element->id_qoverp_exPV())/GeV : 0.;
   muOut->idTrackEta     = -1.*log(tan(element->id_theta_exPV()/2.));
   muOut->idTrackPhi     = element->id_phi_exPV();
   muOut->idTrackQ       = element->id_qoverp_exPV() < 0 ? -1 : 1;
