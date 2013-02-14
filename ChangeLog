@@ -1,7 +1,7 @@
 # vim: set noexpandtab:
 
 2013-02-14 Steve
-	* Fixed calculation of muon idTrackPt. Parentheses were in the wrong place 
+	* Fixed calculation of muon idTrackPt and msTrackPt. Parentheses were in the wrong place.
 
 2013-02-10 Steve
 	* Changed path of muon trigger sf file to new location in MultiLep package.

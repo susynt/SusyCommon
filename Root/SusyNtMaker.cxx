@@ -623,7 +623,7 @@ void SusyNtMaker::fillMuonVars(const LeptonInfo* lepIn)
 
   // MS coordinates
   muOut->msTrackPt      = element->ms_qoverp() != 0.? 
-                          fabs(sin(element->ms_theta()/element->ms_qoverp()))/GeV : 0.;
+                          fabs(sin(element->ms_theta())/element->ms_qoverp())/GeV : 0.;
   muOut->msTrackEta     = -1.*log(tan(element->ms_theta()/2.));
   muOut->msTrackPhi     = element->ms_phi();
   muOut->msTrackQ       = element->ms_qoverp() < 0 ? -1 : 1;
