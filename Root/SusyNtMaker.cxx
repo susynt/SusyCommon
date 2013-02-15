@@ -710,7 +710,6 @@ void SusyNtMaker::fillJetVar(int jetIdx)
 
   // truth jet matching
   jetOut->matchTruth    = m_isMC? matchTruthJet(jetIdx) : false;
-  //cout << "matchTruth: " << jetOut->matchTruth << endl;
 
   // btag weights
   jetOut->sv0           = element->flavor_weight_SV0();
@@ -1174,8 +1173,6 @@ void SusyNtMaker::saveTauSF(SusyNtSys sys)
 /*--------------------------------------------------------------------------------*/
 void SusyNtMaker::addMissingElectron(const LeptonInfo* lep, SusyNtSys sys)
 {
-  //cout<<"Adding an electron that was missing!"<<endl;
-
   // This electron did not pass nominal cuts, and therefore
   // needs to be added, but with the correct TLV
   
@@ -1222,8 +1219,6 @@ void SusyNtMaker::addMissingElectron(const LeptonInfo* lep, SusyNtSys sys)
 /*--------------------------------------------------------------------------------*/
 void SusyNtMaker::addMissingMuon(const LeptonInfo* lep, SusyNtSys sys)
 {
-  //cout<<"Adding a muon that was missing!"<<endl;
-
   // This muon did not pass nominal cuts, and therefore
   // needs to be added, but with the correct TLV
   
@@ -1314,6 +1309,9 @@ void SusyNtMaker::addMissingJet(int index, SusyNtSys sys)
 /*--------------------------------------------------------------------------------*/
 void SusyNtMaker::addMissingTau(int index, SusyNtSys sys)
 {
+  // This tau did not pass nominal cuts, and therefore
+  // needs to be added, but with the correct TLV.
+
   // Get the systematic shifted E, used to calculate a shift factor
   //TLorentzVector tlv_sys = m_susyObj.GetTauTLV(index);
   //float E_sys = m_susyObj.GetTauTLV(index).E();

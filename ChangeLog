@@ -1,5 +1,8 @@
 # vim: set noexpandtab:
 
+2013-02-15 Steve
+	* Fixed usage of get_tau_baseline for tau systematics
+
 2013-02-14 Steve
 	* Fixed calculation of muon idTrackPt and msTrackPt. Parentheses were in the wrong place.
 	* Tagging SusyCommon-00-00-61

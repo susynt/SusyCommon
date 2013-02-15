@@ -295,7 +295,9 @@ void SusyD3PDAna::selectBaselineObjects(SusyNtSys sys)
 
   // Preselect taus
   if(m_selectTaus){
-    m_preTaus    = get_taus_baseline(&d3pd.tau, m_susyObj);
+    m_preTaus    = get_taus_baseline(&d3pd.tau, m_susyObj, 20.*GeV, 2.5, 
+                                     SUSYTau::TauLoose, SUSYTau::TauLoose, SUSYTau::TauLoose, 
+                                     susySys);
   }
   else{
     m_preTaus.clear();
