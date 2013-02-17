@@ -1,0 +1,10 @@
+group.phys-susy.data12_8TeV.periodA.debugrec_hltacc.PhysCont.NTUP_SUSY.repro14_v01_p1328/
+group.phys-susy.data12_8TeV.periodB.debugrec_hltacc.PhysCont.NTUP_SUSY.repro14_v01_p1328/
+group.phys-susy.data12_8TeV.periodC.debugrec_hltacc.PhysCont.NTUP_SUSY.repro14_v01_p1328/
+group.phys-susy.data12_8TeV.periodD.debugrec_hltacc.PhysCont.NTUP_SUSY.repro14_v01_p1328/
+group.phys-susy.data12_8TeV.periodE.debugrec_hltacc.PhysCont.NTUP_SUSY.repro14_v01_p1328/
+group.phys-susy.data12_8TeV.periodG.debugrec_hltacc.PhysCont.NTUP_SUSY.repro14_v01_p1328/
+group.phys-susy.data12_8TeV.periodH.debugrec_hltacc.PhysCont.NTUP_SUSY.repro14_v01_p1328/
+group.phys-susy.data12_8TeV.periodI.debugrec_hltacc.PhysCont.NTUP_SUSY.t0pro14_v01_p1328/
+group.phys-susy.data12_8TeV.periodJ.debugrec_hltacc.PhysCont.NTUP_SUSY.t0pro14_v01_p1328/
+group.phys-susy.data12_8TeV.periodL.debugrec_hltacc.PhysCont.NTUP_SUSY.t0pro14_v01_p1328/
