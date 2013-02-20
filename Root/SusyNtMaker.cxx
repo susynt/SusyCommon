@@ -893,12 +893,43 @@ void SusyNtMaker::fillMetVars(SusyNtSys sys)
   else if(sys == NtSys_RESOST) metSys = METUtil::ResoSoftTermsUp;
 
   // Save the MET terms
-  metOut->refEle        = m_susyObj.computeMETComponent(METUtil::RefEle, metSys).Mod()/GeV;
-  metOut->refMuo        = m_susyObj.computeMETComponent(METUtil::MuonTotal, metSys).Mod()/GeV;
-  metOut->refJet        = m_susyObj.computeMETComponent(METUtil::RefJet, metSys).Mod()/GeV;
-  metOut->refGamma      = m_susyObj.computeMETComponent(METUtil::RefGamma, metSys).Mod()/GeV;
-  metOut->softJet       = m_susyObj.computeMETComponent(METUtil::SoftJets, metSys).Mod()/GeV;
-  metOut->refCell       = m_susyObj.computeMETComponent(METUtil::CellOutEflow, metSys).Mod()/GeV;
+  TVector2 refEleV   = m_susyObj.computeMETComponent(METUtil::RefEle, metSys);
+  TVector2 refMuoV   = m_susyObj.computeMETComponent(METUtil::MuonTotal, metSys);
+  TVector2 refJetV   = m_susyObj.computeMETComponent(METUtil::RefJet, metSys);
+  TVector2 refGammaV = m_susyObj.computeMETComponent(METUtil::RefGamma, metSys);
+  TVector2 softJetV  = m_susyObj.computeMETComponent(METUtil::SoftJets, metSys);
+  TVector2 refCellV  = m_susyObj.computeMETComponent(METUtil::CellOutEflow, metSys);
+
+  metOut->refEle = refEleV.Mod()/GeV;
+  metOut->refEle_etx = refEleV.Px()/GeV;
+  metOut->refEle_ety = refEleV.Py()/GeV;
+
+  metOut->refMuo = refMuoV.Mod()/GeV;
+  metOut->refMuo_etx = refMuoV.Px()/GeV;
+  metOut->refMuo_ety = refMuoV.Py()/GeV;
+
+  metOut->refJet = refJetV.Mod()/GeV;
+  metOut->refJet_etx = refJetV.Px()/GeV;
+  metOut->refJet_ety = refJetV.Py()/GeV;
+
+  metOut->refGamma = refGammaV.Mod()/GeV;
+  metOut->refGamma_etx = refGammaV.Px()/GeV;
+  metOut->refGamma_ety = refGammaV.Py()/GeV;
+
+  metOut->softJet = softJetV.Mod()/GeV;
+  metOut->softJet_etx = softJetV.Px()/GeV;
+  metOut->softJet_ety = softJetV.Py()/GeV;
+
+  metOut->refCell = refCellV.Mod()/GeV;
+  metOut->refCell_etx = refCellV.Px()/GeV;
+  metOut->refCell_ety = refCellV.Py()/GeV;
+
+  //metOut->refEle        = m_susyObj.computeMETComponent(METUtil::RefEle, metSys).Mod()/GeV;
+  //metOut->refMuo        = m_susyObj.computeMETComponent(METUtil::MuonTotal, metSys).Mod()/GeV;
+  //metOut->refJet        = m_susyObj.computeMETComponent(METUtil::RefJet, metSys).Mod()/GeV;
+  //metOut->refGamma      = m_susyObj.computeMETComponent(METUtil::RefGamma, metSys).Mod()/GeV;
+  //metOut->softJet       = m_susyObj.computeMETComponent(METUtil::SoftJets, metSys).Mod()/GeV;
+  //metOut->refCell       = m_susyObj.computeMETComponent(METUtil::CellOutEflow, metSys).Mod()/GeV;
 }
 /*--------------------------------------------------------------------------------*/
 // Fill Truth Particle variables
