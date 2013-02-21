@@ -20,7 +20,7 @@ import re
 import subprocess
 
 # Some grid option defaults
-defaultTag='n0123'
+defaultTag='n0132'
 defaultNickname='sfarrell'
 defaultMet='STVF'
 
@@ -34,24 +34,25 @@ def main():
     add_arg('-p', '--pattern', help='grep pattern to select datasets')
     add_arg('-t', '--tag', default=defaultTag, help='SusyNt tag to assign')
     add_arg('-v', '--verbose', action='store_true', help='verbose output')
-    add_arg('--athenaTag', default='17.3.4.6', help='athena tag')
+    add_arg('--athenaTag', default='17.2.9.1', help='athena tag')
     add_arg('--nickname', default=defaultNickname, help='grid nickname, for naming output DS')
     add_arg('--destSE', default='SLACXRD_SCRATCHDISK', help='replicate output dataset to specified site')
     add_arg('--met', default=defaultMet, help='MET flavor to use', choices=['STVF', 'STVF_JVF', 'Default'])
-    add_arg('--nGBPerJob', default='12', help='prun option')
     add_arg('--sys', type=bool, default=True, help='toggle systematics')
+    add_arg('--nGBPerJob', default='MAX', help='prun option')
     add_arg('--noSubmit', action='store_true', help='test prun without submitting')
     add_arg('--useShortLivedReplicas', action='store_true', help='prun option')
     args = parser.parse_args()
 
     # Standard options for data
     if args.job == 'data':
-        input_files = ['dataSamples.txt']
+        #input_files = ['dataSamples.txt']
+        input_files = ['data12_Egamma.txt', 'data12_Muons.txt']
         pattern = 'data'
 
     # Standard options for standard model mc
     elif args.job == 'mc':
-        input_files = ['mcSamples.txt', 'mcSecondary.txt']
+        input_files = ['mcSamples.txt']
         pattern = 'mc'
 
     # Standard options for susy signals
@@ -110,6 +111,7 @@ def main():
                     outDS = re.sub('2LeptonFilter', '2L', outDS)
                     outDS = re.sub('UEEE3_CTEQ6L1_', '', outDS)
                     outDS = re.sub('AUET2CTEQ6L1_', '', outDS)
+                    outDS = re.sub('AUET3CTEQ6L1_', '', outDS)
 
                 # Grid command
                 gridCommand = './gridScript.sh %IN --saveTau --metFlav ' + args.met
@@ -131,6 +133,7 @@ def main():
                 # The prun command
                 prunCommand = 'prun --exec "' + gridCommand + '" --useRootCore --tmpDir /tmp ' \
                               '--inTarBall=area.tar --extFile "*.so,*.root" --match "*root*" ' \
+                              '--safetySize=600 ' \
                               '--outputs "susyNt.root,gridFileList.txt" ' + \
                               '--destSE=' + args.destSE + ' --nGBPerJob=' + args.nGBPerJob + \
                               ' --athenaTag=' + args.athenaTag + ' --excludedSite=' + blacklist + \

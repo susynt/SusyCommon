@@ -1,6 +1,7 @@
 #!/bin/bash
 
-outDS="user.Steve.group.phys-susy.data12_8TeV.eventSkim.NTUP_SUSY.t0pro13_v01_p1181_i0001/"
+#outDS="user.Steve.group.phys-susy.data12_8TeV.eventSkim.NTUP_SUSY.t0pro13_v01_p1181_i0001/"
+outDS="user.sfarrell.group.phys-susy.data12_8TeV.periodD.physics_Muons.eventSkim.NTUP_SUSY.t0pro13_v01_p1181_i0002/"
 exclude=MWT2,SARA,GRIF,MANC,TRIUMF,AGLT2
 
 # get the samples of interest
@@ -10,9 +11,10 @@ if [[ $# > 0 ]]; then
 fi
 
 # Loop over samples
-for inDS in `cat dataSamples.txt | grep "$pattern"`; do
+#for inDS in `cat dataSamples.txt | grep "$pattern"`; do
+for inDS in `cat testSamples.txt | grep "$pattern"`; do
 
-        command="./skimEvents.py %IN -l metEvents"
+        command="./skimEvents.py %IN -l testEvents"
 
 	echo 
 	echo "__________________________________________________________________________________________________________"

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-iteration=i15
+iteration=i20
 nickname=sfarrell
 
 #
@@ -46,10 +46,11 @@ for inDS in `cat $1`; do
 	
 	# prun command
 	prun --exec "$command" --tmpDir /tmp --noBuild \
+                --useShortLivedReplicas \
                 --nGBPerJob=MAX \
-                --excludedSite=RHUL,OX,SARA,SHEF,LRZ,MWT2,TRIUMF \
+                --excludedSite=RHUL,ARC \
 		--outputs "sumWeights.root" \
-                --athenaTag=17.3.1.1 \
+                --athenaTag=17.2.9.1 \
 		--inDS  $inDS \
 		--outDS $outDS
         
