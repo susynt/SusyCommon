@@ -26,7 +26,6 @@ SusyD3PDAna::SusyD3PDAna() :
         m_selectPhotons(true),
         m_selectTaus(false),
         m_selectTruth(false),
-        //m_metFlavor("Egamma10NoTau_STVF"),
         m_metFlavor(SUSYMet::STVF),
         m_lumi(LUMI_A_E),
         m_sumw(1),
@@ -91,14 +90,14 @@ void SusyD3PDAna::Begin(TTree* /*tree*/)
 
   // Setup SUSYTools
   // TODO: FINISH ME
-  m_susyObj.initialize(!m_isMC, m_isAF2,
+  m_susyObj.initialize(!m_isMC, m_isAF2, false,
 		       gSystem->ExpandPathName("$ROOTCOREDIR/data/MuonMomentumCorrections/"),
-		       gSystem->ExpandPathName("$ROOTCOREDIR/data/MuonEfficiencyCorrections/"),
-                       "STACO_CB_plus_ST",
-                       "efficiencySF.offline.RecoTrk.2012.8TeV.rel17p2.v02.root",
-                       "efficiencySF.offline.Tight.2012.8TeV.rel17p2.v02.root",
-                       "efficiencySF.e24vhi_medium1_e60_medium1.Tight.2012.8TeV.rel17p2.v02.root",
-                       gSystem->ExpandPathName("$ROOTCOREDIR/data/MultiLep"));
+		       gSystem->ExpandPathName("$ROOTCOREDIR/data/MuonEfficiencyCorrections/"));
+                       //"STACO_CB_plus_ST",
+                       //"efficiencySF.offline.RecoTrk.2012.8TeV.rel17p2.v02.root",
+                       //"efficiencySF.offline.Tight.2012.8TeV.rel17p2.v02.root",
+                       //"efficiencySF.e24vhi_medium1_e60_medium1.Tight.2012.8TeV.rel17p2.v02.root",
+                       //gSystem->ExpandPathName("$ROOTCOREDIR/data/MultiLep"));
                        
   // Turn on jet calibration
   m_susyObj.SetJetCalib(true);

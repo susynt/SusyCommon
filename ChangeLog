@@ -1,5 +1,9 @@
 # vim: set noexpandtab:
 
+2013-02-21 Steve
+	* Updated usage of SUSYObjDef.initialize for SUSYTools-00-02-06-02
+	* Tagging SusyCommon-00-00-64
+
 2013-02-20 Steve
 	* Added x and y components for each MET term
 	* Tagging SusyCommon-00-00-63
