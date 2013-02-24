@@ -75,7 +75,8 @@ void SusyNtMaker::Begin(TTree* /*tree*/)
 
   }
 
-  m_isSusySample = m_sample.Contains("DGemt") || m_sample.Contains("DGstau") || m_sample.Contains("RPV");
+  m_isSusySample = m_sample.Contains("DGemt") || m_sample.Contains("DGstau") || m_sample.Contains("RPV") ||
+                   m_sample.Contains("simplifiedModel") || m_sample.Contains("pMSSM");
 
   // create histogram for cutflow
   //h_cutFlow = new TH1F("cutFlow","Histogram storing cuts applied upstream", 5, -0.5, 3.5);
@@ -240,7 +241,8 @@ bool SusyNtMaker::selectEvent()
   m_susyNt.clear();
 
   // Susy final state
-  m_susyFinalState = m_isSusySample? get_finalState(&d3pd.truth) : -1;
+  //m_susyFinalState = m_isSusySample? get_finalState(d3pd.truth) : -1;
+  m_susyFinalState = m_isSusySample? get_finalState(d3pd.evt.SUSY_Spart1_pdgId(), d3pd.evt.SUSY_Spart2_pdgId()) : -1;
   TH1F* h_procCutFlow = m_isSusySample? getProcCutFlow(m_susyFinalState) : 0;
   float w = m_isMC? d3pd.truth.event_weight() : 1;
 

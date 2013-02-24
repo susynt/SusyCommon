@@ -1,5 +1,10 @@
 # vim: set noexpandtab:
 
+2013-02-24 Steve
+	* Added more sample name checks for m_isSusySample: simplifiedModel, pMSSM
+		* Maybe we should implement a better procedure for controlling the finalState flag
+	* Switched to new get_finalState which takes the sparticle IDs directly from the d3pd
+
 2013-02-21 Steve
 	* Updated usage of SUSYObjDef.initialize for SUSYTools-00-02-06-02
 	* Tagging SusyCommon-00-00-64
