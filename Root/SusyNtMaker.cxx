@@ -151,7 +151,11 @@ Bool_t SusyNtMaker::Process(Long64_t entry)
   }
 
   if(selectEvent() && m_fillNt){
-    m_outTree->Fill(); 
+    int bytes = m_outTree->Fill(); 
+    if(bytes==-1){
+      cout << "SusyNtMaker ERROR filling tree!  Abort!" << endl;
+      abort();
+    }
     n_evt_saved++;
   }
 

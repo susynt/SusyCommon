@@ -1,5 +1,8 @@
 # vim: set noexpandtab:
 
+2013-03-01 Steve
+	* Added byte check to tree->Fill in SusyNtMaker to hopefully catch write errors
+
 2013-02-24 Steve
 	* Added more sample name checks for m_isSusySample: simplifiedModel, pMSSM
 		* Maybe we should implement a better procedure for controlling the finalState flag
