@@ -2,6 +2,7 @@
 
 2013-03-01 Steve
 	* Added byte check to tree->Fill in SusyNtMaker to hopefully catch write errors
+	* Tagging SusyCommon-00-00-65
 
 2013-02-24 Steve
 	* Added more sample name checks for m_isSusySample: simplifiedModel, pMSSM
