@@ -29,6 +29,7 @@ SusyNtMaker::SusyNtMaker() : m_fillNt(true)
   n_evt_initial=0;
   n_evt_grl=0;
   n_evt_ttcVeto=0;
+  n_evt_WwSherpa=0;
   n_evt_larErr=0;
   n_evt_tileErr=0;
   n_evt_larHole=0;
@@ -98,20 +99,21 @@ void SusyNtMaker::Begin(TTree* /*tree*/)
 TH1F* SusyNtMaker::makeCutFlow(const char* name, const char* title)
 {
   //TH1F* h = new TH1F(name, title, 9, -0.5, 3.5);
-  TH1F* h = new TH1F(name, title, 13, 0., 13.);
+  TH1F* h = new TH1F(name, title, 14, 0., 14.);
   h->GetXaxis()->SetBinLabel(1, "Initial");
   h->GetXaxis()->SetBinLabel(2, "GRL");
   h->GetXaxis()->SetBinLabel(3, "LAr Error");
   h->GetXaxis()->SetBinLabel(4, "Tile Error");
   h->GetXaxis()->SetBinLabel(5, "TTC Veto");
   h->GetXaxis()->SetBinLabel(6, "Good Vertex");
-  h->GetXaxis()->SetBinLabel(7, "Hot Spot");
-  h->GetXaxis()->SetBinLabel(8, "Bad Jet");
-  h->GetXaxis()->SetBinLabel(9, "Bad Muon");
-  h->GetXaxis()->SetBinLabel(10, "Cosmic");
-  h->GetXaxis()->SetBinLabel(11, ">=1 lep");
-  h->GetXaxis()->SetBinLabel(12, ">=2 lep");
-  h->GetXaxis()->SetBinLabel(13, "==3 lep");
+  h->GetXaxis()->SetBinLabel(7, "Buggy WWSherpa");
+  h->GetXaxis()->SetBinLabel(8, "Hot Spot");
+  h->GetXaxis()->SetBinLabel(9, "Bad Jet");
+  h->GetXaxis()->SetBinLabel(10, "Bad Muon");
+  h->GetXaxis()->SetBinLabel(11, "Cosmic");
+  h->GetXaxis()->SetBinLabel(12, ">=1 lep");
+  h->GetXaxis()->SetBinLabel(13, ">=2 lep");
+  h->GetXaxis()->SetBinLabel(14, "==3 lep");
   return h;
 }
 /*--------------------------------------------------------------------------------*/
@@ -193,6 +195,7 @@ void SusyNtMaker::Terminate()
   cout << "  TileErr  " << n_evt_tileErr  << endl;
   cout << "  TTC Veto " << n_evt_ttcVeto << endl;
   cout << "  GoodVtx  " << n_evt_goodVtx << endl;
+  cout << "  WW Sherpa" << n_evt_WwSherpa<< endl;
   //cout << "  LarHole  " << n_evt_larHole << endl;
   cout << "  HotSpot  " << n_evt_hotSpot << endl;
   cout << "  BadJet   " << n_evt_badJet  << endl;
@@ -299,6 +302,11 @@ bool SusyNtMaker::selectEvent()
   FillCutFlow();
   n_evt_goodVtx++;
 
+  if( isBuggyWwSherpaSample(d3pd.truth.channel_number())
+      && hasRadiativeBquark(d3pd.truth.pdgId(), d3pd.truth.status()) ) return false;
+  FillCutFlow();
+  n_evt_WwSherpa++;
+
   //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-//  
   // Get Nominal Objects
   
@@ -327,7 +335,7 @@ bool SusyNtMaker::selectEvent()
       // Bad muon veto
       if(m_cutFlags & ECut_BadMuon)
       {
-        FillCutFlow();
+	FillCutFlow();
         n_evt_badMu++;
 
         // Cosmic muon veto
@@ -1375,6 +1383,21 @@ void SusyNtMaker::addMissingTau(int index, SusyNtSys sys)
   //float sf = E_sys / GeV / tau->E();
   //if(sys == NtSys_TES_UP) tau->tes_up = sf;
   //if(sys == NtSys_TES_DN) tau->tes_dn = sf;
+}
+/*--------------------------------------------------------------------------------*/
+bool SusyNtMaker::isBuggyWwSherpaSample(const int &dsid)
+{
+  return (dsid==126892 || dsid==157817 || dsid==157818 || dsid==157819);
+}
+/*--------------------------------------------------------------------------------*/
+bool SusyNtMaker::hasRadiativeBquark(const vint_t *pdg, const vint_t *status)
+{
+  if(!pdg || !status || pdg->size()!=status->size()) return false;
+  const vint_t &p = *pdg;
+  const vint_t &s = *status;
+  const int pdgB(5), statRad(3); 
+  for(size_t i=0; i<p.size(); ++i) if(abs(p[i])==pdgB && s[i]==statRad) return true;
+  return false;
 }
 
 #undef GeV

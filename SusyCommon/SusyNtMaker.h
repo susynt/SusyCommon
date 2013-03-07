@@ -18,7 +18,9 @@
 
 class SusyNtMaker : public SusyD3PDAna
 {
-  
+
+ public:
+  typedef std::vector< int > vint_t;
   public:
 
     // Constructor and destructor
@@ -97,7 +99,10 @@ class SusyNtMaker : public SusyD3PDAna
 
     // Toggle SusyNt file writing
     void setFillNt(bool fill=true) { m_fillNt = fill; }
-    
+
+ private:
+    static bool isBuggyWwSherpaSample(const int &dsid); //!< see thread "Diboson MC Truth Discrepancy" atlas-phys-susy-d3pd.cern.ch, Mar2013
+    static bool hasRadiativeBquark(const vint_t *pdg, const vint_t *status);
  protected:
     
     TFile*              m_outTreeFile;  // output tree file
@@ -121,6 +126,7 @@ class SusyNtMaker : public SusyD3PDAna
     uint                n_evt_initial;
     uint                n_evt_grl;
     uint                n_evt_ttcVeto;
+    uint                n_evt_WwSherpa;
     uint                n_evt_larErr;
     uint                n_evt_tileErr;
     uint                n_evt_larHole;
