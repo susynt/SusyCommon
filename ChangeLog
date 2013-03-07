@@ -1,5 +1,8 @@
 # vim: set noexpandtab:
 
+2013-03-06 Davide
+	* Skip events with radiative b from buggy WW Sherpa samples (diff -r 318495:318496)
+	* Add truth Higgs decay for WH (diff SusyCommon-00-00-62 SusyCommon-00-00-62-branch)
 2013-03-01 Steve
 	* Added byte check to tree->Fill in SusyNtMaker to hopefully catch write errors
 	* Tagging SusyCommon-00-00-65
