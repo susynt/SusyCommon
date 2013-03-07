@@ -111,7 +111,8 @@ class SusyNtMaker : public SusyD3PDAna
     Susy::SusyNtObject  m_susyNt;       // SusyNt interface
 
     bool                m_fillNt;       // Flag to turn off Nt filling (for fast cutflow checks)
-
+    bool                m_isWhSample;   // is WH sample
+    int                 m_hDecay;       // higgs decay type (see WhTruthExtractor::Hdecays)
     // Some object counts
     uint                n_base_ele;
     uint                n_base_muo;

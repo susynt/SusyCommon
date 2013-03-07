@@ -8,6 +8,7 @@
 #include "MultiLep/TruthTools.h"
 
 #include "SusyCommon/SusyNtMaker.h"
+#include "SusyNtuple/WhTruthExtractor.h"
 
 using namespace std;
 
@@ -16,7 +17,9 @@ using namespace std;
 /*--------------------------------------------------------------------------------*/
 // SusyNtMaker Constructor
 /*--------------------------------------------------------------------------------*/
-SusyNtMaker::SusyNtMaker() : m_fillNt(true)
+SusyNtMaker::SusyNtMaker() : m_fillNt(true),
+			     m_isWhSample(false),
+			     m_hDecay(-1)
 {
   n_base_ele=0;
   n_base_muo=0;
@@ -78,7 +81,7 @@ void SusyNtMaker::Begin(TTree* /*tree*/)
 
   m_isSusySample = m_sample.Contains("DGemt") || m_sample.Contains("DGstau") || m_sample.Contains("RPV") ||
                    m_sample.Contains("simplifiedModel") || m_sample.Contains("pMSSM");
-
+  m_isWhSample = m_sample.Contains("simplifiedModel_wA_noslep_WH");
   // create histogram for cutflow
   //h_cutFlow = new TH1F("cutFlow","Histogram storing cuts applied upstream", 5, -0.5, 3.5);
   //h_cutFlow->GetXaxis()->SetBinLabel(1, "total");
@@ -250,6 +253,9 @@ bool SusyNtMaker::selectEvent()
   // Susy final state
   //m_susyFinalState = m_isSusySample? get_finalState(d3pd.truth) : -1;
   m_susyFinalState = m_isSusySample? get_finalState(d3pd.evt.SUSY_Spart1_pdgId(), d3pd.evt.SUSY_Spart2_pdgId()) : -1;
+  m_hDecay = m_isWhSample ? WhTruthExtractor().update(d3pd.truth.pdgId(),
+						      d3pd.truth.child_index(),
+						      d3pd.truth.parent_index()) : -1;
   TH1F* h_procCutFlow = m_isSusySample? getProcCutFlow(m_susyFinalState) : 0;
   float w = m_isMC? d3pd.truth.event_weight() : 1;
 
@@ -459,6 +465,7 @@ void SusyNtMaker::fillEventVars()
   // SUSY final state
   //evt->susyFinalState   = m_isSusySample? get_finalState(&d3pd.truth) : -1;
   evt->susyFinalState   = m_susyFinalState;
+  evt->hDecay           = m_hDecay;
 
   evt->passMllForAlpgen = m_isMC? PassMllForAlpgen(&d3pd.truth) : true;
 
