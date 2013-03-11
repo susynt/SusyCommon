@@ -225,6 +225,8 @@ class SusyD3PDAna : public SusyD3PDInterface
     void setMetFlavor(std::string metFlav);
     //void setMetFlavor(TString metFlav) { m_metFlavor = metFlav; }
     
+    void setUseMetMuons(bool useMetMu){ m_useMetMuons = useMetMu; };
+
     //
     // Event dumps
     //
@@ -248,6 +250,8 @@ class SusyD3PDAna : public SusyD3PDInterface
     bool                        m_selectTaus;   // Toggle tau selection and overlap removal
     bool                        m_selectTruth;  // Toggle truth selection
 
+    bool                        m_useMetMuons;  // Use appropriate muons for met
+
     //TString                   m_metFlavor;    // Flavor string for MET (e.g. Egamma10NoTau)
     SUSYMet::met_definition     m_metFlavor;    // MET flavor enum (e.g. STVF, STVF_JVF)
 
@@ -261,6 +265,7 @@ class SusyD3PDAna : public SusyD3PDInterface
     std::vector<LeptonInfo>     m_preLeptons;   // selected leptons
     std::vector<int>            m_preJets;      // selected jets
     std::vector<int>            m_preTaus;      // selected taus
+    std::vector<int>            m_metMuons;     // selected muons with larger eta cut for met calc.
     
     // "baseline" objects pass selection + overlap removal
     std::vector<int>            m_baseElectrons;// baseline electrons

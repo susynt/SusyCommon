@@ -308,7 +308,7 @@ bool SusyNtMaker::selectEvent()
   FillCutFlow();
   n_evt_goodVtx++;
 
-  if( isBuggyWwSherpaSample(d3pd.truth.channel_number())
+  if( m_isMC && isBuggyWwSherpaSample(d3pd.truth.channel_number())
       && hasRadiativeBquark(d3pd.truth.pdgId(), d3pd.truth.status()) ) return false;
   FillCutFlow();
   n_evt_WwSherpa++;

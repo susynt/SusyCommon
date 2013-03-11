@@ -77,6 +77,10 @@ void help()
   cout << "  --metFlav set met flavor"          << endl;
   cout << "     default: STVF"                  << endl;
 
+  cout << "  --useMetMuons set to use met muons"<< endl;
+  cout << "     for calculating missing energy "<< endl;
+  cout << "     default: off"                   << endl;
+
   cout << "  -h print this help"                << endl;
 }
 
@@ -103,6 +107,7 @@ int main(int argc, char** argv)
   bool writeNt    = true;
   D3PDTag tag     = D3PD_p1328;
   string metFlav  = "STVF";
+  bool useMetMu   = false;
 
   cout << "SusyNtMaker" << endl;
   cout << endl;
@@ -145,6 +150,8 @@ int main(int argc, char** argv)
       tag = D3PD_p1032;
     else if (strcmp(argv[i], "--metFlav") == 0)
       metFlav = argv[++i];
+    else if (strcmp(argv[i], "--useMetMuons") == 0)
+      useMetMu = true;
     //if (strcmp(argv[i], "-h") == 0)
     else
     {
@@ -163,13 +170,14 @@ int main(int argc, char** argv)
   cout << "  grl     " << grl      << endl;
   cout << "  sys     " << sysOn    << endl;
   //cout << "  savePh  " << savePh   << endl;
-  cout << "  saveTau " << saveTau  << endl;
-  cout << "  saveTru " << saveTruth<< endl;
-  cout << "  isAF2   " << isAF2    << endl;
-  cout << "  d3pdtag " << tag      << endl;
-  cout << "  metFlav " << metFlav  << endl;
-  cout << "  lumi    " << lumi     << endl;
-  cout << "  xsec    " << xsec     << endl;
+  cout << "  saveTau   " << saveTau  << endl;
+  cout << "  saveTru   " << saveTruth<< endl;
+  cout << "  isAF2     " << isAF2    << endl;
+  cout << "  d3pdtag   " << tag      << endl;
+  cout << "  metFlav   " << metFlav  << endl;
+  cout << "  lumi      " << lumi     << endl;
+  cout << "  xsec      " << xsec     << endl;
+  cout << "  useMetMu: " << useMetMu << endl;
   cout << endl;
 
   // Build the input chain
@@ -203,6 +211,7 @@ int main(int argc, char** argv)
   susyAna->setD3PDTag(tag);
   susyAna->setMetFlavor(metFlav);
   susyAna->setSelectTruthObjects(saveTruth);
+  susyAna->setUseMetMuons(useMetMu);
 
   // GRL - default is set in SusyD3PDAna::Begin, but now we can override it here
   //TString grl = gSystem->ExpandPathName("$ROOTCOREDIR/data/MultiLep/data12_8TeV.periodAllYear_DetStatus-v53-pro13-04_CoolRunQuery-00-04-08_All_Good_HCP.xml");

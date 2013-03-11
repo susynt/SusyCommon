@@ -26,6 +26,7 @@ SusyD3PDAna::SusyD3PDAna() :
         m_selectPhotons(true),
         m_selectTaus(false),
         m_selectTruth(false),
+	m_useMetMuons(false),
         m_metFlavor(SUSYMet::STVF),
         m_lumi(LUMI_A_E),
         m_sumw(1),
@@ -292,6 +293,11 @@ void SusyD3PDAna::selectBaselineObjects(SusyNtSys sys)
   m_preJets      = get_jet_baseline(&d3pd.jet, &d3pd.vtx, &d3pd.evt, !m_isMC, m_susyObj, 
                                     20.*GeV, 4.9, susySys, false, goodJets);
 
+  // Selection for met muons
+  // Diff with preMuons is |eta| selection
+  m_metMuons     = get_muons_baseline(&d3pd.muo, !m_isMC, m_susyObj, 
+                                      10.*GeV, 2.5, susySys);
+
   // Preselect taus
   if(m_selectTaus){
     m_preTaus    = get_taus_baseline(&d3pd.tau, m_susyObj, 20.*GeV, 2.5, 
@@ -397,8 +403,12 @@ void SusyD3PDAna::buildMet(SusyNtSys sys)
 
   // Need electrons with nonzero met weight in order to calculate the MET
   vector<int> metElectrons = get_electrons_met(&d3pd.ele, m_susyObj);
-  TVector2 metVector = GetMetVector(m_susyObj, &d3pd.jet, &d3pd.muo, &d3pd.ele, &d3pd.met, &d3pd.evt,
-                                    m_preMuons, m_baseElectrons, metElectrons, susySys, m_metFlavor);
+  TVector2 metVector =  !m_useMetMuons ? 
+    GetMetVector(m_susyObj, &d3pd.jet, &d3pd.muo, &d3pd.ele, &d3pd.met, &d3pd.evt,
+		 m_preMuons, m_baseElectrons, metElectrons, susySys, m_metFlavor) :
+    GetMetVector(m_susyObj, &d3pd.jet, &d3pd.muo, &d3pd.ele, &d3pd.met, &d3pd.evt,
+		 m_metMuons, m_baseElectrons, metElectrons, susySys, m_metFlavor);
+    
   m_met.SetPxPyPzE(metVector.X(), metVector.Y(), 0, metVector.Mod());
 }
 
@@ -466,6 +476,8 @@ void SusyD3PDAna::clearObjects()
   m_sigPhotons.clear();
   m_truParticles.clear();
   m_truJets.clear();
+
+  m_metMuons.clear();
 }
 
 /*--------------------------------------------------------------------------------*/
