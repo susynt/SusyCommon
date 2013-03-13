@@ -1,13 +1,18 @@
 # vim: set noexpandtab:
+
+2013-03-13 Steve
+	* Tagging SusyCommon-00-00-66
+
 2013-03-11 davide
 	* set value of Event::mllMcTruth according to IsAlpgenLowMass->MllForAlpgen, IsSherpaZll->MllForSherpa
+
 2013-03-11 Matt
 	* Added new muon vector for calculating the met with muons in 2.4<|eta|<2.5
 	         * This was a 'bug' on our side and should be fixed for all analysis post conference
 	* Added flag to turn on the use of these muons setUseMetMuons(bool) to use. 
 	* Added option in NtMaker to set flag --useMetMuons
 	* Fixed missing m_isMC in buggy sherpa method, otherwise would complain when running over data
-	
+
 2013-03-07 Davide
 	* Add grid/countEventsPerSample.py
 
