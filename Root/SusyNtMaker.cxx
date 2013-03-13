@@ -463,8 +463,8 @@ void SusyNtMaker::fillEventVars()
   evt->hfor             = m_isMC? getHFORDecision() : -1;
 
   // SUSY final state
-  //evt->susyFinalState   = m_isSusySample? get_finalState(&d3pd.truth) : -1;
   evt->susyFinalState   = m_susyFinalState;
+
   int dsid = d3pd.truth.channel_number();
   float mZ = -1.0, mZtruthMax = 40.0;
   if     (m_isMC && (IsAlpgenLowMass(dsid) || IsAlpgenPythiaZll(dsid))) mZ = MllForAlpgen(&d3pd.truth);
