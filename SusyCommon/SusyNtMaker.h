@@ -100,6 +100,9 @@ class SusyNtMaker : public SusyD3PDAna
     // Toggle SusyNt file writing
     void setFillNt(bool fill=true) { m_fillNt = fill; }
 
+    // Toggle filtering
+    void setFilter(bool filter=true){ m_filter = filter; }
+
  private:
     static bool isBuggyWwSherpaSample(const int &dsid); //!< see thread "Diboson MC Truth Discrepancy" atlas-phys-susy-d3pd.cern.ch, Mar2013
     static bool hasRadiativeBquark(const vint_t *pdg, const vint_t *status);
@@ -113,6 +116,9 @@ class SusyNtMaker : public SusyD3PDAna
     bool                m_fillNt;       // Flag to turn off Nt filling (for fast cutflow checks)
     bool                m_isWhSample;   // is WH sample
     int                 m_hDecay;       // higgs decay type (see WhTruthExtractor::Hdecays)
+
+    bool                m_filter;       // Flag to turn off filtering for signal samples
+
     // Some object counts
     uint                n_base_ele;
     uint                n_base_muo;

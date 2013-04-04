@@ -81,6 +81,9 @@ void help()
   cout << "     for calculating missing energy "<< endl;
   cout << "     default: off"                   << endl;
 
+  cout << "  --filterOff turns off filtering"   << endl;
+  cout << "     default: filter is on"          << endl;
+
   cout << "  -h print this help"                << endl;
 }
 
@@ -108,6 +111,7 @@ int main(int argc, char** argv)
   D3PDTag tag     = D3PD_p1328;
   string metFlav  = "STVF";
   bool useMetMu   = false;
+  bool filter     = true;
 
   cout << "SusyNtMaker" << endl;
   cout << endl;
@@ -152,6 +156,8 @@ int main(int argc, char** argv)
       metFlav = argv[++i];
     else if (strcmp(argv[i], "--useMetMuons") == 0)
       useMetMu = true;
+    else if (strcmp(argv[i], "--filterOff") == 0)
+      filter = false;
     //if (strcmp(argv[i], "-h") == 0)
     else
     {
@@ -177,7 +183,8 @@ int main(int argc, char** argv)
   cout << "  metFlav   " << metFlav  << endl;
   cout << "  lumi      " << lumi     << endl;
   cout << "  xsec      " << xsec     << endl;
-  cout << "  useMetMu: " << useMetMu << endl;
+  cout << "  useMetMu  " << useMetMu << endl;
+  cout << "  filter    " << filter   << endl;
   cout << endl;
 
   // Build the input chain
@@ -212,6 +219,7 @@ int main(int argc, char** argv)
   susyAna->setMetFlavor(metFlav);
   susyAna->setSelectTruthObjects(saveTruth);
   susyAna->setUseMetMuons(useMetMu);
+  susyAna->setFilter(filter);
 
   // GRL - default is set in SusyD3PDAna::Begin, but now we can override it here
   //TString grl = gSystem->ExpandPathName("$ROOTCOREDIR/data/MultiLep/data12_8TeV.periodAllYear_DetStatus-v53-pro13-04_CoolRunQuery-00-04-08_All_Good_HCP.xml");

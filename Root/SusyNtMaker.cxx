@@ -19,7 +19,8 @@ using namespace std;
 /*--------------------------------------------------------------------------------*/
 SusyNtMaker::SusyNtMaker() : m_fillNt(true),
 			     m_isWhSample(false),
-			     m_hDecay(-1)
+			     m_hDecay(-1),
+			     m_filter(true)
 {
   n_base_ele=0;
   n_base_muo=0;
@@ -281,34 +282,34 @@ bool SusyNtMaker::selectEvent()
 
   // grl
   //if(!passGRL()) return false;
-  if((m_cutFlags & ECut_GRL) == 0) return false;
+  if(m_filter && (m_cutFlags & ECut_GRL) == 0) return false;
   FillCutFlow();
   n_evt_grl++;
 
   // larErr
   //if(!passLarErr()) return false;
-  if((m_cutFlags & ECut_LarErr) == 0) return false;
+  if(m_filter && (m_cutFlags & ECut_LarErr) == 0) return false;
   FillCutFlow();
   n_evt_larErr++;
 
   // tileErr
-  if((m_cutFlags & ECut_TileErr) == 0) return false;
+  if(m_filter && (m_cutFlags & ECut_TileErr) == 0) return false;
   FillCutFlow();
   n_evt_tileErr++;
 
   // Incomplete TTC event veto
   //if(!passTTCVeto()) return false;
-  if((m_cutFlags & ECut_TTC) == 0) return false;
+  if(m_filter && (m_cutFlags & ECut_TTC) == 0) return false;
   FillCutFlow();
   n_evt_ttcVeto++;
 
   // primary vertex cut is actually filtered
   //if(!passGoodVtx()) return false; 
-  if((m_cutFlags & ECut_GoodVtx) == 0) return false;
+  if(m_filter && (m_cutFlags & ECut_GoodVtx) == 0) return false;
   FillCutFlow();
   n_evt_goodVtx++;
 
-  if( m_isMC && isBuggyWwSherpaSample(d3pd.truth.channel_number())
+  if( m_filter && m_isMC && isBuggyWwSherpaSample(d3pd.truth.channel_number())
       && hasRadiativeBquark(d3pd.truth.pdgId(), d3pd.truth.status()) ) return false;
   FillCutFlow();
   n_evt_WwSherpa++;
@@ -414,7 +415,7 @@ bool SusyNtMaker::selectEvent()
 
     // For filling the output tree, require at least 2 pre-selected leptons (baseline before OR)
     // Now counting taus as well!
-    if((m_susyNt.ele()->size() + m_susyNt.muo()->size() + m_susyNt.tau()->size()) < 2)  return false;
+    if(m_filter && (m_susyNt.ele()->size() + m_susyNt.muo()->size() + m_susyNt.tau()->size()) < 2)  return false;
 
   }
   
