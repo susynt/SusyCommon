@@ -89,7 +89,7 @@ def main():
                 inDS = info[0]
                 sumw, xsec, errXsec = '1', '-1', '-1'
                 if len(info) > 1: sumw = info[1]
-                if len(info) > 2: xsec = info[2]
+                if len(info) > 2: xsec = str(eval(info[2])) if '*' in info[2] else info[2]
                 if len(info) > 3: errXsec = info[3]
 
                 # Get sample name
