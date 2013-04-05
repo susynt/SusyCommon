@@ -1,161 +1,161 @@
-mc12_8TeV.176480.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.5420344
-mc12_8TeV.176481.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.1279390
-mc12_8TeV.176482.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.1279390
-mc12_8TeV.176448.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.6162570
-mc12_8TeV.176449.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.6185770
-mc12_8TeV.176450.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.4251750
-mc12_8TeV.176451.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.4248800
-mc12_8TeV.176452.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.3034630
-mc12_8TeV.176453.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.3034150
-mc12_8TeV.176454.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.2226890
-mc12_8TeV.176455.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.2223780
-mc12_8TeV.176456.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.1671270
-mc12_8TeV.176457.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.1669050
-mc12_8TeV.176458.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.1279390
-mc12_8TeV.176459.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.1276190
-mc12_8TeV.176460.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.0993563
-mc12_8TeV.176461.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.0996356
-mc12_8TeV.176462.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.0774890
-mc12_8TeV.176463.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.0783025
-mc12_8TeV.176464.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.0623693
-mc12_8TeV.176465.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.0620642
-mc12_8TeV.176466.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.0502456
-mc12_8TeV.176467.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.0505228
-mc12_8TeV.176468.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.0413014
-mc12_8TeV.176469.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.0413014
-mc12_8TeV.176470.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.0334653
-mc12_8TeV.176471.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.0333769
-mc12_8TeV.176472.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.0275940
-mc12_8TeV.176473.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.0273836
-mc12_8TeV.176474.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.0229265
-mc12_8TeV.176475.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.0232494
-mc12_8TeV.176476.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.0192307
-mc12_8TeV.176477.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.0192821
-mc12_8TeV.176478.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.0163090
-mc12_8TeV.176479.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.0163196
-mc12_8TeV.176322.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.4251750
-mc12_8TeV.176323.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.3038390
-mc12_8TeV.176324.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.2220660
-mc12_8TeV.176325.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.1671270
-mc12_8TeV.176326.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.1276190
-mc12_8TeV.176327.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.0996356
-mc12_8TeV.176328.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.0620642
-mc12_8TeV.176329.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.0505188
-mc12_8TeV.176330.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.0408056
-mc12_8TeV.176331.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.0333769
-mc12_8TeV.176332.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.0271035
-mc12_8TeV.176333.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.0193351
-mc12_8TeV.176334.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.4251750
-mc12_8TeV.176335.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.3038390
-mc12_8TeV.176336.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.2220660
-mc12_8TeV.176337.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.1671270
-mc12_8TeV.176338.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.1276190
-mc12_8TeV.176339.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.0996356
-mc12_8TeV.176340.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.0783272
-mc12_8TeV.176341.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.0620642
-mc12_8TeV.176342.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.0505188
-mc12_8TeV.176343.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.0408056
-mc12_8TeV.176344.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.0333769
-mc12_8TeV.176345.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.0271035
-mc12_8TeV.176346.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.0229265
-mc12_8TeV.176347.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.0193351
-mc12_8TeV.176348.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.0163196
-mc12_8TeV.176349.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.3043330
-mc12_8TeV.176350.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.2226890
-mc12_8TeV.176351.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.1671270
-mc12_8TeV.176352.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.1273110
-mc12_8TeV.176353.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.0985363
-mc12_8TeV.176354.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.0778172
-mc12_8TeV.176355.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.0620642
-mc12_8TeV.176356.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.0502456
-mc12_8TeV.176357.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.0404484
-mc12_8TeV.176358.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.0336928
-mc12_8TeV.176359.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.0275940
-mc12_8TeV.176360.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.0229894
-mc12_8TeV.176361.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.0193351
-mc12_8TeV.176362.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.0163090
-mc12_8TeV.176363.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.2226890
-mc12_8TeV.176364.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.1671270
-mc12_8TeV.176365.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.1273010
-mc12_8TeV.176366.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.0993563
-mc12_8TeV.176367.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.0778419
-mc12_8TeV.176368.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.0617598
-mc12_8TeV.176369.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.0502456
-mc12_8TeV.176370.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.0408056
-mc12_8TeV.176371.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.0336928
-mc12_8TeV.176372.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.0276673
-mc12_8TeV.176373.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.0229894
-mc12_8TeV.176374.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.0193351
-mc12_8TeV.176375.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.0163090
-mc12_8TeV.176376.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.1673620
-mc12_8TeV.176377.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.1282480
-mc12_8TeV.176378.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.0993563
-mc12_8TeV.176379.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.0778419
-mc12_8TeV.176380.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.0626801
-mc12_8TeV.176381.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.0505188
-mc12_8TeV.176382.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.0410499
-mc12_8TeV.176383.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.0334653
-mc12_8TeV.176384.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.0273836
-mc12_8TeV.176385.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.0229894
-mc12_8TeV.176386.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.0192821
-mc12_8TeV.176387.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.0163090
-mc12_8TeV.176388.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.0993563
-mc12_8TeV.176389.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.0783272
-mc12_8TeV.176390.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.0620642
-mc12_8TeV.176391.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.0502456
-mc12_8TeV.176392.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.0334653
-mc12_8TeV.176393.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.0275940
-mc12_8TeV.176394.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.0227309
-mc12_8TeV.176395.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.0195220
-mc12_8TeV.176396.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.0985363
-mc12_8TeV.176397.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.0774890
-mc12_8TeV.176398.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.0620642
-mc12_8TeV.176399.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.0499732
-mc12_8TeV.176400.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.0406949
-mc12_8TeV.176401.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.0333769
-mc12_8TeV.176402.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.0273836
-mc12_8TeV.176403.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.0229894
-mc12_8TeV.176404.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.0195220
-mc12_8TeV.176405.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.0160135
-mc12_8TeV.176406.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.0774890
-mc12_8TeV.176407.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.0620642
-mc12_8TeV.176408.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.0502456
-mc12_8TeV.176409.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.0413014
-mc12_8TeV.176410.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.0333769
-mc12_8TeV.176411.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.0273106
-mc12_8TeV.176412.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.0231861
-mc12_8TeV.176413.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.0190452
-mc12_8TeV.176414.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.0160985
-mc12_8TeV.176415.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.0623693
-mc12_8TeV.176416.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.0507967
-mc12_8TeV.176417.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.0408056
-mc12_8TeV.176418.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.0336928
-mc12_8TeV.176419.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.0273106
-mc12_8TeV.176420.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.0229894
-mc12_8TeV.176421.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.0197634
-mc12_8TeV.176422.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.0163196
-mc12_8TeV.176423.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.0499732
-mc12_8TeV.176424.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.0413014
-mc12_8TeV.176425.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.0339210
-mc12_8TeV.176426.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.0275940
-mc12_8TeV.176427.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.0229894
-mc12_8TeV.176428.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.0193351
-mc12_8TeV.176429.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.0160880
-mc12_8TeV.176430.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.0334653
-mc12_8TeV.176431.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.0275940
-mc12_8TeV.176432.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.0229894
-mc12_8TeV.176433.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.0193351
-mc12_8TeV.176434.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.0336928
-mc12_8TeV.176435.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.0276673
-mc12_8TeV.176436.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.0229894
-mc12_8TeV.176437.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.0195738
-mc12_8TeV.176438.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.0160985
-mc12_8TeV.176439.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.0278788
-mc12_8TeV.176440.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.0229894
-mc12_8TeV.176441.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.0195220
-mc12_8TeV.176442.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.0165328
-mc12_8TeV.176443.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.0229265
-mc12_8TeV.176444.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.0197634
-mc12_8TeV.176445.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.0163196
-mc12_8TeV.176446.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.0195220
-mc12_8TeV.176447.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/    0.9*0.0163196
+mc12_8TeV.176480.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	200000      0.9*0.5420344
+mc12_8TeV.176481.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	200000      0.9*0.1279390
+mc12_8TeV.176482.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	200000      0.9*0.1279390
+mc12_8TeV.176448.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	20000       0.9*0.6162570
+mc12_8TeV.176449.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	20000       0.9*0.6185770
+mc12_8TeV.176450.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	20000       0.9*0.4251750
+mc12_8TeV.176451.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	20000       0.9*0.4248800
+mc12_8TeV.176452.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	20000       0.9*0.3034630
+mc12_8TeV.176453.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	20000       0.9*0.3034150
+mc12_8TeV.176454.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	20000       0.9*0.2226890
+mc12_8TeV.176455.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	20000       0.9*0.2223780
+mc12_8TeV.176456.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	20000       0.9*0.1671270
+mc12_8TeV.176457.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	20000       0.9*0.1669050
+mc12_8TeV.176458.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	20000       0.9*0.1279390
+mc12_8TeV.176459.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	20000       0.9*0.1276190
+mc12_8TeV.176460.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	10000       0.9*0.0993563
+mc12_8TeV.176461.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	10000       0.9*0.0996356
+mc12_8TeV.176462.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	10000       0.9*0.0774890
+mc12_8TeV.176463.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	10000       0.9*0.0783025
+mc12_8TeV.176464.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	10000       0.9*0.0623693
+mc12_8TeV.176465.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	9500        0.9*0.0620642
+mc12_8TeV.176466.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	10000       0.9*0.0502456
+mc12_8TeV.176467.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	10000       0.9*0.0505228
+mc12_8TeV.176468.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	10000       0.9*0.0413014
+mc12_8TeV.176469.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	10000       0.9*0.0413014
+mc12_8TeV.176470.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	5000        0.9*0.0334653
+mc12_8TeV.176471.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	5000        0.9*0.0333769
+mc12_8TeV.176472.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	5000        0.9*0.0275940
+mc12_8TeV.176473.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	5000        0.9*0.0273836
+mc12_8TeV.176474.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	5000        0.9*0.0229265
+mc12_8TeV.176475.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	5000        0.9*0.0232494
+mc12_8TeV.176476.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	5000        0.9*0.0192307
+mc12_8TeV.176477.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	5000        0.9*0.0192821
+mc12_8TeV.176478.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	4000        0.9*0.0163090
+mc12_8TeV.176479.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	5000        0.9*0.0163196
+mc12_8TeV.176322.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	220000      0.9*0.4251750
+mc12_8TeV.176323.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	220000      0.9*0.3038390
+mc12_8TeV.176324.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	219999      0.9*0.2220660
+mc12_8TeV.176325.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	220000      0.9*0.1671270
+mc12_8TeV.176326.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	110000      0.9*0.1276190
+mc12_8TeV.176327.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	110000      0.9*0.0996356
+mc12_8TeV.176328.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	110000      0.9*0.0620642
+mc12_8TeV.176329.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	110000      0.9*0.0505188
+mc12_8TeV.176330.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	55000       0.9*0.0408056
+mc12_8TeV.176331.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	55000       0.9*0.0333769
+mc12_8TeV.176332.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	55000       0.9*0.0271035
+mc12_8TeV.176333.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	55000       0.9*0.0193351
+mc12_8TeV.176334.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	20000       0.9*0.4251750
+mc12_8TeV.176335.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	20000       0.9*0.3038390
+mc12_8TeV.176336.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	20000       0.9*0.2220660
+mc12_8TeV.176337.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	20000       0.9*0.1671270
+mc12_8TeV.176338.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	20000       0.9*0.1276190
+mc12_8TeV.176339.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	10000       0.9*0.0996356
+mc12_8TeV.176340.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	10000       0.9*0.0783272
+mc12_8TeV.176341.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	10000       0.9*0.0620642
+mc12_8TeV.176342.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	10000       0.9*0.0505188
+mc12_8TeV.176343.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	10000       0.9*0.0408056
+mc12_8TeV.176344.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	5000        0.9*0.0333769
+mc12_8TeV.176345.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	5000        0.9*0.0271035
+mc12_8TeV.176346.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	5000        0.9*0.0229265
+mc12_8TeV.176347.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	5000        0.9*0.0193351
+mc12_8TeV.176348.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	5000        0.9*0.0163196
+mc12_8TeV.176349.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	19500       0.9*0.3043330
+mc12_8TeV.176350.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	20000       0.9*0.2226890
+mc12_8TeV.176351.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	20000       0.9*0.1671270
+mc12_8TeV.176352.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	20000       0.9*0.1273110
+mc12_8TeV.176353.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	10000       0.9*0.0985363
+mc12_8TeV.176354.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	10000       0.9*0.0778172
+mc12_8TeV.176355.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	10000       0.9*0.0620642
+mc12_8TeV.176356.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	10000       0.9*0.0502456
+mc12_8TeV.176357.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	10000       0.9*0.0404484
+mc12_8TeV.176358.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	5000        0.9*0.0336928
+mc12_8TeV.176359.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	5000        0.9*0.0275940
+mc12_8TeV.176360.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	5000        0.9*0.0229894
+mc12_8TeV.176361.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	5000        0.9*0.0193351
+mc12_8TeV.176362.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	5000        0.9*0.0163090
+mc12_8TeV.176363.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	20000       0.9*0.2226890
+mc12_8TeV.176364.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	20000       0.9*0.1671270
+mc12_8TeV.176365.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	20000       0.9*0.1273010
+mc12_8TeV.176366.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	10000       0.9*0.0993563
+mc12_8TeV.176367.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	10000       0.9*0.0778419
+mc12_8TeV.176368.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	10000       0.9*0.0617598
+mc12_8TeV.176369.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	10000       0.9*0.0502456
+mc12_8TeV.176370.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	10000       0.9*0.0408056
+mc12_8TeV.176371.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	5000        0.9*0.0336928
+mc12_8TeV.176372.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	5000        0.9*0.0276673
+mc12_8TeV.176373.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	5000        0.9*0.0229894
+mc12_8TeV.176374.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	5000        0.9*0.0193351
+mc12_8TeV.176375.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	5000        0.9*0.0163090
+mc12_8TeV.176376.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	20000       0.9*0.1673620
+mc12_8TeV.176377.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	20000       0.9*0.1282480
+mc12_8TeV.176378.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	10000       0.9*0.0993563
+mc12_8TeV.176379.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	10000       0.9*0.0778419
+mc12_8TeV.176380.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	10000       0.9*0.0626801
+mc12_8TeV.176381.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	10000       0.9*0.0505188
+mc12_8TeV.176382.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	10000       0.9*0.0410499
+mc12_8TeV.176383.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	5000        0.9*0.0334653
+mc12_8TeV.176384.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	5000        0.9*0.0273836
+mc12_8TeV.176385.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	5000        0.9*0.0229894
+mc12_8TeV.176386.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	5000        0.9*0.0192821
+mc12_8TeV.176387.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	5000        0.9*0.0163090
+mc12_8TeV.176388.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	10000       0.9*0.0993563
+mc12_8TeV.176389.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	10000       0.9*0.0783272
+mc12_8TeV.176390.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	10000       0.9*0.0620642
+mc12_8TeV.176391.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	10000       0.9*0.0502456
+mc12_8TeV.176392.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	5000        0.9*0.0334653
+mc12_8TeV.176393.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	5000        0.9*0.0275940
+mc12_8TeV.176394.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	5000        0.9*0.0227309
+mc12_8TeV.176395.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	5000        0.9*0.0195220
+mc12_8TeV.176396.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	10000       0.9*0.0985363
+mc12_8TeV.176397.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	10000       0.9*0.0774890
+mc12_8TeV.176398.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	10000       0.9*0.0620642
+mc12_8TeV.176399.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	9999        0.9*0.0499732
+mc12_8TeV.176400.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	10000       0.9*0.0406949
+mc12_8TeV.176401.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	5000        0.9*0.0333769
+mc12_8TeV.176402.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	5000        0.9*0.0273836
+mc12_8TeV.176403.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	5000        0.9*0.0229894
+mc12_8TeV.176404.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	5000        0.9*0.0195220
+mc12_8TeV.176405.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	5000        0.9*0.0160135
+mc12_8TeV.176406.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	10000       0.9*0.0774890
+mc12_8TeV.176407.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	10000       0.9*0.0620642
+mc12_8TeV.176408.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	10000       0.9*0.0502456
+mc12_8TeV.176409.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	10000       0.9*0.0413014
+mc12_8TeV.176410.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	5000        0.9*0.0333769
+mc12_8TeV.176411.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	5000        0.9*0.0273106
+mc12_8TeV.176412.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	5000        0.9*0.0231861
+mc12_8TeV.176413.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	5000        0.9*0.0190452
+mc12_8TeV.176414.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	5000        0.9*0.0160985
+mc12_8TeV.176415.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	10000       0.9*0.0623693
+mc12_8TeV.176416.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	10000       0.9*0.0507967
+mc12_8TeV.176417.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	10000       0.9*0.0408056
+mc12_8TeV.176418.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	5000        0.9*0.0336928
+mc12_8TeV.176419.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	5000        0.9*0.0273106
+mc12_8TeV.176420.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	5000        0.9*0.0229894
+mc12_8TeV.176421.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	5000        0.9*0.0197634
+mc12_8TeV.176422.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	5000        0.9*0.0163196
+mc12_8TeV.176423.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	10000       0.9*0.0499732
+mc12_8TeV.176424.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	10000       0.9*0.0413014
+mc12_8TeV.176425.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	5000        0.9*0.0339210
+mc12_8TeV.176426.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	5000        0.9*0.0275940
+mc12_8TeV.176427.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	5000        0.9*0.0229894
+mc12_8TeV.176428.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	5000        0.9*0.0193351
+mc12_8TeV.176429.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	5000        0.9*0.0160880
+mc12_8TeV.176430.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	5000        0.9*0.0334653
+mc12_8TeV.176431.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	5000        0.9*0.0275940
+mc12_8TeV.176432.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	5000        0.9*0.0229894
+mc12_8TeV.176433.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	5000        0.9*0.0193351
+mc12_8TeV.176434.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	5000        0.9*0.0336928
+mc12_8TeV.176435.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	5000        0.9*0.0276673
+mc12_8TeV.176436.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	5000        0.9*0.0229894
+mc12_8TeV.176437.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	5000        0.9*0.0195738
+mc12_8TeV.176438.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	5000        0.9*0.0160985
+mc12_8TeV.176439.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	5000        0.9*0.0278788
+mc12_8TeV.176440.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	5000        0.9*0.0229894
+mc12_8TeV.176441.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	5000        0.9*0.0195220
+mc12_8TeV.176442.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	5000        0.9*0.0165328
+mc12_8TeV.176443.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	5000        0.9*0.0229265
+mc12_8TeV.176444.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	5000        0.9*0.0197634
+mc12_8TeV.176445.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	5000        0.9*0.0163196
+mc12_8TeV.176446.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	5000        0.9*0.0195220
+mc12_8TeV.176447.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wC_noslep_WW.merge.NTUP_SUSY.e1694_a159_a171_r3549_p1328/	5000        0.9*0.0163196
