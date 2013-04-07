@@ -1,10 +1,7 @@
 group.phys-susy.data12_8TeV.periodA.physics_Egamma.PhysCont.NTUP_SUSYSKIM.repro14_v01_p1328_p1329/
-group.phys-susy.data12_8TeV.periodA_MISSING.physics_Egamma.PhysCont.NTUP_SUSYSKIM.repro14_v01_p1328_p1329/
 group.phys-susy.data12_8TeV.periodB.physics_Egamma.PhysCont.NTUP_SUSYSKIM.repro14_v01_p1328_p1329/
-group.phys-susy.data12_8TeV.periodB_MISSING.physics_Egamma.PhysCont.NTUP_SUSYSKIM.repro14_v01_p1328_p1329/
 group.phys-susy.data12_8TeV.periodC.physics_Egamma.PhysCont.NTUP_SUSYSKIM.repro14_v01_p1328_p1329/
 group.phys-susy.data12_8TeV.periodD.physics_Egamma.PhysCont.NTUP_SUSYSKIM.repro14_v01_p1328_p1329/
-group.phys-susy.data12_8TeV.periodD_MISSING.physics_Egamma.PhysCont.NTUP_SUSYSKIM.repro14_v01_p1328_p1329/
 group.phys-susy.data12_8TeV.periodE.physics_Egamma.PhysCont.NTUP_SUSYSKIM.repro14_v01_p1328_p1329/
 group.phys-susy.data12_8TeV.periodG.physics_Egamma.PhysCont.NTUP_SUSYSKIM.repro14_v01_p1328_p1329/
 group.phys-susy.data12_8TeV.periodH.physics_Egamma.PhysCont.NTUP_SUSYSKIM.repro14_v01_p1328_p1329/

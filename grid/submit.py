@@ -20,7 +20,7 @@ import re
 import subprocess
 
 # Some grid option defaults
-defaultTag='n0135'
+defaultTag='n0139'
 defaultNickname='sfarrell'
 defaultMet='Default'
 
