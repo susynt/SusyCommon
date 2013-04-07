@@ -134,6 +134,7 @@ class SusyNtMaker : public SusyD3PDAna
     uint                n_evt_grl;
     uint                n_evt_ttcVeto;
     uint                n_evt_WwSherpa;
+    uint                n_evt_tileTrip;
     uint                n_evt_larErr;
     uint                n_evt_tileErr;
     uint                n_evt_larHole;

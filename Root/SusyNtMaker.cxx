@@ -34,6 +34,7 @@ SusyNtMaker::SusyNtMaker() : m_fillNt(true),
   n_evt_grl=0;
   n_evt_ttcVeto=0;
   n_evt_WwSherpa=0;
+  n_evt_tileTrip=0;
   n_evt_larErr=0;
   n_evt_tileErr=0;
   n_evt_larHole=0;
@@ -183,31 +184,32 @@ void SusyNtMaker::Terminate()
 
   cout << endl;
   cout << "Object counter" << endl;
-  cout << "  BaseEle  " << n_base_ele    << endl;
-  cout << "  BaseMuo  " << n_base_muo    << endl;
-  cout << "  BaseTau  " << n_base_tau    << endl;
-  cout << "  BaseJet  " << n_base_jet    << endl;
-  cout << "  SigEle   " << n_sig_ele     << endl;
-  cout << "  SigMuo   " << n_sig_muo     << endl;
-  cout << "  SigTau   " << n_sig_tau     << endl;
-  cout << "  SigJet   " << n_sig_jet     << endl;
+  cout << "  BaseEle   " << n_base_ele    << endl;
+  cout << "  BaseMuo   " << n_base_muo    << endl;
+  cout << "  BaseTau   " << n_base_tau    << endl;
+  cout << "  BaseJet   " << n_base_jet    << endl;
+  cout << "  SigEle    " << n_sig_ele     << endl;
+  cout << "  SigMuo    " << n_sig_muo     << endl;
+  cout << "  SigTau    " << n_sig_tau     << endl;
+  cout << "  SigJet    " << n_sig_jet     << endl;
   cout << endl;
   cout << "Event counter" << endl;
-  cout << "  Initial  " << n_evt_initial << endl;
-  cout << "  GRL      " << n_evt_grl     << endl;
-  cout << "  LarErr   " << n_evt_larErr  << endl;
-  cout << "  TileErr  " << n_evt_tileErr  << endl;
-  cout << "  TTC Veto " << n_evt_ttcVeto << endl;
-  cout << "  GoodVtx  " << n_evt_goodVtx << endl;
-  cout << "  WW Sherpa" << n_evt_WwSherpa<< endl;
-  //cout << "  LarHole  " << n_evt_larHole << endl;
-  cout << "  HotSpot  " << n_evt_hotSpot << endl;
-  cout << "  BadJet   " << n_evt_badJet  << endl;
-  cout << "  BadMuon  " << n_evt_badMu   << endl;
-  cout << "  Cosmic   " << n_evt_cosmic  << endl;
-  cout << "  >=1 Lep  " << n_evt_1Lep    << endl;
-  cout << "  >=2 Lep  " << n_evt_2Lep    << endl;
-  cout << "  ==3 Lep  " << n_evt_3Lep    << endl;
+  cout << "  Initial   " << n_evt_initial << endl;
+  cout << "  GRL       " << n_evt_grl     << endl;
+  cout << "  LarErr    " << n_evt_larErr  << endl;
+  cout << "  TileErr   " << n_evt_tileErr  << endl;
+  cout << "  TTC Veto  " << n_evt_ttcVeto << endl;
+  cout << "  GoodVtx   " << n_evt_goodVtx << endl;
+  cout << "  WW Sherpa " << n_evt_WwSherpa<< endl;
+  cout << "  TileTrip  " << n_evt_tileTrip<< endl;
+  //cout << "  LarHole   " << n_evt_larHole << endl;
+  cout << "  HotSpot   " << n_evt_hotSpot << endl;
+  cout << "  BadJet    " << n_evt_badJet  << endl;
+  cout << "  BadMuon   " << n_evt_badMu   << endl;
+  cout << "  Cosmic    " << n_evt_cosmic  << endl;
+  cout << "  >=1 Lep   " << n_evt_1Lep    << endl;
+  cout << "  >=2 Lep   " << n_evt_2Lep    << endl;
+  cout << "  ==3 Lep   " << n_evt_3Lep    << endl;
   cout << endl;
 
   if(m_fillNt){
@@ -309,10 +311,16 @@ bool SusyNtMaker::selectEvent()
   FillCutFlow();
   n_evt_goodVtx++;
 
-  if( m_filter && m_isMC && isBuggyWwSherpaSample(d3pd.truth.channel_number())
-      && hasRadiativeBquark(d3pd.truth.pdgId(), d3pd.truth.status()) ) return false;
+  // Sherpa WW fix, remove radiative b-quark processes that overlap with single top
+  if(m_filter && m_isMC && isBuggyWwSherpaSample(d3pd.truth.channel_number()) && 
+     hasRadiativeBquark(d3pd.truth.pdgId(), d3pd.truth.status())) return false;
   FillCutFlow();
   n_evt_WwSherpa++;
+
+  // Tile trip cut
+  if(m_filter && (m_cutFlags & ECut_TileTrip) == 0) return false;
+  FillCutFlow();
+  n_evt_tileTrip++;
 
   //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-//  
   // Get Nominal Objects

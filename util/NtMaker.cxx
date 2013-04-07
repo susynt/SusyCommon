@@ -167,14 +167,14 @@ int main(int argc, char** argv)
   }
 
   cout << "flags:" << endl;
-  cout << "  sample  " << sample   << endl;
-  cout << "  nEvt    " << nEvt     << endl;
-  cout << "  nSkip   " << nSkip    << endl;
-  cout << "  dbg     " << dbg      << endl;
-  cout << "  input   " << fileList << endl;
-  cout << "  sumw    " << sumw     << endl;
-  cout << "  grl     " << grl      << endl;
-  cout << "  sys     " << sysOn    << endl;
+  cout << "  sample    " << sample   << endl;
+  cout << "  nEvt      " << nEvt     << endl;
+  cout << "  nSkip     " << nSkip    << endl;
+  cout << "  dbg       " << dbg      << endl;
+  cout << "  input     " << fileList << endl;
+  cout << "  sumw      " << sumw     << endl;
+  cout << "  grl       " << grl      << endl;
+  cout << "  sys       " << sysOn    << endl;
   //cout << "  savePh  " << savePh   << endl;
   cout << "  saveTau   " << saveTau  << endl;
   cout << "  saveTru   " << saveTruth<< endl;

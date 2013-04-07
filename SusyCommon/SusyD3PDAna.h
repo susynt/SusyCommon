@@ -105,7 +105,6 @@ class SusyD3PDAna : public SusyD3PDInterface
     // Tile error
     bool passTileErr() { return m_isMC || (d3pd.evt.tileError()!=2); }
     // lar error
-    //bool passLarErr() { return m_isMC || (d3pd.evt.larError()==0); }
     bool passLarErr() { return m_isMC || (d3pd.evt.larError()!=2); }
     // lar hole veto
     bool passLarHoleVeto();
@@ -115,13 +114,12 @@ class SusyD3PDAna : public SusyD3PDInterface
     bool passBadJet();
     // good vertex
     bool passGoodVtx();
+    // tile trip
+    bool passTileTrip();
     // bad muon veto
     bool passBadMuon();
     // cosmic veto
     bool passCosmic();
-
-    // Poorly named, checks some event cleaning cuts
-    //void evtCheck();
 
     // Event level cleaning cuts
     void checkEventCleaning();

@@ -1,9 +1,27 @@
 # vim: set noexpandtab:
 
+2013-04-07 Steve
+	* Merge with SusyCommon-00-00-66-branch
+		* I was accidentally committing changes to this rather than trunk. Oops
+	* Updated full dataset pileup file to 
+	  $ROOTCOREDIR/data/MultiLep/ilumicalc_histograms_EF_2e12Tvh_loose1_200842-215643_v2.root
+	* Changed HforToolD3PD setting to ALL
+	* Tile trip cleaning cut functionality
+		* Added passTileTrip method
+		* Added tile trip cut to the SusyNtMaker cutflow
+			* Ntuples are filtered on this cut. 
+			  Do we need to be able to turn it off??
+	* Tagging SusyCommon-00-00-68
+
 2013-04-04 Matt
 	* Added filtering flag m_filter
 	* Added toggle in NtMaker to filter
-	
+
+2013-03-30 Steve
+	* Tagging SusyCommon-00-00-67
+		* No change from previous tag, due to accidental branch commits.
+		  See note above
+
 2013-03-13 Steve
 	* Tagging SusyCommon-00-00-66
 
