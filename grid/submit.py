@@ -20,9 +20,9 @@ import re
 import subprocess
 
 # Some grid option defaults
-defaultTag='n0132'
+defaultTag='n0135'
 defaultNickname='sfarrell'
-defaultMet='STVF'
+defaultMet='Default'
 
 def main():
 
