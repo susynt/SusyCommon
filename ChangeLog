@@ -1,5 +1,9 @@
 # vim: set noexpandtab:
 
+2013-04-17 Steve
+	* Changed default MET to Default in NtMaker
+	* Minor code cleanup
+
 2013-04-07 Steve
 	* Merge with SusyCommon-00-00-66-branch
 		* I was accidentally committing changes to this rather than trunk. Oops

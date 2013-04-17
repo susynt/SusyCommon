@@ -255,7 +255,8 @@ bool SusyNtMaker::selectEvent()
 
   // Susy final state
   //m_susyFinalState = m_isSusySample? get_finalState(d3pd.truth) : -1;
-  m_susyFinalState = m_isSusySample? get_finalState(d3pd.evt.SUSY_Spart1_pdgId(), d3pd.evt.SUSY_Spart2_pdgId()) : -1;
+  m_susyFinalState = m_isSusySample? get_finalState(d3pd.evt.SUSY_Spart1_pdgId(), 
+                                                    d3pd.evt.SUSY_Spart2_pdgId()) : -1;
   m_hDecay = m_isWhSample ? WhTruthExtractor().update(d3pd.truth.pdgId(),
 						      d3pd.truth.child_index(),
 						      d3pd.truth.parent_index()) : -1;
@@ -335,7 +336,6 @@ bool SusyNtMaker::selectEvent()
   // Instead, they are simply used for the counters, for comparing the cutflow
 
   // Tile hot spot
-  //if(m_evtFlag & PASS_HotSpot)
   if(m_cutFlags & ECut_HotSpot)
   {
     FillCutFlow();
@@ -417,13 +417,13 @@ bool SusyNtMaker::selectEvent()
 
     // If it is mc and option for sys is set
     if(m_isMC && m_sys) doSystematic(); 
-    
+
     // TODO: add a command line option for controlling this filtering, 
     // so that we don't keep committing conflicting changes...
 
     // For filling the output tree, require at least 2 pre-selected leptons (baseline before OR)
     // Now counting taus as well!
-    if(m_filter && (m_susyNt.ele()->size() + m_susyNt.muo()->size() + m_susyNt.tau()->size()) < 2)  return false;
+    if(m_filter && (m_susyNt.ele()->size() + m_susyNt.muo()->size() + m_susyNt.tau()->size()) < 2) return false;
 
   }
   

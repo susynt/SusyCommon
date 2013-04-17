@@ -75,7 +75,7 @@ void help()
   cout << "     default: p1181"                 << endl;
 
   cout << "  --metFlav set met flavor"          << endl;
-  cout << "     default: STVF"                  << endl;
+  cout << "     default: Default"               << endl;
 
   cout << "  --useMetMuons set to use met muons"<< endl;
   cout << "     for calculating missing energy "<< endl;
@@ -109,7 +109,7 @@ int main(int argc, char** argv)
   bool isAF2      = false;
   bool writeNt    = true;
   D3PDTag tag     = D3PD_p1328;
-  string metFlav  = "STVF";
+  string metFlav  = "Default";
   bool useMetMu   = false;
   bool filter     = true;
 
