@@ -77,8 +77,12 @@ void help()
   cout << "  --metFlav set met flavor"          << endl;
   cout << "     default: Default"               << endl;
 
-  cout << "  --useMetMuons set to use met muons"<< endl;
-  cout << "     for calculating missing energy "<< endl;
+  //cout << "  --useMetMuons set to use met muons"<< endl;
+  //cout << "     for calculating missing energy "<< endl;
+  //cout << "     default: off"                   << endl;
+
+  cout << "  --doMetFix turn on MET ele-jet"    << endl;
+  cout << "     overlap fix"                    << endl;
   cout << "     default: off"                   << endl;
 
   cout << "  --filterOff turns off filtering"   << endl;
@@ -110,7 +114,8 @@ int main(int argc, char** argv)
   bool writeNt    = true;
   D3PDTag tag     = D3PD_p1328;
   string metFlav  = "Default";
-  bool useMetMu   = false;
+  //bool useMetMu   = false;
+  bool doMetFix   = false;
   bool filter     = true;
 
   cout << "SusyNtMaker" << endl;
@@ -154,8 +159,10 @@ int main(int argc, char** argv)
       tag = D3PD_p1032;
     else if (strcmp(argv[i], "--metFlav") == 0)
       metFlav = argv[++i];
-    else if (strcmp(argv[i], "--useMetMuons") == 0)
-      useMetMu = true;
+    //else if (strcmp(argv[i], "--useMetMuons") == 0)
+      //useMetMu = true;
+    else if (strcmp(argv[i], "--doMetFix") == 0)
+      doMetFix = true;
     else if (strcmp(argv[i], "--filterOff") == 0)
       filter = false;
     //if (strcmp(argv[i], "-h") == 0)
@@ -181,9 +188,10 @@ int main(int argc, char** argv)
   cout << "  isAF2     " << isAF2    << endl;
   cout << "  d3pdtag   " << tag      << endl;
   cout << "  metFlav   " << metFlav  << endl;
+  cout << "  doMetFix  " << doMetFix << endl;
   cout << "  lumi      " << lumi     << endl;
   cout << "  xsec      " << xsec     << endl;
-  cout << "  useMetMu  " << useMetMu << endl;
+  //cout << "  useMetMu  " << useMetMu << endl;
   cout << "  filter    " << filter   << endl;
   cout << endl;
 
@@ -193,14 +201,6 @@ int main(int argc, char** argv)
   if(fileErr) return 1;
   Long64_t nEntries = chain->GetEntries();
   chain->ls();
-
-  // Try to catch cache errors that give empty files.
-  // No, empty d3pds can apparently happen in data occasionally.
-  // It's possibliy an error upstream, but not our problem.
-  //if(nEntries == 0 && nEvt != 0){
-    //cerr << "ERROR - zero input entries! Probably a problem. Aborting!" << endl;
-    //abort();
-  //}
 
   // Build the TSelector
   SusyNtMaker* susyAna = new SusyNtMaker();
@@ -218,11 +218,11 @@ int main(int argc, char** argv)
   susyAna->setD3PDTag(tag);
   susyAna->setMetFlavor(metFlav);
   susyAna->setSelectTruthObjects(saveTruth);
-  susyAna->setUseMetMuons(useMetMu);
+  //susyAna->setUseMetMuons(useMetMu);
+  susyAna->setDoMetFix(doMetFix);
   susyAna->setFilter(filter);
 
   // GRL - default is set in SusyD3PDAna::Begin, but now we can override it here
-  //TString grl = gSystem->ExpandPathName("$ROOTCOREDIR/data/MultiLep/data12_8TeV.periodAllYear_DetStatus-v53-pro13-04_CoolRunQuery-00-04-08_All_Good_HCP.xml");
   susyAna->setGRLFile(grl);
 
   // Run the job

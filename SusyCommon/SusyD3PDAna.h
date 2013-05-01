@@ -121,6 +121,13 @@ class SusyD3PDAna : public SusyD3PDInterface
     // cosmic veto
     bool passCosmic();
 
+    // Sherpa WW fix for radiative b quarks
+    // See thread "Diboson MC Truth Discrepancy" atlas-phys-susy-d3pd.cern.ch, Mar 2013
+    bool isBuggyWWSherpaSample(const int& dsid){
+      return dsid==126892 || dsid==157817 || dsid==157818 || dsid==157819;
+    }
+    bool hasRadiativeBQuark(const std::vector<int>* pdg, const std::vector<int>* status);
+
     // Event level cleaning cuts
     void checkEventCleaning();
     // Object level cleaning cuts; these depend on sys
@@ -159,8 +166,6 @@ class SusyD3PDAna : public SusyD3PDInterface
     float getPileupWeightAB3();
     // pileup weight for A-B (5.83/fb)
     float getPileupWeightAB();
-    // pileup weight for I+L
-    //float getPileupWeightIL();
     // pileup weight for A-E HCP dataset
     float getPileupWeightAE();
     // PDF reweighting of 7TeV -> 8TeV
@@ -221,9 +226,8 @@ class SusyD3PDAna : public SusyD3PDInterface
     // Set MET flavor - at the moment, only STVF and STVF_JVF are available.
     // Anything else will raise an error.
     void setMetFlavor(std::string metFlav);
-    //void setMetFlavor(TString metFlav) { m_metFlavor = metFlav; }
-    
-    void setUseMetMuons(bool useMetMu){ m_useMetMuons = useMetMu; };
+    void setDoMetFix(bool doMetFix) { m_doMetFix = doMetFix; }
+    //void setUseMetMuons(bool useMetMu) { m_useMetMuons = useMetMu; }
 
     //
     // Event dumps
@@ -248,10 +252,9 @@ class SusyD3PDAna : public SusyD3PDInterface
     bool                        m_selectTaus;   // Toggle tau selection and overlap removal
     bool                        m_selectTruth;  // Toggle truth selection
 
-    bool                        m_useMetMuons;  // Use appropriate muons for met
-
-    //TString                   m_metFlavor;    // Flavor string for MET (e.g. Egamma10NoTau)
     SUSYMet::met_definition     m_metFlavor;    // MET flavor enum (e.g. STVF, STVF_JVF)
+    bool                        m_doMetFix;     // Control MET Egamma-jet overlap fix in SUSYTools
+    //bool                      m_useMetMuons;  // Use appropriate muons for met
 
     //
     // Object collections (usually just vectors of indices)
@@ -320,7 +323,6 @@ class SusyD3PDAna : public SusyD3PDInterface
     Root::TPileupReweighting*   m_pileup;       // pileup reweighting
     Root::TPileupReweighting*   m_pileupAB3;    // pileup reweighting for 2012 A-B3 only
     Root::TPileupReweighting*   m_pileupAB;     // pileup reweighting for 2012 A-B
-    //Root::TPileupReweighting*   m_pileupIL;     // pileup reweighting for 2012 I,L (NOT A RANGE)
     Root::TPileupReweighting*   m_pileupAE;     // pileup reweighting for 2012 A-H (HCP dataset)
 
     // The SUSY CrossSectionDB has its own map for retrieving xsec info, but

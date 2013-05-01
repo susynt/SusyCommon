@@ -1,5 +1,14 @@
 # vim: set noexpandtab:
 
+2013-05-01 Steve
+	* Added flag to SusyD3PDAna for toggling the MET jet-ele overlap fix
+	* Extended baseline muon eta cut up to 2.5
+	* Removed useMetMuons flag which is redundant after extending muon eta cut
+	* Cleaned up some unused commented-out code
+	* Moved Sherpa WW radiative b-quark fix methods to SusyD3PDAna
+	* Removed cell out and soft jet term checks in SusyMetValdation
+	* Replaced filling of met.softJet and met.refCell with met.softTerm in SusyNtMaker
+
 2013-04-17 Steve
 	* Changed default MET to Default in NtMaker
 	* Minor code cleanup

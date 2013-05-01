@@ -209,7 +209,7 @@ void SusyMetValidation::bookHistos()
     h_metEle[i] = NEWMETHIST("metEle", "MET Electron [GeV]", 20, 0, 100);
     h_metMuo[i] = NEWMETHIST("metMuo", "MET Muon [GeV]", 20, 0, 100);
     h_metJet[i] = NEWMETHIST("metJet", "MET Jet [GeV]", 20, 0, 100);
-    h_metCell[i] = NEWMETHIST("metCell", "MET Cell [GeV]", 20, 0, 100);
+    //h_metCell[i] = NEWMETHIST("metCell", "MET Cell [GeV]", 20, 0, 100);
 
     // MET leptons
     h_nMetLep[i] = NEWMETHIST("nMetLep", "Number of MET leptons", 10, -0.5, 9.5);
@@ -390,16 +390,16 @@ bool SusyMetValidation::selectEvent()
   TVector2 metEle[Met_N];
   TVector2 metMuo[Met_N];
   TVector2 metJet[Met_N];
-  TVector2 metSoftJet[Met_N];
-  TVector2 metCell[Met_N];
+  //TVector2 metSoftJet[Met_N];
+  //TVector2 metCell[Met_N];
 
   // SUSYTools Egamma10NoTau_STVF_RefFinal
   met[Met_susy_stvf]     = m_met.Vect().XYvector();
   metEle[Met_susy_stvf]  = m_susyObj.computeMETComponent(METUtil::RefEle);
   metMuo[Met_susy_stvf]  = m_susyObj.computeMETComponent(METUtil::MuonTotal);
   metJet[Met_susy_stvf]  = m_susyObj.computeMETComponent(METUtil::RefJet);
-  metCell[Met_susy_stvf] = m_susyObj.computeMETComponent(METUtil::CellOutEflow);
-  metSoftJet[Met_susy_stvf] = m_susyObj.computeMETComponent(METUtil::SoftJets);
+  //metCell[Met_susy_stvf] = m_susyObj.computeMETComponent(METUtil::CellOutEflow);
+  //metSoftJet[Met_susy_stvf] = m_susyObj.computeMETComponent(METUtil::SoftJets);
 
   // D3PD Egamma10NoTau_STVF_RefFinal
   met[Met_d3pd_stvf]     = TVector2(d3pd.met.Egamma10NoTau_RefFinal_STVF_etx(), 
@@ -410,10 +410,10 @@ bool SusyMetValidation::selectEvent()
                                     d3pd.met.Egamma10NoTau_Muon_Total_Staco_ety());
   metJet[Met_d3pd_stvf]  = TVector2(d3pd.met.Egamma10NoTau_RefJet_etx(), 
                                     d3pd.met.Egamma10NoTau_RefJet_ety());
-  metCell[Met_d3pd_stvf] = TVector2(d3pd.met.Egamma10NoTau_CellOut_Eflow_STVF_etx(), 
-                                    d3pd.met.Egamma10NoTau_CellOut_Eflow_STVF_ety());
-  metSoftJet[Met_d3pd_stvf] = TVector2(d3pd.met.Egamma10NoTau_SoftJets_etx(), 
-                                       d3pd.met.Egamma10NoTau_SoftJets_ety());
+  //metCell[Met_d3pd_stvf] = TVector2(d3pd.met.Egamma10NoTau_CellOut_Eflow_STVF_etx(), 
+                                    //d3pd.met.Egamma10NoTau_CellOut_Eflow_STVF_ety());
+  //metSoftJet[Met_d3pd_stvf] = TVector2(d3pd.met.Egamma10NoTau_SoftJets_etx(), 
+                                       //d3pd.met.Egamma10NoTau_SoftJets_ety());
 
   // D3PD RefFinal
   met[Met_d3pd_reff]     = TVector2(d3pd.met.Egamma10NoTau_RefFinal_etx(), 
@@ -425,10 +425,10 @@ bool SusyMetValidation::selectEvent()
   metJet[Met_d3pd_reff]  = TVector2(d3pd.met.Egamma10NoTau_RefJet_etx(), 
                                     d3pd.met.Egamma10NoTau_RefJet_ety());
   // Not sure if I should use the CellOut or the CellOut_Eflow.  One might be zero..
-  metCell[Met_d3pd_reff] = TVector2(d3pd.met.Egamma10NoTau_CellOut_Eflow_etx(), 
-                                    d3pd.met.Egamma10NoTau_CellOut_Eflow_ety());
-  metSoftJet[Met_d3pd_reff] = TVector2(d3pd.met.Egamma10NoTau_SoftJets_etx(), 
-                                       d3pd.met.Egamma10NoTau_SoftJets_ety());
+  //metCell[Met_d3pd_reff] = TVector2(d3pd.met.Egamma10NoTau_CellOut_Eflow_etx(), 
+                                    //d3pd.met.Egamma10NoTau_CellOut_Eflow_ety());
+  //metSoftJet[Met_d3pd_reff] = TVector2(d3pd.met.Egamma10NoTau_SoftJets_etx(), 
+                                       //d3pd.met.Egamma10NoTau_SoftJets_ety());
 
   // Dump variables
   if(dumpMet || m_dbg>=2){
@@ -459,15 +459,15 @@ bool SusyMetValidation::selectEvent()
     cout << "  D3PD STVF:     " << metJet[Met_d3pd_stvf].Mod()/GeV << endl;
     cout << "  D3PD RefFinal: " << metJet[Met_d3pd_reff].Mod()/GeV  << endl;
 
-    cout << "Cell Out" << endl;
-    cout << "  SUSY STVF:     " << metCell[Met_susy_stvf].Mod()/GeV << endl;
-    cout << "  D3PD STVF:     " << metCell[Met_d3pd_stvf].Mod()/GeV << endl;
-    cout << "  D3PD RefFinal: " << metCell[Met_d3pd_reff].Mod()/GeV  << endl;
+    //cout << "Cell Out" << endl;
+    //cout << "  SUSY STVF:     " << metCell[Met_susy_stvf].Mod()/GeV << endl;
+    //cout << "  D3PD STVF:     " << metCell[Met_d3pd_stvf].Mod()/GeV << endl;
+    //cout << "  D3PD RefFinal: " << metCell[Met_d3pd_reff].Mod()/GeV  << endl;
 
-    cout << "Soft Jet" << endl;
-    cout << "  SUSY STVF:     " << metSoftJet[Met_susy_stvf].Mod()/GeV << endl;
-    cout << "  D3PD STVF:     " << metSoftJet[Met_d3pd_stvf].Mod()/GeV << endl;
-    cout << "  D3PD RefFinal: " << metSoftJet[Met_d3pd_reff].Mod()/GeV  << endl;
+    //cout << "Soft Jet" << endl;
+    //cout << "  SUSY STVF:     " << metSoftJet[Met_susy_stvf].Mod()/GeV << endl;
+    //cout << "  D3PD STVF:     " << metSoftJet[Met_d3pd_stvf].Mod()/GeV << endl;
+    //cout << "  D3PD RefFinal: " << metSoftJet[Met_d3pd_reff].Mod()/GeV  << endl;
 
     // TESTING, more explicit dump of D3PD vars
     cout << "Egamma10NoTau_RefFinal_STVF_etx        " << d3pd.met.Egamma10NoTau_RefFinal_STVF_etx()/GeV << endl;
@@ -482,12 +482,12 @@ bool SusyMetValidation::selectEvent()
     cout << "Egamma10NoTau_RefJet_etx               " << d3pd.met.Egamma10NoTau_RefJet_etx()/GeV << endl;
     cout << "Egamma10NoTau_RefJet_ety               " << d3pd.met.Egamma10NoTau_RefJet_ety()/GeV << endl;
     cout << "Egamma10NoTau_RefJet_sumet             " << d3pd.met.Egamma10NoTau_RefJet_sumet()/GeV << endl;
-    cout << "Egamma10NoTau_CellOut_Eflow_STVF_etx   " << d3pd.met.Egamma10NoTau_CellOut_Eflow_STVF_etx()/GeV << endl;
-    cout << "Egamma10NoTau_CellOut_Eflow_STVF_ety   " << d3pd.met.Egamma10NoTau_CellOut_Eflow_STVF_ety()/GeV << endl;
-    cout << "Egamma10NoTau_CellOut_Eflow_STVF_sumet " << d3pd.met.Egamma10NoTau_CellOut_Eflow_STVF_sumet()/GeV << endl;
-    cout << "Egamma10NoTau_SoftJets_etx             " << d3pd.met.Egamma10NoTau_SoftJets_etx()/GeV << endl;
-    cout << "Egamma10NoTau_SoftJets_ety             " << d3pd.met.Egamma10NoTau_SoftJets_ety()/GeV << endl;
-    cout << "Egamma10NoTau_SoftJets_sumet           " << d3pd.met.Egamma10NoTau_SoftJets_sumet()/GeV << endl;
+    //cout << "Egamma10NoTau_CellOut_Eflow_STVF_etx   " << d3pd.met.Egamma10NoTau_CellOut_Eflow_STVF_etx()/GeV << endl;
+    //cout << "Egamma10NoTau_CellOut_Eflow_STVF_ety   " << d3pd.met.Egamma10NoTau_CellOut_Eflow_STVF_ety()/GeV << endl;
+    //cout << "Egamma10NoTau_CellOut_Eflow_STVF_sumet " << d3pd.met.Egamma10NoTau_CellOut_Eflow_STVF_sumet()/GeV << endl;
+    //cout << "Egamma10NoTau_SoftJets_etx             " << d3pd.met.Egamma10NoTau_SoftJets_etx()/GeV << endl;
+    //cout << "Egamma10NoTau_SoftJets_ety             " << d3pd.met.Egamma10NoTau_SoftJets_ety()/GeV << endl;
+    //cout << "Egamma10NoTau_SoftJets_sumet           " << d3pd.met.Egamma10NoTau_SoftJets_sumet()/GeV << endl;
 
     // Dump muon weights
     cout.precision(2);
@@ -531,7 +531,7 @@ bool SusyMetValidation::selectEvent()
     h_metEle[i]->Fill(metEle[i].Mod()/GeV, w);
     h_metMuo[i]->Fill(metMuo[i].Mod()/GeV, w);
     h_metJet[i]->Fill(metJet[i].Mod()/GeV, w);
-    h_metCell[i]->Fill(metCell[i].Mod()/GeV, w);
+    //h_metCell[i]->Fill(metCell[i].Mod()/GeV, w);
   }
 
   // Fill muon MET variables

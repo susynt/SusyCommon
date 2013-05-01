@@ -26,8 +26,9 @@ SusyD3PDAna::SusyD3PDAna() :
         m_selectPhotons(true),
         m_selectTaus(false),
         m_selectTruth(false),
-	m_useMetMuons(false),
         m_metFlavor(SUSYMet::STVF),
+        m_doMetFix(false),
+	//m_useMetMuons(false),
         m_lumi(LUMI_A_E),
         m_sumw(1),
 	m_xsec(-1),
@@ -37,7 +38,6 @@ SusyD3PDAna::SusyD3PDAna() :
         m_pileup(0),
         m_pileupAB3(0),
         m_pileupAB(0),
-        //m_pileupIL(0),
         m_pileupAE(0),
         m_susyXsec(0),
         m_hforTool()
@@ -175,18 +175,6 @@ void SusyD3PDAna::Begin(TTree* /*tree*/)
       cout << "Problem in pileup initialization.  pileupError = " << pileupError << endl;
       abort();
     }
-    // pileup reweighting for 2012 I+L only
-    /*
-    m_pileupIL = new Root::TPileupReweighting("PileupReweightingIL");
-    m_pileupIL->SetDataScaleFactors(1/1.11);
-    m_pileupIL->AddConfigFile("$ROOTCOREDIR/data/PileupReweighting/mc12a_defaults.prw.root");
-    m_pileupIL->AddLumiCalcFile("$ROOTCOREDIR/data/MultiLep/ilumicalc_histograms_EF_mu18_tight_mu8_EFFS_213431-215643.root");
-    m_pileupIL->SetUnrepresentedDataAction(2);
-    pileupError = m_pileupIL->Initialize();
-    if(pileupError){
-      cout << "Problem in pileup initialization.  pileupError = " << pileupError << endl;
-      abort();
-    }*/
     // pileup reweighting for 2012 A-E only
     m_pileupAE = new Root::TPileupReweighting("PileupReweightingAE");
     m_pileupAE->SetDataScaleFactors(1/1.11);
@@ -242,7 +230,6 @@ void SusyD3PDAna::Terminate()
     delete m_pileup;
     delete m_pileupAB3;
     delete m_pileupAB;
-    //delete m_pileupIL;
     delete m_pileupAE;
   }
 }
@@ -289,7 +276,7 @@ void SusyD3PDAna::selectBaselineObjects(SusyNtSys sys)
   m_preElectrons = get_electrons_baseline(&d3pd.ele, !m_isMC, d3pd.evt.RunNumber(), m_susyObj, 
                                           10.*GeV, 2.47, susySys);
   m_preMuons     = get_muons_baseline(&d3pd.muo, !m_isMC, m_susyObj, 
-                                      10.*GeV, 2.4, susySys);
+                                      10.*GeV, 2.5, susySys);
   m_preJets      = get_jet_baseline(&d3pd.jet, &d3pd.vtx, &d3pd.evt, !m_isMC, m_susyObj, 
                                     20.*GeV, 4.9, susySys, false, goodJets);
 
@@ -403,11 +390,19 @@ void SusyD3PDAna::buildMet(SusyNtSys sys)
 
   // Need electrons with nonzero met weight in order to calculate the MET
   vector<int> metElectrons = get_electrons_met(&d3pd.ele, m_susyObj);
-  TVector2 metVector =  !m_useMetMuons ? 
-    GetMetVector(m_susyObj, &d3pd.jet, &d3pd.muo, &d3pd.ele, &d3pd.met, &d3pd.evt,
-		 m_preMuons, m_baseElectrons, metElectrons, susySys, m_metFlavor) :
-    GetMetVector(m_susyObj, &d3pd.jet, &d3pd.muo, &d3pd.ele, &d3pd.met, &d3pd.evt,
-		 m_metMuons, m_baseElectrons, metElectrons, susySys, m_metFlavor);
+
+  // Calculate the MET
+  // We shouldn't need the useMetMuons flag anymore, since baseline muons will extend to eta=2.5
+  TVector2 metVector = GetMetVector(m_susyObj, &d3pd.jet, &d3pd.muo, &d3pd.ele, &d3pd.met, 
+                                    &d3pd.evt, m_preMuons, m_baseElectrons, metElectrons, 
+                                    susySys, m_metFlavor, m_doMetFix);
+  //TVector2 metVector = m_useMetMuons? 
+  //                     GetMetVector(m_susyObj, &d3pd.jet, &d3pd.muo, &d3pd.ele, &d3pd.met, 
+  //                                  &d3pd.evt, m_preMuons, m_baseElectrons, metElectrons, 
+  //                                  susySys, m_metFlavor, m_doMetFix) :
+  //                     GetMetVector(m_susyObj, &d3pd.jet, &d3pd.muo, &d3pd.ele, &d3pd.met, 
+  //                                  &d3pd.evt, m_metMuons, m_baseElectrons, metElectrons, 
+  //                                  susySys, m_metFlavor, m_doMetFix);
     
   m_met.SetPxPyPzE(metVector.X(), metVector.Y(), 0, metVector.Mod());
 }
@@ -868,6 +863,18 @@ bool SusyD3PDAna::passCosmic()
 {
   return !IsCosmic(m_susyObj, &d3pd.muo, m_baseMuons, 1., 0.2);
 }
+/*--------------------------------------------------------------------------------*/
+// Radiative b quark check for sherpa WW fix
+/*--------------------------------------------------------------------------------*/
+bool SusyD3PDAna::hasRadiativeBQuark(const vector<int>* pdg, const vector<int>* status)
+{
+  if(!pdg || !status || pdg->size()!=status->size()) return false;
+  const vector<int>& p = *pdg;
+  const vector<int>& s = *status;
+  const int pdgB(5), statRad(3);
+  for(size_t i=0; i<p.size(); ++i) if(abs(p[i])==pdgB && s[i]==statRad) return true;
+  return false;
+}
 
 /*--------------------------------------------------------------------------------*/
 // Get event weight, combine gen, pileup, xsec, and lumi weights
@@ -931,11 +938,6 @@ float SusyD3PDAna::getPileupWeightAB()
 {
   return m_pileupAB->GetCombinedWeight(d3pd.evt.RunNumber(), d3pd.truth.channel_number(), d3pd.evt.averageIntPerXing());
 }
-/*--------------------------------------------------------------------------------*/
-/*float SusyD3PDAna::getPileupWeightIL()
-{
-  return m_pileupIL->GetCombinedWeight(d3pd.evt.RunNumber(), d3pd.truth.channel_number(), d3pd.evt.averageIntPerXing());
-}*/
 /*--------------------------------------------------------------------------------*/
 float SusyD3PDAna::getPileupWeightAE()
 {
@@ -1035,7 +1037,8 @@ void SusyD3PDAna::setMetFlavor(string metFlav)
   else if(metFlav=="STVF_JVF") m_metFlavor = SUSYMet::STVF_JVF;
   else if(metFlav=="Default") m_metFlavor = SUSYMet::Default;
   else{
-    cout << "SusyD3PDAna::setMetFlavor : ERROR : MET flavor " << metFlav << " is not supported!" << endl;
+    cout << "SusyD3PDAna::setMetFlavor : ERROR : MET flavor " << metFlav 
+         << " is not supported!" << endl;
     abort();
   }
 }

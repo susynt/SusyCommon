@@ -84,14 +84,8 @@ void SusyNtMaker::Begin(TTree* /*tree*/)
   m_isSusySample = m_sample.Contains("DGemt") || m_sample.Contains("DGstau") || m_sample.Contains("RPV") ||
                    m_sample.Contains("simplifiedModel") || m_sample.Contains("pMSSM");
   m_isWhSample = m_sample.Contains("simplifiedModel_wA_noslep_WH");
-  // create histogram for cutflow
-  //h_cutFlow = new TH1F("cutFlow","Histogram storing cuts applied upstream", 5, -0.5, 3.5);
-  //h_cutFlow->GetXaxis()->SetBinLabel(1, "total");
-  //h_cutFlow->GetXaxis()->SetBinLabel(2, "GRL");
-  //h_cutFlow->GetXaxis()->SetBinLabel(3, "LAr Error");
-  //h_cutFlow->GetXaxis()->SetBinLabel(4, "TTC Veto");
-  //h_cutFlow->GetXaxis()->SetBinLabel(5, "Good Vertex");
 
+  // create histograms for cutflow
   // Raw event weights
   h_rawCutFlow = makeCutFlow("rawCutFlow", "rawCutFlow;Cuts;Events");
   // Generator event weights
@@ -284,13 +278,11 @@ bool SusyNtMaker::selectEvent()
   checkEventCleaning();
 
   // grl
-  //if(!passGRL()) return false;
   if(m_filter && (m_cutFlags & ECut_GRL) == 0) return false;
   FillCutFlow();
   n_evt_grl++;
 
   // larErr
-  //if(!passLarErr()) return false;
   if(m_filter && (m_cutFlags & ECut_LarErr) == 0) return false;
   FillCutFlow();
   n_evt_larErr++;
@@ -301,20 +293,18 @@ bool SusyNtMaker::selectEvent()
   n_evt_tileErr++;
 
   // Incomplete TTC event veto
-  //if(!passTTCVeto()) return false;
   if(m_filter && (m_cutFlags & ECut_TTC) == 0) return false;
   FillCutFlow();
   n_evt_ttcVeto++;
 
   // primary vertex cut is actually filtered
-  //if(!passGoodVtx()) return false; 
   if(m_filter && (m_cutFlags & ECut_GoodVtx) == 0) return false;
   FillCutFlow();
   n_evt_goodVtx++;
 
   // Sherpa WW fix, remove radiative b-quark processes that overlap with single top
-  if(m_filter && m_isMC && isBuggyWwSherpaSample(d3pd.truth.channel_number()) && 
-     hasRadiativeBquark(d3pd.truth.pdgId(), d3pd.truth.status())) return false;
+  if(m_filter && m_isMC && isBuggyWWSherpaSample(d3pd.truth.channel_number()) && 
+     hasRadiativeBQuark(d3pd.truth.pdgId(), d3pd.truth.status())) return false;
   FillCutFlow();
   n_evt_WwSherpa++;
 
@@ -931,8 +921,9 @@ void SusyNtMaker::fillMetVars(SusyNtSys sys)
   TVector2 refMuoV   = m_susyObj.computeMETComponent(METUtil::MuonTotal, metSys);
   TVector2 refJetV   = m_susyObj.computeMETComponent(METUtil::RefJet, metSys);
   TVector2 refGammaV = m_susyObj.computeMETComponent(METUtil::RefGamma, metSys);
-  TVector2 softJetV  = m_susyObj.computeMETComponent(METUtil::SoftJets, metSys);
-  TVector2 refCellV  = m_susyObj.computeMETComponent(METUtil::CellOutEflow, metSys);
+  //TVector2 softJetV  = m_susyObj.computeMETComponent(METUtil::SoftJets, metSys);
+  //TVector2 refCellV  = m_susyObj.computeMETComponent(METUtil::CellOutEflow, metSys);
+  TVector2 softTermV = m_susyObj.computeMETComponent(METUtil::SoftTerms, metSys);
 
   metOut->refEle     = refEleV.Mod()/GeV;
   metOut->refEle_etx = refEleV.Px()/GeV;
@@ -950,13 +941,17 @@ void SusyNtMaker::fillMetVars(SusyNtSys sys)
   metOut->refGamma_etx = refGammaV.Px()/GeV;
   metOut->refGamma_ety = refGammaV.Py()/GeV;
 
-  metOut->softJet     = softJetV.Mod()/GeV;
-  metOut->softJet_etx = softJetV.Px()/GeV;
-  metOut->softJet_ety = softJetV.Py()/GeV;
+  //metOut->softJet     = softJetV.Mod()/GeV;
+  //metOut->softJet_etx = softJetV.Px()/GeV;
+  //metOut->softJet_ety = softJetV.Py()/GeV;
 
-  metOut->refCell     = refCellV.Mod()/GeV;
-  metOut->refCell_etx = refCellV.Px()/GeV;
-  metOut->refCell_ety = refCellV.Py()/GeV;
+  //metOut->refCell     = refCellV.Mod()/GeV;
+  //metOut->refCell_etx = refCellV.Px()/GeV;
+  //metOut->refCell_ety = refCellV.Py()/GeV;
+
+  metOut->softTerm     = softTermV.Mod()/GeV;
+  metOut->softTerm_etx = softTermV.Px()/GeV;
+  metOut->softTerm_ety = softTermV.Py()/GeV;
 
   //metOut->refEle        = m_susyObj.computeMETComponent(METUtil::RefEle, metSys).Mod()/GeV;
   //metOut->refMuo        = m_susyObj.computeMETComponent(METUtil::MuonTotal, metSys).Mod()/GeV;
@@ -1405,19 +1400,19 @@ void SusyNtMaker::addMissingTau(int index, SusyNtSys sys)
   //if(sys == NtSys_TES_DN) tau->tes_dn = sf;
 }
 /*--------------------------------------------------------------------------------*/
-bool SusyNtMaker::isBuggyWwSherpaSample(const int &dsid)
-{
-  return (dsid==126892 || dsid==157817 || dsid==157818 || dsid==157819);
-}
+//bool SusyNtMaker::isBuggyWwSherpaSample(const int &dsid)
+//{
+//  return (dsid==126892 || dsid==157817 || dsid==157818 || dsid==157819);
+//}
 /*--------------------------------------------------------------------------------*/
-bool SusyNtMaker::hasRadiativeBquark(const vint_t *pdg, const vint_t *status)
-{
-  if(!pdg || !status || pdg->size()!=status->size()) return false;
-  const vint_t &p = *pdg;
-  const vint_t &s = *status;
-  const int pdgB(5), statRad(3); 
-  for(size_t i=0; i<p.size(); ++i) if(abs(p[i])==pdgB && s[i]==statRad) return true;
-  return false;
-}
+//bool SusyNtMaker::hasRadiativeBquark(const vint_t *pdg, const vint_t *status)
+//{
+//  if(!pdg || !status || pdg->size()!=status->size()) return false;
+//  const vint_t &p = *pdg;
+//  const vint_t &s = *status;
+//  const int pdgB(5), statRad(3); 
+//  for(size_t i=0; i<p.size(); ++i) if(abs(p[i])==pdgB && s[i]==statRad) return true;
+//  return false;
+//}
 
 #undef GeV

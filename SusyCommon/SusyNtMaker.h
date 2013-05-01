@@ -104,8 +104,8 @@ class SusyNtMaker : public SusyD3PDAna
     void setFilter(bool filter=true){ m_filter = filter; }
 
  private:
-    static bool isBuggyWwSherpaSample(const int &dsid); //!< see thread "Diboson MC Truth Discrepancy" atlas-phys-susy-d3pd.cern.ch, Mar2013
-    static bool hasRadiativeBquark(const vint_t *pdg, const vint_t *status);
+    //static bool isBuggyWwSherpaSample(const int &dsid); //!< see thread "Diboson MC Truth Discrepancy" atlas-phys-susy-d3pd.cern.ch, Mar2013
+    //static bool hasRadiativeBquark(const vint_t *pdg, const vint_t *status);
  protected:
     
     TFile*              m_outTreeFile;  // output tree file
