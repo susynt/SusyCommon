@@ -274,14 +274,14 @@ void SusyD3PDAna::selectBaselineObjects(SusyNtSys sys)
 
   // Preselection
   m_preElectrons = get_electrons_baseline(&d3pd.ele, !m_isMC, d3pd.evt.RunNumber(), m_susyObj, 
-                                          10.*GeV, 2.47, susySys);
+                                          6.*GeV, 2.47, susySys);
   m_preMuons     = get_muons_baseline(&d3pd.muo, !m_isMC, m_susyObj, 
-                                      10.*GeV, 2.5, susySys);
+                                      6.*GeV, 2.5, susySys);
   m_preJets      = get_jet_baseline(&d3pd.jet, &d3pd.vtx, &d3pd.evt, !m_isMC, m_susyObj, 
                                     20.*GeV, 4.9, susySys, false, goodJets);
 
   // Selection for met muons
-  // Diff with preMuons is |eta| selection
+  // Diff with preMuons is pt selection
   m_metMuons     = get_muons_baseline(&d3pd.muo, !m_isMC, m_susyObj, 
                                       10.*GeV, 2.5, susySys);
 
@@ -392,9 +392,9 @@ void SusyD3PDAna::buildMet(SusyNtSys sys)
   vector<int> metElectrons = get_electrons_met(&d3pd.ele, m_susyObj);
 
   // Calculate the MET
-  // We shouldn't need the useMetMuons flag anymore, since baseline muons will extend to eta=2.5
+  // We use the metMuons instead of preMuons so that we can have a lower pt cut on preMuons
   TVector2 metVector = GetMetVector(m_susyObj, &d3pd.jet, &d3pd.muo, &d3pd.ele, &d3pd.met, 
-                                    &d3pd.evt, m_preMuons, m_baseElectrons, metElectrons, 
+                                    &d3pd.evt, m_metMuons, m_baseElectrons, metElectrons, 
                                     susySys, m_metFlavor, m_doMetFix);
   //TVector2 metVector = m_useMetMuons? 
   //                     GetMetVector(m_susyObj, &d3pd.jet, &d3pd.muo, &d3pd.ele, &d3pd.met, 

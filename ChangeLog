@@ -1,5 +1,8 @@
 # vim: set noexpandtab:
 
+2013-05-02 Steve
+	* Tagging SusyCommon-00-00-69
+
 2013-05-01 Steve
 	* Added flag to SusyD3PDAna for toggling the MET jet-ele overlap fix
 	* Extended baseline muon eta cut up to 2.5
