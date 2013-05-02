@@ -20,7 +20,7 @@ import re
 import subprocess
 
 # Some grid option defaults
-defaultTag='n0139'
+defaultTag='n0140'
 defaultNickname='sfarrell'
 defaultMet='Default'
 
@@ -29,15 +29,20 @@ def main():
     # Job arguments
     parser = ArgumentParser(description='SusyCommon grid submission')
     add_arg = parser.add_argument
-    add_arg('job', choices=['data', 'mc', 'susy'], help='specifies some default settings, like input file')
-    add_arg('-f', '--input-files', nargs='*', help='input file with datasets, can specify more than one')
+    add_arg('job', choices=['data', 'mc', 'susy'], 
+            help='specifies some default settings, like input file')
+    add_arg('-f', '--input-files', nargs='*', 
+            help='input file with datasets, can specify more than one')
     add_arg('-p', '--pattern', help='grep pattern to select datasets')
     add_arg('-t', '--tag', default=defaultTag, help='SusyNt tag to assign')
     add_arg('-v', '--verbose', action='store_true', help='verbose output')
     add_arg('--athenaTag', default='17.2.9.1', help='athena tag')
     add_arg('--nickname', default=defaultNickname, help='grid nickname, for naming output DS')
-    add_arg('--destSE', default='SLACXRD_SCRATCHDISK', help='replicate output dataset to specified site')
-    add_arg('--met', default=defaultMet, help='MET flavor to use', choices=['STVF', 'STVF_JVF', 'Default'])
+    add_arg('--destSE', default='SLACXRD_SCRATCHDISK', 
+            help='replicate output dataset to specified site')
+    add_arg('--met', default=defaultMet, help='MET flavor to use', 
+            choices=['STVF', 'STVF_JVF', 'Default'])
+    add_arg('--doMetFix', action='store_true', help='Turns on MET ele-jet overlap fix')
     add_arg('--sys', type=bool, default=True, help='toggle systematics')
     add_arg('--nGBPerJob', default='MAX', help='prun option')
     add_arg('--noSubmit', action='store_true', help='test prun without submitting')
@@ -115,7 +120,11 @@ def main():
 
                 # Grid command
                 gridCommand = './gridScript.sh %IN --saveTau --metFlav ' + args.met
-                gridCommand += ' -w ' + sumw + ' -x ' + xsec + ' -s ' + sample + ' --errXsec ' + errXsec
+                gridCommand += ' -w ' + sumw + ' -x ' + xsec + ' -s ' + sample
+                gridCommand += ' --errXsec ' + errXsec
+
+                # Met fix
+                if args.doMetFix: gridCommon += ' --doMetFix'
 
                 # Systematics
                 if args.sys: gridCommand += ' --sys'
@@ -123,7 +132,7 @@ def main():
                 # AF2 sample option
                 if re.search('_a[0-9]*_', inDS): gridCommand += ' --af2'
 
-                print '\n__________________________________________________________________________________________'
+                print '\n' + ('_'*90)
                 print 'Input   ', inDS
                 print 'Output  ', outDS
                 print 'Sample  ', sample
