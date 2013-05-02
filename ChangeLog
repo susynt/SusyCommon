@@ -1,6 +1,11 @@
 # vim: set noexpandtab:
 
 2013-05-02 Steve
+	* Lowered the pre-lepton pt cuts to 6 GeV
+		* metMuons still used for the met with pt>10
+		* This impacts the code's usefulness for d3pd analysis,
+		  so I will try to add functionality to keep using 10 GeV
+		  for baseline and signal object level
 	* Tagging SusyCommon-00-00-69
 
 2013-05-01 Steve
