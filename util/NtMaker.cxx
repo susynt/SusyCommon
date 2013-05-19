@@ -65,6 +65,9 @@ void help()
   cout << "  --saveTau will save taus"          << endl;
   cout << "     default: off"                   << endl;
 
+  cout << "  --saveContTau will save container" << endl;
+  cout << "     taus instead of selected"       << endl;
+
   cout << "  --saveTruth will save truth"       << endl;
   cout << "     default: off"                   << endl;
 
@@ -88,6 +91,16 @@ void help()
   cout << "  --filterOff turns off filtering"   << endl;
   cout << "     default: filter is on"          << endl;
 
+  cout << "  --nLepFilter number of light leps" << endl;
+  cout << "     to filter on. Default: 0"       << endl;
+
+  cout << "  --nLepTauFilter number of total"   << endl;
+  cout << "     light+tau to filter on."        << endl;
+  cout << "     Default: 2"                     << endl;
+
+  cout << "  --filterTrig turns on trigger"     << endl;
+  cout << "     filtering."                     << endl;
+
   cout << "  -h print this help"                << endl;
 }
 
@@ -109,14 +122,17 @@ int main(int argc, char** argv)
   bool sysOn      = false;
   //bool savePh     = false;
   bool saveTau    = false;
+  bool saveContTau= false;
   bool saveTruth  = false;
   bool isAF2      = false;
   bool writeNt    = true;
   D3PDTag tag     = D3PD_p1328;
   string metFlav  = "Default";
-  //bool useMetMu   = false;
   bool doMetFix   = false;
   bool filter     = true;
+  uint nLepFilter = 0;
+  uint nLepTauFilter = 2;
+  bool filterTrig = false;
 
   cout << "SusyNtMaker" << endl;
   cout << endl;
@@ -151,6 +167,10 @@ int main(int argc, char** argv)
     //savePh = true;
     else if (strcmp(argv[i], "--saveTau") == 0)
       saveTau = true;
+    else if (strcmp(argv[i], "--saveContTau") == 0){
+      saveTau = true;
+      saveContTau = true;
+    }
     else if (strcmp(argv[i], "--saveTruth") == 0)
       saveTruth = true;
     else if (strcmp(argv[i], "--af2") == 0)
@@ -159,13 +179,16 @@ int main(int argc, char** argv)
       tag = D3PD_p1032;
     else if (strcmp(argv[i], "--metFlav") == 0)
       metFlav = argv[++i];
-    //else if (strcmp(argv[i], "--useMetMuons") == 0)
-      //useMetMu = true;
     else if (strcmp(argv[i], "--doMetFix") == 0)
       doMetFix = true;
     else if (strcmp(argv[i], "--filterOff") == 0)
       filter = false;
-    //if (strcmp(argv[i], "-h") == 0)
+    else if (strcmp(argv[i], "--nLepFilter") == 0)
+      nLepFilter = atoi(argv[++i]);
+    else if (strcmp(argv[i], "--nLepTauFilter") == 0)
+      nLepTauFilter = atoi(argv[++i]);
+    else if (strcmp(argv[i], "--filterTrig") == 0)
+      filterTrig = true;
     else
     {
       help();
@@ -174,25 +197,28 @@ int main(int argc, char** argv)
   }
 
   cout << "flags:" << endl;
-  cout << "  sample    " << sample   << endl;
-  cout << "  nEvt      " << nEvt     << endl;
-  cout << "  nSkip     " << nSkip    << endl;
-  cout << "  dbg       " << dbg      << endl;
-  cout << "  input     " << fileList << endl;
-  cout << "  sumw      " << sumw     << endl;
-  cout << "  grl       " << grl      << endl;
-  cout << "  sys       " << sysOn    << endl;
-  //cout << "  savePh  " << savePh   << endl;
-  cout << "  saveTau   " << saveTau  << endl;
-  cout << "  saveTru   " << saveTruth<< endl;
-  cout << "  isAF2     " << isAF2    << endl;
-  cout << "  d3pdtag   " << tag      << endl;
-  cout << "  metFlav   " << metFlav  << endl;
-  cout << "  doMetFix  " << doMetFix << endl;
-  cout << "  lumi      " << lumi     << endl;
-  cout << "  xsec      " << xsec     << endl;
-  //cout << "  useMetMu  " << useMetMu << endl;
-  cout << "  filter    " << filter   << endl;
+  cout << "  sample        " << sample   << endl;
+  cout << "  nEvt          " << nEvt     << endl;
+  cout << "  nSkip         " << nSkip    << endl;
+  cout << "  dbg           " << dbg      << endl;
+  cout << "  input         " << fileList << endl;
+  cout << "  sumw          " << sumw     << endl;
+  cout << "  grl           " << grl      << endl;
+  cout << "  sys           " << sysOn    << endl;
+  //cout << "  savePh      " << savePh   << endl;
+  cout << "  saveTau       " << saveTau  << endl;
+  cout << "  saveContTau   " << saveContTau << endl;
+  cout << "  saveTru       " << saveTruth<< endl;
+  cout << "  isAF2         " << isAF2    << endl;
+  cout << "  d3pdtag       " << tag      << endl;
+  cout << "  metFlav       " << metFlav  << endl;
+  cout << "  doMetFix      " << doMetFix << endl;
+  cout << "  lumi          " << lumi     << endl;
+  cout << "  xsec          " << xsec     << endl;
+  cout << "  filter        " << filter   << endl;
+  cout << "  nLepFilter    " << nLepFilter    << endl;
+  cout << "  nLepTauFilter " << nLepTauFilter << endl;
+  cout << "  filterTrig    " << filterTrig    << endl;
   cout << endl;
 
   // Build the input chain
@@ -211,6 +237,7 @@ int main(int argc, char** argv)
   susyAna->setSys(sysOn);
   //susyAna->setSelectPhotons(savePh);
   susyAna->setSelectTaus(saveTau);
+  susyAna->setSaveContTaus(saveContTau);
   susyAna->setAF2(isAF2);
   susyAna->setXsec(xsec);
   susyAna->setErrXsec(errXsec);
@@ -218,9 +245,11 @@ int main(int argc, char** argv)
   susyAna->setD3PDTag(tag);
   susyAna->setMetFlavor(metFlav);
   susyAna->setSelectTruthObjects(saveTruth);
-  //susyAna->setUseMetMuons(useMetMu);
   susyAna->setDoMetFix(doMetFix);
   susyAna->setFilter(filter);
+  susyAna->setNLepFilter(nLepFilter);
+  susyAna->setNLepTauFilter(nLepTauFilter);
+  susyAna->setFilterTrigger(filterTrig);
 
   // GRL - default is set in SusyD3PDAna::Begin, but now we can override it here
   susyAna->setGRLFile(grl);

@@ -18,9 +18,13 @@ using namespace std;
 // SusyNtMaker Constructor
 /*--------------------------------------------------------------------------------*/
 SusyNtMaker::SusyNtMaker() : m_fillNt(true),
+			     m_filter(true),
+                             m_nLepFilter(0),
+                             m_nLepTauFilter(2),
+                             m_filterTrigger(false),
+                             m_saveContTaus(false),
 			     m_isWhSample(false),
-			     m_hDecay(-1),
-			     m_filter(true)
+			     m_hDecay(-1)
 {
   n_base_ele=0;
   n_base_muo=0;
@@ -411,10 +415,17 @@ bool SusyNtMaker::selectEvent()
     // TODO: add a command line option for controlling this filtering, 
     // so that we don't keep committing conflicting changes...
 
-    // For filling the output tree, require at least 2 pre-selected leptons (baseline before OR)
-    // Now counting taus as well!
-    if(m_filter && (m_susyNt.ele()->size() + m_susyNt.muo()->size() + m_susyNt.tau()->size()) < 2) return false;
+    // For filling the output tree, filter on number of saved light leptons and taus
+    if(m_filter){ 
+      uint nLepSaved = m_susyNt.ele()->size() + m_susyNt.muo()->size();
+      uint nTauSaved = m_susyNt.tau()->size();
+      if(nLepSaved < m_nLepFilter) return false;
+      if((nLepSaved + nTauSaved) < m_nLepTauFilter) return false;
 
+    }
+
+    // Trigger filtering, only save events for which one of our triggers has fired
+    if(m_filterTrigger && m_evtTrigFlags == 0) return false;
   }
   
   return true;
@@ -795,8 +806,9 @@ void SusyNtMaker::fillTauVars()
   if(m_dbg>=5) cout << "fillTauVars" << endl;
 
   // Loop over selected taus
-  for(uint iTau=0; iTau<m_preTaus.size(); iTau++){
-    int tauIdx = m_preTaus[iTau];  
+  vector<int>& saveTaus = m_saveContTaus? m_contTaus : m_preTaus;
+  for(uint iTau=0; iTau < saveTaus.size(); iTau++){
+    int tauIdx = saveTaus[iTau];  
 
     fillTauVar(tauIdx);
   }
@@ -1061,7 +1073,6 @@ void SusyNtMaker::doSystematic()
 
     selectObjects(sys);
     buildMet(sys);                   
-    //evtCheck();
 
     checkEventCleaning();
     checkObjectCleaning();
@@ -1076,7 +1087,6 @@ void SusyNtMaker::doSystematic()
     else if( isTauSys(sys) )
       saveTauSF(sys);
 
-
     // Fill the Met for this sys
     fillMetVars(sys);
 
@@ -1084,7 +1094,7 @@ void SusyNtMaker::doSystematic()
     //addEventFlag(sys, m_evtFlag);
     m_susyNt.evt()->cutFlags[sys] = m_cutFlags;
 
-  }// end loop over systematic
+  } // end loop over systematic
 }
 
 /*--------------------------------------------------------------------------------*/
@@ -1273,7 +1283,6 @@ void SusyNtMaker::addMissingElectron(const LeptonInfo* lep, SusyNtSys sys)
   else if(sys == NtSys_EES_LOW_DN) ele->ees_low_dn = sf;
   else if(sys == NtSys_EER_UP)     ele->eer_up = sf;
   else if(sys == NtSys_EER_DN)     ele->eer_dn = sf;
-  
 }
 
 /*--------------------------------------------------------------------------------*/

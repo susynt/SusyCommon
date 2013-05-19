@@ -1,5 +1,16 @@
 # vim: set noexpandtab:
 
+2013-05-19 Steve
+	* Added container taus to SusyD3PDAna
+		* Functionality copied over from SusyCommon-00-00-68-branch
+	* Added m_saveContTaus flag to SusyNtMaker for toggling usage of
+	  container taus to fill the SusyNt rather than preTaus
+	* Added new filtering options to SusyNtMaker
+		* m_nLepFilter specifies minimum light leptons to save event
+		* m_nLepTauFilter specifies minimum leptons to save event
+		* m_filterTrigger toggles trigger filtering, using all triggers
+		  saved in the event trigger flags
+
 2013-05-02 Steve
 	* Lowered the pre-lepton pt cuts to 6 GeV
 		* metMuons still used for the met with pt>10

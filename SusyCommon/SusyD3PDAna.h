@@ -260,6 +260,9 @@ class SusyD3PDAna : public SusyD3PDInterface
     // Object collections (usually just vectors of indices)
     //
 
+    // "container" objects pass minimal selection cuts
+    std::vector<int>            m_contTaus;     // container taus
+
     // "selected" objects pass kinematic cuts, but no overlap removal applied
     std::vector<int>            m_preElectrons; // selected electrons
     std::vector<int>            m_preMuons;     // selected muons

@@ -272,28 +272,28 @@ void SusyD3PDAna::selectBaselineObjects(SusyNtSys sys)
   else if(sys == NtSys_TES_UP    ) susySys = SystErr::TESUP;      // TES up
   else if(sys == NtSys_TES_DN    ) susySys = SystErr::TESDOWN;    // TES down
 
+  // Container object selection
+  if(m_selectTaus) m_contTaus = get_taus_baseline(&d3pd.tau, m_susyObj, 20.*GeV, 2.5,
+                                                  SUSYTau::TauNone, SUSYTau::TauNone, SUSYTau::TauNone,
+                                                  susySys);
+
   // Preselection
   m_preElectrons = get_electrons_baseline(&d3pd.ele, !m_isMC, d3pd.evt.RunNumber(), m_susyObj, 
                                           6.*GeV, 2.47, susySys);
-  m_preMuons     = get_muons_baseline(&d3pd.muo, !m_isMC, m_susyObj, 
-                                      6.*GeV, 2.5, susySys);
-  m_preJets      = get_jet_baseline(&d3pd.jet, &d3pd.vtx, &d3pd.evt, !m_isMC, m_susyObj, 
-                                    20.*GeV, 4.9, susySys, false, goodJets);
+  m_preMuons = get_muons_baseline(&d3pd.muo, !m_isMC, m_susyObj, 
+                                  6.*GeV, 2.5, susySys);
+  m_preJets = get_jet_baseline(&d3pd.jet, &d3pd.vtx, &d3pd.evt, !m_isMC, m_susyObj, 
+                               20.*GeV, 4.9, susySys, false, goodJets);
 
   // Selection for met muons
   // Diff with preMuons is pt selection
-  m_metMuons     = get_muons_baseline(&d3pd.muo, !m_isMC, m_susyObj, 
-                                      10.*GeV, 2.5, susySys);
+  m_metMuons = get_muons_baseline(&d3pd.muo, !m_isMC, m_susyObj, 
+                                  10.*GeV, 2.5, susySys);
 
   // Preselect taus
-  if(m_selectTaus){
-    m_preTaus    = get_taus_baseline(&d3pd.tau, m_susyObj, 20.*GeV, 2.5, 
-                                     SUSYTau::TauLoose, SUSYTau::TauLoose, SUSYTau::TauLoose, 
-                                     susySys);
-  }
-  else{
-    m_preTaus.clear();
-  }
+  if(m_selectTaus) m_preTaus = get_taus_baseline(&d3pd.tau, m_susyObj, 20.*GeV, 2.5, 
+                                                 SUSYTau::TauLoose, SUSYTau::TauLoose, SUSYTau::TauLoose, 
+                                                 susySys);
   
   performOverlapRemoval();
 

@@ -101,11 +101,23 @@ class SusyNtMaker : public SusyD3PDAna
     void setFillNt(bool fill=true) { m_fillNt = fill; }
 
     // Toggle filtering
-    void setFilter(bool filter=true){ m_filter = filter; }
+    void setFilter(bool filter=true) { m_filter = filter; }
+
+    // Set light lepton filter
+    void setNLepFilter(uint nLep) { m_nLepFilter = nLep; }
+    // Set light lepton + tau filter
+    void setNLepTauFilter(uint nLepTau) { m_nLepTauFilter = nLepTau; }
+
+    // Toggle trigger filtering
+    void setFilterTrigger(bool filter=true) { m_filterTrigger = filter; }
+
+    // Toggle saving container taus instead of selected taus
+    void setSaveContTaus(bool saveContTaus=true) { m_saveContTaus = saveContTaus; }
 
  private:
     //static bool isBuggyWwSherpaSample(const int &dsid); //!< see thread "Diboson MC Truth Discrepancy" atlas-phys-susy-d3pd.cern.ch, Mar2013
     //static bool hasRadiativeBquark(const vint_t *pdg, const vint_t *status);
+
  protected:
     
     TFile*              m_outTreeFile;  // output tree file
@@ -113,11 +125,17 @@ class SusyNtMaker : public SusyD3PDAna
 
     Susy::SusyNtObject  m_susyNt;       // SusyNt interface
 
+    // Control flags
     bool                m_fillNt;       // Flag to turn off Nt filling (for fast cutflow checks)
+    bool                m_filter;       // Flag to turn off filtering for signal samples
+    uint                m_nLepFilter;   // Number of light leptons to filter on.
+    uint                m_nLepTauFilter;// Number of leptons (light+tau) to filter on.
+    bool                m_filterTrigger;// Only save events that pass any of our triggers
+    bool                m_saveContTaus; // Save container taus instead of selected taus
+
+    // Some useful flags
     bool                m_isWhSample;   // is WH sample
     int                 m_hDecay;       // higgs decay type (see WhTruthExtractor::Hdecays)
-
-    bool                m_filter;       // Flag to turn off filtering for signal samples
 
     // Some object counts
     uint                n_base_ele;
