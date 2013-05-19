@@ -1259,12 +1259,11 @@ void SusyNtMaker::addMissingElectron(const LeptonInfo* lep, SusyNtSys sys)
   float trk_phi  = e->trackphi()->at(index);
   float nPixHits = e->nPixHits()->at(index);
   float nSCTHits = e->nSCTHits()->at(index);
-  bool isData    = !m_isMC;
 
   // Reset the Nominal TLV
   // NOTE: this overwrites the TLV in SUSYObjDef with the nominal variables, 
   // regardless of our current systematic.
-  m_susyObj.SetElecTLV(index, cl_eta, cl_phi, cl_E, trk_eta, trk_phi, nPixHits, nSCTHits, isData, d3pd.evt.RunNumber(), SystErr::NONE);
+  m_susyObj.SetElecTLV(index, cl_eta, cl_phi, cl_E, trk_eta, trk_phi, nPixHits, nSCTHits, SystErr::NONE);
 
   // Now push it back onto to susyNt
   fillElectronVars(lep);
@@ -1299,7 +1298,6 @@ void SusyNtMaker::addMissingMuon(const LeptonInfo* lep, SusyNtSys sys)
   float pt                = m->pt()->at(index);
   float eta               = m->eta()->at(index);
   float phi               = m->phi()->at(index);
-  float E                 = m->E()->at(index);
   float me_qoverp_exPV    = m->me_qoverp_exPV()->at(index);
   float id_qoverp_exPV    = m->id_qoverp_exPV()->at(index);
   float me_theta_exPV     = m->me_theta_exPV()->at(index);
@@ -1307,13 +1305,12 @@ void SusyNtMaker::addMissingMuon(const LeptonInfo* lep, SusyNtSys sys)
   float charge            = m->charge()->at(index);
   int isCombined          = m->isCombinedMuon()->at(index);
   int isSegTag            = m->isSegmentTaggedMuon()->at(index);
-  bool isData             = !m_isMC;
 
   // Reset the Nominal TLV
   // NOTE: this overwrites the TLV in SUSYObjDef with the nominal variables, 
   // regardless of our current systematic.
-  m_susyObj.SetMuonTLV(index, pt, eta, phi, E, me_qoverp_exPV, id_qoverp_exPV, me_theta_exPV, 
-                       id_theta_exPV, charge, isCombined, isSegTag, isData, SystErr::NONE);
+  m_susyObj.SetMuonTLV(index, pt, eta, phi, me_qoverp_exPV, id_qoverp_exPV, me_theta_exPV, 
+                       id_theta_exPV, charge, isCombined, isSegTag, SystErr::NONE);
   
   // Now push it back onto to susyNt
   fillMuonVars(lep);
@@ -1335,34 +1332,45 @@ void SusyNtMaker::addMissingJet(int index, SusyNtSys sys)
   //TLorentzVector tlv_sys = m_susyObj.GetJetTLV(index);
   float E_sys = m_susyObj.GetJetTLV(index).E();
 
+  // Reset the Nominal TLV
+  // NOTE: this overwrites the TLV in SUSYObjDef with the nominal variables, 
+  // regardless of our current systematic.
+  const D3PDReader::JetD3PDObjectElement* jet = & d3pd.jet[index];
+  m_susyObj.FillJet(index, jet->pt(), jet->eta(), jet->phi(), jet->E(),
+                    jet->constscale_eta(), jet->constscale_phi(), jet->constscale_E(), jet->constscale_m(),
+                    jet->ActiveAreaPx(), jet->ActiveAreaPy(), jet->ActiveAreaPz(), jet->ActiveAreaE(),
+                    d3pd.evt.Eventshape_rhoKt4LC(),
+                    d3pd.evt.averageIntPerXing(),
+                    d3pd.vtx.nTracks());
+
   // Need to save the calibrated TLV
-  TLorentzVector tlv_nom;
-  m_susyObj.RecalibrateJet(&tlv_nom, 
-			   d3pd.jet.constscale_E()->at(index),
-			   d3pd.jet.constscale_eta()->at(index),
-			   d3pd.jet.constscale_phi()->at(index),
-			   d3pd.jet.constscale_m()->at(index),
-			   d3pd.jet.ActiveAreaPx()->at(index),
-			   d3pd.jet.ActiveAreaPy()->at(index),
-			   d3pd.jet.ActiveAreaPz()->at(index),
-			   d3pd.jet.ActiveAreaE()->at(index),
-			   d3pd.evt.Eventshape_rhoKt4LC(),
-			   d3pd.evt.averageIntPerXing(),
-			   d3pd.vtx.nTracks());
+  //TLorentzVector tlv_nom;
+  //m_susyObj.RecalibrateJet(&tlv_nom, 
+  //                         d3pd.jet.constscale_E()->at(index),
+  //                         d3pd.jet.constscale_eta()->at(index),
+  //                         d3pd.jet.constscale_phi()->at(index),
+  //                         d3pd.jet.constscale_m()->at(index),
+  //                         d3pd.jet.ActiveAreaPx()->at(index),
+  //                         d3pd.jet.ActiveAreaPy()->at(index),
+  //                         d3pd.jet.ActiveAreaPz()->at(index),
+  //                         d3pd.jet.ActiveAreaE()->at(index),
+  //                         d3pd.evt.Eventshape_rhoKt4LC(),
+  //                         d3pd.evt.averageIntPerXing(),
+  //                         d3pd.vtx.nTracks());
   
   //D3PDReader::JetD3PDObject* jets = & d3pd.jet;
 
-  float pt  = tlv_nom.Pt() / GeV;  //jets->pt()->at(index);
-  float eta = tlv_nom.Eta();       //jets->eta()->at(index);
-  float phi = tlv_nom.Phi();       //jets->phi()->at(index);
-  float E   = tlv_nom.E() / GeV;   //jets->E()->at(index);
+  //float pt  = tlv_nom.Pt() / GeV;  //jets->pt()->at(index);
+  //float eta = tlv_nom.Eta();       //jets->eta()->at(index);
+  //float phi = tlv_nom.Phi();       //jets->phi()->at(index);
+  //float E   = tlv_nom.E() / GeV;   //jets->E()->at(index);
   
   // Reset the Nominal TLV
   // NOTE: this overwrites the TLV in SUSYObjDef with the nominal variables, 
   // regardless of our current systematic.
-  m_susyObj.SetJetTLV(index, pt, eta, phi, E);
+  //m_susyObj.SetJetTLV(index, pt, eta, phi, E);
 
-  // Fill the Jet vars for this guy
+  // Fill the Jet vars for this guy, using the now nominal TLV
   fillJetVar(index);
 
   // Set SF
@@ -1372,7 +1380,6 @@ void SusyNtMaker::addMissingJet(int index, SusyNtSys sys)
   if(sys == NtSys_JER)         j->jer = sf;
   else if(sys == NtSys_JES_UP) j->jes_up = sf;
   else if(sys == NtSys_JES_DN) j->jes_dn = sf;
-  
 }
 
 /*--------------------------------------------------------------------------------*/

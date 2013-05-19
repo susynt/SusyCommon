@@ -355,9 +355,10 @@ void SusyD3PDAna::selectSignalObjects()
 {
   if(m_dbg>=5) cout << "selectSignalObjects" << endl;
   uint nVtx = getNumGoodVtx();
-  m_sigElectrons = get_electrons_signal(&d3pd.ele, m_baseElectrons, nVtx, !m_isMC, m_susyObj, 
-                                        10.*GeV, 0.16, 0.18, 5., 0.4);
-  m_sigMuons     = get_muons_signal(&d3pd.muo, m_baseMuons, nVtx, !m_isMC, m_susyObj, 10.*GeV, .12, 3., 1.);
+  m_sigElectrons = get_electrons_signal(&d3pd.ele, m_baseElectrons, &d3pd.muo, m_baseMuons,
+                                        nVtx, !m_isMC, m_susyObj, 10.*GeV, 0.16, 0.18, 5., 0.4);
+  m_sigMuons     = get_muons_signal(&d3pd.muo, m_baseMuons, &d3pd.ele, m_baseElectrons,
+                                    nVtx, !m_isMC, m_susyObj, 10.*GeV, .12, 3., 1.);
   m_sigJets      = get_jet_signal(&d3pd.jet, m_susyObj, m_baseJets, 20.*GeV, 2.5, 0.75);
   m_sigTaus      = get_taus_signal(&d3pd.tau, m_baseTaus, m_susyObj);
 

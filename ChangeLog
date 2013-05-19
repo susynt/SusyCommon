@@ -1,6 +1,12 @@
 # vim: set noexpandtab:
 
 2013-05-19 Steve
+	* Updated to SUSYTools-00-03-00 and trunk of MultiLep
+		* New args for get_*_signal lepton functions
+		* New args for Set*TLV SUSYTools methods
+		* New approach for setting nominal TLV when adding missing jets in systematics
+
+2013-05-19 Steve
 	* Added container taus to SusyD3PDAna
 		* Functionality copied over from SusyCommon-00-00-68-branch
 	* Added m_saveContTaus flag to SusyNtMaker for toggling usage of
