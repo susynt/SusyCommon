@@ -5,6 +5,7 @@
 		* New args for get_*_signal lepton functions
 		* New args for Set*TLV SUSYTools methods
 		* New approach for setting nominal TLV when adding missing jets in systematics
+		* New photon selection function usage
 
 2013-05-19 Steve
 	* Added container taus to SusyD3PDAna
