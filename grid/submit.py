@@ -20,7 +20,7 @@ import re
 import subprocess
 
 # Some grid option defaults
-defaultTag='n0140'
+defaultTag='n0141'
 defaultNickname='sfarrell'
 defaultMet='Default'
 
@@ -43,6 +43,10 @@ def main():
     add_arg('--met', default=defaultMet, help='MET flavor to use', 
             choices=['STVF', 'STVF_JVF', 'Default'])
     add_arg('--doMetFix', action='store_true', help='Turns on MET ele-jet overlap fix')
+    add_arg('--contTau', action='store_true', help='Store container taus')
+    add_arg('--nLepFilter', default='0', help='Number of preselected light leptons to filter on')
+    add_arg('--nLepTauFilter', default='2', help='Number of preselected light+tau to filter on')
+    add_arg('--filterTrigger', action='store_true', help='Turn on trigger filter')
     add_arg('--sys', type=bool, default=True, help='toggle systematics')
     add_arg('--nGBPerJob', default='MAX', help='prun option')
     add_arg('--noSubmit', action='store_true', help='test prun without submitting')
@@ -119,12 +123,20 @@ def main():
                     outDS = re.sub('AUET3CTEQ6L1_', '', outDS)
 
                 # Grid command
-                gridCommand = './gridScript.sh %IN --saveTau --metFlav ' + args.met
+                gridCommand = './gridScript.sh %IN --metFlav ' + args.met
+                gridCommand += ' --nLepFilter ' + args.nLepFilter
+                gridCommand += ' --nLepTauFilter ' + args.nLepTauFilter
                 gridCommand += ' -w ' + sumw + ' -x ' + xsec + ' -s ' + sample
                 gridCommand += ' --errXsec ' + errXsec
 
+                # Container taus
+                gridCommand += ' --saveContTau' if args.contTau else ' --saveTau'
+
                 # Met fix
-                if args.doMetFix: gridCommon += ' --doMetFix'
+                if args.doMetFix: gridCommand += ' --doMetFix'
+
+                # Trigger filtering
+                if args.filterTrigger: gridCommand += ' --filterTrig'
 
                 # Systematics
                 if args.sys: gridCommand += ' --sys'
