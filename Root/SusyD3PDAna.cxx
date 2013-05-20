@@ -419,16 +419,13 @@ void SusyD3PDAna::selectSignalPhotons()
   uint isoType = 1;     // Corresponds to PTED corrected isolation 
   float etcone40CorrCut = 3*GeV; 
 
-  vector<int> base_photons = get_photons_baseline(&d3pd.pho, !m_isMC, d3pd.evt.RunNumber(), m_susyObj, 
+  vector<int> base_photons = get_photons_baseline(&d3pd.pho, m_susyObj, 
 						  20.*GeV, 2.47, SystErr::NONE, phoQual);
-
-  // Uncomment when PhotonTools Updated in MultiLep
-  //vector<int> base_photons = get_photons_baseline(&d3pd.pho, !m_isMC, d3pd.evt.RunNumber(), m_susyObj, 
-  //20.*GeV, 2.47, SystErr::NONE, phoQual, true);
 
   // Latest and Greatest
   int nPV = getNumGoodVtx();
-  m_sigPhotons = get_photons_signal(&d3pd.pho, base_photons, m_susyObj, nPV, !m_isMC, 20.*GeV, etcone40CorrCut, isoType);
+  m_sigPhotons = get_photons_signal(&d3pd.pho, base_photons, m_susyObj, nPV, 
+                                    20.*GeV, etcone40CorrCut, isoType);
 }
 /*--------------------------------------------------------------------------------*/
 // Truth object selection
