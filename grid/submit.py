@@ -46,7 +46,7 @@ def main():
     add_arg('--contTau', action='store_true', help='Store container taus')
     add_arg('--nLepFilter', default='0', help='Number of preselected light leptons to filter on')
     add_arg('--nLepTauFilter', default='2', help='Number of preselected light+tau to filter on')
-    add_arg('--filterTrigger', action='store_true', help='Turn on trigger filter')
+    add_arg('--filterTrig', action='store_true', help='Turn on trigger filter')
     add_arg('--sys', type=bool, default=True, help='toggle systematics')
     add_arg('--nGBPerJob', default='MAX', help='prun option')
     add_arg('--noSubmit', action='store_true', help='test prun without submitting')
@@ -136,7 +136,7 @@ def main():
                 if args.doMetFix: gridCommand += ' --doMetFix'
 
                 # Trigger filtering
-                if args.filterTrigger: gridCommand += ' --filterTrig'
+                if args.filterTrig: gridCommand += ' --filterTrig'
 
                 # Systematics
                 if args.sys: gridCommand += ' --sys'
