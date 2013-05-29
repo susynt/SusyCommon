@@ -1,5 +1,9 @@
 # vim: set noexpandtab:
 
+2013-05-30 Steve
+	* Update GRL
+	* Tagging SusyCommon-00-00-72
+
 2013-05-19 Steve
 	* Updated to SUSYTools-00-03-00 and trunk of MultiLep
 		* New args for get_*_signal lepton functions
