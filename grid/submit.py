@@ -51,6 +51,8 @@ def main():
     add_arg('--nGBPerJob', default='MAX', help='prun option')
     add_arg('--noSubmit', action='store_true', help='test prun without submitting')
     add_arg('--useShortLivedReplicas', action='store_true', help='prun option')
+    add_arg('--saveTruth', action='store_true', help='Store truth info')
+    add_arg('--filterOff', action='store_true', help='Disable event filters (GRL...TileTrip)')
     args = parser.parse_args()
 
     # Standard options for data
@@ -137,6 +139,9 @@ def main():
 
                 # Trigger filtering
                 if args.filterTrig: gridCommand += ' --filterTrig'
+
+                gridCommand += ' --saveTruth' if args.saveTruth else ''
+                gridCommand += ' --filterOff' if args.filterOff else ''
 
                 # Systematics
                 if args.sys: gridCommand += ' --sys'
