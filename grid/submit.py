@@ -140,7 +140,10 @@ def main():
                 # Trigger filtering
                 if args.filterTrig: gridCommand += ' --filterTrig'
 
+                # Truth leptons
                 gridCommand += ' --saveTruth' if args.saveTruth else ''
+
+                # Turn off all filtering
                 gridCommand += ' --filterOff' if args.filterOff else ''
 
                 # Systematics
