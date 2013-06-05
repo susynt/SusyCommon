@@ -1,5 +1,10 @@
 # vim: set noexpandtab:
 
+2013-06-05 Steve
+	* Updated pileup file for new GRL
+	* Added isBadMuon and isCosmicMuon flags to muons
+	* Added isBadVeryLoose and isHotTile flags to jets
+
 2013-05-30 Steve
 	* Update GRL
 	* Tagging SusyCommon-00-00-72

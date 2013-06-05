@@ -663,7 +663,6 @@ void SusyNtMaker::fillMuonVars(const LeptonInfo* lepIn)
   muOut->msTrackPhi     = element->ms_phi();
   muOut->msTrackQ       = element->ms_qoverp() < 0 ? -1 : 1;
 
-
   muOut->d0             = element->d0_exPV();
   muOut->errD0          = sqrt(element->cov_d0_exPV());
   muOut->z0             = element->z0_exPV();
@@ -675,10 +674,13 @@ void SusyNtMaker::fillMuonVars(const LeptonInfo* lepIn)
   muOut->errZ0Unbiased  = element->trackIPEstimate_sigz0_unbiasedpvunbiased();
 
   muOut->isCombined     = element->isCombinedMuon();
-
   
   // theta_exPV. Not sure if necessary.
   muOut->thetaPV        = element->theta_exPV();
+
+  // Cleaning flags
+  muOut->isBadMuon      = m_susyObj.IsBadMuon(element->qoverp_exPV(), element->cov_qoverp_exPV(), 0.2);
+  muOut->isCosmicMuon   = m_susyObj.IsCosmicMuon(element->z0_exPV(), element->d0_exPV(), 1., 0.2);
 
   // Truth flags
   if(m_isMC){
@@ -738,7 +740,6 @@ void SusyNtMaker::fillJetVar(int jetIdx)
   jetOut->m   = m;
 
   jetOut->detEta        = element->constscale_eta();
-
   jetOut->idx           = jetIdx;
   jetOut->jvf           = element->jvtxf();
   jetOut->truthLabel    = m_isMC? element->flavor_truth_label() : 0;
@@ -752,7 +753,19 @@ void SusyNtMaker::fillJetVar(int jetIdx)
   jetOut->mv1           = element->flavor_weight_MV1();
 
   jetOut->bch_corr_jet  = element->BCH_CORR_JET();
-
+  jetOut->isBadVeryLoose= JetID::isBadJet(JetID::VeryLooseBad,
+                                          element->emfrac(), 
+                                          element->hecf(), 
+                                          element->LArQuality(), 
+                                          element->HECQuality(),
+                                          element->Timing(), 
+                                          element->sumPtTrk()/GeV, 
+                                          element->emscale_eta(), pt,
+                                          element->fracSamplingMax(), 
+                                          element->NegativeE(), 
+                                          element->AverageLArQF());
+  jetOut->isHotTile     = m_susyObj.isHotTile(d3pd.evt.RunNumber(), element->fracSamplingMax(), 
+                                              element->SamplingMax(), eta, phi);
 }
 
 /*--------------------------------------------------------------------------------*/

@@ -149,7 +149,8 @@ void SusyD3PDAna::Begin(TTree* /*tree*/)
     m_pileup = new Root::TPileupReweighting("PileupReweighting");
     m_pileup->SetDataScaleFactors(1/1.11);
     m_pileup->AddConfigFile("$ROOTCOREDIR/data/PileupReweighting/mc12a_defaults.prw.root");
-    m_pileup->AddLumiCalcFile("$ROOTCOREDIR/data/MultiLep/ilumicalc_histograms_EF_2e12Tvh_loose1_200842-215643_v2.root");
+    //m_pileup->AddLumiCalcFile("$ROOTCOREDIR/data/MultiLep/ilumicalc_histograms_EF_2e12Tvh_loose1_200842-215643_v2.root");
+    m_pileup->AddLumiCalcFile("$ROOTCOREDIR/data/MultiLep/ilumicalc_histograms_EF_2e12Tvh_loose1_200842-215643_grl_v61.root");
     m_pileup->SetUnrepresentedDataAction(2);
     int pileupError = m_pileup->Initialize();
     if(pileupError){
