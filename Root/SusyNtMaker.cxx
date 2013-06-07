@@ -680,7 +680,7 @@ void SusyNtMaker::fillMuonVars(const LeptonInfo* lepIn)
 
   // Cleaning flags
   muOut->isBadMuon      = m_susyObj.IsBadMuon(element->qoverp_exPV(), element->cov_qoverp_exPV(), 0.2);
-  muOut->isCosmicMuon   = m_susyObj.IsCosmicMuon(element->z0_exPV(), element->d0_exPV(), 1., 0.2);
+  muOut->isCosmic       = m_susyObj.IsCosmicMuon(element->z0_exPV(), element->d0_exPV(), 1., 0.2);
 
   // Truth flags
   if(m_isMC){
