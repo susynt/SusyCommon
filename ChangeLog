@@ -4,6 +4,7 @@
 	* Updated pileup file for new GRL
 	* Added isBadMuon and isCosmicMuon flags to muons
 	* Added isBadVeryLoose and isHotTile flags to jets
+	* Tagging SusyCommon-00-00-73
 
 2013-05-30 Steve
 	* Update GRL
