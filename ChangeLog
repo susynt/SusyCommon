@@ -1,5 +1,11 @@
 # vim: set noexpandtab:
 
+2013-06-14 Steve
+	* Dropped eta cut on baseline jet selection. 
+	  This was a straightforward way to ensure the correct jets are used for the bad jet veto.
+	  See the sharepoint thread "Discussion on bad jet event veto" on the direct gaugino workspace
+	  on June 11, 2013.
+
 2013-06-05 Steve
 	* Updated pileup file for new GRL
 	* Added isBadMuon and isCosmicMuon flags to muons

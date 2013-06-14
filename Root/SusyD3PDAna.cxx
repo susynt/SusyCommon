@@ -1,4 +1,7 @@
+#include <limits>
+
 #include "TSystem.h"
+
 #include "SusyCommon/SusyD3PDAna.h"
 #include "MultiLep/ElectronTools.h"
 #include "MultiLep/MuonTools.h"
@@ -287,8 +290,11 @@ void SusyD3PDAna::selectBaselineObjects(SusyNtSys sys)
                                           6.*GeV, 2.47, susySys);
   m_preMuons = get_muons_baseline(&d3pd.muo, !m_isMC, m_susyObj, 
                                   6.*GeV, 2.5, susySys);
+  // Removing eta cut for baseline jets. This is for the bad jet veto.
   m_preJets = get_jet_baseline(&d3pd.jet, &d3pd.vtx, &d3pd.evt, !m_isMC, m_susyObj, 
-                               20.*GeV, 4.9, susySys, false, goodJets);
+                               20.*GeV, std::numeric_limits<float>::max(), susySys, false, goodJets);
+  //m_preJets = get_jet_baseline(&d3pd.jet, &d3pd.vtx, &d3pd.evt, !m_isMC, m_susyObj, 
+  //                             20.*GeV, 4.9, susySys, false, goodJets);
 
   // Selection for met muons
   // Diff with preMuons is pt selection
@@ -820,8 +826,8 @@ bool SusyD3PDAna::passLarHoleVeto()
   vector<int> goodJets;
   // Do I still need these jets with no eta cut?
   // This only uses nominal jets...?  TODO
-  vector<int> jets = get_jet_baseline( &d3pd.jet, &d3pd.vtx, &d3pd.evt, !m_isMC, m_susyObj, 
-                                       20.*GeV, 9999999, SystErr::NONE, false, goodJets );
+  vector<int> jets = get_jet_baseline(&d3pd.jet, &d3pd.vtx, &d3pd.evt, !m_isMC, m_susyObj, 
+                                      20.*GeV, 9999999, SystErr::NONE, false, goodJets);
   return !check_jet_larhole(&d3pd.jet, jets, !m_isMC, m_susyObj, 180614, metVector, &m_fakeMetEst);
 }
 /*--------------------------------------------------------------------------------*/
@@ -829,7 +835,7 @@ bool SusyD3PDAna::passLarHoleVeto()
 /*--------------------------------------------------------------------------------*/
 bool SusyD3PDAna::passTileHotSpot()
 {
-  return !check_jet_tileHotSpot( &d3pd.jet, m_preJets, m_susyObj, !m_isMC, d3pd.evt.RunNumber() );
+  return !check_jet_tileHotSpot(&d3pd.jet, m_preJets, m_susyObj, !m_isMC, d3pd.evt.RunNumber());
 }
 /*--------------------------------------------------------------------------------*/
 // Pass bad jet cut
