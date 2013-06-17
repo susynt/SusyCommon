@@ -281,7 +281,7 @@ void SusyD3PDAna::selectBaselineObjects(SusyNtSys sys)
   else if(sys == NtSys_TES_DN    ) susySys = SystErr::TESDOWN;    // TES down
 
   // Container object selection
-  if(m_selectTaus) m_contTaus = get_taus_baseline(&d3pd.tau, m_susyObj, 20.*GeV, 2.5,
+  if(m_selectTaus) m_contTaus = get_taus_baseline(&d3pd.tau, m_susyObj, 20.*GeV, 2.47,
                                                   SUSYTau::TauNone, SUSYTau::TauNone, SUSYTau::TauNone,
                                                   susySys);
 
@@ -302,7 +302,7 @@ void SusyD3PDAna::selectBaselineObjects(SusyNtSys sys)
                                   10.*GeV, 2.5, susySys);
 
   // Preselect taus
-  if(m_selectTaus) m_preTaus = get_taus_baseline(&d3pd.tau, m_susyObj, 20.*GeV, 2.5, 
+  if(m_selectTaus) m_preTaus = get_taus_baseline(&d3pd.tau, m_susyObj, 20.*GeV, 2.47, 
                                                  SUSYTau::TauLoose, SUSYTau::TauLoose, SUSYTau::TauLoose, 
                                                  susySys);
   

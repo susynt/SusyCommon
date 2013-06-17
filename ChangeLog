@@ -1,5 +1,8 @@
 # vim: set noexpandtab:
 
+2013-06-17 Steve
+	* Updated tau eta cut to 2.47
+
 2013-06-14 Steve
 	* Dropped eta cut on baseline jet selection. 
 	  This was a straightforward way to ensure the correct jets are used for the bad jet veto.
