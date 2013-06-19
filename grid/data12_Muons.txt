@@ -1,0 +1,10 @@
+group.phys-susy.data12_8TeV.periodA.physics_Muons.PhysCont.NTUP_SUSYSKIM.repro14_v01_p1542/
+group.phys-susy.data12_8TeV.periodB.physics_Muons.PhysCont.NTUP_SUSYSKIM.repro14_v01_p1542/
+group.phys-susy.data12_8TeV.periodC.physics_Muons.PhysCont.NTUP_SUSYSKIM.repro14_v01_p1542/
+group.phys-susy.data12_8TeV.periodD.physics_Muons.PhysCont.NTUP_SUSYSKIM.repro14_v01_p1542/
+group.phys-susy.data12_8TeV.periodE.physics_Muons.PhysCont.NTUP_SUSYSKIM.repro14_v01_p1542/
+group.phys-susy.data12_8TeV.periodG.physics_Muons.PhysCont.NTUP_SUSYSKIM.repro14_v01_p1542/
+group.phys-susy.data12_8TeV.periodH.physics_Muons.PhysCont.NTUP_SUSYSKIM.repro14_v01_p1542/
+group.phys-susy.data12_8TeV.periodI.physics_Muons.PhysCont.NTUP_SUSYSKIM.t0pro14_v01_p1542/
+group.phys-susy.data12_8TeV.periodJ.physics_Muons.PhysCont.NTUP_SUSYSKIM.t0pro14_v01_p1542/
+group.phys-susy.data12_8TeV.periodL.physics_Muons.PhysCont.NTUP_SUSYSKIM.t0pro14_v01_p1542/
