@@ -20,7 +20,7 @@ import re
 import subprocess
 
 # Some grid option defaults
-defaultTag='n0142'
+defaultTag='n0144'
 defaultNickname='sfarrell'
 defaultMet='Default'
 
@@ -44,7 +44,7 @@ def main():
             choices=['STVF', 'STVF_JVF', 'Default'])
     add_arg('--doMetFix', action='store_true', help='Turns on MET ele-jet overlap fix')
     add_arg('--contTau', action='store_true', help='Store container taus')
-    add_arg('--nLepFilter', default='0', help='Number of preselected light leptons to filter on')
+    add_arg('--nLepFilter', default='1', help='Number of preselected light leptons to filter on')
     add_arg('--nLepTauFilter', default='2', help='Number of preselected light+tau to filter on')
     add_arg('--filterTrig', action='store_true', help='Turn on trigger filter')
     add_arg('--sys', type=bool, default=True, help='toggle systematics')
