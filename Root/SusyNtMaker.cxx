@@ -759,7 +759,7 @@ void SusyNtMaker::fillJetVar(int jetIdx)
                                           element->LArQuality(), 
                                           element->HECQuality(),
                                           element->Timing(), 
-                                          element->sumPtTrk()/GeV, 
+                                          element->sumPtTrk_pv0_500MeV()/GeV, 
                                           element->emscale_eta(), pt,
                                           element->fracSamplingMax(), 
                                           element->NegativeE(), 

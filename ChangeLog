@@ -1,6 +1,9 @@
 # vim: set noexpandtab:
 
 2013-06-18 Steve
+	* Update for p1512: jet.sumPtTrk -> jet.sumPtTrk_pv0_500MeV
+
+2013-06-18 Steve
 	* Tagging SusyCommon-00-00-74
 
 2013-06-17 Steve
