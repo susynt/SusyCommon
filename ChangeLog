@@ -1,7 +1,15 @@
 # vim: set noexpandtab:
 
+2013-06-20 Steve
+	* Fixed GRL path, added error check for GRL reader problems
+	* Tagging SusyCommon-00-01-02
+
 2013-06-20 Davide
 	* Add the counters to correct for events with the SUSY propagator bug
+	* Tagging SusyCommon-00-01-01
+
+2013-06-19 Steve
+	* Tagging SusyCommon-00-01-00
 
 2013-06-18 Steve
 	* Update for p1512: jet.sumPtTrk -> jet.sumPtTrk_pv0_500MeV
