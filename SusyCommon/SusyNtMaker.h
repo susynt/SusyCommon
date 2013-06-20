@@ -136,6 +136,7 @@ class SusyNtMaker : public SusyD3PDAna
     // Some useful flags
     bool                m_isWhSample;   // is WH sample
     int                 m_hDecay;       // higgs decay type (see WhTruthExtractor::Hdecays)
+    bool                m_hasSusyProp;  // whether this event is affected by the susy propagator bug (only for c1c1)
 
     // Some object counts
     uint                n_base_ele;
@@ -161,6 +162,7 @@ class SusyNtMaker : public SusyD3PDAna
     uint                n_evt_goodVtx;
     uint                n_evt_badMu;
     uint                n_evt_cosmic;
+    uint                n_evt_susyProp;
     uint                n_evt_1Lep;
     uint                n_evt_2Lep;
     uint                n_evt_3Lep;

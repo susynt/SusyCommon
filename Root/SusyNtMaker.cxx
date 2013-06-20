@@ -8,6 +8,7 @@
 #include "MultiLep/TruthTools.h"
 
 #include "SusyCommon/SusyNtMaker.h"
+#include "SusyNtuple/SusyNtTools.h"
 #include "SusyNtuple/WhTruthExtractor.h"
 
 using namespace std;
@@ -23,8 +24,9 @@ SusyNtMaker::SusyNtMaker() : m_fillNt(true),
                              m_nLepTauFilter(2),
                              m_filterTrigger(false),
                              m_saveContTaus(false),
-			     m_isWhSample(false),
-			     m_hDecay(-1)
+                             m_isWhSample(false),
+                             m_hDecay(-1),
+                             m_hasSusyProp(false)
 {
   n_base_ele=0;
   n_base_muo=0;
@@ -35,6 +37,7 @@ SusyNtMaker::SusyNtMaker() : m_fillNt(true),
   n_sig_tau=0;
   n_sig_jet=0;
   n_evt_initial=0;
+  n_evt_susyProp=0;
   n_evt_grl=0;
   n_evt_ttcVeto=0;
   n_evt_WwSherpa=0;
@@ -102,21 +105,22 @@ void SusyNtMaker::Begin(TTree* /*tree*/)
 TH1F* SusyNtMaker::makeCutFlow(const char* name, const char* title)
 {
   //TH1F* h = new TH1F(name, title, 9, -0.5, 3.5);
-  TH1F* h = new TH1F(name, title, 14, 0., 14.);
+  TH1F* h = new TH1F(name, title, 15, 0., 15.);
   h->GetXaxis()->SetBinLabel(1, "Initial");
-  h->GetXaxis()->SetBinLabel(2, "GRL");
-  h->GetXaxis()->SetBinLabel(3, "LAr Error");
-  h->GetXaxis()->SetBinLabel(4, "Tile Error");
-  h->GetXaxis()->SetBinLabel(5, "TTC Veto");
-  h->GetXaxis()->SetBinLabel(6, "Good Vertex");
-  h->GetXaxis()->SetBinLabel(7, "Buggy WWSherpa");
-  h->GetXaxis()->SetBinLabel(8, "Hot Spot");
-  h->GetXaxis()->SetBinLabel(9, "Bad Jet");
-  h->GetXaxis()->SetBinLabel(10, "Bad Muon");
-  h->GetXaxis()->SetBinLabel(11, "Cosmic");
-  h->GetXaxis()->SetBinLabel(12, ">=1 lep");
-  h->GetXaxis()->SetBinLabel(13, ">=2 lep");
-  h->GetXaxis()->SetBinLabel(14, "==3 lep");
+  h->GetXaxis()->SetBinLabel(2, "SusyProp Veto");
+  h->GetXaxis()->SetBinLabel(3, "GRL");
+  h->GetXaxis()->SetBinLabel(4, "LAr Error");
+  h->GetXaxis()->SetBinLabel(5, "Tile Error");
+  h->GetXaxis()->SetBinLabel(6, "TTC Veto");
+  h->GetXaxis()->SetBinLabel(7, "Good Vertex");
+  h->GetXaxis()->SetBinLabel(8, "Buggy WWSherpa");
+  h->GetXaxis()->SetBinLabel(9, "Hot Spot");
+  h->GetXaxis()->SetBinLabel(10, "Bad Jet");
+  h->GetXaxis()->SetBinLabel(11, "Bad Muon");
+  h->GetXaxis()->SetBinLabel(12, "Cosmic");
+  h->GetXaxis()->SetBinLabel(13, ">=1 lep");
+  h->GetXaxis()->SetBinLabel(14, ">=2 lep");
+  h->GetXaxis()->SetBinLabel(15, "==3 lep");
   return h;
 }
 /*--------------------------------------------------------------------------------*/
@@ -193,6 +197,7 @@ void SusyNtMaker::Terminate()
   cout << endl;
   cout << "Event counter" << endl;
   cout << "  Initial   " << n_evt_initial << endl;
+  cout << "  SusyProp  " << n_evt_susyProp<< endl;
   cout << "  GRL       " << n_evt_grl     << endl;
   cout << "  LarErr    " << n_evt_larErr  << endl;
   cout << "  TileErr   " << n_evt_tileErr  << endl;
@@ -258,6 +263,9 @@ bool SusyNtMaker::selectEvent()
   m_hDecay = m_isWhSample ? WhTruthExtractor().update(d3pd.truth.pdgId(),
 						      d3pd.truth.child_index(),
 						      d3pd.truth.parent_index()) : -1;
+  m_hasSusyProp = (m_isSusySample ?
+                   SusyNtTools::eventHasSusyPropagators(*d3pd.truth.pdgId(), *d3pd.truth.parent_index()) :
+                   false);
   TH1F* h_procCutFlow = m_isSusySample? getProcCutFlow(m_susyFinalState) : 0;
   float w = m_isMC? d3pd.truth.event_weight() : 1;
 
@@ -280,6 +288,9 @@ bool SusyNtMaker::selectEvent()
   // Obj Independent checks
 
   checkEventCleaning();
+
+  // susyProp (just counts, doesn't drop)
+  if(!m_hasSusyProp) { FillCutFlow(); n_evt_susyProp++; }
 
   // grl
   if(m_filter && (m_cutFlags & ECut_GRL) == 0) return false;
@@ -361,7 +372,7 @@ bool SusyNtMaker::selectEvent()
           n_sig_muo += m_sigMuons.size();
           n_sig_tau += m_sigTaus.size();
           n_sig_jet += m_sigJets.size();
-  
+
           // Lepton multiplicity
           uint nSigLep = m_sigElectrons.size() + m_sigMuons.size();
           //cout << "nSigLep " << nSigLep << endl;
@@ -482,6 +493,7 @@ void SusyNtMaker::fillEventVars()
   evt->mllMcTruth = mZ;
   evt->passMllForAlpgen = m_isMC ? (mZ < mZtruthMax) : true;
   evt->hDecay           = m_hDecay;
+  evt->eventWithSusyProp= m_hasSusyProp;
 
   evt->trigFlags        = m_evtTrigFlags;
 
