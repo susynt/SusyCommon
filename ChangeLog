@@ -2,6 +2,7 @@
 
 2013-06-20 Steve
 	* Fixed GRL path, added error check for GRL reader problems
+	* Fixed access of mc channel_number in data
 	* Tagging SusyCommon-00-01-02
 
 2013-06-20 Davide

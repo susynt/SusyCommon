@@ -486,11 +486,13 @@ void SusyNtMaker::fillEventVars()
   // SUSY final state
   evt->susyFinalState   = m_susyFinalState;
 
-  int dsid = d3pd.truth.channel_number();
   float mZ = -1.0, mZtruthMax = 40.0;
-  if     (m_isMC && (IsAlpgenLowMass(dsid) || IsAlpgenPythiaZll(dsid))) mZ = MllForAlpgen(&d3pd.truth);
-  else if(m_isMC && IsSherpaZll    (dsid))                              mZ = MllForSherpa(&d3pd.truth);
-  evt->mllMcTruth = mZ;
+  if(m_isMC){
+    int dsid = d3pd.truth.channel_number();
+    if(IsAlpgenLowMass(dsid) || IsAlpgenPythiaZll(dsid)) mZ = MllForAlpgen(&d3pd.truth);
+    else if(IsSherpaZll(dsid)) mZ = MllForSherpa(&d3pd.truth);
+  }
+  evt->mllMcTruth       = mZ;
   evt->passMllForAlpgen = m_isMC ? (mZ < mZtruthMax) : true;
   evt->hDecay           = m_hDecay;
   evt->eventWithSusyProp= m_hasSusyProp;
