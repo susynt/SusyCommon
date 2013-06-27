@@ -12,7 +12,7 @@ if [[ $# < 1 ]]; then
         exit 1
 fi
 
-for ds in `cat $1`; do
+for ds in `cat $1 | awk '{print $1}'`; do
 
         eff=`ami dataset evtinfo $ds | grep GenFiltEff_mean | awk '{print $2}'`
         xsec=`ami dataset evtinfo $ds | grep crossSection_mean | awk '{print $2*1000.}'`
