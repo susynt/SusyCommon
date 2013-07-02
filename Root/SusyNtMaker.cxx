@@ -938,11 +938,21 @@ void SusyNtMaker::fillMetVars(SusyNtSys sys)
   //double pz = m_met.Pz()/GeV;
   //double E  = m_met.E()/GeV;
   
+  // Need to get the metUtility in order to 
+  // get all the sumet terms.  In the future,
+  // we could use the metUtility to get all the
+  // comonents instead of the SUSYTools method
+  // computeMetComponent, but that is up to Steve,
+  // Lord of the Ntuples.
+  METUtility* metUtil = m_susyObj.GetMETUtility();
+  
+
   m_susyNt.met()->push_back( Susy::Met() );
   Susy::Met* metOut = & m_susyNt.met()->back();
-  metOut->Et  = Et;
-  metOut->phi = phi;
-  metOut->sys = sys;  
+  metOut->Et    = Et;
+  metOut->phi   = phi;
+  metOut->sys   = sys;  
+  metOut->sumet = metUtil->getMissingET(METUtil::RefFinal, METUtil::None).sumet()/GeV;
 
   // MET comp terms 
   // Need to save these for the MET systematics as well.
@@ -963,22 +973,27 @@ void SusyNtMaker::fillMetVars(SusyNtSys sys)
   //TVector2 softJetV  = m_susyObj.computeMETComponent(METUtil::SoftJets, metSys);
   //TVector2 refCellV  = m_susyObj.computeMETComponent(METUtil::CellOutEflow, metSys);
   TVector2 softTermV = m_susyObj.computeMETComponent(METUtil::SoftTerms, metSys);
+  //float sumet = m_susyObj._metUtility->getMissingET(METUtil::SoftTerms).sumet();
 
   metOut->refEle     = refEleV.Mod()/GeV;
   metOut->refEle_etx = refEleV.Px()/GeV;
   metOut->refEle_ety = refEleV.Py()/GeV;
+  metOut->refEle_sumet = metUtil->getMissingET(METUtil::RefEle, metSys).sumet()/GeV;
 
   metOut->refMuo     = refMuoV.Mod()/GeV;
   metOut->refMuo_etx = refMuoV.Px()/GeV;
   metOut->refMuo_ety = refMuoV.Py()/GeV;
+  metOut->refMuo_sumet = metUtil->getMissingET(METUtil::MuonTotal, metSys).sumet()/GeV;
 
   metOut->refJet     = refJetV.Mod()/GeV;
   metOut->refJet_etx = refJetV.Px()/GeV;
   metOut->refJet_ety = refJetV.Py()/GeV;
+  metOut->refJet_sumet = metUtil->getMissingET(METUtil::RefJet, metSys).sumet()/GeV;
 
   metOut->refGamma     = refGammaV.Mod()/GeV;
   metOut->refGamma_etx = refGammaV.Px()/GeV;
   metOut->refGamma_ety = refGammaV.Py()/GeV;
+  metOut->refGamma_sumet = metUtil->getMissingET(METUtil::RefGamma, metSys).sumet()/GeV;
 
   //metOut->softJet     = softJetV.Mod()/GeV;
   //metOut->softJet_etx = softJetV.Px()/GeV;
@@ -991,6 +1006,7 @@ void SusyNtMaker::fillMetVars(SusyNtSys sys)
   metOut->softTerm     = softTermV.Mod()/GeV;
   metOut->softTerm_etx = softTermV.Px()/GeV;
   metOut->softTerm_ety = softTermV.Py()/GeV;
+  metOut->softTerm_sumet = metUtil->getMissingET(METUtil::SoftTerms, metSys).sumet()/GeV;
 
   //metOut->refEle        = m_susyObj.computeMETComponent(METUtil::RefEle, metSys).Mod()/GeV;
   //metOut->refMuo        = m_susyObj.computeMETComponent(METUtil::MuonTotal, metSys).Mod()/GeV;

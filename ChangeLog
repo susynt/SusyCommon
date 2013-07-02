@@ -1,5 +1,8 @@
 # vim: set noexpandtab:
 
+2013-07-02 Matt
+	* Saving sumet for met and various met terms.
+	
 2013-06-20 Steve
 	* Fixed GRL path, added error check for GRL reader problems
 	* Fixed access of mc channel_number in data
