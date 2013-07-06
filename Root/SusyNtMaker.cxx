@@ -780,6 +780,18 @@ void SusyNtMaker::fillJetVar(int jetIdx)
                                           element->AverageLArQF());
   jetOut->isHotTile     = m_susyObj.isHotTile(d3pd.evt.RunNumber(), element->fracSamplingMax(), 
                                               element->SamplingMax(), eta, phi);
+
+  // Save the met weights for the jets
+  // by checking status word similar to
+  // what is done in met utility
+ int sWord = element->MET_Egamma10NoTau_statusWord().at(0);
+  bool passSWord = (MissingETTags::DEFAULT == sWord);       // Note assuming default met..
+  
+  // 0th element is what we care about
+  jetOut->met_wpx = passSWord ? element->MET_Egamma10NoTau_wpx().at(0) : 0;
+  jetOut->met_wpy = passSWord ? element->MET_Egamma10NoTau_wpy().at(0) : 0;
+  
+
 }
 
 /*--------------------------------------------------------------------------------*/

@@ -1,5 +1,8 @@
 # vim: set noexpandtab:
 
+2013-07-06 Matt
+	* Saving met weights for the jets.
+	
 2013-07-02 Matt
 	* Saving sumet for met and various met terms.
 	
