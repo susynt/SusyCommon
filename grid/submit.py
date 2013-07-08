@@ -20,7 +20,7 @@ import re
 import subprocess
 
 # Some grid option defaults
-defaultTag='n0144'
+defaultTag='n0145'
 defaultNickname='sfarrell'
 defaultMet='Default'
 
@@ -48,6 +48,7 @@ def main():
     add_arg('--nLepTauFilter', default='2', help='Number of preselected light+tau to filter on')
     add_arg('--filterTrig', action='store_true', help='Turn on trigger filter')
     add_arg('--sys', type=bool, default=True, help='toggle systematics')
+    add_arg('--nFilesPerJob', default=None, help='prun option')
     add_arg('--nGBPerJob', default='MAX', help='prun option')
     add_arg('--noSubmit', action='store_true', help='test prun without submitting')
     add_arg('--useShortLivedReplicas', action='store_true', help='prun option')
@@ -132,7 +133,9 @@ def main():
                 gridCommand += ' --errXsec ' + errXsec
 
                 # Container taus
-                gridCommand += ' --saveContTau' if args.contTau else ' --saveTau'
+                # TEST - temporarily force container taus
+                #gridCommand += ' --saveContTau' if args.contTau else ' --saveTau'
+                gridCommand += ' --saveContTau'
 
                 # Met fix
                 if args.doMetFix: gridCommand += ' --doMetFix'
@@ -160,13 +163,20 @@ def main():
                 print ''
 
                 # The prun command
-                prunCommand = 'prun --exec "' + gridCommand + '" --useRootCore --tmpDir /tmp ' \
-                              '--inTarBall=area.tar --extFile "*.so,*.root" --match "*root*" ' \
-                              '--safetySize=600 ' \
-                              '--outputs "susyNt.root,gridFileList.txt" ' + \
-                              '--destSE=' + args.destSE + ' --nGBPerJob=' + args.nGBPerJob + \
-                              ' --athenaTag=' + args.athenaTag + ' --excludedSite=' + blacklist + \
-                              ' --inDS ' + inDS + ' --outDS ' + outDS
+                prunCommand = 'prun --exec "' + gridCommand + '" --useRootCore --tmpDir /tmp '
+                prunCommand += ' --inDS ' + inDS + ' --outDS ' + outDS
+                prunCommand += ' --inTarBall=area.tar --extFile "*.so,*.root" --match "*root*"'
+                prunCommand += ' --safetySize=600'
+                prunCommand += ' --outputs "susyNt.root,gridFileList.txt"'
+                prunCommand += ' --destSE=' + args.destSE
+                prunCommand += ' --athenaTag=' + args.athenaTag
+                prunCommand += ' --excludedSite=' + blacklist
+
+                # You can only have one of the following options
+                if(args.nFilesPerJob is not None):
+                    prunCommand += ' --nFilesPerJob=' + args.nFilesPerJob
+                else:
+                    prunCommand += ' --nGBPerJob=' + args.nGBPerJob
 
                 # For testing
                 if(args.noSubmit): prunCommand += ' --noSubmit'
