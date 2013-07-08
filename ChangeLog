@@ -5,6 +5,7 @@
 	* Added flag for controlling met muon Eloss correction, set to false by default
 	* Added shifted pileup weights for pileup sys
 	* Set newD3PD flag to true for taus in SUSYTools
+	* Tagging SusyCommon-00-01-03
 
 2013-07-06 Matt
 	* Saving met weights for the jets.
