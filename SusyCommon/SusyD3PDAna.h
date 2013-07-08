@@ -160,8 +160,10 @@ class SusyD3PDAna : public SusyD3PDInterface
     void setXsec(float xsec) { m_xsec = xsec; }
     // user cross section uncert
     void setErrXsec(float err) { m_errXsec = err; }
-    // pileup weight for full dataset: currently A-D7
+    // pileup weight for full dataset: currently A-L
     float getPileupWeight();
+    float getPileupWeightUp();
+    float getPileupWeightDown();
     // pileup weight for A-B3 (1.037/fb)
     float getPileupWeightAB3();
     // pileup weight for A-B (5.83/fb)
@@ -226,6 +228,7 @@ class SusyD3PDAna : public SusyD3PDInterface
     // Set MET flavor - at the moment, only STVF and STVF_JVF are available.
     // Anything else will raise an error.
     void setMetFlavor(std::string metFlav);
+    void setDoMetMuonCorrection(bool doMetMuCorr) { m_doMetMuCorr = doMetMuCorr; }
     void setDoMetFix(bool doMetFix) { m_doMetFix = doMetFix; }
     //void setUseMetMuons(bool useMetMu) { m_useMetMuons = useMetMu; }
 
@@ -253,6 +256,7 @@ class SusyD3PDAna : public SusyD3PDInterface
     bool                        m_selectTruth;  // Toggle truth selection
 
     SUSYMet::met_definition     m_metFlavor;    // MET flavor enum (e.g. STVF, STVF_JVF)
+    bool                        m_doMetMuCorr;  // Control MET muon Eloss correction in SUSYTools
     bool                        m_doMetFix;     // Control MET Egamma-jet overlap fix in SUSYTools
     //bool                      m_useMetMuons;  // Use appropriate muons for met
 
@@ -324,6 +328,9 @@ class SusyD3PDAna : public SusyD3PDInterface
     FakeMetEstimator            m_fakeMetEst;   // fake met estimator for lar hole veto
 
     Root::TPileupReweighting*   m_pileup;       // pileup reweighting
+    Root::TPileupReweighting*   m_pileup_up;    // pileup reweighting
+    Root::TPileupReweighting*   m_pileup_dn;    // pileup reweighting
+
     Root::TPileupReweighting*   m_pileupAB3;    // pileup reweighting for 2012 A-B3 only
     Root::TPileupReweighting*   m_pileupAB;     // pileup reweighting for 2012 A-B
     Root::TPileupReweighting*   m_pileupAE;     // pileup reweighting for 2012 A-H (HCP dataset)

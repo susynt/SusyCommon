@@ -500,6 +500,8 @@ void SusyNtMaker::fillEventVars()
   evt->trigFlags        = m_evtTrigFlags;
 
   evt->wPileup          = m_isMC? getPileupWeight() : 1;
+  evt->wPileup_up       = m_isMC? getPileupWeightUp() : 1;
+  evt->wPileup_dn       = m_isMC? getPileupWeightDown() : 1;
   evt->wPileupAB3       = m_isMC? getPileupWeightAB3() : 1;
   evt->wPileupAB        = m_isMC? getPileupWeightAB() : 1;
   //evt->wPileupIL        = m_isMC? getPileupWeightIL() : 1;

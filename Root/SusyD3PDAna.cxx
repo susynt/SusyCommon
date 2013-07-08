@@ -29,7 +29,8 @@ SusyD3PDAna::SusyD3PDAna() :
         m_selectPhotons(true),
         m_selectTaus(false),
         m_selectTruth(false),
-        m_metFlavor(SUSYMet::STVF),
+        m_metFlavor(SUSYMet::Default),
+        m_doMetMuCorr(false),
         m_doMetFix(false),
 	//m_useMetMuons(false),
         m_lumi(LUMI_A_E),
@@ -39,6 +40,8 @@ SusyD3PDAna::SusyD3PDAna() :
 	m_sys(false),
         m_eleMediumSFTool(0),
         m_pileup(0),
+        m_pileup_up(0),
+        m_pileup_dn(0),
         m_pileupAB3(0),
         m_pileupAB(0),
         m_pileupAE(0),
@@ -161,6 +164,26 @@ void SusyD3PDAna::Begin(TTree* /*tree*/)
       cout << "Problem in pileup initialization.  pileupError = " << pileupError << endl;
       abort();
     }
+    m_pileup_up = new Root::TPileupReweighting("PileupReweighting");
+    m_pileup_up->SetDataScaleFactors(1/1.08);
+    m_pileup_up->AddConfigFile("$ROOTCOREDIR/data/PileupReweighting/mc12a_defaults.prw.root");
+    m_pileup_up->AddLumiCalcFile("$ROOTCOREDIR/data/MultiLep/ilumicalc_histograms_EF_2e12Tvh_loose1_200842-215643_grl_v61.root");
+    m_pileup_up->SetUnrepresentedDataAction(2);
+    pileupError = m_pileup_up->Initialize();
+    if(pileupError){
+      cout << "Problem in pileup initialization.  pileupError = " << pileupError << endl;
+      abort();
+    }
+    m_pileup_dn = new Root::TPileupReweighting("PileupReweighting");
+    m_pileup_dn->SetDataScaleFactors(1/1.14);
+    m_pileup_dn->AddConfigFile("$ROOTCOREDIR/data/PileupReweighting/mc12a_defaults.prw.root");
+    m_pileup_dn->AddLumiCalcFile("$ROOTCOREDIR/data/MultiLep/ilumicalc_histograms_EF_2e12Tvh_loose1_200842-215643_grl_v61.root");
+    m_pileup_dn->SetUnrepresentedDataAction(2);
+    pileupError = m_pileup_dn->Initialize();
+    if(pileupError){
+      cout << "Problem in pileup initialization.  pileupError = " << pileupError << endl;
+      abort();
+    }
 
     // pileup reweighting for 2012 A-B3 only
     m_pileupAB3 = new Root::TPileupReweighting("PileupReweightingAB3");
@@ -237,6 +260,8 @@ void SusyD3PDAna::Terminate()
   if(m_isMC){
     delete m_susyXsec;
     delete m_pileup;
+    delete m_pileup_up;
+    delete m_pileup_dn;
     delete m_pileupAB3;
     delete m_pileupAB;
     delete m_pileupAE;
@@ -284,7 +309,7 @@ void SusyD3PDAna::selectBaselineObjects(SusyNtSys sys)
   // Container object selection
   if(m_selectTaus) m_contTaus = get_taus_baseline(&d3pd.tau, m_susyObj, 20.*GeV, 2.47,
                                                   SUSYTau::TauNone, SUSYTau::TauNone, SUSYTau::TauNone,
-                                                  susySys);
+                                                  susySys, true);
 
   // Preselection
   m_preElectrons = get_electrons_baseline(&d3pd.ele, !m_isMC, d3pd.evt.RunNumber(), m_susyObj, 
@@ -305,7 +330,7 @@ void SusyD3PDAna::selectBaselineObjects(SusyNtSys sys)
   // Preselect taus
   if(m_selectTaus) m_preTaus = get_taus_baseline(&d3pd.tau, m_susyObj, 20.*GeV, 2.47, 
                                                  SUSYTau::TauLoose, SUSYTau::TauLoose, SUSYTau::TauLoose, 
-                                                 susySys);
+                                                 susySys, true);
   
   performOverlapRemoval();
 
@@ -408,14 +433,7 @@ void SusyD3PDAna::buildMet(SusyNtSys sys)
   // We use the metMuons instead of preMuons so that we can have a lower pt cut on preMuons
   TVector2 metVector = GetMetVector(m_susyObj, &d3pd.jet, &d3pd.muo, &d3pd.ele, &d3pd.met, 
                                     &d3pd.evt, m_metMuons, m_baseElectrons, metElectrons, 
-                                    susySys, m_metFlavor, m_doMetFix);
-  //TVector2 metVector = m_useMetMuons? 
-  //                     GetMetVector(m_susyObj, &d3pd.jet, &d3pd.muo, &d3pd.ele, &d3pd.met, 
-  //                                  &d3pd.evt, m_preMuons, m_baseElectrons, metElectrons, 
-  //                                  susySys, m_metFlavor, m_doMetFix) :
-  //                     GetMetVector(m_susyObj, &d3pd.jet, &d3pd.muo, &d3pd.ele, &d3pd.met, 
-  //                                  &d3pd.evt, m_metMuons, m_baseElectrons, metElectrons, 
-  //                                  susySys, m_metFlavor, m_doMetFix);
+                                    susySys, m_metFlavor, m_doMetMuCorr, m_doMetFix);
     
   m_met.SetPxPyPzE(metVector.X(), metVector.Y(), 0, metVector.Mod());
 }
@@ -937,6 +955,16 @@ float SusyD3PDAna::getLumiWeight()
 float SusyD3PDAna::getPileupWeight()
 {
   return m_pileup->GetCombinedWeight(d3pd.evt.RunNumber(), d3pd.truth.channel_number(), d3pd.evt.averageIntPerXing());
+}
+/*--------------------------------------------------------------------------------*/
+float SusyD3PDAna::getPileupWeightUp()
+{
+  return m_pileup_up->GetCombinedWeight(d3pd.evt.RunNumber(), d3pd.truth.channel_number(), d3pd.evt.averageIntPerXing());
+}
+/*--------------------------------------------------------------------------------*/
+float SusyD3PDAna::getPileupWeightDown()
+{
+  return m_pileup_dn->GetCombinedWeight(d3pd.evt.RunNumber(), d3pd.truth.channel_number(), d3pd.evt.averageIntPerXing());
 }
 /*--------------------------------------------------------------------------------*/
 float SusyD3PDAna::getPileupWeightAB3()

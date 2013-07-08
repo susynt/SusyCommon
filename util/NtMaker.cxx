@@ -84,9 +84,9 @@ void help()
   //cout << "     for calculating missing energy "<< endl;
   //cout << "     default: off"                   << endl;
 
-  cout << "  --doMetFix turn on MET ele-jet"    << endl;
-  cout << "     overlap fix"                    << endl;
-  cout << "     default: off"                   << endl;
+  //cout << "  --doMetFix turn on MET ele-jet"    << endl;
+  //cout << "     overlap fix"                    << endl;
+  //cout << "     default: off"                   << endl;
 
   cout << "  --filterOff turns off filtering"   << endl;
   cout << "     default: filter is on"          << endl;
@@ -128,7 +128,7 @@ int main(int argc, char** argv)
   bool writeNt    = true;
   D3PDTag tag     = D3PD_p1328;
   string metFlav  = "Default";
-  bool doMetFix   = false;
+  //bool doMetFix   = false;
   bool filter     = true;
   uint nLepFilter = 0;
   uint nLepTauFilter = 2;
@@ -179,8 +179,8 @@ int main(int argc, char** argv)
       tag = D3PD_p1032;
     else if (strcmp(argv[i], "--metFlav") == 0)
       metFlav = argv[++i];
-    else if (strcmp(argv[i], "--doMetFix") == 0)
-      doMetFix = true;
+    //else if (strcmp(argv[i], "--doMetFix") == 0)
+      //doMetFix = true;
     else if (strcmp(argv[i], "--filterOff") == 0)
       filter = false;
     else if (strcmp(argv[i], "--nLepFilter") == 0)
@@ -212,7 +212,7 @@ int main(int argc, char** argv)
   cout << "  isAF2         " << isAF2    << endl;
   cout << "  d3pdtag       " << tag      << endl;
   cout << "  metFlav       " << metFlav  << endl;
-  cout << "  doMetFix      " << doMetFix << endl;
+  //cout << "  doMetFix      " << doMetFix << endl;
   cout << "  lumi          " << lumi     << endl;
   cout << "  xsec          " << xsec     << endl;
   cout << "  filter        " << filter   << endl;
@@ -245,7 +245,7 @@ int main(int argc, char** argv)
   susyAna->setD3PDTag(tag);
   susyAna->setMetFlavor(metFlav);
   susyAna->setSelectTruthObjects(saveTruth);
-  susyAna->setDoMetFix(doMetFix);
+  //susyAna->setDoMetFix(doMetFix);
   susyAna->setFilter(filter);
   susyAna->setNLepFilter(nLepFilter);
   susyAna->setNLepTauFilter(nLepTauFilter);

@@ -1,11 +1,17 @@
 # vim: set noexpandtab:
 
+2013-07-07 Steve
+	* Changed default MET to Default in SusyD3PDAna
+	* Added flag for controlling met muon Eloss correction, set to false by default
+	* Added shifted pileup weights for pileup sys
+	* Set newD3PD flag to true for taus in SUSYTools
+
 2013-07-06 Matt
 	* Saving met weights for the jets.
-	
+
 2013-07-02 Matt
 	* Saving sumet for met and various met terms.
-	
+
 2013-06-20 Steve
 	* Fixed GRL path, added error check for GRL reader problems
 	* Fixed access of mc channel_number in data
