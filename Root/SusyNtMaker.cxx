@@ -465,6 +465,7 @@ void SusyNtMaker::fillNtVars()
 /*--------------------------------------------------------------------------------*/
 void SusyNtMaker::fillEventVars()
 {
+  if(m_dbg>=5) cout << "fillEventVars" << endl;
   Susy::Event* evt = m_susyNt.evt();
 
   evt->run              = d3pd.evt.RunNumber();
