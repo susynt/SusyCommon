@@ -291,7 +291,7 @@ bool SusyNtMaker::selectEvent()
 
   // susyProp (just counts, doesn't drop)
   if(!m_hasSusyProp) { FillCutFlow(); n_evt_susyProp++; }
-
+  else { cut++; }
   // grl
   if(m_filter && (m_cutFlags & ECut_GRL) == 0) return false;
   FillCutFlow();
