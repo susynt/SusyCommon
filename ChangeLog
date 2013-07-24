@@ -1,5 +1,8 @@
 # vim: set noexpandtab:
 
+2013-07-24 Davide
+	* Bugfix hasSusyProp -> cut++
+
 2013-07-07 Steve
 	* Changed default MET to Default in SusyD3PDAna
 	* Added flag for controlling met muon Eloss correction, set to false by default
