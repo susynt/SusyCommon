@@ -2,6 +2,7 @@
 
 2013-08-16 Davide
 	* Add emfrac to Jet
+	* Add truth indices for ttbar truth
 
 2013-07-24 Davide
 	* Bugfix hasSusyProp -> cut++

@@ -1034,6 +1034,7 @@ void SusyNtMaker::fillMetVars(SusyNtSys sys)
 /*--------------------------------------------------------------------------------*/
 // Fill Truth Particle variables
 /*--------------------------------------------------------------------------------*/
+bool isMcAtNloTtbar(const int &channel) { return channel==105200; }
 void SusyNtMaker::fillTruthParticleVars()
 {
   if(m_dbg>=5) cout << "fillTruthParticleVars" << endl;
@@ -1042,6 +1043,11 @@ void SusyNtMaker::fillTruthParticleVars()
   m_truParticles        = m_recoTruthMatch.LepFromHS_McIdx();
   vector<int> truthTaus = m_recoTruthMatch.TauFromHS_McIdx();
   m_truParticles.insert( m_truParticles.end(), truthTaus.begin(), truthTaus.end() );
+  if(m_isMC && isMcAtNloTtbar(d3pd.truth.channel_number())){
+    vector<int> ttbarPart(WhTruthExtractor::ttbarMcAtNloParticles(d3pd.truth.pdgId(),
+                                                                  d3pd.truth.child_index()));
+    m_truParticles.insert(m_truParticles.end(), ttbarPart.begin(), ttbarPart.end());
+  }
 
   // Loop over selected truth particles
   for(uint iTruPar=0; iTruPar<m_truParticles.size(); iTruPar++){
