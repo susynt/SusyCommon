@@ -769,6 +769,9 @@ void SusyNtMaker::fillJetVar(int jetIdx)
   jetOut->sv0           = element->flavor_weight_SV0();
   jetOut->combNN        = element->flavor_weight_JetFitterCOMBNN();
   jetOut->mv1           = element->flavor_weight_MV1();
+  jetOut->jfit_mass     = element->flavor_component_jfit_mass();
+  jetOut->sv0p_mass     = element->flavor_component_sv0p_mass();
+  jetOut->svp_mass      = element->flavor_component_svp_mass();
 
   jetOut->bch_corr_jet  = element->BCH_CORR_JET();
   jetOut->isBadVeryLoose= JetID::isBadJet(JetID::VeryLooseBad,

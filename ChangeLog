@@ -1,5 +1,8 @@
 # vim: set noexpandtab:
 
+2013-08-19 Davide
+	* Add secondary vertex mass to Jet
+
 2013-08-16 Davide
 	* Add emfrac to Jet
 	* Add truth indices for ttbar truth
