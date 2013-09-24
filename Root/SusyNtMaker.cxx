@@ -88,8 +88,9 @@ void SusyNtMaker::Begin(TTree* /*tree*/)
 
   }
 
-  m_isSusySample = m_sample.Contains("DGemt") || m_sample.Contains("DGstau") || m_sample.Contains("RPV") ||
-                   m_sample.Contains("simplifiedModel") || m_sample.Contains("pMSSM");
+  m_isSusySample = (m_sample.Contains("DGemt") || m_sample.Contains("DGstau")
+                    || m_sample.Contains("RPV") || m_sample.Contains("simplifiedModel")
+                    || m_sample.Contains("pMSSM") || m_sample.Contains("DG_MeadePoint"));
   m_isWhSample = m_sample.Contains("simplifiedModel_wA_noslep_WH");
 
   // create histograms for cutflow
