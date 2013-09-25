@@ -1,5 +1,12 @@
 # vim: set noexpandtab:
 
+2013-09-24 Steve
+	* Update to MC12 pileup reweighting file
+	* Tagging SusyCommon-00-01-03-01
+
+2013-09-19 Steve
+	* Created branch SusyCommon-00-01-03-branch
+
 2013-07-07 Steve
 	* Changed default MET to Default in SusyD3PDAna
 	* Added flag for controlling met muon Eloss correction, set to false by default

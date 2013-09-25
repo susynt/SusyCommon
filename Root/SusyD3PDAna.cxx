@@ -155,7 +155,7 @@ void SusyD3PDAna::Begin(TTree* /*tree*/)
   if(m_isMC){
     m_pileup = new Root::TPileupReweighting("PileupReweighting");
     m_pileup->SetDataScaleFactors(1/1.11);
-    m_pileup->AddConfigFile("$ROOTCOREDIR/data/PileupReweighting/mc12a_defaults.prw.root");
+    m_pileup->AddConfigFile("$ROOTCOREDIR/data/SUSYTools/MC12b_MyPRW.prw.root");
     //m_pileup->AddLumiCalcFile("$ROOTCOREDIR/data/MultiLep/ilumicalc_histograms_EF_2e12Tvh_loose1_200842-215643_v2.root");
     m_pileup->AddLumiCalcFile("$ROOTCOREDIR/data/MultiLep/ilumicalc_histograms_EF_2e12Tvh_loose1_200842-215643_grl_v61.root");
     m_pileup->SetUnrepresentedDataAction(2);
@@ -166,7 +166,7 @@ void SusyD3PDAna::Begin(TTree* /*tree*/)
     }
     m_pileup_up = new Root::TPileupReweighting("PileupReweighting");
     m_pileup_up->SetDataScaleFactors(1/1.08);
-    m_pileup_up->AddConfigFile("$ROOTCOREDIR/data/PileupReweighting/mc12a_defaults.prw.root");
+    m_pileup_up->AddConfigFile("$ROOTCOREDIR/data/SUSYTools/MC12b_MyPRW.prw.root");
     m_pileup_up->AddLumiCalcFile("$ROOTCOREDIR/data/MultiLep/ilumicalc_histograms_EF_2e12Tvh_loose1_200842-215643_grl_v61.root");
     m_pileup_up->SetUnrepresentedDataAction(2);
     pileupError = m_pileup_up->Initialize();
@@ -176,7 +176,7 @@ void SusyD3PDAna::Begin(TTree* /*tree*/)
     }
     m_pileup_dn = new Root::TPileupReweighting("PileupReweighting");
     m_pileup_dn->SetDataScaleFactors(1/1.14);
-    m_pileup_dn->AddConfigFile("$ROOTCOREDIR/data/PileupReweighting/mc12a_defaults.prw.root");
+    m_pileup_dn->AddConfigFile("$ROOTCOREDIR/data/SUSYTools/MC12b_MyPRW.prw.root");
     m_pileup_dn->AddLumiCalcFile("$ROOTCOREDIR/data/MultiLep/ilumicalc_histograms_EF_2e12Tvh_loose1_200842-215643_grl_v61.root");
     m_pileup_dn->SetUnrepresentedDataAction(2);
     pileupError = m_pileup_dn->Initialize();
@@ -188,7 +188,7 @@ void SusyD3PDAna::Begin(TTree* /*tree*/)
     // pileup reweighting for 2012 A-B3 only
     m_pileupAB3 = new Root::TPileupReweighting("PileupReweightingAB3");
     m_pileupAB3->SetDataScaleFactors(1/1.11);
-    m_pileupAB3->AddConfigFile("$ROOTCOREDIR/data/PileupReweighting/mc12a_defaults.prw.root");
+    m_pileupAB3->AddConfigFile("$ROOTCOREDIR/data/SUSYTools/MC12b_MyPRW.prw.root");
     m_pileupAB3->AddLumiCalcFile("$ROOTCOREDIR/data/MultiLep/ilumicalc_histograms_EF_2e12Tvh_loose1_200841-203195.root");
     m_pileupAB3->SetUnrepresentedDataAction(2);
     pileupError = m_pileupAB3->Initialize();
@@ -199,7 +199,7 @@ void SusyD3PDAna::Begin(TTree* /*tree*/)
     // pileup reweighting for 2012 A-B only
     m_pileupAB = new Root::TPileupReweighting("PileupReweightingAB");
     m_pileupAB->SetDataScaleFactors(1/1.11);
-    m_pileupAB->AddConfigFile("$ROOTCOREDIR/data/PileupReweighting/mc12a_defaults.prw.root");
+    m_pileupAB->AddConfigFile("$ROOTCOREDIR/data/SUSYTools/MC12b_MyPRW.prw.root");
     m_pileupAB->AddLumiCalcFile("$ROOTCOREDIR/data/MultiLep/ilumicalc_histograms_EF_e24vhi_medium1_200841-205113.root");
     m_pileupAB->SetUnrepresentedDataAction(2);
     pileupError = m_pileupAB->Initialize();
@@ -210,7 +210,7 @@ void SusyD3PDAna::Begin(TTree* /*tree*/)
     // pileup reweighting for 2012 A-E only
     m_pileupAE = new Root::TPileupReweighting("PileupReweightingAE");
     m_pileupAE->SetDataScaleFactors(1/1.11);
-    m_pileupAE->AddConfigFile("$ROOTCOREDIR/data/PileupReweighting/mc12a_defaults.prw.root");
+    m_pileupAE->AddConfigFile("$ROOTCOREDIR/data/SUSYTools/MC12b_MyPRW.prw.root");
     m_pileupAE->AddLumiCalcFile("$ROOTCOREDIR/data/MultiLep/ilumicalc_histograms_EF_2e12Tvh_loose1_200841-210308.root");
     m_pileupAE->SetUnrepresentedDataAction(2);
     pileupError = m_pileupAE->Initialize();
