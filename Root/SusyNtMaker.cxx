@@ -558,6 +558,7 @@ void SusyNtMaker::fillElectronVars(const LeptonInfo* lepIn)
 
   // TODO: clean this up, group things together, etc.
 
+  eleOut->etcone20      = element->topoEtcone20_corrected()/GeV;
   eleOut->ptcone20      = element->ptcone20()/GeV;
   eleOut->ptcone30      = element->ptcone30()/GeV;
   eleOut->q             = element->charge();
@@ -663,6 +664,7 @@ void SusyNtMaker::fillMuonVars(const LeptonInfo* lepIn)
   muOut->q              = element->charge();
   muOut->ptcone20       = element->ptcone20()/GeV;
   muOut->ptcone30       = element->ptcone30()/GeV;
+  muOut->etcone20       = element->etcone20()/GeV;
   muOut->etcone30       = element->etcone30()/GeV;
 
   muOut->ptcone30ElStyle= m_d3pdTag>=D3PD_p1181? element->ptcone30_trkelstyle()/GeV : 0;
