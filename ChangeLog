@@ -1,5 +1,11 @@
 # vim: set noexpandtab:
 
+2013-11-06 Steve
+	* Update pileup file to default file for both mc12a and mc12b: PileupReweighting/mc12ab_defaults.prw.root
+	* Updates for SUSYTools-00-03-09
+		* Tau SFs now in TauCorrUncert/TauSF
+	* Cleaned up some code
+
 2013-10-28 Steve
 	* Merged SusyCommon-00-01-03-branch into trunk
 		* Update to MC12 pileup reweighting file

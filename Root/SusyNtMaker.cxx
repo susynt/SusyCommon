@@ -1,5 +1,6 @@
 #include "egammaAnalysisUtils/CaloIsoCorrection.h"
-#include "TauCorrections/TauCorrections.h"
+//#include "TauCorrections/TauCorrections.h"
+#include "TauCorrUncert/TauSF.h"
 //#include "SUSYTools/MV1.h"
 
 #include "MultiLep/MuonTools.h"
@@ -88,9 +89,9 @@ void SusyNtMaker::Begin(TTree* /*tree*/)
 
   }
 
-  m_isSusySample = (m_sample.Contains("DGemt") || m_sample.Contains("DGstau")
-                    || m_sample.Contains("RPV") || m_sample.Contains("simplifiedModel")
-                    || m_sample.Contains("pMSSM") || m_sample.Contains("DG_MeadePoint"));
+  m_isSusySample = m_sample.Contains("DGemt") || m_sample.Contains("DGstau") || 
+                   m_sample.Contains("RPV") || m_sample.Contains("simplifiedModel") || 
+                   m_sample.Contains("pMSSM") || m_sample.Contains("DG_MeadePoint");
   m_isWhSample = m_sample.Contains("simplifiedModel_wA_noslep_WH");
 
   // create histograms for cutflow
@@ -293,6 +294,7 @@ bool SusyNtMaker::selectEvent()
   // susyProp (just counts, doesn't drop)
   if(!m_hasSusyProp) { FillCutFlow(); n_evt_susyProp++; }
   else { cut++; }
+
   // grl
   if(m_filter && (m_cutFlags & ECut_GRL) == 0) return false;
   FillCutFlow();
@@ -920,22 +922,32 @@ void SusyNtMaker::fillTauVar(int tauIdx)
   // TODO: FINISH ME
   // ID efficiency scale factors
   if(m_isMC){
-    TauCorrections* tauSF       = m_susyObj.GetTauCorrectionsProvider();
-    tauOut->looseEffSF          = tauSF->GetIDSF(TauCorrections::BDTLOOSE, tauLV->Eta(), element->numTrack());
-    tauOut->mediumEffSF         = tauSF->GetIDSF(TauCorrections::BDTMEDIUM, tauLV->Eta(), element->numTrack());
-    tauOut->tightEffSF          = tauSF->GetIDSF(TauCorrections::BDTTIGHT, tauLV->Eta(), element->numTrack());
-    tauOut->errLooseEffSF       = tauSF->GetIDSFUnc(TauCorrections::BDTLOOSE, tauLV->Eta(), element->numTrack());
-    tauOut->errMediumEffSF      = tauSF->GetIDSFUnc(TauCorrections::BDTMEDIUM, tauLV->Eta(), element->numTrack());
-    tauOut->errTightEffSF       = tauSF->GetIDSFUnc(TauCorrections::BDTTIGHT, tauLV->Eta(), element->numTrack());
+    #define TAU_ARGS TauCorrUncert::BDTLOOSE, tauLV->Eta(), element->numTrack()
+    //TauCorrections* tauSF       = m_susyObj.GetTauCorrectionsProvider();
+    TauCorrUncert::TauSF* tauSF = m_susyObj.GetSFTool();
+    //tauOut->looseEffSF        = tauSF->GetIDSF(TauCorrUncert::BDTLOOSE, tauLV->Eta(), element->numTrack());
+    //tauOut->mediumEffSF       = tauSF->GetIDSF(TauCorrUncert::BDTMEDIUM, tauLV->Eta(), element->numTrack());
+    //tauOut->tightEffSF        = tauSF->GetIDSF(TauCorrUncert::BDTTIGHT, tauLV->Eta(), element->numTrack());
+    //tauOut->errLooseEffSF     = tauSF->GetIDSFUnc(TauCorrUncert::BDTLOOSE, tauLV->Eta(), element->numTrack());
+    //tauOut->errMediumEffSF    = tauSF->GetIDSFUnc(TauCorrUncert::BDTMEDIUM, tauLV->Eta(), element->numTrack());
+    //tauOut->errTightEffSF     = tauSF->GetIDSFUnc(TauCorrUncert::BDTTIGHT, tauLV->Eta(), element->numTrack());
+    tauOut->looseEffSF          = tauSF->GetIDSF(TAU_ARGS);
+    tauOut->mediumEffSF         = tauSF->GetIDSF(TAU_ARGS);
+    tauOut->tightEffSF          = tauSF->GetIDSF(TAU_ARGS);
+    tauOut->errLooseEffSF       = sqrt(pow(tauSF->GetIDStatUnc(TAU_ARGS), 2) + pow(tauSF->GetIDSysUnc(TAU_ARGS), 2));
+    tauOut->errMediumEffSF      = sqrt(pow(tauSF->GetIDStatUnc(TAU_ARGS), 2) + pow(tauSF->GetIDSysUnc(TAU_ARGS), 2));
+    tauOut->errTightEffSF       = sqrt(pow(tauSF->GetIDStatUnc(TAU_ARGS), 2) + pow(tauSF->GetIDSysUnc(TAU_ARGS), 2));
+    #undef TAU_ARGS
 
     if(element->numTrack()==1){
       float eta = element->leadTrack_eta();
-      tauOut->looseEVetoSF      = tauSF->GetEVetoSF(eta, TauCorrections::BDTLOOSE, TauCorrections::LOOSE, TauCorrections::LOOSE);
-      tauOut->mediumEVetoSF     = tauSF->GetEVetoSF(eta, TauCorrections::BDTMEDIUM, TauCorrections::MEDIUM, TauCorrections::LOOSE);
-      tauOut->tightEVetoSF      = tauSF->GetEVetoSF(eta, TauCorrections::BDTTIGHT, TauCorrections::TIGHT, TauCorrections::LOOSE);
-      tauOut->errLooseEVetoSF   = tauSF->GetEVetoSFUnc(eta, TauCorrections::BDTLOOSE, TauCorrections::LOOSE, TauCorrections::LOOSE, 1);
-      tauOut->errMediumEVetoSF  = tauSF->GetEVetoSFUnc(eta, TauCorrections::BDTMEDIUM, TauCorrections::MEDIUM, TauCorrections::LOOSE, 1);
-      tauOut->errTightEVetoSF   = tauSF->GetEVetoSFUnc(eta, TauCorrections::BDTTIGHT, TauCorrections::TIGHT, TauCorrections::LOOSE, 1);
+      tauOut->looseEVetoSF      = tauSF->GetEVetoSF(eta, TauCorrUncert::BDTLOOSE, TauCorrUncert::LOOSE, TauCorrUncert::MEDIUMPP);
+      tauOut->mediumEVetoSF     = tauSF->GetEVetoSF(eta, TauCorrUncert::BDTMEDIUM, TauCorrUncert::MEDIUM, TauCorrUncert::MEDIUMPP);
+      // Doesn't currently work. Not sure why. Maybe they don't provide SFs for this combo
+      //tauOut->tightEVetoSF      = tauSF->GetEVetoSF(eta, TauCorrUncert::BDTTIGHT, TauCorrUncert::TIGHT, TauCorrUncert::MEDIUMPP);
+      tauOut->errLooseEVetoSF   = tauSF->GetEVetoSFUnc(eta, TauCorrUncert::BDTLOOSE, TauCorrUncert::LOOSE, TauCorrUncert::MEDIUMPP, 1);
+      tauOut->errMediumEVetoSF  = tauSF->GetEVetoSFUnc(eta, TauCorrUncert::BDTMEDIUM, TauCorrUncert::MEDIUM, TauCorrUncert::MEDIUMPP, 1);
+      //tauOut->errTightEVetoSF   = tauSF->GetEVetoSFUnc(eta, TauCorrUncert::BDTTIGHT, TauCorrUncert::TIGHT, TauCorrUncert::MEDIUMPP, 1);
     }
   }
 
@@ -1037,10 +1049,12 @@ void SusyNtMaker::fillMetVars(SusyNtSys sys)
   //metOut->softJet       = m_susyObj.computeMETComponent(METUtil::SoftJets, metSys).Mod()/GeV;
   //metOut->refCell       = m_susyObj.computeMETComponent(METUtil::CellOutEflow, metSys).Mod()/GeV;
 }
+
 /*--------------------------------------------------------------------------------*/
 // Fill Truth Particle variables
 /*--------------------------------------------------------------------------------*/
 bool isMcAtNloTtbar(const int &channel) { return channel==105200; }
+/*--------------------------------------------------------------------------------*/
 void SusyNtMaker::fillTruthParticleVars()
 {
   if(m_dbg>=5) cout << "fillTruthParticleVars" << endl;
@@ -1318,30 +1332,20 @@ void SusyNtMaker::addMissingElectron(const LeptonInfo* lep, SusyNtSys sys)
   // needs to be added, but with the correct TLV
   
   // Get the systematic shifted E, used to calculate a shift factor
-  //TLorentzVector tlv_sys = m_susyObj.GetElecTLV(lep->idx());
   float E_sys = m_susyObj.GetElecTLV(lep->idx()).E();
-
-  D3PDReader::ElectronD3PDObject* e = & d3pd.ele;
-  int index      = lep->idx();
-  float cl_eta   = e->cl_eta()->at(index);
-  float cl_phi   = e->cl_phi()->at(index);
-  float cl_E     = e->cl_E()->at(index);
-  float trk_eta  = e->tracketa()->at(index);
-  float trk_phi  = e->trackphi()->at(index);
-  float nPixHits = e->nPixHits()->at(index);
-  float nSCTHits = e->nSCTHits()->at(index);
+  const ElectronElement* element = lep->getElectronElement();
 
   // Reset the Nominal TLV
   // NOTE: this overwrites the TLV in SUSYObjDef with the nominal variables, 
   // regardless of our current systematic.
-  m_susyObj.SetElecTLV(index, cl_eta, cl_phi, cl_E, trk_eta, trk_phi, nPixHits, nSCTHits, SystErr::NONE);
+  m_susyObj.SetElecTLV(lep->idx(), element->eta(), element->phi(), element->cl_eta(), element->cl_phi(), element->cl_E(), 
+                       element->tracketa(), element->trackphi(), element->nPixHits(), element->nSCTHits(), SystErr::NONE);
 
   // Now push it back onto to susyNt
   fillElectronVars(lep);
   
   // Set the sf
   Susy::Electron* ele = & m_susyNt.ele()->back();
-  //float sf = tlv_sys.E() / GeV / ele->E();
   float sf = E_sys / GeV / ele->E();
   if(sys == NtSys_EES_Z_UP)        ele->ees_z_up = sf;
   else if(sys == NtSys_EES_Z_DN)   ele->ees_z_dn = sf;
@@ -1465,16 +1469,12 @@ void SusyNtMaker::addMissingTau(int index, SusyNtSys sys)
 
   // Grab the d3pd variables
   const TauElement* element = & d3pd.tau[index];
-  float Et       = element->Et();
-  float eta      = element->eta();
-  float phi      = element->phi();
-  float E        = cosh(eta)*Et;
-  int   numTrack = element->numTrack();
 
   // Reset the Nominal TLV
   // NOTE: this overwrites the TLV in SUSYObjDef with the nominal variables, 
   // regardless of our current systematic.
-  m_susyObj.SetTauTLV(index, Et, eta, phi, E, numTrack, SystErr::NONE);
+  m_susyObj.SetTauTLV(index, element->pt(), element->eta(), element->phi(), element->Et(), element->numTrack(), 
+                      element->leadTrack_eta(), SUSYTau::TauMedium, SystErr::NONE, true);
 
   // Fill the tau vars for this guy
   fillTauVar(index);
