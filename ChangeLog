@@ -1,5 +1,8 @@
 # vim: set noexpandtab:
 
+2013-12-11 Steve
+	* Cleaned up methods that calculate systematic shift factors for ele, mu, jets
+
 2013-11-06 Steve
 	* Update pileup file to default file for both mc12a and mc12b: PileupReweighting/mc12ab_defaults.prw.root
 	* Updates for SUSYTools-00-03-09

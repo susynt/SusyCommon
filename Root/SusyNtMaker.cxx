@@ -145,7 +145,7 @@ TH1F* SusyNtMaker::getProcCutFlow(int signalProcess)
 }
 
 /*--------------------------------------------------------------------------------*/
-// Main process loop function - This is just an example for testing
+// Main process loop function
 /*--------------------------------------------------------------------------------*/
 Bool_t SusyNtMaker::Process(Long64_t entry)
 {
@@ -1185,16 +1185,46 @@ void SusyNtMaker::doSystematic()
 /*--------------------------------------------------------------------------------*/
 void SusyNtMaker::saveElectronSF(SusyNtSys sys)
 {
-  // loop over preselected leptons and fill the output tree
-  // TODO: Change this to be like the tau case, so that 
-  // scale factors are ONLY calculated in one place!!
+  // Loop over preselected leptons and fill the systematic shifts
   for(uint iLep=0; iLep < m_preLeptons.size(); iLep++){
     const LeptonInfo* lep = & m_preLeptons[iLep];
     if(!lep->isElectron()) continue;
+
+    // Systematic shifted energy
+    float E_sys = lep->lv()->E() / GeV;
     
-    bool match = false;
+    // Try to find this electron in the list of SusyNt electrons
+    Susy::Electron* eleOut = 0;
+    for(uint iEl=0; iEl<m_susyNt.ele()->size(); iEl++){
+      Susy::Electron* ele = & m_susyNt.ele()->at(iEl);
+      if(ele->idx == lep->idx()){
+        eleOut = ele;
+        break;
+      }
+    }
+
+    // If electron not found, then we need to add it
+    if(eleOut == 0){
+      addMissingElectron(lep, sys);
+      eleOut = & m_susyNt.ele()->back();
+    }
+
+    // Calculate systematic scale factor
+    float sf = E_sys / eleOut->E();
+    if(sys == NtSys_EES_Z_UP)        eleOut->ees_z_up = sf;
+    else if(sys == NtSys_EES_Z_DN)   eleOut->ees_z_dn = sf;
+    else if(sys == NtSys_EES_MAT_UP) eleOut->ees_mat_up = sf;
+    else if(sys == NtSys_EES_MAT_DN) eleOut->ees_mat_dn = sf;
+    else if(sys == NtSys_EES_PS_UP)  eleOut->ees_ps_up = sf;
+    else if(sys == NtSys_EES_PS_DN)  eleOut->ees_ps_dn = sf;
+    else if(sys == NtSys_EES_LOW_UP) eleOut->ees_low_up = sf;
+    else if(sys == NtSys_EES_LOW_DN) eleOut->ees_low_dn = sf;
+    else if(sys == NtSys_EER_UP)     eleOut->eer_up = sf;
+    else if(sys == NtSys_EER_DN)     eleOut->eer_dn = sf;
 
     // Match Indices and save sf
+    /*
+    bool match = false;
     for(uint iE=0; iE<m_susyNt.ele()->size(); ++iE){
       Susy::Electron* ele = & m_susyNt.ele()->at(iE);
       if( ele->idx == lep->idx() ){
@@ -1219,89 +1249,130 @@ void SusyNtMaker::saveElectronSF(SusyNtSys sys)
     
     // The dreaded case...
     if(!match) addMissingElectron(lep, sys);
+    */
 
-  }// end loop over leptons
+  } // end loop over leptons
 }
 
 /*--------------------------------------------------------------------------------*/
 void SusyNtMaker::saveMuonSF(SusyNtSys sys)
 {
-  // loop over preselected leptons and fill the output tree
-  // TODO: Change this to be like the tau case, so that 
-  // scale factors are ONLY calculated in one place!!
+  // Loop over preselected leptons and fill the systematic shifts
   for(uint iLep=0; iLep < m_preLeptons.size(); iLep++){
     const LeptonInfo* lep = & m_preLeptons[iLep];
     if(lep->isElectron()) continue;
-    
-    bool match = false;
 
+    // Systematic shifted energy
+    float E_sys = lep->lv()->E() / GeV;
+
+    // Try to find this muon in the list of SusyNt muons
+    Susy::Muon* muOut = 0;
+    for(uint iMu=0; iMu<m_susyNt.muo()->size(); iMu++){
+      Susy::Muon* mu = & m_susyNt.muo()->at(iMu);
+      if(mu->idx == lep->idx()){
+        muOut = mu;
+        break;
+      }
+    }
+
+    // If muon not found, then we need to add it
+    if(muOut == 0){
+      addMissingMuon(lep, sys);
+      muOut = & m_susyNt.muo()->back();
+    }
+
+    // Calculate systematic scale factor
+    float sf = E_sys / GeV / muOut->E();
+    if(sys == NtSys_MS_UP)      muOut->ms_up = sf;
+    else if(sys == NtSys_MS_DN) muOut->ms_dn = sf;
+    else if(sys == NtSys_ID_UP) muOut->id_up = sf;
+    else if(sys == NtSys_ID_DN) muOut->id_dn = sf;
+
+    /*
     // Match Indices and save sf
+    bool match = false;
     for(uint iM=0; iM<m_susyNt.muo()->size(); ++iM){
       Susy::Muon* mu = & m_susyNt.muo()->at(iM);
       if( mu->idx == lep->idx() ){
 	match = true;
-	
 	float sf = lep->lv()->E() / GeV / mu->E();
 	if(sys == NtSys_MS_UP)      mu->ms_up = sf;
 	else if(sys == NtSys_MS_DN) mu->ms_dn = sf;
 	else if(sys == NtSys_ID_UP) mu->id_up = sf;
 	else if(sys == NtSys_ID_DN) mu->id_dn = sf;
-
       } // end if muon matches
     } // end loop over muons in SusyNt
-    
     // The dreaded case...
     if(!match) addMissingMuon(lep, sys);
+    */
 
-  }// end loop over leptons
+  } // end loop over leptons
       
 }
 
 /*--------------------------------------------------------------------------------*/
 void SusyNtMaker::saveJetSF(SusyNtSys sys)
 {
-  // Loop over selected jets and fill output tree
-  // TODO: Change this to be like the tau case, so that 
-  // scale factors are ONLY calculated in one place!!
+  // Loop over selected jets and fill the systematic shifts
   for(uint iJet=0; iJet<m_preJets.size(); iJet++){
     uint jetIdx = m_preJets[iJet];
-    //const JetElement* element = & d3pd.jet[jetIdx];
-    //const TLorentzVector* jetTLV = & m_susyObj.GetJetTLV(jetIdx);
-    float E_sys = m_susyObj.GetJetTLV(jetIdx).E();
-    
-    bool match = false;
 
+    // Systematic shifted energy
+    float E_sys = m_susyObj.GetJetTLV(jetIdx).E() / GeV;
+
+    // Try to find this jet in the list of SusyNt jets
+    Susy::Jet* jetOut = 0;
+    for(uint iJ=0; iJ<m_susyNt.jet()->size(); ++iJ){
+      Susy::Jet* jet = & m_susyNt.jet()->at(iJ);
+      if(jet->idx == jetIdx){
+        jetOut = jet;
+        break;
+      }
+    }
+
+    // If jet not found, then we need to add it
+    if(jetOut == 0){
+      addMissingJet(jetIdx, sys);
+      jetOut = & m_susyNt.jet()->back();
+    }
+    
+    // Calculate systematic scale factor
+    float sf = E_sys / jetOut->E();
+    if(sys == NtSys_JES_UP)      jetOut->jes_up = sf;
+    else if(sys == NtSys_JES_DN) jetOut->jes_dn = sf;
+    else if(sys == NtSys_JER)    jetOut->jer = sf;
+
+    /*
     // Check Indices and save sf
+    bool match = false;
     for(uint iJ=0; iJ<m_susyNt.jet()->size(); ++iJ){
       Susy::Jet* jet = & m_susyNt.jet()->at(iJ);
       if( jet->idx == jetIdx ){
 	match = true;
-	
 	//float sf = jetTLV->E() / GeV / jet->E();
 	float sf = E_sys / GeV / jet->E();
 	if(sys == NtSys_JES_UP)      jet->jes_up = sf;
 	else if(sys == NtSys_JES_DN) jet->jes_dn = sf;
 	else if(sys == NtSys_JER)    jet->jer = sf;
-
       } // end if the leptons match	
     } // end loop over what we have saved
-    
     // The dreaded case...
     if(!match) addMissingJet(jetIdx, sys);
+    */
     
-  }// end loop over jets in pre-jets
+  } // end loop over jets in pre-jets
 
 }
 
 /*--------------------------------------------------------------------------------*/
 void SusyNtMaker::saveTauSF(SusyNtSys sys)
 {
-  // Loop over selected taus and fill output tree
+  // Loop over preselected taus and fill systematic shifts
   for(uint iTau=0; iTau<m_preTaus.size(); iTau++){
     uint tauIdx = m_preTaus[iTau];
 
     // Get the systematic shifted E, used to calculate a shift factor
-    float E_sys = m_susyObj.GetTauTLV(tauIdx).E();
+    float E_sys = m_susyObj.GetTauTLV(tauIdx).E() / GeV;
 
     // Try to find this tau in the list of SusyNt taus
     Susy::Tau* tauOut = 0;
@@ -1319,7 +1390,7 @@ void SusyNtMaker::saveTauSF(SusyNtSys sys)
     }
 
     // Calculate systematic scale factor
-    float sf = E_sys / GeV / tauOut->E();
+    float sf = E_sys / tauOut->E();
     if(sys == NtSys_TES_UP) tauOut->tes_up = sf;
     if(sys == NtSys_TES_DN) tauOut->tes_dn = sf;
   }
@@ -1332,12 +1403,13 @@ void SusyNtMaker::addMissingElectron(const LeptonInfo* lep, SusyNtSys sys)
   // needs to be added, but with the correct TLV
   
   // Get the systematic shifted E, used to calculate a shift factor
-  float E_sys = m_susyObj.GetElecTLV(lep->idx()).E();
-  const ElectronElement* element = lep->getElectronElement();
+  //float E_sys = m_susyObj.GetElecTLV(lep->idx()).E();
+
 
   // Reset the Nominal TLV
   // NOTE: this overwrites the TLV in SUSYObjDef with the nominal variables, 
   // regardless of our current systematic.
+  const ElectronElement* element = lep->getElectronElement();
   m_susyObj.SetElecTLV(lep->idx(), element->eta(), element->phi(), element->cl_eta(), element->cl_phi(), element->cl_E(), 
                        element->tracketa(), element->trackphi(), element->nPixHits(), element->nSCTHits(), SystErr::NONE);
 
@@ -1345,6 +1417,8 @@ void SusyNtMaker::addMissingElectron(const LeptonInfo* lep, SusyNtSys sys)
   fillElectronVars(lep);
   
   // Set the sf
+  // This should only be done in saveElectronSF
+  /*
   Susy::Electron* ele = & m_susyNt.ele()->back();
   float sf = E_sys / GeV / ele->E();
   if(sys == NtSys_EES_Z_UP)        ele->ees_z_up = sf;
@@ -1357,6 +1431,7 @@ void SusyNtMaker::addMissingElectron(const LeptonInfo* lep, SusyNtSys sys)
   else if(sys == NtSys_EES_LOW_DN) ele->ees_low_dn = sf;
   else if(sys == NtSys_EER_UP)     ele->eer_up = sf;
   else if(sys == NtSys_EER_DN)     ele->eer_dn = sf;
+  */
 }
 
 /*--------------------------------------------------------------------------------*/
@@ -1366,31 +1441,38 @@ void SusyNtMaker::addMissingMuon(const LeptonInfo* lep, SusyNtSys sys)
   // needs to be added, but with the correct TLV
   
   //TLorentzVector tlv_sys = m_susyObj.GetMuonTLV(lep->idx());
-  float E_sys = m_susyObj.GetMuonTLV(lep->idx()).E();
+  //float E_sys = m_susyObj.GetMuonTLV(lep->idx()).E();
 
-  D3PDReader::MuonD3PDObject* m = & d3pd.muo;
-  int index               = lep->idx();
-  float pt                = m->pt()->at(index);
-  float eta               = m->eta()->at(index);
-  float phi               = m->phi()->at(index);
-  float me_qoverp_exPV    = m->me_qoverp_exPV()->at(index);
-  float id_qoverp_exPV    = m->id_qoverp_exPV()->at(index);
-  float me_theta_exPV     = m->me_theta_exPV()->at(index);
-  float id_theta_exPV     = m->id_theta_exPV()->at(index);
-  float charge            = m->charge()->at(index);
-  int isCombined          = m->isCombinedMuon()->at(index);
-  int isSegTag            = m->isSegmentTaggedMuon()->at(index);
+  //D3PDReader::MuonD3PDObject* m = & d3pd.muo;
+  //int index               = lep->idx();
+  //float pt                = m->pt()->at(index);
+  //float eta               = m->eta()->at(index);
+  //float phi               = m->phi()->at(index);
+  //float me_qoverp_exPV    = m->me_qoverp_exPV()->at(index);
+  //float id_qoverp_exPV    = m->id_qoverp_exPV()->at(index);
+  //float me_theta_exPV     = m->me_theta_exPV()->at(index);
+  //float id_theta_exPV     = m->id_theta_exPV()->at(index);
+  //float charge            = m->charge()->at(index);
+  //int isCombined          = m->isCombinedMuon()->at(index);
+  //int isSegTag            = m->isSegmentTaggedMuon()->at(index);
 
   // Reset the Nominal TLV
   // NOTE: this overwrites the TLV in SUSYObjDef with the nominal variables, 
   // regardless of our current systematic.
-  m_susyObj.SetMuonTLV(index, pt, eta, phi, me_qoverp_exPV, id_qoverp_exPV, me_theta_exPV, 
-                       id_theta_exPV, charge, isCombined, isSegTag, SystErr::NONE);
+  const MuonElement* element = lep->getMuonElement();
+  m_susyObj.SetMuonTLV(lep->idx(), element->pt(), element->eta(), element->phi(), 
+                       element->me_qoverp_exPV(), element->id_qoverp_exPV(), element->me_theta_exPV(), 
+                       element->id_theta_exPV(), element->charge(), element->isCombinedMuon(), 
+                       element->isSegmentTaggedMuon(), SystErr::NONE);
+  //m_susyObj.SetMuonTLV(index, pt, eta, phi, me_qoverp_exPV, id_qoverp_exPV, me_theta_exPV, 
+                       //id_theta_exPV, charge, isCombined, isSegTag, SystErr::NONE);
   
   // Now push it back onto to susyNt
   fillMuonVars(lep);
   
   // Set the sf
+  // This should only be done in saveMuonSF
+  /*
   Susy::Muon* mu = & m_susyNt.muo()->back();
   //float sf = tlv_sys.E() / GeV / mu->E();
   float sf = E_sys / GeV / mu->E();
@@ -1398,6 +1480,7 @@ void SusyNtMaker::addMissingMuon(const LeptonInfo* lep, SusyNtSys sys)
   else if(sys == NtSys_MS_DN) mu->ms_dn = sf;
   else if(sys == NtSys_ID_UP) mu->id_up = sf;
   else if(sys == NtSys_ID_DN) mu->id_dn = sf;
+  */
 }
 
 /*--------------------------------------------------------------------------------*/
@@ -1405,7 +1488,7 @@ void SusyNtMaker::addMissingJet(int index, SusyNtSys sys)
 {
   // Get the systematic shifted E, used to calculate a shift factor
   //TLorentzVector tlv_sys = m_susyObj.GetJetTLV(index);
-  float E_sys = m_susyObj.GetJetTLV(index).E();
+  //float E_sys = m_susyObj.GetJetTLV(index).E();
 
   // Reset the Nominal TLV
   // NOTE: this overwrites the TLV in SUSYObjDef with the nominal variables, 
@@ -1449,12 +1532,15 @@ void SusyNtMaker::addMissingJet(int index, SusyNtSys sys)
   fillJetVar(index);
 
   // Set SF
+  // This should only be done in saveJetSF
+  /*
   Susy::Jet* j = & m_susyNt.jet()->back();
   //float sf = tlv_sys.E() / GeV / j->E();
   float sf = E_sys / GeV / j->E();
   if(sys == NtSys_JER)         j->jer = sf;
   else if(sys == NtSys_JES_UP) j->jes_up = sf;
   else if(sys == NtSys_JES_DN) j->jes_dn = sf;
+  */
 }
 
 /*--------------------------------------------------------------------------------*/
