@@ -26,7 +26,7 @@ SusyD3PDAna::SusyD3PDAna() :
         m_sample(""),
         m_isAF2(false),
         m_d3pdTag(D3PD_p1328),
-        m_selectPhotons(true),
+        m_selectPhotons(false),
         m_selectTaus(false),
         m_selectTruth(false),
         m_metFlavor(SUSYMet::Default),
