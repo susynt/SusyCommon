@@ -20,7 +20,7 @@ import re
 import subprocess
 
 # Some grid option defaults
-defaultTag='n0145'
+defaultTag='n0146'
 defaultNickname='sfarrell'
 defaultMet='Default'
 
@@ -124,6 +124,8 @@ def main():
                     outDS = re.sub('UEEE3_CTEQ6L1_', '', outDS)
                     outDS = re.sub('AUET2CTEQ6L1_', '', outDS)
                     outDS = re.sub('AUET3CTEQ6L1_', '', outDS)
+                    outDS = re.sub('AUET2BCTEQ6L1_', '', outDS)
+                    outDS = re.sub('AU2CT10_', '', outDS)
 
                 # Grid command
                 gridCommand = './gridScript.sh %IN --metFlav ' + args.met
