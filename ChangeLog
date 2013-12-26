@@ -1,5 +1,8 @@
 # vim: set noexpandtab:
 
+2013-12-26 Davide
+	* Tagging SusyCommon-00-01-04
+
 2013-12-14 Steve
 	* Turned off photon selection, which needs updates for SUSYTools-00-03-14.
 	  I don't think we need photon selection now anyways
