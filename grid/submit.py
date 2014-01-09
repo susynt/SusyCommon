@@ -52,6 +52,7 @@ def main():
     add_arg('--nGBPerJob', default='MAX', help='prun option')
     add_arg('--noSubmit', action='store_true', help='test prun without submitting')
     add_arg('--useShortLivedReplicas', action='store_true', help='prun option')
+    add_arg('--cmtConfig', default=None, help='prun option to set cmt config')
     add_arg('--saveTruth', action='store_true', help='Store truth info')
     add_arg('--filterOff', action='store_true', help='Disable event filters (GRL...TileTrip)')
     args = parser.parse_args()
@@ -182,7 +183,10 @@ def main():
 
                 # For testing
                 if(args.noSubmit): prunCommand += ' --noSubmit'
-                if(args.useShortLivedReplicas): prunCommand += ' --useShortLivedReplicas'
+                if(args.useShortLivedReplicas):
+                    prunCommand += ' --useShortLivedReplicas'
+                if(args.cmtConfig is not None):
+                    prunCommand += ' --cmtConfig ' + args.cmtConfig
 
                 # Execute prun command
                 if args.verbose: print prunCommand
