@@ -258,17 +258,16 @@ bool SusyNtMaker::selectEvent()
   clearObjects();
   m_susyNt.clear();
 
-  // Susy final state
-  //m_susyFinalState = m_isSusySample? get_finalState(d3pd.truth) : -1;
-  m_susyFinalState = m_isSusySample? get_finalState(d3pd.evt.SUSY_Spart1_pdgId(), 
-                                                    d3pd.evt.SUSY_Spart2_pdgId()) : -1;
+  // Susy final state - NOTE: DEFAULT VALUE CHANGED FROM -1 TO 0
+  m_susyFinalState = m_isSusySample ? m_susyObj.finalState(d3pd.evt.SUSY_Spart1_pdgId(), 
+                                                           d3pd.evt.SUSY_Spart2_pdgId()) : 0;
   m_hDecay = m_isWhSample ? WhTruthExtractor().update(d3pd.truth.pdgId(),
 						      d3pd.truth.child_index(),
 						      d3pd.truth.parent_index()) : -1;
   m_hasSusyProp = (m_isSusySample ?
                    SusyNtTools::eventHasSusyPropagators(*d3pd.truth.pdgId(), *d3pd.truth.parent_index()) :
                    false);
-  TH1F* h_procCutFlow = m_isSusySample? getProcCutFlow(m_susyFinalState) : 0;
+  TH1F* h_procCutFlow = m_isSusySample ? getProcCutFlow(m_susyFinalState) : 0;
   float w = m_isMC? d3pd.truth.event_weight() : 1;
 
   // Cut index
@@ -918,8 +917,6 @@ void SusyNtMaker::fillTauVar(int tauIdx)
   tauOut->detailedTruthType     = m_isMC? m_recoTruthMatch.TauDetailedFakeType(*tauLV) : -1;
   tauOut->truthType             = m_isMC? m_recoTruthMatch.TauFakeType(tauOut->detailedTruthType) : -1;
 
-  // New efficiency scale factors
-  // TODO: FINISH ME
   // ID efficiency scale factors
   if(m_isMC){
     #define TAU_ARGS TauCorrUncert::BDTLOOSE, tauLV->Eta(), element->numTrack()
