@@ -2,6 +2,7 @@
 
 2014-01-17 Steve
 	* Changed default value of susyFinalState to 0 to be consistent with SUSYTools
+	* Changed default value of hDecay to kUnknown (now 0)
 
 2013-12-26 Davide
 	* Tagging SusyCommon-00-01-04
