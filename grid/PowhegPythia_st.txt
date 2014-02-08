@@ -1,4 +1,5 @@
 mc12_8TeV.110119.PowhegPythia_P2011C_st_schan_lep.merge.NTUP_SUSY.e1720_a188_a171_r3549_p1512/                  5995993
 mc12_8TeV.110140.PowhegPythia_P2011C_st_Wtchan_incl_DR.merge.NTUP_SUSY.e1743_a188_a171_r3549_p1512/             19937980
 mc12_8TeV.110140.PowhegPythia_P2011C_st_Wtchan_incl_DR.merge.NTUP_SUSY.e1743_s1581_s1586_r3658_r3549_p1512/     999692
+mc12_8TeV.110141.PowhegPythia_P2011C_st_Wtchan_dilepton_DR.merge.NTUP_SUSY.e1743_a188_a171_r3549_p1512/         9987494
 mc12_8TeV.110142.PowhegPythia_P2011C_st_Wtchan_incl_DS.merge.NTUP_SUSY.e1743_s1581_s1586_r3658_r3549_p1512/     994894
