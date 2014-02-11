@@ -89,10 +89,14 @@ void SusyNtMaker::Begin(TTree* /*tree*/)
 
   }
 
-  m_isSusySample = m_sample.Contains("DGemt") || m_sample.Contains("DGstau") || 
-                   m_sample.Contains("RPV") || m_sample.Contains("simplifiedModel") || 
-                   m_sample.Contains("pMSSM") || m_sample.Contains("DG_MeadePoint");
-  m_isWhSample = m_sample.Contains("simplifiedModel_wA_noslep_WH");
+  // Susy sample determination is now done dynamically
+  //m_isSusySample = m_sample.Contains("DGemt") || m_sample.Contains("DGstau") || 
+  //                 m_sample.Contains("RPV") || m_sample.Contains("simplifiedModel") || 
+  //                 m_sample.Contains("pMSSM") || m_sample.Contains("DG_MeadePoint");
+
+  // Still hardcoded. Currently no other known solution
+  m_isWhSample = m_sample.Contains("simplifiedModel_wA_noslep_WH") ||
+                 m_sample.Contains("Herwigpp_sM_wA_noslep_notauhad_WH");
 
   // create histograms for cutflow
   // Raw event weights
@@ -253,13 +257,16 @@ bool SusyNtMaker::selectEvent()
 {
   if(m_dbg>=5) cout << "selectEvent" << endl;
 
-
   m_susyObj.Reset();
   clearObjects();
   m_susyNt.clear();
 
+  // Dynamically determine if SUSY sample by looking for sparticle branches
+  bool isSusySample = d3pd.evt.SUSY_Spart1_pdgId.IsAvailable() && 
+                      d3pd.evt.SUSY_Spart2_pdgId.IsAvailable();
+
   // Susy final state - NOTE: DEFAULT VALUE CHANGED FROM -1 TO 0
-  m_susyFinalState = m_isSusySample ? m_susyObj.finalState(d3pd.evt.SUSY_Spart1_pdgId(), 
+  m_susyFinalState = isSusySample ? m_susyObj.finalState(d3pd.evt.SUSY_Spart1_pdgId(), 
                                                            d3pd.evt.SUSY_Spart2_pdgId()) : 0;
   //m_hDecay = m_isWhSample ? WhTruthExtractor().update(d3pd.truth.pdgId(),
   //                                                    d3pd.truth.child_index(),
@@ -269,10 +276,16 @@ bool SusyNtMaker::selectEvent()
                                                         d3pd.truth.child_index(), 
                                                         d3pd.truth.parent_index());
 
-  m_hasSusyProp = (m_isSusySample ?
+  // This assumes that sparticle branches are present for any 
+  // sample that might have the SUSY propagators problem
+  m_hasSusyProp = (isSusySample ?
                    SusyNtTools::eventHasSusyPropagators(*d3pd.truth.pdgId(), *d3pd.truth.parent_index()) :
                    false);
-  TH1F* h_procCutFlow = m_isSusySample ? getProcCutFlow(m_susyFinalState) : 0;
+
+  // It should be safe to always do procCutFlow, not just for susy samples.
+  // This way we can eventually drop the genCutFlow and just rely on procCutFlow
+  //TH1F* h_procCutFlow = m_isSusySample ? getProcCutFlow(m_susyFinalState) : 0;
+  TH1F* h_procCutFlow = getProcCutFlow(m_susyFinalState);
   float w = m_isMC? d3pd.truth.event_weight() : 1;
 
   // Cut index
@@ -283,7 +296,7 @@ bool SusyNtMaker::selectEvent()
     do{                             \
       h_rawCutFlow->Fill(cut);      \
       h_genCutFlow->Fill(cut, w);   \
-      if(m_isSusySample) h_procCutFlow->Fill(cut, w);  \
+      h_procCutFlow->Fill(cut, w);  \
       cut++;                        \
     } while(0)
 
@@ -430,20 +443,16 @@ bool SusyNtMaker::selectEvent()
     // If it is mc and option for sys is set
     if(m_isMC && m_sys) doSystematic(); 
 
-    // TODO: add a command line option for controlling this filtering, 
-    // so that we don't keep committing conflicting changes...
-
     // For filling the output tree, filter on number of saved light leptons and taus
     if(m_filter){ 
       uint nLepSaved = m_susyNt.ele()->size() + m_susyNt.muo()->size();
       uint nTauSaved = m_susyNt.tau()->size();
       if(nLepSaved < m_nLepFilter) return false;
       if((nLepSaved + nTauSaved) < m_nLepTauFilter) return false;
-
     }
 
     // Trigger filtering, only save events for which one of our triggers has fired
-    if(m_filterTrigger && m_evtTrigFlags == 0) return false;
+    if(m_filterTrigger && (m_evtTrigFlags == 0)) return false;
   }
   
   return true;
@@ -493,6 +502,8 @@ void SusyNtMaker::fillEventVars()
 
   // SUSY final state
   evt->susyFinalState   = m_susyFinalState;
+  evt->susySpartId1     = d3pd.evt.SUSY_Spart1_pdgId.IsAvailable()? d3pd.evt.SUSY_Spart1_pdgId() : 0;
+  evt->susySpartId2     = d3pd.evt.SUSY_Spart2_pdgId.IsAvailable()? d3pd.evt.SUSY_Spart2_pdgId() : 0;
 
   float mZ = -1.0, mZtruthMax = 40.0;
   if(m_isMC){
@@ -578,7 +589,6 @@ void SusyNtMaker::fillElectronVars(const LeptonInfo* lepIn)
   // Check for charge flip
   eleOut->isChargeFlip          = m_isMC? m_recoTruthMatch.isChargeFlip(*lv, element->charge()) : false;
   eleOut->matched2TruthLepton   = m_isMC? m_recoTruthMatch.Matched2TruthLepton(*lv) : false;
-  //eleOut->truthMatchType      = m_isMC? m_recoTruthMatch.fakeType(*lv, element->origin(), element->type()) : -1;
   eleOut->truthType             = m_isMC? m_recoTruthMatch.fakeType(*lv, element->origin(), element->type()) : -1;
 
   // IsEM quality flags - no need to recalculate them
@@ -595,12 +605,10 @@ void SusyNtMaker::fillElectronVars(const LeptonInfo* lepIn)
   eleOut->z0Unbiased    = element->trackIPEstimate_z0_unbiasedpvunbiased();
   eleOut->errZ0Unbiased = element->trackIPEstimate_sigz0_unbiasedpvunbiased();
 
-  // New iso variables!! 
   // Corrected topo iso is available in the susy d3pd, apparently calculated using the cluster E.
   // However, the CaloIsoCorrection header says to use the energy after scaling/smearing...
   // So, which should we use?
-  // TODO: come back to this, open a discussion somewhere.
-  // For now, I will just use the cluster E, which I suspect people will use anyway (even if mistaken)
+  // For now, I will just use the cluster E, which I think people are using anyway
 
   // Corrected etcone has Pt and ED corrections
   eleOut->etcone30Corr  = CaloIsoCorrection::GetPtEDCorrectedIsolation(element->Etcone40(), 

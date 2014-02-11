@@ -1,5 +1,24 @@
 # vim: set noexpandtab:
 
+2014-02-10 Steve
+	* Now determining if a sample is a SUSY dataset dynamically
+		* Check to see if the SpartX_pdgId branches are available
+		* No longer comparing sample name against known string patterns
+		* IMPORTANT: we need to keep an eye on this branch structure
+	* Still recognizing Wh samples with hardcoded string pattern matching
+	* Now filling procCutFlow histogram all the time
+		* For background samples, the proc is 0
+		* This allows us to unify the signal and bkgs, and use
+		  the proc cutflow histograms exclusively
+		* I've left the genCutFlow histogram in place for now,
+		  assuming we won't transition right away.
+	* Now saving susySpartId1 and susySpartId2 to Event class
+	* Updated overlap removal prescription in SusyD3PDAna to follow SusyNtTools
+	* Updated the electron medium efficiency SF file to v04
+		* Need to make sure we keep this updated... How to check automatically?
+	* passLarHoleVeto now just returns true
+		* Shouldn't be used now anyway
+
 2014-01-17 Steve
 	* Changed default value of susyFinalState to 0 to be consistent with SUSYTools
 	* Changed default value of hDecay to kUnknown (now 0)

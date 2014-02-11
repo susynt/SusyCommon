@@ -96,7 +96,6 @@ void SusyD3PDAna::Begin(TTree* /*tree*/)
   cout << "DataStream: " << streamName(m_stream) << endl;
 
   // Setup SUSYTools
-  // TODO: FINISH ME
   m_susyObj.initialize(!m_isMC, m_isAF2, false,
 		       gSystem->ExpandPathName("$ROOTCOREDIR/data/MuonMomentumCorrections/"),
 		       gSystem->ExpandPathName("$ROOTCOREDIR/data/MuonEfficiencyCorrections/"));
@@ -111,7 +110,8 @@ void SusyD3PDAna::Begin(TTree* /*tree*/)
 
   // Initialize electron medium SF
   string eleMedFile = getenv("ROOTCOREDIR");
-  eleMedFile += "/data/ElectronEfficiencyCorrection/efficiencySF.offline.Medium.2012.8TeV.rel17p2.v01.root";
+  // TODO: update this whenever it gets updated in SUSYTools!
+  eleMedFile += "/data/ElectronEfficiencyCorrection/efficiencySF.offline.Medium.2012.8TeV.rel17p2.v04.root";
   m_eleMediumSFTool->addFileName(eleMedFile.c_str());
   if(!m_eleMediumSFTool->initialize()){
     cout << "SusyD3PDAna::Begin : ERROR initializing TElectronEfficiencyCorrectionTool with file "
@@ -347,8 +347,7 @@ void SusyD3PDAna::performOverlapRemoval()
 {
   // e-e overlap removal
   m_baseElectrons = overlap_removal(m_susyObj, &d3pd.ele, m_preElectrons, &d3pd.ele, m_preElectrons, 
-                                    0.1, true, true);
-
+                                    0.05, true, true);
   // jet-e overlap removal
   m_baseJets      = overlap_removal(m_susyObj, &d3pd.jet, m_preJets, &d3pd.ele, m_baseElectrons, 
                                     0.2, false, false);
@@ -358,10 +357,6 @@ void SusyD3PDAna::performOverlapRemoval()
     m_baseTaus    = overlap_removal(m_susyObj, &d3pd.tau, m_preTaus, &d3pd.ele, m_baseElectrons, 0.2, false, false);
     // tau-mu overlap removal
     m_baseTaus    = overlap_removal(m_susyObj, &d3pd.tau, m_baseTaus, &d3pd.muo, m_preMuons, 0.2, false, false);
-    // jet-tau overlap removal
-    // TODO: Figure out how to deal with this!!
-    // Oops, this actually screws up the bad jet veto.  I can't apply this here...
-    //m_baseJets    = overlap_removal(m_susyObj, &d3pd.jet, m_baseJets, &d3pd.tau, m_baseTaus, 0.2, false, false);
   }
 
   // e-jet overlap removal
@@ -374,16 +369,19 @@ void SusyD3PDAna::performOverlapRemoval()
   // e-m overlap removal
   vector<int> copyElectrons = m_baseElectrons;
   m_baseElectrons = overlap_removal(m_susyObj, &d3pd.ele, m_baseElectrons, &d3pd.muo, m_baseMuons, 
-                                    0.1, false, false);
-  m_baseMuons     = overlap_removal(m_susyObj, &d3pd.muo, m_baseMuons, &d3pd.ele, copyElectrons, 0.1, false, false);
+                                    0.01, false, false);
+  m_baseMuons     = overlap_removal(m_susyObj, &d3pd.muo, m_baseMuons, &d3pd.ele, copyElectrons, 0.01, false, false);
 
-  // m-m overlap removal - need to validate this!!
+  // m-m overlap removal
   m_baseMuons     = overlap_removal(m_susyObj, &d3pd.muo, m_baseMuons, &d3pd.muo, m_baseMuons, 0.05, true, false);
+
+  // jet-tau overlap removal
+  m_baseJets      = overlap_removal(m_susyObj, &d3pd.jet, m_baseJets, &d3pd.tau, m_baseTaus, 0.2, false, false);
 
   // remove SFOS lepton pairs with Mll < 12 GeV
   m_baseElectrons = RemoveSFOSPair(m_susyObj, &d3pd.ele, m_baseElectrons, 12.*GeV);
   m_baseMuons     = RemoveSFOSPair(m_susyObj, &d3pd.muo, m_baseMuons,     12.*GeV);
-  m_baseTaus      = RemoveSFOSPair(m_susyObj, &d3pd.tau, m_baseTaus,      12.*GeV);
+  //m_baseTaus      = RemoveSFOSPair(m_susyObj, &d3pd.tau, m_baseTaus,      12.*GeV);
 }
 
 /*--------------------------------------------------------------------------------*/
@@ -842,13 +840,16 @@ void SusyD3PDAna::checkObjectCleaning()
 /*--------------------------------------------------------------------------------*/
 bool SusyD3PDAna::passLarHoleVeto()
 {
-  TVector2 metVector = m_met.Vect().XYvector();
-  vector<int> goodJets;
-  // Do I still need these jets with no eta cut?
-  // This only uses nominal jets...?  TODO
-  vector<int> jets = get_jet_baseline(&d3pd.jet, &d3pd.vtx, &d3pd.evt, !m_isMC, m_susyObj, 
-                                      20.*GeV, 9999999, SystErr::NONE, false, goodJets);
-  return !check_jet_larhole(&d3pd.jet, jets, !m_isMC, m_susyObj, 180614, metVector, &m_fakeMetEst);
+  // LAr veto is not used anymore
+  return true;
+
+  //TVector2 metVector = m_met.Vect().XYvector();
+  //vector<int> goodJets;
+  //// Do I still need these jets with no eta cut?
+  //// This only uses nominal jets...?  
+  //vector<int> jets = get_jet_baseline(&d3pd.jet, &d3pd.vtx, &d3pd.evt, !m_isMC, m_susyObj, 
+  //                                    20.*GeV, 9999999, SystErr::NONE, false, goodJets);
+  //return !check_jet_larhole(&d3pd.jet, jets, !m_isMC, m_susyObj, 180614, metVector, &m_fakeMetEst);
 }
 /*--------------------------------------------------------------------------------*/
 // Pass tile hot spot veto
