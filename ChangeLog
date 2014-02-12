@@ -1,5 +1,9 @@
 # vim: set noexpandtab:
 
+2014-02-11 Steve
+	* BUGFIX: Muon energy systematic shift factors off by a factor of 1000
+	  due to accidental double unit conversion. It has been fixed.
+
 2014-02-10 Steve
 	* Now determining if a sample is a SUSY dataset dynamically
 		* Check to see if the SpartX_pdgId branches are available

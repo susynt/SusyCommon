@@ -1292,7 +1292,7 @@ void SusyNtMaker::saveMuonSF(SusyNtSys sys)
     }
 
     // Calculate systematic scale factor
-    float sf = E_sys / GeV / muOut->E();
+    float sf = E_sys / muOut->E();
     if(sys == NtSys_MS_UP)      muOut->ms_up = sf;
     else if(sys == NtSys_MS_DN) muOut->ms_dn = sf;
     else if(sys == NtSys_ID_UP) muOut->id_up = sf;
