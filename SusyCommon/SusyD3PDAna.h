@@ -123,10 +123,13 @@ class SusyD3PDAna : public SusyD3PDInterface
 
     // Sherpa WW fix for radiative b quarks
     // See thread "Diboson MC Truth Discrepancy" atlas-phys-susy-d3pd.cern.ch, Mar 2013
+    // UPDATE: now using central SUSYTools method: Sherpa_WW_veto
+    /*
     bool isBuggyWWSherpaSample(const int& dsid){
       return dsid==126892 || dsid==157817 || dsid==157818 || dsid==157819;
     }
     bool hasRadiativeBQuark(const std::vector<int>* pdg, const std::vector<int>* status);
+    */
 
     // Event level cleaning cuts
     void checkEventCleaning();

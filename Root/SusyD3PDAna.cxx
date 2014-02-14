@@ -48,7 +48,6 @@ SusyD3PDAna::SusyD3PDAna() :
         m_susyXsec(0),
         m_hforTool()
 {
-  // Now works!
   m_hforTool.setVerbosity(HforToolD3PD::ERROR);
 
   // Create the addition electron efficiency SF tool for medium SFs
@@ -892,10 +891,11 @@ bool SusyD3PDAna::passCosmic()
 {
   return !IsCosmic(m_susyObj, &d3pd.muo, m_baseMuons, 1., 0.2);
 }
+
 /*--------------------------------------------------------------------------------*/
 // Radiative b quark check for sherpa WW fix
 /*--------------------------------------------------------------------------------*/
-bool SusyD3PDAna::hasRadiativeBQuark(const vector<int>* pdg, const vector<int>* status)
+/*bool SusyD3PDAna::hasRadiativeBQuark(const vector<int>* pdg, const vector<int>* status)
 {
   if(!pdg || !status || pdg->size()!=status->size()) return false;
   const vector<int>& p = *pdg;
@@ -903,7 +903,7 @@ bool SusyD3PDAna::hasRadiativeBQuark(const vector<int>* pdg, const vector<int>* 
   const int pdgB(5), statRad(3);
   for(size_t i=0; i<p.size(); ++i) if(abs(p[i])==pdgB && s[i]==statRad) return true;
   return false;
-}
+}*/
 
 /*--------------------------------------------------------------------------------*/
 // Get event weight, combine gen, pileup, xsec, and lumi weights

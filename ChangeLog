@@ -1,5 +1,9 @@
 # vim: set noexpandtab:
 
+2014-02-13 Steve
+	* Now using central SUSYTools method for sherpa WW radiative
+	  b quark fix: Sherpa_WW_veto
+
 2013-12-26 Davide
 	* Tagging SusyCommon-00-01-04
 
