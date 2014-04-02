@@ -808,7 +808,7 @@ void SusyNtMaker::fillJetVar(int jetIdx)
   // Save the met weights for the jets
   // by checking status word similar to
   // what is done in met utility
- int sWord = element->MET_Egamma10NoTau_statusWord().at(0);
+  int sWord = element->MET_Egamma10NoTau_statusWord().at(0);
   bool passSWord = (MissingETTags::DEFAULT == sWord);       // Note assuming default met..
   
   // 0th element is what we care about
