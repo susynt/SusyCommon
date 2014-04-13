@@ -301,13 +301,13 @@ class SusyD3PDAna : public SusyD3PDInterface
     std::vector<int>            m_truJets;      // selected truth jets
     TLorentzVector              m_truMet;       // Truth MET
 
-    uint                        m_evtTrigFlags; // Event trigger flags
+    long long                   m_evtTrigFlags; // Event trigger flags
     
     // Trigger object matching maps
     // Key: d3pd index, Val: trig bit word
-    std::map<int, uint>         m_eleTrigFlags; // electron trigger matching flags
-    std::map<int, uint>         m_muoTrigFlags; // muon trigger matching flags
-    std::map<int, uint>         m_tauTrigFlags; // tau trigger matching flags
+    std::map<int, long long>    m_eleTrigFlags; // electron trigger matching flags
+    std::map<int, long long>    m_muoTrigFlags; // muon trigger matching flags
+    std::map<int, long long>    m_tauTrigFlags; // tau trigger matching flags
     
     float                       m_lumi;         // normalized luminosity (defaults to 4.7/fb)
     float                       m_sumw;         // sum of mc weights for normalization, must be set by user
