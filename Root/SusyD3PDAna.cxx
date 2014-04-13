@@ -749,7 +749,6 @@ void SusyD3PDAna::matchMuonTriggers()
       flags |= TRIG_mu15;
     }
 
-
     // 2mu8_EFxe40wMu_tclcw
     if(!m_isMC && d3pd.evt.RunNumber()>=206248 &&
        matchMuonTrigger(lv, d3pd.trig.trig_EF_trigmuonef_EF_2mu8_EFxe40wMu_tclcw())) {
