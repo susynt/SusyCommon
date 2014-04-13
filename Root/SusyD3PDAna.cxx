@@ -573,6 +573,8 @@ void SusyD3PDAna::fillEventTriggers()
     m_evtTrigFlags |= TRIG_2mu8_EFxe40wMu_tclcw;
 
   // Triggers requested fro the ISR analysis studies
+  if(d3pd.trig.EF_mu6())                                m_evtTrigFlags |= TRIG_mu6;
+  if(d3pd.trig.EF_2mu6())                               m_evtTrigFlags |= TRIG_2mu6;
   if(d3pd.trig.EF_e18vh_medium1_2e7T_medium1())         m_evtTrigFlags |= TRIG_e18vh_medium1_2e7T_medium1;
   if(d3pd.trig.EF_3mu6())                               m_evtTrigFlags |= TRIG_3mu6;
   if(d3pd.trig.EF_mu18_tight_2mu4_EFFS())               m_evtTrigFlags |= TRIG_mu18_tight_2mu4_EFFS;
