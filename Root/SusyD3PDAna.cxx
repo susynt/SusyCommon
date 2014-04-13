@@ -571,6 +571,17 @@ void SusyD3PDAna::fillEventTriggers()
   // EF_2mu8_EFxe40wMu_tclcw trigger only available for data, in periods > B
   if(!m_isMC && d3pd.evt.RunNumber()>=206248 && d3pd.trig.EF_2mu8_EFxe40wMu_tclcw()) 
     m_evtTrigFlags |= TRIG_2mu8_EFxe40wMu_tclcw;
+
+  // Triggers requested fro the ISR analysis studies
+  if(d3pd.trig.EF_e18vh_medium1_2e7T_medium1())         m_evtTrigFlags |= TRIG_e18vh_medium1_2e7T_medium1;
+  if(d3pd.trig.EF_3mu6())                               m_evtTrigFlags |= TRIG_3mu6;
+  if(d3pd.trig.EF_mu18_tight_2mu4_EFFS())               m_evtTrigFlags |= TRIG_mu18_tight_2mu4_EFFS;
+  if(d3pd.trig.EF_2e7T_medium1_mu6())                   m_evtTrigFlags |= TRIG_2e7T_medium1_mu6;
+  if(d3pd.trig.EF_e7T_medium1_2mu6())                   m_evtTrigFlags |= TRIG_e7T_medium1_2mu6;
+  if(d3pd.trig.EF_xe80_tclcw_loose())                   m_evtTrigFlags |= TRIG_xe80_tclcw_loose;
+  if(d3pd.trig.EF_j110_a4tchad_xe90_tclcw_loose())      m_evtTrigFlags |= TRIG_j110_a4tchad_xe90_tclcw_loose;
+  if(d3pd.trig.EF_j80_a4tchad_xe100_tclcw_loose())      m_evtTrigFlags |= TRIG_j80_a4tchad_xe100_tclcw_loose;
+  if(d3pd.trig.EF_j80_a4tchad_xe70_tclcw_dphi2j45xe10())m_evtTrigFlags |= TRIG_j80_a4tchad_xe70_tclcw_dphi2j45xe10;
 }
 
 /*--------------------------------------------------------------------------------*/
@@ -587,7 +598,7 @@ void SusyD3PDAna::matchElectronTriggers()
     const TLorentzVector* lv = & m_susyObj.GetElecTLV(iEl);
 
     // trigger flags
-    uint flags = 0;
+    long long flags = 0;
 
     // 2012 triggers only
 
@@ -665,7 +676,7 @@ void SusyD3PDAna::matchMuonTriggers()
     const TLorentzVector* lv = & m_susyObj.GetMuonTLV(iMu);
     
     // trigger flags
-    uint flags = 0;
+    long long flags = 0;
 
     // 2012 triggers only
 
@@ -760,7 +771,7 @@ void SusyD3PDAna::matchTauTriggers()
     const TLorentzVector* lv = & m_susyObj.GetTauTLV(iTau);
     
     // trigger flags
-    uint flags = 0;
+    long long flags = 0;
 
     // tau20_medium1
     if( matchTauTrigger(lv, d3pd.trig.trig_EF_tau_EF_tau20_medium1()) ){
