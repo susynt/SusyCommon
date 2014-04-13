@@ -648,6 +648,19 @@ void SusyD3PDAna::matchElectronTriggers()
       flags |= TRIG_e18vh_medium1;
     }
 
+    // e18vh_medium1_2e7T_medium1
+    if( matchElectronTrigger(lv, d3pd.trig.trig_EF_el_EF_e18vh_medium1_2e7T_medium1()) ){
+      flags |= TRIG_e18vh_medium1_2e7T_medium1;
+    }
+    // 2e7T_medium1_mu6
+    if( matchElectronTrigger(lv, d3pd.trig.trig_EF_el_EF_2e7T_medium1_mu6()) ){
+      flags |= TRIG_2e7T_medium1_mu6;
+    }
+    // e7T_medium1_2mu6
+    if( matchElectronTrigger(lv, d3pd.trig.trig_EF_el_EF_e7T_medium1_2mu6()) ){
+      flags |= TRIG_e7T_medium1_2mu6;
+    }
+
     // assign the trigger flags for this electron
     m_eleTrigFlags[iEl] = flags;
   }
@@ -718,6 +731,23 @@ void SusyD3PDAna::matchMuonTriggers()
     // mu15
     if( matchMuonTrigger(lv, d3pd.trig.trig_EF_trigmuonef_EF_mu15()) ) {
       flags |= TRIG_mu15;
+    }
+
+    // mu6
+    if( matchMuonTrigger(lv, d3pd.trig.trig_EF_trigmuonef_EF_mu6()) ) {
+      flags |= TRIG_mu6;
+    }
+    // 2mu6
+    if( matchMuonTrigger(lv, d3pd.trig.trig_EF_trigmuonef_EF_2mu6()) ) {
+      flags |= TRIG_2mu6;
+    }
+    // 3mu6
+    //if( matchMuonTrigger(lv, d3pd.trig.trig_EF_trigmuonef_EF_3mu6()) ) {
+      //flags |= TRIG_3mu6;
+    //}
+    // mu18_tight_2mu4_EFFS
+    if( matchMuonTrigger(lv, d3pd.trig.trig_EF_trigmuonef_EF_mu18_tight_2mu4_EFFS()) ) {
+      flags |= TRIG_mu18_tight_2mu4_EFFS;
     }
 
     // assign the trigger flags for this muon
@@ -1229,3 +1259,4 @@ void SusyD3PDAna::dumpSignalObjects()
 }
 
 #undef GeV
+
