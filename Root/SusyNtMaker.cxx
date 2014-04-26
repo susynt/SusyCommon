@@ -12,8 +12,6 @@
 #include "SusyNtuple/SusyNtTools.h"
 #include "SusyNtuple/WhTruthExtractor.h"
 
-#include <vector>
-
 using namespace std;
 
 #define GeV 1000.
