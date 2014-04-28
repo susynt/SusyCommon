@@ -98,9 +98,11 @@ void SusyD3PDAna::Begin(TTree* /*tree*/)
   cout << "DataStream: " << streamName(m_stream) << endl;
 
   // Setup SUSYTools
-  m_susyObj.initialize(!m_isMC, m_isAF2, false,
-		       gSystem->ExpandPathName("$ROOTCOREDIR/data/MuonMomentumCorrections/"),
-		       gSystem->ExpandPathName("$ROOTCOREDIR/data/MuonEfficiencyCorrections/"));
+  bool isMC12b = false; // TODO
+  bool useLeptonTrigger = false;
+  m_susyObj.initialize(!m_isMC, m_isAF2, isMC12b, useLeptonTrigger);
+                       //gSystem->ExpandPathName("$ROOTCOREDIR/data/MuonMomentumCorrections/"),
+                       //gSystem->ExpandPathName("$ROOTCOREDIR/data/MuonEfficiencyCorrections/"));
                        //"STACO_CB_plus_ST",
                        //"efficiencySF.offline.RecoTrk.2012.8TeV.rel17p2.v02.root",
                        //"efficiencySF.offline.Tight.2012.8TeV.rel17p2.v02.root",
