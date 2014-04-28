@@ -318,7 +318,7 @@ void SusyD3PDAna::selectBaselineObjects(SusyNtSys sys)
 
   // Preselection
   m_preElectrons = get_electrons_baseline(&d3pd.ele, !m_isMC, d3pd.evt.RunNumber(), m_susyObj, 
-                                          6.*GeV, 2.47, susySys);
+                                          7.*GeV, 2.47, susySys);
   m_preMuons = get_muons_baseline(&d3pd.muo, !m_isMC, m_susyObj, 
                                   6.*GeV, 2.5, susySys);
   // Removing eta cut for baseline jets. This is for the bad jet veto.

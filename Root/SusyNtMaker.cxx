@@ -636,18 +636,20 @@ void SusyNtMaker::fillElectronVars(const LeptonInfo* lepIn)
 
   // Tight electron SFs can come directly from SUSYTools
   // To get the SF uncert using GetSignalElecSF, we must get the shifted value and take the difference
+  float nomPt = lepIn->lv()->Pt();
+  float sfPt = nomPt >= 7.*GeV ? nomPt : 7.*GeV;
   if(eleOut->tightPP){
     eleOut->effSF       = m_isMC? 
-                          m_susyObj.GetSignalElecSF(element->cl_eta(), lepIn->lv()->Pt(), true, true, false) : 1;
+                          m_susyObj.GetSignalElecSF(element->cl_eta(), sfPt, true, true, false) : 1;
     eleOut->errEffSF    = m_isMC?
-                          m_susyObj.GetSignalElecSF(element->cl_eta(), lepIn->lv()->Pt(), true, true, false, 
+                          m_susyObj.GetSignalElecSF(element->cl_eta(), sfPt, true, true, false, 
                                                     200841, SystErr::EEFFUP) - eleOut->effSF : 0;
   }
 
   // For the medium SF, need to use our own function
   else{
     float sf = 1, uncert = 0;
-    if (m_isMC) get_electron_eff_sf(sf, uncert, element->cl_eta(), lepIn->lv()->Pt(), true, true, false, m_isAF2,
+    if (m_isMC) get_electron_eff_sf(sf, uncert, element->cl_eta(), sfPt, true, true, false, m_isAF2,
                                     m_susyObj.GetElectron_recoSF_Class(), m_eleMediumSFTool, 0);
     eleOut->effSF       = sf;
     eleOut->errEffSF    = uncert;
