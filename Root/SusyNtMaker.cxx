@@ -748,10 +748,11 @@ void SusyNtMaker::fillMuonVars(const LeptonInfo* lepIn)
 void SusyNtMaker::fillJetVars()
 {
   if(m_dbg>=5) cout << "fillJetVars" << endl;
+  // Calculate random run/lb number, necessary for BCH cleaning flag
+  calcRandomRunLB();
   // Loop over selected jets and fill output tree
   for(uint iJet=0; iJet<m_preJets.size(); iJet++){
     int jetIndex = m_preJets[iJet];  
-
     fillJetVar(jetIndex);
   }
 }
@@ -806,6 +807,16 @@ void SusyNtMaker::fillJetVar(int jetIdx)
   jetOut->isHotTile     = m_susyObj.isHotTile(d3pd.evt.RunNumber(), element->fracSamplingMax(), 
                                               element->SamplingMax(), eta, phi);
 
+  // BCH cleaning flags
+  uint bchRun = m_isMC? m_mcRun : d3pd.evt.RunNumber();
+  uint bchLB = m_isMC? m_mcLB : d3pd.evt.lbn();
+  #define BCH_ARGS bchRun, bchLB, jetOut->detEta, jetOut->phi, jetOut->bch_corr_cell, jetOut->emfrac, jetOut->pt
+  jetOut->isBadMediumBCH = !m_susyObj.passBCHCleaningMedium(BCH_ARGS, 0);
+  jetOut->isBadMediumBCH_up = !m_susyObj.passBCHCleaningMedium(BCH_ARGS, 1);
+  jetOut->isBadMediumBCH_dn = !m_susyObj.passBCHCleaningMedium(BCH_ARGS, -1);
+  jetOut->isBadTightBCH = !m_susyObj.passBCHCleaningTight(BCH_ARGS);
+  #undef BCH_ARGS
+                                                             
   // Save the met weights for the jets
   // by checking status word similar to
   // what is done in met utility
@@ -815,8 +826,6 @@ void SusyNtMaker::fillJetVar(int jetIdx)
   // 0th element is what we care about
   jetOut->met_wpx = passSWord ? element->MET_Egamma10NoTau_wpx().at(0) : 0;
   jetOut->met_wpy = passSWord ? element->MET_Egamma10NoTau_wpy().at(0) : 0;
-  
-
 }
 
 /*--------------------------------------------------------------------------------*/
