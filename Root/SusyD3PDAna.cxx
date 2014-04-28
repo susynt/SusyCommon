@@ -32,12 +32,14 @@ SusyD3PDAna::SusyD3PDAna() :
         m_metFlavor(SUSYMet::Default),
         m_doMetMuCorr(false),
         m_doMetFix(false),
-	//m_useMetMuons(false),
+        //m_useMetMuons(false),
         m_lumi(LUMI_A_E),
         m_sumw(1),
-	m_xsec(-1),
-	m_errXsec(-1),
-	m_sys(false),
+        m_xsec(-1),
+        m_errXsec(-1),
+        m_mcRun(0),
+        m_mcLB(0),
+        m_sys(false),
         m_eleMediumSFTool(0),
         m_pileup(0),
         m_pileup_up(0),
@@ -96,9 +98,11 @@ void SusyD3PDAna::Begin(TTree* /*tree*/)
   cout << "DataStream: " << streamName(m_stream) << endl;
 
   // Setup SUSYTools
-  m_susyObj.initialize(!m_isMC, m_isAF2, false,
-		       gSystem->ExpandPathName("$ROOTCOREDIR/data/MuonMomentumCorrections/"),
-		       gSystem->ExpandPathName("$ROOTCOREDIR/data/MuonEfficiencyCorrections/"));
+  bool isMC12b = false; // TODO
+  bool useLeptonTrigger = false;
+  m_susyObj.initialize(!m_isMC, m_isAF2, isMC12b, useLeptonTrigger);
+                       //gSystem->ExpandPathName("$ROOTCOREDIR/data/MuonMomentumCorrections/"),
+                       //gSystem->ExpandPathName("$ROOTCOREDIR/data/MuonEfficiencyCorrections/"));
                        //"STACO_CB_plus_ST",
                        //"efficiencySF.offline.RecoTrk.2012.8TeV.rel17p2.v02.root",
                        //"efficiencySF.offline.Tight.2012.8TeV.rel17p2.v02.root",
@@ -111,7 +115,7 @@ void SusyD3PDAna::Begin(TTree* /*tree*/)
   // Initialize electron medium SF
   string eleMedFile = getenv("ROOTCOREDIR");
   // TODO: update this whenever it gets updated in SUSYTools!
-  eleMedFile += "/data/ElectronEfficiencyCorrection/efficiencySF.offline.Medium.2012.8TeV.rel17p2.v04.root";
+  eleMedFile += "/data/ElectronEfficiencyCorrection/efficiencySF.offline.Medium.2012.8TeV.rel17p2.v07.root";
   m_eleMediumSFTool->addFileName(eleMedFile.c_str());
   if(!m_eleMediumSFTool->initialize()){
     cout << "SusyD3PDAna::Begin : ERROR initializing TElectronEfficiencyCorrectionTool with file "
@@ -314,7 +318,7 @@ void SusyD3PDAna::selectBaselineObjects(SusyNtSys sys)
 
   // Preselection
   m_preElectrons = get_electrons_baseline(&d3pd.ele, !m_isMC, d3pd.evt.RunNumber(), m_susyObj, 
-                                          6.*GeV, 2.47, susySys);
+                                          7.*GeV, 2.47, susySys);
   m_preMuons = get_muons_baseline(&d3pd.muo, !m_isMC, m_susyObj, 
                                   6.*GeV, 2.5, susySys);
   // Removing eta cut for baseline jets. This is for the bad jet veto.
@@ -449,7 +453,7 @@ void SusyD3PDAna::selectSignalPhotons()
   float etcone40CorrCut = 3*GeV; 
 
   vector<int> base_photons = get_photons_baseline(&d3pd.pho, m_susyObj, 
-						  20.*GeV, 2.47, SystErr::NONE, phoQual);
+                                                  20.*GeV, 2.47, SystErr::NONE, phoQual);
 
   // Latest and Greatest
   int nPV = getNumGoodVtx();
@@ -1047,6 +1051,17 @@ float SusyD3PDAna::getLepSF(const vector<LeptonInfo>& leptons)
 float SusyD3PDAna::getBTagSF(const vector<int>& jets)
 {
   return 1;
+}
+
+/*--------------------------------------------------------------------------------*/
+// Calculate random MC run and lb numbers for cleaning cuts, etc.
+/*--------------------------------------------------------------------------------*/
+void SusyD3PDAna::calcRandomRunLB()
+{
+  if(m_pileup){
+    m_mcRun = m_pileup->GetRandomRunNumber(d3pd.evt.RunNumber());
+    m_mcLB = m_pileup->GetRandomLumiBlockNumber(m_mcRun);
+  }
 }
 
 /*--------------------------------------------------------------------------------*/

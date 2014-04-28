@@ -160,6 +160,7 @@ class SusyD3PDAna : public SusyD3PDInterface
     void setXsec(float xsec) { m_xsec = xsec; }
     // user cross section uncert
     void setErrXsec(float err) { m_errXsec = err; }
+
     // pileup weight for full dataset: currently A-L
     float getPileupWeight();
     float getPileupWeightUp();
@@ -183,6 +184,9 @@ class SusyD3PDAna : public SusyD3PDInterface
     //
     // Utility methods
     //
+
+    // calculate random run/lb numbers for MC
+    void calcRandomRunLB();
 
     // Mass helpers
     //float Mll();
@@ -306,10 +310,17 @@ class SusyD3PDAna : public SusyD3PDInterface
     std::map<int, uint>         m_muoTrigFlags; // muon trigger matching flags
     std::map<int, uint>         m_tauTrigFlags; // tau trigger matching flags
     
+    //
+    // Event quantities
+    //
+
     float                       m_lumi;         // normalized luminosity (defaults to 4.7/fb)
     float                       m_sumw;         // sum of mc weights for normalization, must be set by user
     float                       m_xsec;         // optional user cross section, to override susy xsec usage
     float                       m_errXsec;      // user cross section uncertainty
+
+    uint                        m_mcRun;        // Random run number for MC from pileup tool
+    uint                        m_mcLB;         // Random lb number for MC from pileup tool
 
     bool                        m_sys;          // True if you want sys for MC, must be set by user. 
 
@@ -347,7 +358,7 @@ class SusyD3PDAna : public SusyD3PDInterface
     PDFTool*                    m_pdfTool;      // PDF reweighting tool (In MultiLep pkg)
     #endif
 
-    //RecoTruthMatch              m_recoTruthMatch;       // Lepton truth matching tool
+    //RecoTruthMatch            m_recoTruthMatch;       // Lepton truth matching tool
     RecoTauMatch                m_recoTruthMatch;       // Lepton truth matching tool
 
 };

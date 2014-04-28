@@ -262,8 +262,10 @@ bool SusyNtMaker::selectEvent()
   m_susyNt.clear();
 
   // Dynamically determine if SUSY sample by looking for sparticle branches
-  bool isSusySample = d3pd.evt.SUSY_Spart1_pdgId.IsAvailable() && 
-                      d3pd.evt.SUSY_Spart2_pdgId.IsAvailable();
+  bool isSusySample = d3pd.evt.SUSY_Spart1_pdgId.IsAvailable() &&
+                      d3pd.evt.SUSY_Spart2_pdgId.IsAvailable() &&
+                      d3pd.evt.SUSY_Spart1_pdgId() != 0        &&
+                      d3pd.evt.SUSY_Spart2_pdgId() != 0;
 
   // Susy final state - NOTE: DEFAULT VALUE CHANGED FROM -1 TO 0
   m_susyFinalState = isSusySample ? m_susyObj.finalState(d3pd.evt.SUSY_Spart1_pdgId(), 
@@ -634,18 +636,20 @@ void SusyNtMaker::fillElectronVars(const LeptonInfo* lepIn)
 
   // Tight electron SFs can come directly from SUSYTools
   // To get the SF uncert using GetSignalElecSF, we must get the shifted value and take the difference
+  float nomPt = lepIn->lv()->Pt();
+  float sfPt = nomPt >= 7.*GeV ? nomPt : 7.*GeV;
   if(eleOut->tightPP){
     eleOut->effSF       = m_isMC? 
-                          m_susyObj.GetSignalElecSF(element->cl_eta(), lepIn->lv()->Pt(), true, true, false) : 1;
+                          m_susyObj.GetSignalElecSF(element->cl_eta(), sfPt, true, true, false) : 1;
     eleOut->errEffSF    = m_isMC?
-                          m_susyObj.GetSignalElecSF(element->cl_eta(), lepIn->lv()->Pt(), true, true, false, 
+                          m_susyObj.GetSignalElecSF(element->cl_eta(), sfPt, true, true, false, 
                                                     200841, SystErr::EEFFUP) - eleOut->effSF : 0;
   }
 
   // For the medium SF, need to use our own function
   else{
     float sf = 1, uncert = 0;
-    if (m_isMC) get_electron_eff_sf(sf, uncert, element->cl_eta(), lepIn->lv()->Pt(), true, true, false, m_isAF2,
+    if (m_isMC) get_electron_eff_sf(sf, uncert, element->cl_eta(), sfPt, true, true, false, m_isAF2,
                                     m_susyObj.GetElectron_recoSF_Class(), m_eleMediumSFTool, 0);
     eleOut->effSF       = sf;
     eleOut->errEffSF    = uncert;
@@ -748,10 +752,11 @@ void SusyNtMaker::fillMuonVars(const LeptonInfo* lepIn)
 void SusyNtMaker::fillJetVars()
 {
   if(m_dbg>=5) cout << "fillJetVars" << endl;
+  // Calculate random run/lb number, necessary for BCH cleaning flag
+  if(m_isMC) calcRandomRunLB();
   // Loop over selected jets and fill output tree
   for(uint iJet=0; iJet<m_preJets.size(); iJet++){
     int jetIndex = m_preJets[iJet];  
-
     fillJetVar(jetIndex);
   }
 }
@@ -791,6 +796,7 @@ void SusyNtMaker::fillJetVar(int jetIdx)
   jetOut->svp_mass      = element->flavor_component_svp_mass();
 
   jetOut->bch_corr_jet  = element->BCH_CORR_JET();
+  jetOut->bch_corr_cell = element->BCH_CORR_CELL();
   jetOut->isBadVeryLoose= JetID::isBadJet(JetID::VeryLooseBad,
                                           element->emfrac(), 
                                           element->hecf(), 
@@ -805,6 +811,16 @@ void SusyNtMaker::fillJetVar(int jetIdx)
   jetOut->isHotTile     = m_susyObj.isHotTile(d3pd.evt.RunNumber(), element->fracSamplingMax(), 
                                               element->SamplingMax(), eta, phi);
 
+  // BCH cleaning flags
+  uint bchRun = m_isMC? m_mcRun : d3pd.evt.RunNumber();
+  uint bchLB = m_isMC? m_mcLB : d3pd.evt.lbn();
+  #define BCH_ARGS bchRun, bchLB, jetOut->detEta, jetOut->phi, jetOut->bch_corr_cell, jetOut->emfrac, jetOut->pt*1000.
+  jetOut->isBadMediumBCH = !m_susyObj.passBCHCleaningMedium(BCH_ARGS, 0);
+  jetOut->isBadMediumBCH_up = !m_susyObj.passBCHCleaningMedium(BCH_ARGS, 1);
+  jetOut->isBadMediumBCH_dn = !m_susyObj.passBCHCleaningMedium(BCH_ARGS, -1);
+  jetOut->isBadTightBCH = !m_susyObj.passBCHCleaningTight(BCH_ARGS);
+  #undef BCH_ARGS
+                                                             
   // Save the met weights for the jets
   // by checking status word similar to
   // what is done in met utility
@@ -814,8 +830,6 @@ void SusyNtMaker::fillJetVar(int jetIdx)
   // 0th element is what we care about
   jetOut->met_wpx = passSWord ? element->MET_Egamma10NoTau_wpx().at(0) : 0;
   jetOut->met_wpy = passSWord ? element->MET_Egamma10NoTau_wpy().at(0) : 0;
-  
-
 }
 
 /*--------------------------------------------------------------------------------*/
@@ -971,7 +985,7 @@ void SusyNtMaker::fillTauVar(int tauIdx)
 /*--------------------------------------------------------------------------------*/
 void SusyNtMaker::fillMetVars(SusyNtSys sys)
 {
-  if(m_dbg>=5) cout << "fillMetVars" << endl;
+  if(m_dbg>=5) cout << "fillMetVars: sys " << sys << endl;
 
   // Just fill the lv for now
   double Et  = m_met.Et()/GeV;
@@ -989,7 +1003,6 @@ void SusyNtMaker::fillMetVars(SusyNtSys sys)
   // computeMetComponent, but that is up to Steve,
   // Lord of the Ntuples.
   METUtility* metUtil = m_susyObj.GetMETUtility();
-  
 
   m_susyNt.met()->push_back( Susy::Met() );
   Susy::Met* metOut = & m_susyNt.met()->back();
