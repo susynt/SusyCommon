@@ -749,7 +749,7 @@ void SusyNtMaker::fillJetVars()
 {
   if(m_dbg>=5) cout << "fillJetVars" << endl;
   // Calculate random run/lb number, necessary for BCH cleaning flag
-  calcRandomRunLB();
+  if(m_isMC) calcRandomRunLB();
   // Loop over selected jets and fill output tree
   for(uint iJet=0; iJet<m_preJets.size(); iJet++){
     int jetIndex = m_preJets[iJet];  
