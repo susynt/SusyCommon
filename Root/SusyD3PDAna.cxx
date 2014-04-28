@@ -32,14 +32,14 @@ SusyD3PDAna::SusyD3PDAna() :
         m_metFlavor(SUSYMet::Default),
         m_doMetMuCorr(false),
         m_doMetFix(false),
-	//m_useMetMuons(false),
+        //m_useMetMuons(false),
         m_lumi(LUMI_A_E),
         m_sumw(1),
-	m_xsec(-1),
-	m_errXsec(-1),
+        m_xsec(-1),
+        m_errXsec(-1),
         m_mcRun(0),
         m_mcLB(0),
-	m_sys(false),
+        m_sys(false),
         m_eleMediumSFTool(0),
         m_pileup(0),
         m_pileup_up(0),
@@ -113,7 +113,7 @@ void SusyD3PDAna::Begin(TTree* /*tree*/)
   // Initialize electron medium SF
   string eleMedFile = getenv("ROOTCOREDIR");
   // TODO: update this whenever it gets updated in SUSYTools!
-  eleMedFile += "/data/ElectronEfficiencyCorrection/efficiencySF.offline.Medium.2012.8TeV.rel17p2.v04.root";
+  eleMedFile += "/data/ElectronEfficiencyCorrection/efficiencySF.offline.Medium.2012.8TeV.rel17p2.v07.root";
   m_eleMediumSFTool->addFileName(eleMedFile.c_str());
   if(!m_eleMediumSFTool->initialize()){
     cout << "SusyD3PDAna::Begin : ERROR initializing TElectronEfficiencyCorrectionTool with file "
@@ -451,7 +451,7 @@ void SusyD3PDAna::selectSignalPhotons()
   float etcone40CorrCut = 3*GeV; 
 
   vector<int> base_photons = get_photons_baseline(&d3pd.pho, m_susyObj, 
-						  20.*GeV, 2.47, SystErr::NONE, phoQual);
+                                                  20.*GeV, 2.47, SystErr::NONE, phoQual);
 
   // Latest and Greatest
   int nPV = getNumGoodVtx();
