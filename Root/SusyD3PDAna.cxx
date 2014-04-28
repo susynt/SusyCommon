@@ -37,6 +37,8 @@ SusyD3PDAna::SusyD3PDAna() :
         m_sumw(1),
 	m_xsec(-1),
 	m_errXsec(-1),
+        m_mcRun(0),
+        m_mcLB(0),
 	m_sys(false),
         m_eleMediumSFTool(0),
         m_pileup(0),
@@ -1047,6 +1049,17 @@ float SusyD3PDAna::getLepSF(const vector<LeptonInfo>& leptons)
 float SusyD3PDAna::getBTagSF(const vector<int>& jets)
 {
   return 1;
+}
+
+/*--------------------------------------------------------------------------------*/
+// Calculate random MC run and lb numbers for cleaning cuts, etc.
+/*--------------------------------------------------------------------------------*/
+void SusyD3PDAna::calcRandomRunLB()
+{
+  if(m_pileup){
+    m_mcRun = m_pileup->GetRandomRunNumber(d3pd.evt.RunNumber());
+    m_mcLB = m_pileup->GetRandomLumiBlockNumber(m_mcRun);
+  }
 }
 
 /*--------------------------------------------------------------------------------*/
