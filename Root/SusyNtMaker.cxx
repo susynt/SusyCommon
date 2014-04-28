@@ -262,8 +262,10 @@ bool SusyNtMaker::selectEvent()
   m_susyNt.clear();
 
   // Dynamically determine if SUSY sample by looking for sparticle branches
-  bool isSusySample = d3pd.evt.SUSY_Spart1_pdgId.IsAvailable() && 
-                      d3pd.evt.SUSY_Spart2_pdgId.IsAvailable();
+  bool isSusySample = d3pd.evt.SUSY_Spart1_pdgId.IsAvailable() &&
+                      d3pd.evt.SUSY_Spart2_pdgId.IsAvailable() &&
+                      d3pd.evt.SUSY_Spart1_pdgId() != 0        &&
+                      d3pd.evt.SUSY_Spart2_pdgId() != 0;
 
   // Susy final state - NOTE: DEFAULT VALUE CHANGED FROM -1 TO 0
   m_susyFinalState = isSusySample ? m_susyObj.finalState(d3pd.evt.SUSY_Spart1_pdgId(), 
