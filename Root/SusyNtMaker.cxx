@@ -812,7 +812,7 @@ void SusyNtMaker::fillJetVar(int jetIdx)
   // BCH cleaning flags
   uint bchRun = m_isMC? m_mcRun : d3pd.evt.RunNumber();
   uint bchLB = m_isMC? m_mcLB : d3pd.evt.lbn();
-  #define BCH_ARGS bchRun, bchLB, jetOut->detEta, jetOut->phi, jetOut->bch_corr_cell, jetOut->emfrac, jetOut->pt
+  #define BCH_ARGS bchRun, bchLB, jetOut->detEta, jetOut->phi, jetOut->bch_corr_cell, jetOut->emfrac, jetOut->pt*1000.
   jetOut->isBadMediumBCH = !m_susyObj.passBCHCleaningMedium(BCH_ARGS, 0);
   jetOut->isBadMediumBCH_up = !m_susyObj.passBCHCleaningMedium(BCH_ARGS, 1);
   jetOut->isBadMediumBCH_dn = !m_susyObj.passBCHCleaningMedium(BCH_ARGS, -1);
@@ -983,7 +983,7 @@ void SusyNtMaker::fillTauVar(int tauIdx)
 /*--------------------------------------------------------------------------------*/
 void SusyNtMaker::fillMetVars(SusyNtSys sys)
 {
-  if(m_dbg>=5) cout << "fillMetVars" << endl;
+  if(m_dbg>=5) cout << "fillMetVars: sys " << sys << endl;
 
   // Just fill the lv for now
   double Et  = m_met.Et()/GeV;
@@ -1001,7 +1001,6 @@ void SusyNtMaker::fillMetVars(SusyNtSys sys)
   // computeMetComponent, but that is up to Steve,
   // Lord of the Ntuples.
   METUtility* metUtil = m_susyObj.GetMETUtility();
-  
 
   m_susyNt.met()->push_back( Susy::Met() );
   Susy::Met* metOut = & m_susyNt.met()->back();
