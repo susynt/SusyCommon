@@ -25,7 +25,10 @@ defaultNickname='sfarrell'
 defaultMet='Default'
 
 def get_mc_prod(dataset):
-    """Determine if a D3PD sample is MC12b by parsing the DS name"""
+    """
+    Determine if a D3PD sample is MC12b by parsing the DS name to extract
+    the reconstruction tag (e.g. r4485).
+    """
     # Need to parse out the reconstruction tag
     recoTag = re.sub('.*[0-9].._r', '', dataset)
     recoTag = re.sub('_.*', '', recoTag)
