@@ -89,10 +89,14 @@ void SusyNtMaker::Begin(TTree* /*tree*/)
 
   }
 
-  m_isSusySample = m_sample.Contains("DGemt") || m_sample.Contains("DGstau") || 
-                   m_sample.Contains("RPV") || m_sample.Contains("simplifiedModel") || 
-                   m_sample.Contains("pMSSM") || m_sample.Contains("DG_MeadePoint");
-  m_isWhSample = m_sample.Contains("simplifiedModel_wA_noslep_WH");
+  // Susy sample determination is now done dynamically
+  //m_isSusySample = m_sample.Contains("DGemt") || m_sample.Contains("DGstau") || 
+  //                 m_sample.Contains("RPV") || m_sample.Contains("simplifiedModel") || 
+  //                 m_sample.Contains("pMSSM") || m_sample.Contains("DG_MeadePoint");
+
+  // Still hardcoded. Currently no other known solution
+  m_isWhSample = m_sample.Contains("simplifiedModel_wA_noslep_WH") ||
+                 m_sample.Contains("Herwigpp_sM_wA_noslep_notauhad_WH");
 
   // create histograms for cutflow
   // Raw event weights
@@ -253,22 +257,35 @@ bool SusyNtMaker::selectEvent()
 {
   if(m_dbg>=5) cout << "selectEvent" << endl;
 
-
   m_susyObj.Reset();
   clearObjects();
   m_susyNt.clear();
 
-  // Susy final state
-  //m_susyFinalState = m_isSusySample? get_finalState(d3pd.truth) : -1;
-  m_susyFinalState = m_isSusySample? get_finalState(d3pd.evt.SUSY_Spart1_pdgId(), 
-                                                    d3pd.evt.SUSY_Spart2_pdgId()) : -1;
-  m_hDecay = m_isWhSample ? WhTruthExtractor().update(d3pd.truth.pdgId(),
-						      d3pd.truth.child_index(),
-						      d3pd.truth.parent_index()) : -1;
-  m_hasSusyProp = (m_isSusySample ?
+  // Dynamically determine if SUSY sample by looking for sparticle branches
+  bool isSusySample = d3pd.evt.SUSY_Spart1_pdgId.IsAvailable() && 
+                      d3pd.evt.SUSY_Spart2_pdgId.IsAvailable();
+
+  // Susy final state - NOTE: DEFAULT VALUE CHANGED FROM -1 TO 0
+  m_susyFinalState = isSusySample ? m_susyObj.finalState(d3pd.evt.SUSY_Spart1_pdgId(), 
+                                                           d3pd.evt.SUSY_Spart2_pdgId()) : 0;
+  //m_hDecay = m_isWhSample ? WhTruthExtractor().update(d3pd.truth.pdgId(),
+  //                                                    d3pd.truth.child_index(),
+  //                                                    d3pd.truth.parent_index()) : 0;
+  m_hDecay = WhTruthExtractor::kUnknown;
+  if(m_isWhSample) m_hDecay = WhTruthExtractor().update(d3pd.truth.pdgId(), 
+                                                        d3pd.truth.child_index(), 
+                                                        d3pd.truth.parent_index());
+
+  // This assumes that sparticle branches are present for any 
+  // sample that might have the SUSY propagators problem
+  m_hasSusyProp = (isSusySample ?
                    SusyNtTools::eventHasSusyPropagators(*d3pd.truth.pdgId(), *d3pd.truth.parent_index()) :
                    false);
-  TH1F* h_procCutFlow = m_isSusySample? getProcCutFlow(m_susyFinalState) : 0;
+
+  // It should be safe to always do procCutFlow, not just for susy samples.
+  // This way we can eventually drop the genCutFlow and just rely on procCutFlow
+  //TH1F* h_procCutFlow = m_isSusySample ? getProcCutFlow(m_susyFinalState) : 0;
+  TH1F* h_procCutFlow = getProcCutFlow(m_susyFinalState);
   float w = m_isMC? d3pd.truth.event_weight() : 1;
 
   // Cut index
@@ -279,7 +296,7 @@ bool SusyNtMaker::selectEvent()
     do{                             \
       h_rawCutFlow->Fill(cut);      \
       h_genCutFlow->Fill(cut, w);   \
-      if(m_isSusySample) h_procCutFlow->Fill(cut, w);  \
+      h_procCutFlow->Fill(cut, w);  \
       cut++;                        \
     } while(0)
 
@@ -494,6 +511,8 @@ void SusyNtMaker::fillEventVars()
 
   // SUSY final state
   evt->susyFinalState   = m_susyFinalState;
+  evt->susySpartId1     = d3pd.evt.SUSY_Spart1_pdgId.IsAvailable()? d3pd.evt.SUSY_Spart1_pdgId() : 0;
+  evt->susySpartId2     = d3pd.evt.SUSY_Spart2_pdgId.IsAvailable()? d3pd.evt.SUSY_Spart2_pdgId() : 0;
 
   float mZ = -1.0, mZtruthMax = 40.0;
   if(m_isMC){
