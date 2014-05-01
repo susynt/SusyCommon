@@ -38,7 +38,7 @@ def get_mc_prod(dataset):
         raise e
     # This could be extended with other known prods
     mc12bTag = 4485
-    if recoTagNum < 4485:
+    if recoTagNum < mc12bTag:
         return 'mc12a'
     else:
         return 'mc12b'
