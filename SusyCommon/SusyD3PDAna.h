@@ -213,6 +213,9 @@ class SusyD3PDAna : public SusyD3PDInterface
     // AF2 flag
     void setAF2(bool isAF2=true) { m_isAF2 = isAF2; }
 
+    // Set MC Production flag
+    void setMCProduction(MCProduction prod) { m_mcProd = prod; }
+
     // Set SUSY D3PD tag to know which branches are ok
     void setD3PDTag(D3PDTag tag) { m_d3pdTag = tag; }
 
@@ -249,6 +252,7 @@ class SusyD3PDAna : public SusyD3PDInterface
     TString                     m_sample;       // sample name
     DataStream                  m_stream;       // data stream enum, taken from sample name
     bool                        m_isAF2;        // flag for ATLFastII samples
+    MCProduction                m_mcProd;       // MC production campaign
 
     bool                        m_isSusySample; // is susy grid sample
     int                         m_susyFinalState;// susy subprocess

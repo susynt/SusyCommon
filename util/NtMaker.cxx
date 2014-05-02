@@ -38,6 +38,9 @@ void help()
   cout << "  -s sample name, sets isMC flag"    << endl;
   cout << "     use e.g. 'ttbar', 'DataG', etc" << endl;
 
+  cout << "  -p MC production, specify mc12a or mc12b" << endl;
+  cout << "     this arg is required for all MC"<< endl;
+
   cout << "  -w set sum of mc weights for norm" << endl;
   cout << "     default: 1"                     << endl;
 
@@ -118,6 +121,7 @@ int main(int argc, char** argv)
   float sumw      = 1;
   string sample   = "";
   string fileList = "fileList.txt";
+  TString mcProdStr = "";
   string grl      = "";
   bool sysOn      = false;
   //bool savePh     = false;
@@ -149,6 +153,8 @@ int main(int argc, char** argv)
       fileList = argv[++i];
     else if (strcmp(argv[i], "-s") == 0)
       sample = argv[++i];
+    else if (strcmp(argv[i], "-p") == 0)
+      mcProdStr = argv[++i];
     else if (strcmp(argv[i], "-w") == 0)
       sumw = atof(argv[++i]);
     else if (strcmp(argv[i], "-x") == 0)
@@ -198,6 +204,7 @@ int main(int argc, char** argv)
 
   cout << "flags:" << endl;
   cout << "  sample        " << sample   << endl;
+  cout << "  mcProdStr     " << mcProdStr<< endl;
   cout << "  nEvt          " << nEvt     << endl;
   cout << "  nSkip         " << nSkip    << endl;
   cout << "  dbg           " << dbg      << endl;
@@ -253,6 +260,12 @@ int main(int argc, char** argv)
 
   // GRL - default is set in SusyD3PDAna::Begin, but now we can override it here
   susyAna->setGRLFile(grl);
+
+  // MC production campaign
+  MCProduction mcProd = MCProd_Unknown;
+  if(mcProdStr.CompareTo("mc12a", TString::kIgnoreCase)) mcProd = MCProd_MC12a;
+  else if(mcProdStr.CompareTo("mc12b", TString::kIgnoreCase)) mcProd = MCProd_MC12b;
+  susyAna->setMCProduction(mcProd);
 
   // Run the job
   if(nEvt<0) nEvt = nEntries;

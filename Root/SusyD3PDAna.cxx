@@ -24,7 +24,9 @@ using namespace std;
 /*--------------------------------------------------------------------------------*/
 SusyD3PDAna::SusyD3PDAna() : 
         m_sample(""),
+        m_stream(Stream_Unknown),
         m_isAF2(false),
+        m_mcProd(MCProd_Unknown),
         m_d3pdTag(D3PD_p1328),
         m_selectPhotons(false),
         m_selectTaus(false),
@@ -85,6 +87,14 @@ void SusyD3PDAna::Begin(TTree* /*tree*/)
     m_isMC = false;
   }
 
+  // Make sure MC production is specified
+  if(m_isMC && m_mcProd==MCProd_Unknown){
+    cout << "SusyD3PDAna::Begin : ERROR : Sample is flagged as MC but "
+         << "MCProduction is Unknown! Use command line argument to set it!" 
+         << endl;
+    abort();
+  }
+
   // Use sample name to set data stream
   if(m_isMC) m_stream = Stream_MC;
   else if(m_sample.Contains("muons", TString::kIgnoreCase)) m_stream = Stream_Muons;
@@ -98,7 +108,7 @@ void SusyD3PDAna::Begin(TTree* /*tree*/)
   cout << "DataStream: " << streamName(m_stream) << endl;
 
   // Setup SUSYTools
-  bool isMC12b = false; // TODO
+  bool isMC12b = (m_mcProd == MCProd_MC12b);
   bool useLeptonTrigger = false;
   m_susyObj.initialize(!m_isMC, m_isAF2, isMC12b, useLeptonTrigger);
                        //gSystem->ExpandPathName("$ROOTCOREDIR/data/MuonMomentumCorrections/"),
