@@ -568,7 +568,7 @@ void SusyD3PDAna::fillEventTriggers()
   if(d3pd.trig.EF_mu15())                       m_evtTrigFlags |= TRIG_mu15;
 
   // EF_2mu8_EFxe40wMu_tclcw trigger only available for data, in periods > B
-  if(!m_isMC && d3pd.evt.RunNumber()>=206248 && d3pd.trig.EF_2mu8_EFxe40wMu_tclcw()) 
+  if(!m_isMC && d3pd.evt.RunNumber()>=206248 && d3pd.trig.EF_2mu8_EFxe40wMu_tclcw())
     m_evtTrigFlags |= TRIG_2mu8_EFxe40wMu_tclcw;
 
   // Triggers requested fro the ISR analysis studies
@@ -583,6 +583,18 @@ void SusyD3PDAna::fillEventTriggers()
   if(d3pd.trig.EF_j110_a4tchad_xe90_tclcw_loose())      m_evtTrigFlags |= TRIG_j110_a4tchad_xe90_tclcw_loose;
   if(d3pd.trig.EF_j80_a4tchad_xe100_tclcw_loose())      m_evtTrigFlags |= TRIG_j80_a4tchad_xe100_tclcw_loose;
   if(d3pd.trig.EF_j80_a4tchad_xe70_tclcw_dphi2j45xe10())m_evtTrigFlags |= TRIG_j80_a4tchad_xe70_tclcw_dphi2j45xe10;
+
+  // Not sure about the availability of these, so just adding some protection
+  if(d3pd.trig.EF_mu4T())                               m_evtTrigFlags |= TRIG_mu4T;
+  if(d3pd.trig.EF_mu24())                               m_evtTrigFlags |= TRIG_mu24;
+  if(d3pd.trig.EF_mu4T_j65_a4tchad_xe70_tclcw_veryloose()) m_evtTrigFlags |= TRIG_mu4T_j65_a4tchad_xe70_tclcw_veryloose;
+  if(d3pd.trig.EF_2mu4T_xe60_tclcw())                   m_evtTrigFlags |= TRIG_2mu4T_xe60_tclcw;
+  if(d3pd.trig.EF_2mu8_EFxe40_tclcw.IsAvailable() && d3pd.trig.EF_2mu8_EFxe40_tclcw())
+    m_evtTrigFlags |= TRIG_2mu8_EFxe40_tclcw;
+  if(d3pd.trig.EF_e24vh_medium1_EFxe35_tclcw())         m_evtTrigFlags |= TRIG_e24vh_medium1_EFxe35_tclcw;
+  if(d3pd.trig.EF_mu24_j65_a4tchad_EFxe40_tclcw())      m_evtTrigFlags |= TRIG_mu24_j65_a4tchad_EFxe40_tclcw;
+  if(d3pd.trig.EF_mu24_j65_a4tchad_EFxe40wMu_tclcw.IsAvailable() && d3pd.trig.EF_mu24_j65_a4tchad_EFxe40wMu_tclcw())
+    m_evtTrigFlags |= TRIG_mu24_j65_a4tchad_EFxe40wMu_tclcw;
 }
 
 /*--------------------------------------------------------------------------------*/
@@ -660,6 +672,11 @@ void SusyD3PDAna::matchElectronTriggers()
       flags |= TRIG_e7T_medium1_2mu6;
     }
 
+    // e24vh_medium1_EFxe35_tclcw
+    if( matchElectronTrigger(lv, d3pd.trig.trig_EF_el_EF_e24vh_medium1_EFxe35_tclcw()) ){
+      flags |= TRIG_e24vh_medium1_EFxe35_tclcw;
+    }
+
     // assign the trigger flags for this electron
     m_eleTrigFlags[iEl] = flags;
   }
@@ -732,6 +749,13 @@ void SusyD3PDAna::matchMuonTriggers()
       flags |= TRIG_mu15;
     }
 
+
+    // 2mu8_EFxe40wMu_tclcw
+    if(!m_isMC && d3pd.evt.RunNumber()>=206248 &&
+       matchMuonTrigger(lv, d3pd.trig.trig_EF_trigmuonef_EF_2mu8_EFxe40wMu_tclcw())) {
+      flags |= TRIG_2mu8_EFxe40wMu_tclcw;
+    }
+
     // mu6
     if( matchMuonTrigger(lv, d3pd.trig.trig_EF_trigmuonef_EF_mu6()) ) {
       flags |= TRIG_mu6;
@@ -747,6 +771,37 @@ void SusyD3PDAna::matchMuonTriggers()
     // mu18_tight_2mu4_EFFS
     if( matchMuonTrigger(lv, d3pd.trig.trig_EF_trigmuonef_EF_mu18_tight_2mu4_EFFS()) ) {
       flags |= TRIG_mu18_tight_2mu4_EFFS;
+    }
+
+    // mu4T
+    if( matchMuonTrigger(lv, d3pd.trig.trig_EF_trigmuonef_EF_mu4T()) ) {
+      flags |= TRIG_mu4T;
+    }
+    // mu24
+    if( matchMuonTrigger(lv, d3pd.trig.trig_EF_trigmuonef_EF_mu24()) ) {
+      flags |= TRIG_mu24;
+    }
+    // mu4T_j65_a4tchad_xe70_tclcw_veryloose
+    if( matchMuonTrigger(lv, d3pd.trig.trig_EF_trigmuonef_EF_mu4T_j65_a4tchad_xe70_tclcw_veryloose()) ) {
+      flags |= TRIG_mu4T_j65_a4tchad_xe70_tclcw_veryloose;
+    }
+    // 2mu4T_xe60_tclcw
+    if( matchMuonTrigger(lv, d3pd.trig.trig_EF_trigmuonef_EF_2mu4T_xe60_tclcw()) ) {
+      flags |= TRIG_2mu4T_xe60_tclcw;
+    }
+    // 2mu8_EFxe40_tclcw
+    if(d3pd.trig.trig_EF_trigmuonef_EF_2mu8_EFxe40_tclcw.IsAvailable() &&
+       matchMuonTrigger(lv, d3pd.trig.trig_EF_trigmuonef_EF_2mu8_EFxe40_tclcw()) ) {
+      flags |= TRIG_2mu8_EFxe40_tclcw;
+    }
+    // mu24_j65_a4tchad_EFxe40_tclcw
+    if( matchMuonTrigger(lv, d3pd.trig.trig_EF_trigmuonef_EF_mu24_j65_a4tchad_EFxe40_tclcw()) ) {
+      flags |= TRIG_mu24_j65_a4tchad_EFxe40_tclcw;
+    }
+    // mu24_j65_a4tchad_EFxe40wMu_tclcw
+    if(d3pd.trig.trig_EF_trigmuonef_EF_mu24_j65_a4tchad_EFxe40wMu_tclcw.IsAvailable() &&
+       matchMuonTrigger(lv, d3pd.trig.trig_EF_trigmuonef_EF_mu24_j65_a4tchad_EFxe40wMu_tclcw()) ) {
+      flags |= TRIG_mu24_j65_a4tchad_EFxe40wMu_tclcw;
     }
 
     // assign the trigger flags for this muon
