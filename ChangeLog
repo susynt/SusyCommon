@@ -1,5 +1,9 @@
 # vim: set noexpandtab:
 
+2014-02-13 Steve
+	* Now using central SUSYTools method for sherpa WW radiative
+	  b quark fix: Sherpa_WW_veto
+
 2014-02-11 Steve
 	* BUGFIX: Muon energy systematic shift factors off by a factor of 1000
 	  due to accidental double unit conversion. It has been fixed.

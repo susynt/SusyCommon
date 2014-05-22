@@ -340,8 +340,13 @@ bool SusyNtMaker::selectEvent()
   n_evt_goodVtx++;
 
   // Sherpa WW fix, remove radiative b-quark processes that overlap with single top
-  if(m_filter && m_isMC && isBuggyWWSherpaSample(d3pd.truth.channel_number()) && 
-     hasRadiativeBQuark(d3pd.truth.pdgId(), d3pd.truth.status())) return false;
+  //if(m_filter && m_isMC && isBuggyWWSherpaSample(d3pd.truth.channel_number()) && 
+     //hasRadiativeBQuark(d3pd.truth.pdgId(), d3pd.truth.status())) return false;
+  if(m_filter && m_isMC && m_susyObj.Sherpa_WW_veto(d3pd.truth.n(),
+                                                    d3pd.truth.channel_number(),
+                                                    d3pd.truth.status(),
+                                                    d3pd.truth.pdgId(),
+                                                    d3pd.truth.charge())) return false;
   FillCutFlow();
   n_evt_WwSherpa++;
 
