@@ -6,6 +6,6 @@
 
 # All this does is checkout the common code and run the install script there
 # This will take a while!
-svn co svn+ssh://svn.cern.ch/reps/atlasphys/Physics/SUSY/Analyses/WeakProduction/MultiLep/tags/MultiLep-01-06-04-01 MultiLep
+svn co svn+ssh://svn.cern.ch/reps/atlasphys/Physics/SUSY/Analyses/WeakProduction/MultiLep/tags/MultiLep-01-06-08 MultiLep
 source MultiLep/installscripts/install_script.sh
 
