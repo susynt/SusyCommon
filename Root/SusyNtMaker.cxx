@@ -1119,7 +1119,9 @@ void SusyNtMaker::fillTruthParticleVars()
     tprOut->charge      = d3pd.truth.charge()->at(truParIdx);
     tprOut->pdgId       = d3pd.truth.pdgId() ->at(truParIdx);
     tprOut->status      = d3pd.truth.status()->at(truParIdx);
-    tprOut->motherPdgId = -999; // TO BE IMPLEMENTED
+    tprOut->motherPdgId = WhTruthExtractor::determineParentPdg(d3pd.truth.pdgId(),
+                                                               d3pd.truth.parent_index(),
+                                                               truParIdx);
   }
 }
 /*--------------------------------------------------------------------------------*/
