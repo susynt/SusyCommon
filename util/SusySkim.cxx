@@ -117,7 +117,7 @@ int main(int argc, char** argv)
   susyAna->setMetFlavor(metFlav);
 
   // GRL - now set in SusyD3PDAna::Begin
-  //TString grl = gSystem->ExpandPathName("$ROOTCOREDIR/data/MultiLep/data12_8TeV.periodAllYear_DetStatus-v47-pro13-01_CoolRunQuery-00-04-08_Susy.xml");
+  //TString grl = gSystem->ExpandPathName("$ROOTCOREBIN/data/MultiLep/data12_8TeV.periodAllYear_DetStatus-v47-pro13-01_CoolRunQuery-00-04-08_Susy.xml");
   //susyAna->setGRLFile(grl);
 
   // Run the job
