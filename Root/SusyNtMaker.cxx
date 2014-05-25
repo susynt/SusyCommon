@@ -272,9 +272,6 @@ bool SusyNtMaker::selectEvent()
   // Susy final state - NOTE: DEFAULT VALUE CHANGED FROM -1 TO 0
   m_susyFinalState = isSusySample ? m_susyObj.finalState(d3pd.evt.SUSY_Spart1_pdgId(), 
                                                            d3pd.evt.SUSY_Spart2_pdgId()) : 0;
-  //m_hDecay = m_isWhSample ? WhTruthExtractor().update(d3pd.truth.pdgId(),
-  //                                                    d3pd.truth.child_index(),
-  //                                                    d3pd.truth.parent_index()) : 0;
   m_hDecay = smc::kUnknown;
   if(m_isWhSample) m_hDecay = WhTruthExtractor().update(d3pd.truth.pdgId(), 
                                                         d3pd.truth.child_index(), 
