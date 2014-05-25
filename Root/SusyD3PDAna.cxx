@@ -110,20 +110,20 @@ void SusyD3PDAna::Begin(TTree* /*tree*/)
   bool isMC12b = (m_mcProd == MCProd_MC12b);
   bool useLeptonTrigger = false;
   m_susyObj.initialize(!m_isMC, m_isAF2, isMC12b, useLeptonTrigger);
-                       //gSystem->ExpandPathName("$ROOTCOREDIR/data/MuonMomentumCorrections/"),
-                       //gSystem->ExpandPathName("$ROOTCOREDIR/data/MuonEfficiencyCorrections/"));
+                       //gSystem->ExpandPathName("$ROOTCOREBIN/data/MuonMomentumCorrections/"),
+                       //gSystem->ExpandPathName("$ROOTCOREBIN/data/MuonEfficiencyCorrections/"));
                        //"STACO_CB_plus_ST",
                        //"efficiencySF.offline.RecoTrk.2012.8TeV.rel17p2.v02.root",
                        //"efficiencySF.offline.Tight.2012.8TeV.rel17p2.v02.root",
                        //"efficiencySF.e24vhi_medium1_e60_medium1.Tight.2012.8TeV.rel17p2.v02.root",
-                       //gSystem->ExpandPathName("$ROOTCOREDIR/data/MultiLep"));
+                       //gSystem->ExpandPathName("$ROOTCOREBIN/data/MultiLep"));
                        
   // Turn on jet calibration
   m_susyObj.SetJetCalib(true);
 
   // Initialize electron medium SF
-  string eleMedFile = getenv("ROOTCOREDIR");
   // TODO: update this whenever it gets updated in SUSYTools!
+  string eleMedFile = "${ROOTCOREBIN}";
   eleMedFile += "/data/ElectronEfficiencyCorrection/efficiencySF.offline.Medium.2012.8TeV.rel17p2.v07.root";
   m_eleMediumSFTool->addFileName(eleMedFile.c_str());
   if(!m_eleMediumSFTool->initialize()){
@@ -136,20 +136,20 @@ void SusyD3PDAna::Begin(TTree* /*tree*/)
   // This is now done automatically when you call SUSYObjDef::GetMET
   //if(m_metFlavor.Contains("STVF")) m_susyObj.GetMETUtility()->configMissingET(true, true);
 
-  m_fakeMetEst.initialize("$ROOTCOREDIR/data/MultiLep/fest_periodF_v1.root");
+  m_fakeMetEst.initialize("$ROOTCOREBIN/data/MultiLep/fest_periodF_v1.root");
 
   // SUSY cross sections
   if(m_isMC){
     // Back to using the SUSYTools file
-    //string xsecFileName  = gSystem->ExpandPathName("$ROOTCOREDIR/data/MultiLep/susy_crosssections_8TeV_mod.txt");
-    string xsecFileName  = gSystem->ExpandPathName("$ROOTCOREDIR/data/SUSYTools/susy_crosssections_8TeV.txt");
+    //string xsecFileName  = gSystem->ExpandPathName("$ROOTCOREBIN/data/MultiLep/susy_crosssections_8TeV_mod.txt");
+    string xsecFileName  = gSystem->ExpandPathName("$ROOTCOREBIN/data/SUSYTools/susy_crosssections_8TeV.txt");
     m_susyXsec = new SUSY::CrossSectionDB(xsecFileName);
   }
 
   // GRL
   if(!m_isMC){
     if(m_grlFileName.Length() == 0){
-      string grlName = "$ROOTCOREDIR/data/MultiLep/";
+      string grlName = "$ROOTCOREBIN/data/MultiLep/";
       grlName += "data12_8TeV.periodAllYear_DetStatus-v61-pro14-02_DQDefects-00-01-00_PHYS_StandardGRL_All_Good.xml";
       m_grlFileName = gSystem->ExpandPathName(grlName.c_str());
     }
@@ -168,10 +168,10 @@ void SusyD3PDAna::Begin(TTree* /*tree*/)
   if(m_isMC){
     m_pileup = new Root::TPileupReweighting("PileupReweighting");
     m_pileup->SetDataScaleFactors(1/1.11);
-    //m_pileup->AddConfigFile("$ROOTCOREDIR/data/SUSYTools/MC12b_MyPRW.prw.root");
-    m_pileup->AddConfigFile("$ROOTCOREDIR/data/PileupReweighting/mc12ab_defaults.prw.root");
-    //m_pileup->AddLumiCalcFile("$ROOTCOREDIR/data/MultiLep/ilumicalc_histograms_EF_2e12Tvh_loose1_200842-215643_v2.root");
-    m_pileup->AddLumiCalcFile("$ROOTCOREDIR/data/MultiLep/ilumicalc_histograms_EF_2e12Tvh_loose1_200842-215643_grl_v61.root");
+    //m_pileup->AddConfigFile("$ROOTCOREBIN/data/SUSYTools/MC12b_MyPRW.prw.root");
+    m_pileup->AddConfigFile("$ROOTCOREBIN/data/PileupReweighting/mc12ab_defaults.prw.root");
+    //m_pileup->AddLumiCalcFile("$ROOTCOREBIN/data/MultiLep/ilumicalc_histograms_EF_2e12Tvh_loose1_200842-215643_v2.root");
+    m_pileup->AddLumiCalcFile("$ROOTCOREBIN/data/MultiLep/ilumicalc_histograms_EF_2e12Tvh_loose1_200842-215643_grl_v61.root");
     m_pileup->SetUnrepresentedDataAction(2);
     int pileupError = m_pileup->Initialize();
     if(pileupError){
@@ -180,8 +180,8 @@ void SusyD3PDAna::Begin(TTree* /*tree*/)
     }
     m_pileup_up = new Root::TPileupReweighting("PileupReweighting");
     m_pileup_up->SetDataScaleFactors(1/1.08);
-    m_pileup_up->AddConfigFile("$ROOTCOREDIR/data/PileupReweighting/mc12ab_defaults.prw.root");
-    m_pileup_up->AddLumiCalcFile("$ROOTCOREDIR/data/MultiLep/ilumicalc_histograms_EF_2e12Tvh_loose1_200842-215643_grl_v61.root");
+    m_pileup_up->AddConfigFile("$ROOTCOREBIN/data/PileupReweighting/mc12ab_defaults.prw.root");
+    m_pileup_up->AddLumiCalcFile("$ROOTCOREBIN/data/MultiLep/ilumicalc_histograms_EF_2e12Tvh_loose1_200842-215643_grl_v61.root");
     m_pileup_up->SetUnrepresentedDataAction(2);
     pileupError = m_pileup_up->Initialize();
     if(pileupError){
@@ -190,8 +190,8 @@ void SusyD3PDAna::Begin(TTree* /*tree*/)
     }
     m_pileup_dn = new Root::TPileupReweighting("PileupReweighting");
     m_pileup_dn->SetDataScaleFactors(1/1.14);
-    m_pileup_dn->AddConfigFile("$ROOTCOREDIR/data/PileupReweighting/mc12ab_defaults.prw.root");
-    m_pileup_dn->AddLumiCalcFile("$ROOTCOREDIR/data/MultiLep/ilumicalc_histograms_EF_2e12Tvh_loose1_200842-215643_grl_v61.root");
+    m_pileup_dn->AddConfigFile("$ROOTCOREBIN/data/PileupReweighting/mc12ab_defaults.prw.root");
+    m_pileup_dn->AddLumiCalcFile("$ROOTCOREBIN/data/MultiLep/ilumicalc_histograms_EF_2e12Tvh_loose1_200842-215643_grl_v61.root");
     m_pileup_dn->SetUnrepresentedDataAction(2);
     pileupError = m_pileup_dn->Initialize();
     if(pileupError){
@@ -202,8 +202,8 @@ void SusyD3PDAna::Begin(TTree* /*tree*/)
     // pileup reweighting for 2012 A-B3 only
     m_pileupAB3 = new Root::TPileupReweighting("PileupReweightingAB3");
     m_pileupAB3->SetDataScaleFactors(1/1.11);
-    m_pileupAB3->AddConfigFile("$ROOTCOREDIR/data/PileupReweighting/mc12ab_defaults.prw.root");
-    m_pileupAB3->AddLumiCalcFile("$ROOTCOREDIR/data/MultiLep/ilumicalc_histograms_EF_2e12Tvh_loose1_200841-203195.root");
+    m_pileupAB3->AddConfigFile("$ROOTCOREBIN/data/PileupReweighting/mc12ab_defaults.prw.root");
+    m_pileupAB3->AddLumiCalcFile("$ROOTCOREBIN/data/MultiLep/ilumicalc_histograms_EF_2e12Tvh_loose1_200841-203195.root");
     m_pileupAB3->SetUnrepresentedDataAction(2);
     pileupError = m_pileupAB3->Initialize();
     if(pileupError){
@@ -213,8 +213,8 @@ void SusyD3PDAna::Begin(TTree* /*tree*/)
     // pileup reweighting for 2012 A-B only
     m_pileupAB = new Root::TPileupReweighting("PileupReweightingAB");
     m_pileupAB->SetDataScaleFactors(1/1.11);
-    m_pileupAB->AddConfigFile("$ROOTCOREDIR/data/PileupReweighting/mc12ab_defaults.prw.root");
-    m_pileupAB->AddLumiCalcFile("$ROOTCOREDIR/data/MultiLep/ilumicalc_histograms_EF_e24vhi_medium1_200841-205113.root");
+    m_pileupAB->AddConfigFile("$ROOTCOREBIN/data/PileupReweighting/mc12ab_defaults.prw.root");
+    m_pileupAB->AddLumiCalcFile("$ROOTCOREBIN/data/MultiLep/ilumicalc_histograms_EF_e24vhi_medium1_200841-205113.root");
     m_pileupAB->SetUnrepresentedDataAction(2);
     pileupError = m_pileupAB->Initialize();
     if(pileupError){
@@ -224,8 +224,8 @@ void SusyD3PDAna::Begin(TTree* /*tree*/)
     // pileup reweighting for 2012 A-E only
     m_pileupAE = new Root::TPileupReweighting("PileupReweightingAE");
     m_pileupAE->SetDataScaleFactors(1/1.11);
-    m_pileupAE->AddConfigFile("$ROOTCOREDIR/data/PileupReweighting/mc12ab_defaults.prw.root");
-    m_pileupAE->AddLumiCalcFile("$ROOTCOREDIR/data/MultiLep/ilumicalc_histograms_EF_2e12Tvh_loose1_200841-210308.root");
+    m_pileupAE->AddConfigFile("$ROOTCOREBIN/data/PileupReweighting/mc12ab_defaults.prw.root");
+    m_pileupAE->AddLumiCalcFile("$ROOTCOREBIN/data/MultiLep/ilumicalc_histograms_EF_2e12Tvh_loose1_200841-210308.root");
     m_pileupAE->SetUnrepresentedDataAction(2);
     pileupError = m_pileupAE->Initialize();
     if(pileupError){
