@@ -58,7 +58,6 @@ def main():
     add_arg('-p', '--pattern', help='grep pattern to select datasets')
     add_arg('-t', '--tag', default=defaultTag, help='SusyNt tag to assign')
     add_arg('-v', '--verbose', action='store_true', help='verbose output')
-    add_arg('--athenaTag', default='17.2.9.1', help='athena tag')
     add_arg('--nickname', default=defaultNickname, help='grid nickname, for naming output DS')
     add_arg('--destSE', default='SLACXRD_SCRATCHDISK', 
             help='replicate output dataset to specified site')
@@ -198,7 +197,7 @@ def main():
                 prunCommand += ' --safetySize=600'
                 prunCommand += ' --outputs "susyNt.root,gridFileList.txt"'
                 prunCommand += ' --destSE=' + args.destSE
-                prunCommand += ' --athenaTag=' + args.athenaTag
+                prunCommand += ' --rootVer=5.34/18 --cmtConfig=x86_64-slc6-gcc47-opt'
                 prunCommand += ' --excludedSite=' + blacklist
 
                 # You can only have one of the following options
