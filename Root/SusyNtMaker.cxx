@@ -11,8 +11,10 @@
 #include "SusyCommon/SusyNtMaker.h"
 #include "SusyNtuple/SusyNtTools.h"
 #include "SusyNtuple/WhTruthExtractor.h"
+#include "SusyNtuple/mc_truth_utils.h"
 
 using namespace std;
+namespace smc =susy::mc;
 
 #define GeV 1000.
 
@@ -270,10 +272,7 @@ bool SusyNtMaker::selectEvent()
   // Susy final state - NOTE: DEFAULT VALUE CHANGED FROM -1 TO 0
   m_susyFinalState = isSusySample ? m_susyObj.finalState(d3pd.evt.SUSY_Spart1_pdgId(), 
                                                            d3pd.evt.SUSY_Spart2_pdgId()) : 0;
-  //m_hDecay = m_isWhSample ? WhTruthExtractor().update(d3pd.truth.pdgId(),
-  //                                                    d3pd.truth.child_index(),
-  //                                                    d3pd.truth.parent_index()) : 0;
-  m_hDecay = WhTruthExtractor::kUnknown;
+  m_hDecay = smc::kUnknown;
   if(m_isWhSample) m_hDecay = WhTruthExtractor().update(d3pd.truth.pdgId(), 
                                                         d3pd.truth.child_index(), 
                                                         d3pd.truth.parent_index());
@@ -1119,9 +1118,9 @@ void SusyNtMaker::fillTruthParticleVars()
     tprOut->charge      = d3pd.truth.charge()->at(truParIdx);
     tprOut->pdgId       = d3pd.truth.pdgId() ->at(truParIdx);
     tprOut->status      = d3pd.truth.status()->at(truParIdx);
-    tprOut->motherPdgId = WhTruthExtractor::determineParentPdg(d3pd.truth.pdgId(),
-                                                               d3pd.truth.parent_index(),
-                                                               truParIdx);
+    tprOut->motherPdgId = smc::determineParentPdg(d3pd.truth.pdgId(),
+                                                  d3pd.truth.parent_index(),
+                                                  truParIdx);
   }
 }
 /*--------------------------------------------------------------------------------*/
