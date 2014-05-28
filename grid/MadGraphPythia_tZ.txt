@@ -1,2 +1,0 @@
-mc12_8TeV.179991.MadGraphPythia_AUET2B_CTEQ6L1_tZ_Wtchan_Zll_PythiaDecays.merge.NTUP_SUSY.e2241_a188_a205_r4540_p1512/  99999   0.0041303
-mc12_8TeV.179992.MadGraphPythia_AUET2B_CTEQ6L1_tZ_stchan_Zll_PythiaDecays.merge.NTUP_SUSY.e2241_a188_a205_r4540_p1512/  100000  0.031161
