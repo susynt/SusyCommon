@@ -1,2 +1,0 @@
-mc12_8TeV.105200.McAtNloJimmy_CT10_ttbar_LeptonFilter.merge.NTUP_SUSY.e1193_s1469_s1470_r3542_r3549_p1181/      11550546
-mc12_8TeV.105200.McAtNloJimmy_CT10_ttbar_LeptonFilter.merge.NTUP_SUSY.e1513_s1469_s1470_r3842_r3549_p1181/      762479.0

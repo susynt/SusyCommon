@@ -1,5 +1,0 @@
-group.phys-susy.data12_8TeV.periodA.physics_JetTauEtmiss.PhysCont.NTUP_SUSYSKIM.t0pro13_v01_p1181/
-group.phys-susy.data12_8TeV.periodB.physics_JetTauEtmiss.PhysCont.NTUP_SUSYSKIM.t0pro13_v01_p1181/
-group.phys-susy.data12_8TeV.periodC.physics_JetTauEtmiss.PhysCont.NTUP_SUSY.t0pro13_v01_p1181_p1182/
-group.phys-susy.data12_8TeV.periodD.physics_JetTauEtmiss.PhysCont.NTUP_SUSY.t0pro13_v01_p1181_p1182/
-group.phys-susy.data12_8TeV.periodE.physics_JetTauEtmiss.PhysCont.NTUP_SUSY.t0pro13_v01_p1181_p1182/
