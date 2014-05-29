@@ -86,6 +86,7 @@ Also, NtMaker -h will show you the current list of options.
 
 After you run NtMaker, it will spit out a susyNt.root which will contain the tree.
 
-For more advanced grid production of SusyNt, please see the scripts under grid/
+For more advanced grid production of SusyNt, please see the scripts under
+[https://github.com/gerbaudo/susynt-submit](https://github.com/gerbaudo/susynt-submit)
 
 
