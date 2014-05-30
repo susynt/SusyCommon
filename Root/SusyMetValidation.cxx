@@ -1,7 +1,7 @@
 #include "egammaAnalysisUtils/CaloIsoCorrection.h"
-#include "MultiLep/MuonTools.h"
-#include "MultiLep/ElectronTools.h"
-#include "MultiLep/CutflowTools.h"
+// #include "MultiLep/MuonTools.h"
+// #include "MultiLep/ElectronTools.h"
+// #include "MultiLep/CutflowTools.h"
 #include "SusyCommon/SusyMetValidation.h"
 
 #define GeV 1000.
@@ -319,7 +319,7 @@ bool SusyMetValidation::selectEvent()
   // Lepton multiplicity
   //uint nBaseLep = m_baseElectrons.size() + m_baseMuons.size();
   //uint nSigEle = m_sigElectrons.size();
-  uint nSigMuo = m_sigMuons.size();
+//--DG--ntupcommon   uint nSigMuo = m_sigMuons.size();
   //uint nSigLep = nSigEle + nSigMuo;
   //if(nBaseLep != 3) return false;
   //if(nSigLep != 3) return false;
@@ -336,7 +336,7 @@ bool SusyMetValidation::selectEvent()
   // Z mass
   static vector<float> msfos;
   msfos.clear();
-  msfos = MassesOfSFOSPairs(m_susyObj, &d3pd.muo, m_sigMuons, &d3pd.ele, m_sigElectrons);
+//--DG--ntupcommon  msfos = MassesOfSFOSPairs(m_susyObj, &d3pd.muo, m_sigMuons, &d3pd.ele, m_sigElectrons);
   bool hasZ = false;
   for(uint i=0; i<msfos.size(); i++){
     if(fabs(msfos[i]-91.2*GeV) < 10*GeV){
@@ -401,212 +401,212 @@ bool SusyMetValidation::selectEvent()
   //metCell[Met_susy_stvf] = m_susyObj.computeMETComponent(METUtil::CellOutEflow);
   //metSoftJet[Met_susy_stvf] = m_susyObj.computeMETComponent(METUtil::SoftJets);
 
-  // D3PD Egamma10NoTau_STVF_RefFinal
-  met[Met_d3pd_stvf]     = TVector2(d3pd.met.Egamma10NoTau_RefFinal_STVF_etx(), 
-                                    d3pd.met.Egamma10NoTau_RefFinal_STVF_ety());
-  metEle[Met_d3pd_stvf]  = TVector2(d3pd.met.Egamma10NoTau_RefEle_etx(), 
-                                    d3pd.met.Egamma10NoTau_RefEle_ety());
-  metMuo[Met_d3pd_stvf]  = TVector2(d3pd.met.Egamma10NoTau_Muon_Total_Staco_etx(), 
-                                    d3pd.met.Egamma10NoTau_Muon_Total_Staco_ety());
-  metJet[Met_d3pd_stvf]  = TVector2(d3pd.met.Egamma10NoTau_RefJet_etx(), 
-                                    d3pd.met.Egamma10NoTau_RefJet_ety());
-  //metCell[Met_d3pd_stvf] = TVector2(d3pd.met.Egamma10NoTau_CellOut_Eflow_STVF_etx(), 
-                                    //d3pd.met.Egamma10NoTau_CellOut_Eflow_STVF_ety());
-  //metSoftJet[Met_d3pd_stvf] = TVector2(d3pd.met.Egamma10NoTau_SoftJets_etx(), 
-                                       //d3pd.met.Egamma10NoTau_SoftJets_ety());
-
-  // D3PD RefFinal
-  met[Met_d3pd_reff]     = TVector2(d3pd.met.Egamma10NoTau_RefFinal_etx(), 
-                                    d3pd.met.Egamma10NoTau_RefFinal_ety());
-  metEle[Met_d3pd_reff]  = TVector2(d3pd.met.Egamma10NoTau_RefEle_etx(), 
-                                    d3pd.met.Egamma10NoTau_RefEle_ety());
-  metMuo[Met_d3pd_reff]  = TVector2(d3pd.met.Egamma10NoTau_Muon_Total_Staco_etx(), 
-                                    d3pd.met.Egamma10NoTau_Muon_Total_Staco_ety());
-  metJet[Met_d3pd_reff]  = TVector2(d3pd.met.Egamma10NoTau_RefJet_etx(), 
-                                    d3pd.met.Egamma10NoTau_RefJet_ety());
-  // Not sure if I should use the CellOut or the CellOut_Eflow.  One might be zero..
-  //metCell[Met_d3pd_reff] = TVector2(d3pd.met.Egamma10NoTau_CellOut_Eflow_etx(), 
-                                    //d3pd.met.Egamma10NoTau_CellOut_Eflow_ety());
-  //metSoftJet[Met_d3pd_reff] = TVector2(d3pd.met.Egamma10NoTau_SoftJets_etx(), 
-                                       //d3pd.met.Egamma10NoTau_SoftJets_ety());
-
-  // Dump variables
-  if(dumpMet || m_dbg>=2){
-    cout << endl;
-    cout << "--------------------------------------------------------------------------------" << endl;
-    dumpEvent();
-    dumpBaselineObjects();
-    dumpSignalObjects();
-
-    // Compare the total MET
-    cout << "Total MET" << endl;
-    cout << "  SUSY STVF:     " << met[Met_susy_stvf].Mod()/GeV << endl;
-    cout << "  D3PD STVF:     " << met[Met_d3pd_stvf].Mod()/GeV << endl;
-    cout << "  D3PD RefFinal: " << met[Met_d3pd_reff].Mod()/GeV  << endl;
-
-    cout << "Ref Electron" << endl;
-    cout << "  SUSY STVF:     " << metEle[Met_susy_stvf].Mod()/GeV << endl;
-    cout << "  D3PD STVF:     " << metEle[Met_d3pd_stvf].Mod()/GeV << endl;
-    cout << "  D3PD RefFinal: " << metEle[Met_d3pd_reff].Mod()/GeV  << endl;
-
-    cout << "Total Muon" << endl;
-    cout << "  SUSY STVF:     " << metMuo[Met_susy_stvf].Mod()/GeV << endl;
-    cout << "  D3PD STVF:     " << metMuo[Met_d3pd_stvf].Mod()/GeV << endl;
-    cout << "  D3PD RefFinal: " << metMuo[Met_d3pd_reff].Mod()/GeV  << endl;
-
-    cout << "Ref Jet" << endl;
-    cout << "  SUSY STVF:     " << metJet[Met_susy_stvf].Mod()/GeV << endl;
-    cout << "  D3PD STVF:     " << metJet[Met_d3pd_stvf].Mod()/GeV << endl;
-    cout << "  D3PD RefFinal: " << metJet[Met_d3pd_reff].Mod()/GeV  << endl;
-
-    //cout << "Cell Out" << endl;
-    //cout << "  SUSY STVF:     " << metCell[Met_susy_stvf].Mod()/GeV << endl;
-    //cout << "  D3PD STVF:     " << metCell[Met_d3pd_stvf].Mod()/GeV << endl;
-    //cout << "  D3PD RefFinal: " << metCell[Met_d3pd_reff].Mod()/GeV  << endl;
-
-    //cout << "Soft Jet" << endl;
-    //cout << "  SUSY STVF:     " << metSoftJet[Met_susy_stvf].Mod()/GeV << endl;
-    //cout << "  D3PD STVF:     " << metSoftJet[Met_d3pd_stvf].Mod()/GeV << endl;
-    //cout << "  D3PD RefFinal: " << metSoftJet[Met_d3pd_reff].Mod()/GeV  << endl;
-
-    // TESTING, more explicit dump of D3PD vars
-    cout << "Egamma10NoTau_RefFinal_STVF_etx        " << d3pd.met.Egamma10NoTau_RefFinal_STVF_etx()/GeV << endl;
-    cout << "Egamma10NoTau_RefFinal_STVF_ety        " << d3pd.met.Egamma10NoTau_RefFinal_STVF_ety()/GeV << endl;
-    cout << "Egamma10NoTau_RefFinal_STVF_sumet      " << d3pd.met.Egamma10NoTau_RefFinal_STVF_sumet()/GeV << endl;
-    cout << "Egamma10NoTau_RefEle_etx               " << d3pd.met.Egamma10NoTau_RefEle_etx()/GeV << endl;
-    cout << "Egamma10NoTau_RefEle_ety               " << d3pd.met.Egamma10NoTau_RefEle_ety()/GeV << endl;
-    cout << "Egamma10NoTau_RefEle_sumet             " << d3pd.met.Egamma10NoTau_RefEle_sumet()/GeV << endl;
-    cout << "Egamma10NoTau_Muon_Total_Staco_etx     " << d3pd.met.Egamma10NoTau_Muon_Total_Staco_etx()/GeV << endl;
-    cout << "Egamma10NoTau_Muon_Total_Staco_ety     " << d3pd.met.Egamma10NoTau_Muon_Total_Staco_ety()/GeV << endl;
-    cout << "Egamma10NoTau_Muon_Total_Staco_sumet   " << d3pd.met.Egamma10NoTau_Muon_Total_Staco_sumet()/GeV << endl;
-    cout << "Egamma10NoTau_RefJet_etx               " << d3pd.met.Egamma10NoTau_RefJet_etx()/GeV << endl;
-    cout << "Egamma10NoTau_RefJet_ety               " << d3pd.met.Egamma10NoTau_RefJet_ety()/GeV << endl;
-    cout << "Egamma10NoTau_RefJet_sumet             " << d3pd.met.Egamma10NoTau_RefJet_sumet()/GeV << endl;
-    //cout << "Egamma10NoTau_CellOut_Eflow_STVF_etx   " << d3pd.met.Egamma10NoTau_CellOut_Eflow_STVF_etx()/GeV << endl;
-    //cout << "Egamma10NoTau_CellOut_Eflow_STVF_ety   " << d3pd.met.Egamma10NoTau_CellOut_Eflow_STVF_ety()/GeV << endl;
-    //cout << "Egamma10NoTau_CellOut_Eflow_STVF_sumet " << d3pd.met.Egamma10NoTau_CellOut_Eflow_STVF_sumet()/GeV << endl;
-    //cout << "Egamma10NoTau_SoftJets_etx             " << d3pd.met.Egamma10NoTau_SoftJets_etx()/GeV << endl;
-    //cout << "Egamma10NoTau_SoftJets_ety             " << d3pd.met.Egamma10NoTau_SoftJets_ety()/GeV << endl;
-    //cout << "Egamma10NoTau_SoftJets_sumet           " << d3pd.met.Egamma10NoTau_SoftJets_sumet()/GeV << endl;
-
-    // Dump muon weights
-    cout.precision(2);
-    for(int iMu=0; iMu<d3pd.muo.n(); iMu++){
-      const MuonElement* mu = & d3pd.muo[iMu];
-      const TLorentzVector* lv = & m_susyObj.GetMuonTLV(iMu);
-      cout << "  Mu : " << fixed
-           << " q " << setw(2) << (int) mu->charge()
-           << " pt " << setw(6) << lv->Pt()/GeV
-           << " eta " << setw(5) << lv->Eta()
-           << endl;
-      // Dump the met weights
-      //cout << "       stvf weights: " << mu->MET_Egamma10NoTau_wet().size() << endl;
-      for(uint iW = 0; iW < mu->MET_Egamma10NoTau_wet().size(); iW++)
-      {
-        cout << "       stvf weights:" 
-             << " wet " << mu->MET_Egamma10NoTau_wet()[iW] 
-             << " wpx " << mu->MET_Egamma10NoTau_wpx()[iW] 
-             << " wpy " << mu->MET_Egamma10NoTau_wpy()[iW]
-             << endl;
-      }
-      //cout << "       reff weights: " << mu->MET_Egamma10NoTau_wet().size() << endl;
-      for(uint iW = 0; iW < mu->MET_Egamma10NoTau_wet().size(); iW++)
-      {
-        cout << "       reff weights:"
-             << " wet " << mu->MET_Egamma10NoTau_wet()[iW] 
-             << " wpx " << mu->MET_Egamma10NoTau_wpx()[iW] 
-             << " wpy " << mu->MET_Egamma10NoTau_wpy()[iW]
-             << endl;
-      }
-    }
-    cout.precision(6);
-    cout.unsetf(ios_base::fixed);
-  }
-
-  // Fill histograms here
-
-  // Fill MET histograms by looping over met indices
-  for(uint i=0; i<Met_N; i++){
-    h_met[i]->Fill(met[i].Mod()/GeV, w);
-    h_metEle[i]->Fill(metEle[i].Mod()/GeV, w);
-    h_metMuo[i]->Fill(metMuo[i].Mod()/GeV, w);
-    h_metJet[i]->Fill(metJet[i].Mod()/GeV, w);
-    //h_metCell[i]->Fill(metCell[i].Mod()/GeV, w);
-  }
-
-  // Fill muon MET variables
-
-  // susy_stvf met
-  // Use the preMuons for the susy_stvf met, and all weights are 1
-  for(uint i=0; i<m_preMuons.size(); i++){
-
-    const TLorentzVector* muLV = & m_susyObj.GetMuonTLV(m_preMuons[i]);
-
-    // muon met weights - I think these three are identical
-    h_muWet[Met_susy_stvf]->Fill(1, w);
-    h_muWpx[Met_susy_stvf]->Fill(1, w);
-    h_muWpy[Met_susy_stvf]->Fill(1, w);
-
-    // muon kinematics
-    h_metMuPt[Met_susy_stvf]->Fill(muLV->Pt()/GeV, w);
-    h_metLepPt[Met_susy_stvf]->Fill(muLV->Pt()/GeV, w);
-    h_metMuEta[Met_susy_stvf]->Fill(muLV->Eta(), w);
-    h_metLepEta[Met_susy_stvf]->Fill(muLV->Eta(), w);
-
-  }
-
-  h_nMetMu[Met_susy_stvf]->Fill(m_preMuons.size(), w);
-
-  // Use d3pd muons for the d3pd_* met, with d3pd weights
-  // Each weight is a vector, but perhaps only one entry?
-  // For now, just use the first entry.  Assume 1 entry.
-  uint nMuStvf = 0;
-  uint nMuReff = 0;
-  for(int i=0; i<d3pd.muo.n(); i++){
-
-    const MuonElement* mu = & d3pd.muo[i];
-    //const TLorentzVector* muLV = & m_susyObj.GetMuonTLV(i);
-
-    // muon met weights
-    h_muWet[Met_d3pd_stvf]->Fill(mu->MET_Egamma10NoTau_wet().at(0), w);
-    h_muWpx[Met_d3pd_stvf]->Fill(mu->MET_Egamma10NoTau_wpx().at(0), w);
-    h_muWpy[Met_d3pd_stvf]->Fill(mu->MET_Egamma10NoTau_wpy().at(0), w);
-    h_muWet[Met_d3pd_reff]->Fill(mu->MET_Egamma10NoTau_wet().at(0), w);
-    h_muWpx[Met_d3pd_reff]->Fill(mu->MET_Egamma10NoTau_wpx().at(0), w);
-    h_muWpy[Met_d3pd_reff]->Fill(mu->MET_Egamma10NoTau_wpy().at(0), w);
-
-    // muon kinematics
-    if(mu->MET_Egamma10NoTau_wet().at(0) != 0){
-      nMuStvf++;
-      h_metMuPt[Met_d3pd_stvf]->Fill(mu->pt()/GeV, w);
-      h_metLepPt[Met_d3pd_stvf]->Fill(mu->pt()/GeV, w);
-      h_metMuEta[Met_d3pd_stvf]->Fill(mu->eta(), w);
-      h_metLepEta[Met_d3pd_stvf]->Fill(mu->eta(), w);
-    }
-    if(mu->MET_Egamma10NoTau_wet().at(0) != 0){
-      nMuReff++;
-      h_metMuPt[Met_d3pd_reff]->Fill(mu->pt()/GeV, w);
-      h_metLepPt[Met_d3pd_reff]->Fill(mu->pt()/GeV, w);
-      h_metMuEta[Met_d3pd_reff]->Fill(mu->eta(), w);
-      h_metLepEta[Met_d3pd_reff]->Fill(mu->eta(), w);
-    }
-
-    // raw muon histos
-    h_rawMuPt->Fill(mu->pt()/GeV, w);
-    h_rawMuEta->Fill(mu->eta(), w);
-
-  }
-  h_nMetMu[Met_d3pd_stvf]->Fill(nMuStvf, w);
-  h_nMetMu[Met_d3pd_reff]->Fill(nMuReff, w);
-
-  // Fill electron MET variables
-  // TODO
-
-  // Fill other histos
-  h_nMu->Fill(nSigMuo, w);
-
-  // Raw muons
-
+//--DG--ntupcommon  // D3PD Egamma10NoTau_STVF_RefFinal
+//--DG--ntupcommon  met[Met_d3pd_stvf]     = TVector2(d3pd.met.Egamma10NoTau_RefFinal_STVF_etx(), 
+//--DG--ntupcommon                                    d3pd.met.Egamma10NoTau_RefFinal_STVF_ety());
+//--DG--ntupcommon  metEle[Met_d3pd_stvf]  = TVector2(d3pd.met.Egamma10NoTau_RefEle_etx(), 
+//--DG--ntupcommon                                    d3pd.met.Egamma10NoTau_RefEle_ety());
+//--DG--ntupcommon  metMuo[Met_d3pd_stvf]  = TVector2(d3pd.met.Egamma10NoTau_Muon_Total_Staco_etx(), 
+//--DG--ntupcommon                                    d3pd.met.Egamma10NoTau_Muon_Total_Staco_ety());
+//--DG--ntupcommon  metJet[Met_d3pd_stvf]  = TVector2(d3pd.met.Egamma10NoTau_RefJet_etx(), 
+//--DG--ntupcommon                                    d3pd.met.Egamma10NoTau_RefJet_ety());
+//--DG--ntupcommon  //metCell[Met_d3pd_stvf] = TVector2(d3pd.met.Egamma10NoTau_CellOut_Eflow_STVF_etx(), 
+//--DG--ntupcommon                                    //d3pd.met.Egamma10NoTau_CellOut_Eflow_STVF_ety());
+//--DG--ntupcommon  //metSoftJet[Met_d3pd_stvf] = TVector2(d3pd.met.Egamma10NoTau_SoftJets_etx(), 
+//--DG--ntupcommon                                       //d3pd.met.Egamma10NoTau_SoftJets_ety());
+//--DG--ntupcommon
+//--DG--ntupcommon  // D3PD RefFinal
+//--DG--ntupcommon  met[Met_d3pd_reff]     = TVector2(d3pd.met.Egamma10NoTau_RefFinal_etx(), 
+//--DG--ntupcommon                                    d3pd.met.Egamma10NoTau_RefFinal_ety());
+//--DG--ntupcommon  metEle[Met_d3pd_reff]  = TVector2(d3pd.met.Egamma10NoTau_RefEle_etx(), 
+//--DG--ntupcommon                                    d3pd.met.Egamma10NoTau_RefEle_ety());
+//--DG--ntupcommon  metMuo[Met_d3pd_reff]  = TVector2(d3pd.met.Egamma10NoTau_Muon_Total_Staco_etx(), 
+//--DG--ntupcommon                                    d3pd.met.Egamma10NoTau_Muon_Total_Staco_ety());
+//--DG--ntupcommon  metJet[Met_d3pd_reff]  = TVector2(d3pd.met.Egamma10NoTau_RefJet_etx(), 
+//--DG--ntupcommon                                    d3pd.met.Egamma10NoTau_RefJet_ety());
+//--DG--ntupcommon  // Not sure if I should use the CellOut or the CellOut_Eflow.  One might be zero..
+//--DG--ntupcommon  //metCell[Met_d3pd_reff] = TVector2(d3pd.met.Egamma10NoTau_CellOut_Eflow_etx(), 
+//--DG--ntupcommon                                    //d3pd.met.Egamma10NoTau_CellOut_Eflow_ety());
+//--DG--ntupcommon  //metSoftJet[Met_d3pd_reff] = TVector2(d3pd.met.Egamma10NoTau_SoftJets_etx(), 
+//--DG--ntupcommon                                       //d3pd.met.Egamma10NoTau_SoftJets_ety());
+//--DG--ntupcommon
+//--DG--ntupcommon  // Dump variables
+//--DG--ntupcommon  if(dumpMet || m_dbg>=2){
+//--DG--ntupcommon    cout << endl;
+//--DG--ntupcommon    cout << "--------------------------------------------------------------------------------" << endl;
+//--DG--ntupcommon    dumpEvent();
+//--DG--ntupcommon    dumpBaselineObjects();
+//--DG--ntupcommon    dumpSignalObjects();
+//--DG--ntupcommon
+//--DG--ntupcommon    // Compare the total MET
+//--DG--ntupcommon    cout << "Total MET" << endl;
+//--DG--ntupcommon    cout << "  SUSY STVF:     " << met[Met_susy_stvf].Mod()/GeV << endl;
+//--DG--ntupcommon    cout << "  D3PD STVF:     " << met[Met_d3pd_stvf].Mod()/GeV << endl;
+//--DG--ntupcommon    cout << "  D3PD RefFinal: " << met[Met_d3pd_reff].Mod()/GeV  << endl;
+//--DG--ntupcommon
+//--DG--ntupcommon    cout << "Ref Electron" << endl;
+//--DG--ntupcommon    cout << "  SUSY STVF:     " << metEle[Met_susy_stvf].Mod()/GeV << endl;
+//--DG--ntupcommon    cout << "  D3PD STVF:     " << metEle[Met_d3pd_stvf].Mod()/GeV << endl;
+//--DG--ntupcommon    cout << "  D3PD RefFinal: " << metEle[Met_d3pd_reff].Mod()/GeV  << endl;
+//--DG--ntupcommon
+//--DG--ntupcommon    cout << "Total Muon" << endl;
+//--DG--ntupcommon    cout << "  SUSY STVF:     " << metMuo[Met_susy_stvf].Mod()/GeV << endl;
+//--DG--ntupcommon    cout << "  D3PD STVF:     " << metMuo[Met_d3pd_stvf].Mod()/GeV << endl;
+//--DG--ntupcommon    cout << "  D3PD RefFinal: " << metMuo[Met_d3pd_reff].Mod()/GeV  << endl;
+//--DG--ntupcommon
+//--DG--ntupcommon    cout << "Ref Jet" << endl;
+//--DG--ntupcommon    cout << "  SUSY STVF:     " << metJet[Met_susy_stvf].Mod()/GeV << endl;
+//--DG--ntupcommon    cout << "  D3PD STVF:     " << metJet[Met_d3pd_stvf].Mod()/GeV << endl;
+//--DG--ntupcommon    cout << "  D3PD RefFinal: " << metJet[Met_d3pd_reff].Mod()/GeV  << endl;
+//--DG--ntupcommon
+//--DG--ntupcommon    //cout << "Cell Out" << endl;
+//--DG--ntupcommon    //cout << "  SUSY STVF:     " << metCell[Met_susy_stvf].Mod()/GeV << endl;
+//--DG--ntupcommon    //cout << "  D3PD STVF:     " << metCell[Met_d3pd_stvf].Mod()/GeV << endl;
+//--DG--ntupcommon    //cout << "  D3PD RefFinal: " << metCell[Met_d3pd_reff].Mod()/GeV  << endl;
+//--DG--ntupcommon
+//--DG--ntupcommon    //cout << "Soft Jet" << endl;
+//--DG--ntupcommon    //cout << "  SUSY STVF:     " << metSoftJet[Met_susy_stvf].Mod()/GeV << endl;
+//--DG--ntupcommon    //cout << "  D3PD STVF:     " << metSoftJet[Met_d3pd_stvf].Mod()/GeV << endl;
+//--DG--ntupcommon    //cout << "  D3PD RefFinal: " << metSoftJet[Met_d3pd_reff].Mod()/GeV  << endl;
+//--DG--ntupcommon
+//--DG--ntupcommon    // TESTING, more explicit dump of D3PD vars
+//--DG--ntupcommon    cout << "Egamma10NoTau_RefFinal_STVF_etx        " << d3pd.met.Egamma10NoTau_RefFinal_STVF_etx()/GeV << endl;
+//--DG--ntupcommon    cout << "Egamma10NoTau_RefFinal_STVF_ety        " << d3pd.met.Egamma10NoTau_RefFinal_STVF_ety()/GeV << endl;
+//--DG--ntupcommon    cout << "Egamma10NoTau_RefFinal_STVF_sumet      " << d3pd.met.Egamma10NoTau_RefFinal_STVF_sumet()/GeV << endl;
+//--DG--ntupcommon    cout << "Egamma10NoTau_RefEle_etx               " << d3pd.met.Egamma10NoTau_RefEle_etx()/GeV << endl;
+//--DG--ntupcommon    cout << "Egamma10NoTau_RefEle_ety               " << d3pd.met.Egamma10NoTau_RefEle_ety()/GeV << endl;
+//--DG--ntupcommon    cout << "Egamma10NoTau_RefEle_sumet             " << d3pd.met.Egamma10NoTau_RefEle_sumet()/GeV << endl;
+//--DG--ntupcommon    cout << "Egamma10NoTau_Muon_Total_Staco_etx     " << d3pd.met.Egamma10NoTau_Muon_Total_Staco_etx()/GeV << endl;
+//--DG--ntupcommon    cout << "Egamma10NoTau_Muon_Total_Staco_ety     " << d3pd.met.Egamma10NoTau_Muon_Total_Staco_ety()/GeV << endl;
+//--DG--ntupcommon    cout << "Egamma10NoTau_Muon_Total_Staco_sumet   " << d3pd.met.Egamma10NoTau_Muon_Total_Staco_sumet()/GeV << endl;
+//--DG--ntupcommon    cout << "Egamma10NoTau_RefJet_etx               " << d3pd.met.Egamma10NoTau_RefJet_etx()/GeV << endl;
+//--DG--ntupcommon    cout << "Egamma10NoTau_RefJet_ety               " << d3pd.met.Egamma10NoTau_RefJet_ety()/GeV << endl;
+//--DG--ntupcommon    cout << "Egamma10NoTau_RefJet_sumet             " << d3pd.met.Egamma10NoTau_RefJet_sumet()/GeV << endl;
+//--DG--ntupcommon    //cout << "Egamma10NoTau_CellOut_Eflow_STVF_etx   " << d3pd.met.Egamma10NoTau_CellOut_Eflow_STVF_etx()/GeV << endl;
+//--DG--ntupcommon    //cout << "Egamma10NoTau_CellOut_Eflow_STVF_ety   " << d3pd.met.Egamma10NoTau_CellOut_Eflow_STVF_ety()/GeV << endl;
+//--DG--ntupcommon    //cout << "Egamma10NoTau_CellOut_Eflow_STVF_sumet " << d3pd.met.Egamma10NoTau_CellOut_Eflow_STVF_sumet()/GeV << endl;
+//--DG--ntupcommon    //cout << "Egamma10NoTau_SoftJets_etx             " << d3pd.met.Egamma10NoTau_SoftJets_etx()/GeV << endl;
+//--DG--ntupcommon    //cout << "Egamma10NoTau_SoftJets_ety             " << d3pd.met.Egamma10NoTau_SoftJets_ety()/GeV << endl;
+//--DG--ntupcommon    //cout << "Egamma10NoTau_SoftJets_sumet           " << d3pd.met.Egamma10NoTau_SoftJets_sumet()/GeV << endl;
+//--DG--ntupcommon
+//--DG--ntupcommon    // Dump muon weights
+//--DG--ntupcommon    cout.precision(2);
+//--DG--ntupcommon    for(int iMu=0; iMu<d3pd.muo.n(); iMu++){
+//--DG--ntupcommon      const MuonElement* mu = & d3pd.muo[iMu];
+//--DG--ntupcommon      const TLorentzVector* lv = & m_susyObj.GetMuonTLV(iMu);
+//--DG--ntupcommon      cout << "  Mu : " << fixed
+//--DG--ntupcommon           << " q " << setw(2) << (int) mu->charge()
+//--DG--ntupcommon           << " pt " << setw(6) << lv->Pt()/GeV
+//--DG--ntupcommon           << " eta " << setw(5) << lv->Eta()
+//--DG--ntupcommon           << endl;
+//--DG--ntupcommon      // Dump the met weights
+//--DG--ntupcommon      //cout << "       stvf weights: " << mu->MET_Egamma10NoTau_wet().size() << endl;
+//--DG--ntupcommon      for(uint iW = 0; iW < mu->MET_Egamma10NoTau_wet().size(); iW++)
+//--DG--ntupcommon      {
+//--DG--ntupcommon        cout << "       stvf weights:" 
+//--DG--ntupcommon             << " wet " << mu->MET_Egamma10NoTau_wet()[iW] 
+//--DG--ntupcommon             << " wpx " << mu->MET_Egamma10NoTau_wpx()[iW] 
+//--DG--ntupcommon             << " wpy " << mu->MET_Egamma10NoTau_wpy()[iW]
+//--DG--ntupcommon             << endl;
+//--DG--ntupcommon      }
+//--DG--ntupcommon      //cout << "       reff weights: " << mu->MET_Egamma10NoTau_wet().size() << endl;
+//--DG--ntupcommon      for(uint iW = 0; iW < mu->MET_Egamma10NoTau_wet().size(); iW++)
+//--DG--ntupcommon      {
+//--DG--ntupcommon        cout << "       reff weights:"
+//--DG--ntupcommon             << " wet " << mu->MET_Egamma10NoTau_wet()[iW] 
+//--DG--ntupcommon             << " wpx " << mu->MET_Egamma10NoTau_wpx()[iW] 
+//--DG--ntupcommon             << " wpy " << mu->MET_Egamma10NoTau_wpy()[iW]
+//--DG--ntupcommon             << endl;
+//--DG--ntupcommon      }
+//--DG--ntupcommon    }
+//--DG--ntupcommon    cout.precision(6);
+//--DG--ntupcommon    cout.unsetf(ios_base::fixed);
+//--DG--ntupcommon  }
+//--DG--ntupcommon
+//--DG--ntupcommon  // Fill histograms here
+//--DG--ntupcommon
+//--DG--ntupcommon  // Fill MET histograms by looping over met indices
+//--DG--ntupcommon  for(uint i=0; i<Met_N; i++){
+//--DG--ntupcommon    h_met[i]->Fill(met[i].Mod()/GeV, w);
+//--DG--ntupcommon    h_metEle[i]->Fill(metEle[i].Mod()/GeV, w);
+//--DG--ntupcommon    h_metMuo[i]->Fill(metMuo[i].Mod()/GeV, w);
+//--DG--ntupcommon    h_metJet[i]->Fill(metJet[i].Mod()/GeV, w);
+//--DG--ntupcommon    //h_metCell[i]->Fill(metCell[i].Mod()/GeV, w);
+//--DG--ntupcommon  }
+//--DG--ntupcommon
+//--DG--ntupcommon  // Fill muon MET variables
+//--DG--ntupcommon
+//--DG--ntupcommon  // susy_stvf met
+//--DG--ntupcommon  // Use the preMuons for the susy_stvf met, and all weights are 1
+//--DG--ntupcommon  for(uint i=0; i<m_preMuons.size(); i++){
+//--DG--ntupcommon
+//--DG--ntupcommon    const TLorentzVector* muLV = & m_susyObj.GetMuonTLV(m_preMuons[i]);
+//--DG--ntupcommon
+//--DG--ntupcommon    // muon met weights - I think these three are identical
+//--DG--ntupcommon    h_muWet[Met_susy_stvf]->Fill(1, w);
+//--DG--ntupcommon    h_muWpx[Met_susy_stvf]->Fill(1, w);
+//--DG--ntupcommon    h_muWpy[Met_susy_stvf]->Fill(1, w);
+//--DG--ntupcommon
+//--DG--ntupcommon    // muon kinematics
+//--DG--ntupcommon    h_metMuPt[Met_susy_stvf]->Fill(muLV->Pt()/GeV, w);
+//--DG--ntupcommon    h_metLepPt[Met_susy_stvf]->Fill(muLV->Pt()/GeV, w);
+//--DG--ntupcommon    h_metMuEta[Met_susy_stvf]->Fill(muLV->Eta(), w);
+//--DG--ntupcommon    h_metLepEta[Met_susy_stvf]->Fill(muLV->Eta(), w);
+//--DG--ntupcommon
+//--DG--ntupcommon  }
+//--DG--ntupcommon
+//--DG--ntupcommon  h_nMetMu[Met_susy_stvf]->Fill(m_preMuons.size(), w);
+//--DG--ntupcommon
+//--DG--ntupcommon  // Use d3pd muons for the d3pd_* met, with d3pd weights
+//--DG--ntupcommon  // Each weight is a vector, but perhaps only one entry?
+//--DG--ntupcommon  // For now, just use the first entry.  Assume 1 entry.
+//--DG--ntupcommon  uint nMuStvf = 0;
+//--DG--ntupcommon  uint nMuReff = 0;
+//--DG--ntupcommon  for(int i=0; i<d3pd.muo.n(); i++){
+//--DG--ntupcommon
+//--DG--ntupcommon    const MuonElement* mu = & d3pd.muo[i];
+//--DG--ntupcommon    //const TLorentzVector* muLV = & m_susyObj.GetMuonTLV(i);
+//--DG--ntupcommon
+//--DG--ntupcommon    // muon met weights
+//--DG--ntupcommon    h_muWet[Met_d3pd_stvf]->Fill(mu->MET_Egamma10NoTau_wet().at(0), w);
+//--DG--ntupcommon    h_muWpx[Met_d3pd_stvf]->Fill(mu->MET_Egamma10NoTau_wpx().at(0), w);
+//--DG--ntupcommon    h_muWpy[Met_d3pd_stvf]->Fill(mu->MET_Egamma10NoTau_wpy().at(0), w);
+//--DG--ntupcommon    h_muWet[Met_d3pd_reff]->Fill(mu->MET_Egamma10NoTau_wet().at(0), w);
+//--DG--ntupcommon    h_muWpx[Met_d3pd_reff]->Fill(mu->MET_Egamma10NoTau_wpx().at(0), w);
+//--DG--ntupcommon    h_muWpy[Met_d3pd_reff]->Fill(mu->MET_Egamma10NoTau_wpy().at(0), w);
+//--DG--ntupcommon
+//--DG--ntupcommon    // muon kinematics
+//--DG--ntupcommon    if(mu->MET_Egamma10NoTau_wet().at(0) != 0){
+//--DG--ntupcommon      nMuStvf++;
+//--DG--ntupcommon      h_metMuPt[Met_d3pd_stvf]->Fill(mu->pt()/GeV, w);
+//--DG--ntupcommon      h_metLepPt[Met_d3pd_stvf]->Fill(mu->pt()/GeV, w);
+//--DG--ntupcommon      h_metMuEta[Met_d3pd_stvf]->Fill(mu->eta(), w);
+//--DG--ntupcommon      h_metLepEta[Met_d3pd_stvf]->Fill(mu->eta(), w);
+//--DG--ntupcommon    }
+//--DG--ntupcommon    if(mu->MET_Egamma10NoTau_wet().at(0) != 0){
+//--DG--ntupcommon      nMuReff++;
+//--DG--ntupcommon      h_metMuPt[Met_d3pd_reff]->Fill(mu->pt()/GeV, w);
+//--DG--ntupcommon      h_metLepPt[Met_d3pd_reff]->Fill(mu->pt()/GeV, w);
+//--DG--ntupcommon      h_metMuEta[Met_d3pd_reff]->Fill(mu->eta(), w);
+//--DG--ntupcommon      h_metLepEta[Met_d3pd_reff]->Fill(mu->eta(), w);
+//--DG--ntupcommon    }
+//--DG--ntupcommon
+//--DG--ntupcommon    // raw muon histos
+//--DG--ntupcommon    h_rawMuPt->Fill(mu->pt()/GeV, w);
+//--DG--ntupcommon    h_rawMuEta->Fill(mu->eta(), w);
+//--DG--ntupcommon
+//--DG--ntupcommon  }
+//--DG--ntupcommon  h_nMetMu[Met_d3pd_stvf]->Fill(nMuStvf, w);
+//--DG--ntupcommon  h_nMetMu[Met_d3pd_reff]->Fill(nMuReff, w);
+//--DG--ntupcommon
+//--DG--ntupcommon  // Fill electron MET variables
+//--DG--ntupcommon  // TODO
+//--DG--ntupcommon
+//--DG--ntupcommon  // Fill other histos
+//--DG--ntupcommon  h_nMu->Fill(nSigMuo, w);
+//--DG--ntupcommon
+//--DG--ntupcommon  // Raw muons
+//--DG--ntupcommon
   return true;
 }
 
@@ -628,30 +628,31 @@ bool SusyMetValidation::passTrigger()
   }
   string stream = streamName(m_stream);
   if(stream == "Egamma") stream = "EGamma";
-  return m_triggerMatch->passesMultiLepTrigger(&elLVs, &muLVs, m_sigElectrons, m_sigMuons,
-                                               !m_isMC, d3pd.evt.RunNumber(), stream,
-                                               d3pd.trig.trig_EF_el_n(), d3pd.trig.trig_EF_el_px(), 
-                                               d3pd.trig.trig_EF_el_py(), 
-                                               d3pd.trig.trig_EF_el_pz(), d3pd.trig.trig_EF_el_E(),
-                                               d3pd.trig.trig_EF_el_EF_e24vh_medium1(), 
-                                               d3pd.trig.trig_EF_el_EF_e24vh_medium1_e7_medium1(),
-                                               d3pd.trig.trig_EF_el_EF_2e12Tvh_loose1(), 
-                                               d3pd.trig.trig_EF_el_EF_e7T_medium1(),
-                                               d3pd.trig.trig_EF_el_EF_e12Tvh_medium1_mu8(), 
-                                               d3pd.trig.trig_EF_trigmuonef_n(),
-                                               d3pd.trig.trig_EF_trigmuonef_track_CB_eta(),
-                                               d3pd.trig.trig_EF_trigmuonef_track_CB_phi(),
-                                               d3pd.trig.trig_EF_trigmuonef_track_CB_hasCB(),
-                                               d3pd.trig.trig_EF_trigmuonef_EF_mu18_tight(),
-                                               d3pd.trig.trig_EF_trigmuonef_EF_mu18_tight_mu8_EFFS(),
-                                               d3pd.trig.trig_EF_trigmuonef_EF_2mu13(), 
-                                               d3pd.trig.trig_EF_trigmuonef_EF_mu8(),
-                                               d3pd.trig.trig_EF_trigmuonef_EF_mu18_tight_e7_medium1(),
-                                               d3pd.trig.EF_e24vh_medium1_e7_medium1(), 
-                                               d3pd.trig.EF_mu18_tight_mu8_EFFS(),
-                                               d3pd.trig.EF_2mu13(), d3pd.trig.EF_2e12Tvh_loose1(),
-                                               d3pd.trig.EF_e12Tvh_medium1_mu8(), 
-                                               d3pd.trig.EF_mu18_tight_e7_medium1(), false);
+  return false;
+//--DG--ntupcommon  return m_triggerMatch->passesMultiLepTrigger(&elLVs, &muLVs, m_sigElectrons, m_sigMuons,
+//--DG--ntupcommon                                               !m_isMC, d3pd.evt.RunNumber(), stream,
+//--DG--ntupcommon                                               d3pd.trig.trig_EF_el_n(), d3pd.trig.trig_EF_el_px(), 
+//--DG--ntupcommon                                               d3pd.trig.trig_EF_el_py(), 
+//--DG--ntupcommon                                               d3pd.trig.trig_EF_el_pz(), d3pd.trig.trig_EF_el_E(),
+//--DG--ntupcommon                                               d3pd.trig.trig_EF_el_EF_e24vh_medium1(), 
+//--DG--ntupcommon                                               d3pd.trig.trig_EF_el_EF_e24vh_medium1_e7_medium1(),
+//--DG--ntupcommon                                               d3pd.trig.trig_EF_el_EF_2e12Tvh_loose1(), 
+//--DG--ntupcommon                                               d3pd.trig.trig_EF_el_EF_e7T_medium1(),
+//--DG--ntupcommon                                               d3pd.trig.trig_EF_el_EF_e12Tvh_medium1_mu8(), 
+//--DG--ntupcommon                                               d3pd.trig.trig_EF_trigmuonef_n(),
+//--DG--ntupcommon                                               d3pd.trig.trig_EF_trigmuonef_track_CB_eta(),
+//--DG--ntupcommon                                               d3pd.trig.trig_EF_trigmuonef_track_CB_phi(),
+//--DG--ntupcommon                                               d3pd.trig.trig_EF_trigmuonef_track_CB_hasCB(),
+//--DG--ntupcommon                                               d3pd.trig.trig_EF_trigmuonef_EF_mu18_tight(),
+//--DG--ntupcommon                                               d3pd.trig.trig_EF_trigmuonef_EF_mu18_tight_mu8_EFFS(),
+//--DG--ntupcommon                                               d3pd.trig.trig_EF_trigmuonef_EF_2mu13(), 
+//--DG--ntupcommon                                               d3pd.trig.trig_EF_trigmuonef_EF_mu8(),
+//--DG--ntupcommon                                               d3pd.trig.trig_EF_trigmuonef_EF_mu18_tight_e7_medium1(),
+//--DG--ntupcommon                                               d3pd.trig.EF_e24vh_medium1_e7_medium1(), 
+//--DG--ntupcommon                                               d3pd.trig.EF_mu18_tight_mu8_EFFS(),
+//--DG--ntupcommon                                               d3pd.trig.EF_2mu13(), d3pd.trig.EF_2e12Tvh_loose1(),
+//--DG--ntupcommon                                               d3pd.trig.EF_e12Tvh_medium1_mu8(), 
+//--DG--ntupcommon                                               d3pd.trig.EF_mu18_tight_e7_medium1(), false);
 }
 
 

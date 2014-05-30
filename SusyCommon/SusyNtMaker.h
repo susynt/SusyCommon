@@ -13,8 +13,11 @@
 /*
 
     SusyNtMaker - a class for making SusyNt from Susy D3PDs
-    
+
 */
+
+namespace Root { class TElectronEfficiencyCorrectionTool; }
+
 
 class SusyNtMaker : public SusyD3PDAna
 {
@@ -76,24 +79,24 @@ class SusyNtMaker : public SusyD3PDAna
     void addMissingTau(int index, SusyNtSys sys);
 
     // Systematic enum checks
-    bool isElecSys(SusyNtSys s){ 
-      return (s == NtSys_EES_Z_UP   || s == NtSys_EES_Z_DN || 
-	      s == NtSys_EES_MAT_UP || s == NtSys_EES_MAT_DN || 
-	      s == NtSys_EES_PS_UP  || s == NtSys_EES_PS_DN || 
-	      s == NtSys_EES_LOW_UP || s == NtSys_EES_LOW_DN || 
-	      s == NtSys_EER_UP     || s == NtSys_EER_DN); 
+    bool isElecSys(SusyNtSys s){
+      return (s == NtSys_EES_Z_UP   || s == NtSys_EES_Z_DN ||
+	      s == NtSys_EES_MAT_UP || s == NtSys_EES_MAT_DN ||
+	      s == NtSys_EES_PS_UP  || s == NtSys_EES_PS_DN ||
+	      s == NtSys_EES_LOW_UP || s == NtSys_EES_LOW_DN ||
+	      s == NtSys_EER_UP     || s == NtSys_EER_DN);
     };
-    bool isMuonSys(SusyNtSys s){ 
-      return (s == NtSys_MS_UP || s == NtSys_MS_DN || s == NtSys_ID_UP || s == NtSys_ID_DN); 
+    bool isMuonSys(SusyNtSys s){
+      return (s == NtSys_MS_UP || s == NtSys_MS_DN || s == NtSys_ID_UP || s == NtSys_ID_DN);
     };
-    bool isJetSys(SusyNtSys s){ 
-      return (s == NtSys_JES_UP || s == NtSys_JES_DN || s == NtSys_JER); 
+    bool isJetSys(SusyNtSys s){
+      return (s == NtSys_JES_UP || s == NtSys_JES_DN || s == NtSys_JER);
     };
     bool isTauSys(SusyNtSys s){
       return (s == NtSys_TES_UP || s == NtSys_TES_DN);
     }
-    
-    //void addEventFlag(SusyNtSys s, int eventFlag){ 
+
+    //void addEventFlag(SusyNtSys s, int eventFlag){
       //m_susyNt.evt()->evtFlag[s] = eventFlag;
     //};
 
@@ -118,8 +121,19 @@ class SusyNtMaker : public SusyD3PDAna
     //static bool isBuggyWwSherpaSample(const int &dsid); //!< see thread "Diboson MC Truth Discrepancy" atlas-phys-susy-d3pd.cern.ch, Mar2013
     //static bool hasRadiativeBquark(const vint_t *pdg, const vint_t *status);
 
+/*     // Function to get reco + ID efficiency scale factors. */
+/*     // Copied from SUSYTools in order to provide the extra flexibility to use more than one set of electron ID. */
+/*     // DG May2014: this function should really be somewhere else. Do we still need it? */
+/*     void get_electron_eff_sf(float& sf, float& uncert, */
+/*                              const float el_cl_eta, const float pt, */
+/*                              bool recoSF, bool idSF, bool triggerSF, bool isAF2, */
+/*                              Root::TElectronEfficiencyCorrectionTool* electronRecoSF, */
+/*                              Root::TElectronEfficiencyCorrectionTool* electronIDSF, */
+/*                              Root::TElectronEfficiencyCorrectionTool* electronTriggerSF, */
+/*                              int RunNumber); */
+
  protected:
-    
+
     TFile*              m_outTreeFile;  // output tree file
     TTree*              m_outTree;      // output tree
 
@@ -168,11 +182,11 @@ class SusyNtMaker : public SusyD3PDAna
     uint                n_evt_3Lep;
     uint                n_evt_saved;    // number of events save in the SusyNt
 
-    // histogram to save cutflow 
+    // histogram to save cutflow
     //TH1F*               h_cutFlow;
 
     // We are currently changing the procedure for counting events in the cutflow!
-    // We would like to have a histogram with total raw numbers, as above, but in 
+    // We would like to have a histogram with total raw numbers, as above, but in
     // addition we would like a similar histo filled with the generator weights.
     // Finally, for samples with multiple signal processes, we want to be able to keep
     // track of the weighted number of events for each process!

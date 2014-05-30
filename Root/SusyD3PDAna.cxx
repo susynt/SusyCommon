@@ -3,17 +3,8 @@
 #include "TSystem.h"
 
 #include "SusyCommon/SusyD3PDAna.h"
-#include "MultiLep/ElectronTools.h"
-#include "MultiLep/MuonTools.h"
-#include "MultiLep/JetTools.h"
-#include "MultiLep/TauTools.h"
-#include "MultiLep/CutflowTools.h"
-
-#include "MultiLep/PhotonTools.h"
-
-#ifdef USEPDFTOOL
-#include "MultiLep/PDFErrorTools.h"
-#endif
+#include "SusyCommon/get_object_functions.h"
+#include "egammaAnalysisUtils/egammaTriggerMatching.h"
 
 using namespace std;
 
@@ -486,7 +477,7 @@ void SusyD3PDAna::selectTruthObjects()
   }
 
   // ==>> Third and last the truth met
-  m_truMet.SetPxPyPzE(d3pd.met.Truth_NonInt_etx(), d3pd.met.Truth_NonInt_ety(), 0, d3pd.met.Truth_NonInt_sumet());
+  m_truMet.SetPxPyPzE(d3pd.metTruth.NonInt_etx(), d3pd.metTruth.NonInt_ety(), 0, d3pd.metTruth.NonInt_sumet());
 }
 
 /*--------------------------------------------------------------------------------*/
@@ -630,35 +621,35 @@ void SusyD3PDAna::matchElectronTriggers()
     // e7_medium1
     // NOTE: This feature is not currently available in d3pds!! Use e7T for now!
     //if( matchElectronTrigger(lv, d3pd.trig.trig_EF_el_EF_e7_medium1()) )
-    if( matchElectronTrigger(lv, d3pd.trig.trig_EF_el_EF_e7T_medium1()) ){
+    if( matchElectronTrigger(lv, d3pd.trigEfEl.EF_e7T_medium1()) ){
       flags |= TRIG_e7_medium1;
     }
     // e12Tvh_loose1
-    if( matchElectronTrigger(lv, d3pd.trig.trig_EF_el_EF_e12Tvh_loose1()) ){
+    if( matchElectronTrigger(lv, d3pd.trigEfEl.EF_e12Tvh_loose1()) ){
       flags |= TRIG_e12Tvh_loose1;
     }
     // e12Tvh_medium1
-    if( matchElectronTrigger(lv, d3pd.trig.trig_EF_el_EF_e12Tvh_medium1()) ){
+    if( matchElectronTrigger(lv, d3pd.trigEfEl.EF_e12Tvh_medium1()) ){
       flags |= TRIG_e12Tvh_medium1;
     }
     // e24vh_medium1
-    if( matchElectronTrigger(lv, d3pd.trig.trig_EF_el_EF_e24vh_medium1()) ){
+    if( matchElectronTrigger(lv, d3pd.trigEfEl.EF_e24vh_medium1()) ){
       flags |= TRIG_e24vh_medium1;
     }
     // e24vhi_medium1
-    if( matchElectronTrigger(lv, d3pd.trig.trig_EF_el_EF_e24vhi_medium1()) ){
+    if( matchElectronTrigger(lv, d3pd.trigEfEl.EF_e24vhi_medium1()) ){
       flags |= TRIG_e24vhi_medium1;
     }
     // 2e12Tvh_loose1
-    if( matchElectronTrigger(lv, d3pd.trig.trig_EF_el_EF_2e12Tvh_loose1()) ){
+    if( matchElectronTrigger(lv, d3pd.trigEfEl.EF_2e12Tvh_loose1()) ){
       flags |= TRIG_2e12Tvh_loose1;
     }
     // e24vh_medium1_e7_medium1 - NOTE: you don't know which feature it matches to!!
-    if( matchElectronTrigger(lv, d3pd.trig.trig_EF_el_EF_e24vh_medium1_e7_medium1()) ){
+    if( matchElectronTrigger(lv, d3pd.trigEfEl.EF_e24vh_medium1_e7_medium1()) ){
       flags |= TRIG_e24vh_medium1_e7_medium1;
     }
     // e12Tvh_medium1_mu8
-    if( matchElectronTrigger(lv, d3pd.trig.trig_EF_el_EF_e12Tvh_medium1_mu8()) ){
+    if( matchElectronTrigger(lv, d3pd.trigEfEl.EF_e12Tvh_medium1_mu8()) ){
       flags |= TRIG_e12Tvh_medium1_mu8;
     }
     // mu18_tight_e7_medium1 - NOTE: feature not available, so use e7_medium1 above!
@@ -667,25 +658,25 @@ void SusyD3PDAna::matchElectronTriggers()
     //}
 
     // e18vh_medium1
-    if( matchElectronTrigger(lv, d3pd.trig.trig_EF_el_EF_e18vh_medium1()) ){
+    if( matchElectronTrigger(lv, d3pd.trigEfEl.EF_e18vh_medium1()) ){
       flags |= TRIG_e18vh_medium1;
     }
 
     // e18vh_medium1_2e7T_medium1
-    if( matchElectronTrigger(lv, d3pd.trig.trig_EF_el_EF_e18vh_medium1_2e7T_medium1()) ){
+    if( matchElectronTrigger(lv, d3pd.trigEfEl.EF_e18vh_medium1_2e7T_medium1()) ){
       flags |= TRIG_e18vh_medium1_2e7T_medium1;
     }
     // 2e7T_medium1_mu6
-    if( matchElectronTrigger(lv, d3pd.trig.trig_EF_el_EF_2e7T_medium1_mu6()) ){
+    if( matchElectronTrigger(lv, d3pd.trigEfEl.EF_2e7T_medium1_mu6()) ){
       flags |= TRIG_2e7T_medium1_mu6;
     }
     // e7T_medium1_2mu6
-    if( matchElectronTrigger(lv, d3pd.trig.trig_EF_el_EF_e7T_medium1_2mu6()) ){
+    if( matchElectronTrigger(lv, d3pd.trigEfEl.EF_e7T_medium1_2mu6()) ){
       flags |= TRIG_e7T_medium1_2mu6;
     }
 
     // e24vh_medium1_EFxe35_tclcw
-    if( matchElectronTrigger(lv, d3pd.trig.trig_EF_el_EF_e24vh_medium1_EFxe35_tclcw()) ){
+    if( matchElectronTrigger(lv, d3pd.trigEfEl.EF_e24vh_medium1_EFxe35_tclcw()) ){
       flags |= TRIG_e24vh_medium1_EFxe35_tclcw;
     }
 
@@ -699,8 +690,8 @@ bool SusyD3PDAna::matchElectronTrigger(const TLorentzVector* lv, vector<int>* tr
   // matched trigger index - not used
   static int indexEF = -1;
   // Use function defined in egammaAnalysisUtils/egammaTriggerMatching.h
-  return PassedTriggerEF(lv->Eta(), lv->Phi(), trigBools, indexEF, d3pd.trig.trig_EF_el_n(), 
-                         d3pd.trig.trig_EF_el_eta(), d3pd.trig.trig_EF_el_phi());
+  return PassedTriggerEF(lv->Eta(), lv->Phi(), trigBools, indexEF, d3pd.trigEfEl.n(), 
+                         d3pd.trigEfEl.eta(), d3pd.trigEfEl.phi());
 }
 
 /*--------------------------------------------------------------------------------*/
@@ -724,94 +715,94 @@ void SusyD3PDAna::matchMuonTriggers()
     // 2012 triggers only
 
     // mu8
-    if( matchMuonTrigger(lv, d3pd.trig.trig_EF_trigmuonef_EF_mu8()) ) {
+    if( matchMuonTrigger(lv, d3pd.trigEfMu.EF_mu8()) ) {
       flags |= TRIG_mu8;
     }
     // mu13
-    if( matchMuonTrigger(lv, d3pd.trig.trig_EF_trigmuonef_EF_mu13()) ){
+    if( matchMuonTrigger(lv, d3pd.trigEfMu.EF_mu13()) ){
       flags |= TRIG_mu13;
     }
     // mu18_tight
-    if( matchMuonTrigger(lv, d3pd.trig.trig_EF_trigmuonef_EF_mu18_tight()) ) {
+    if( matchMuonTrigger(lv, d3pd.trigEfMu.EF_mu18_tight()) ) {
       flags |= TRIG_mu18_tight;
     }
     // mu24i_tight
-    if( matchMuonTrigger(lv, d3pd.trig.trig_EF_trigmuonef_EF_mu24i_tight()) ) {
+    if( matchMuonTrigger(lv, d3pd.trigEfMu.EF_mu24i_tight()) ) {
       flags |= TRIG_mu24i_tight;
     }
     // 2mu13
-    if( matchMuonTrigger(lv, d3pd.trig.trig_EF_trigmuonef_EF_2mu13()) ) {
+    if( matchMuonTrigger(lv, d3pd.trigEfMu.EF_2mu13()) ) {
       flags |= TRIG_2mu13;
     }
     // mu18_tight_mu8_EFFS
-    if( matchMuonTrigger(lv, d3pd.trig.trig_EF_trigmuonef_EF_mu18_tight_mu8_EFFS()) ) {
+    if( matchMuonTrigger(lv, d3pd.trigEfMu.EF_mu18_tight_mu8_EFFS()) ) {
       flags |= TRIG_mu18_tight_mu8_EFFS;
     }
     // e12Tvh_medium1_mu8 - NOTE: muon feature not available, so use mu8
-    //if( matchMuonTrigger(lv, d3pd.trig.trig_EF_trigmuonef_EF_mu8()) ) {
+    //if( matchMuonTrigger(lv, d3pd.trigEfMu.EF_mu8()) ) {
       //flags |= TRIG_e12Tvh_medium1_mu8;
     //}
     // mu18_tight_e7_medium1
-    if( matchMuonTrigger(lv, d3pd.trig.trig_EF_trigmuonef_EF_mu18_tight_e7_medium1()) ) {
+    if( matchMuonTrigger(lv, d3pd.trigEfMu.EF_mu18_tight_e7_medium1()) ) {
       flags |= TRIG_mu18_tight_e7_medium1;
     }
 
     // mu15
-    if( matchMuonTrigger(lv, d3pd.trig.trig_EF_trigmuonef_EF_mu15()) ) {
+    if( matchMuonTrigger(lv, d3pd.trigEfMu.EF_mu15()) ) {
       flags |= TRIG_mu15;
     }
 
     // 2mu8_EFxe40wMu_tclcw
     if(!m_isMC && d3pd.evt.RunNumber()>=206248 &&
-       matchMuonTrigger(lv, d3pd.trig.trig_EF_trigmuonef_EF_2mu8_EFxe40wMu_tclcw())) {
+       matchMuonTrigger(lv, d3pd.trigEfMu.EF_2mu8_EFxe40wMu_tclcw())) {
       flags |= TRIG_2mu8_EFxe40wMu_tclcw;
     }
 
     // mu6
-    if( matchMuonTrigger(lv, d3pd.trig.trig_EF_trigmuonef_EF_mu6()) ) {
+    if( matchMuonTrigger(lv, d3pd.trigEfMu.EF_mu6()) ) {
       flags |= TRIG_mu6;
     }
     // 2mu6
-    if( matchMuonTrigger(lv, d3pd.trig.trig_EF_trigmuonef_EF_2mu6()) ) {
+    if( matchMuonTrigger(lv, d3pd.trigEfMu.EF_2mu6()) ) {
       flags |= TRIG_2mu6;
     }
     // 3mu6
-    //if( matchMuonTrigger(lv, d3pd.trig.trig_EF_trigmuonef_EF_3mu6()) ) {
+    //if( matchMuonTrigger(lv, d3pd.trigEfMu.EF_3mu6()) ) {
       //flags |= TRIG_3mu6;
     //}
     // mu18_tight_2mu4_EFFS
-    if( matchMuonTrigger(lv, d3pd.trig.trig_EF_trigmuonef_EF_mu18_tight_2mu4_EFFS()) ) {
+    if( matchMuonTrigger(lv, d3pd.trigEfMu.EF_mu18_tight_2mu4_EFFS()) ) {
       flags |= TRIG_mu18_tight_2mu4_EFFS;
     }
 
     // mu4T
-    if( matchMuonTrigger(lv, d3pd.trig.trig_EF_trigmuonef_EF_mu4T()) ) {
+    if( matchMuonTrigger(lv, d3pd.trigEfMu.EF_mu4T()) ) {
       flags |= TRIG_mu4T;
     }
     // mu24
-    if( matchMuonTrigger(lv, d3pd.trig.trig_EF_trigmuonef_EF_mu24()) ) {
+    if( matchMuonTrigger(lv, d3pd.trigEfMu.EF_mu24()) ) {
       flags |= TRIG_mu24;
     }
     // mu4T_j65_a4tchad_xe70_tclcw_veryloose
-    if( matchMuonTrigger(lv, d3pd.trig.trig_EF_trigmuonef_EF_mu4T_j65_a4tchad_xe70_tclcw_veryloose()) ) {
+    if( matchMuonTrigger(lv, d3pd.trigEfMu.EF_mu4T_j65_a4tchad_xe70_tclcw_veryloose()) ) {
       flags |= TRIG_mu4T_j65_a4tchad_xe70_tclcw_veryloose;
     }
     // 2mu4T_xe60_tclcw
-    if( matchMuonTrigger(lv, d3pd.trig.trig_EF_trigmuonef_EF_2mu4T_xe60_tclcw()) ) {
+    if( matchMuonTrigger(lv, d3pd.trigEfMu.EF_2mu4T_xe60_tclcw()) ) {
       flags |= TRIG_2mu4T_xe60_tclcw;
     }
     // 2mu8_EFxe40_tclcw
-    if(d3pd.trig.trig_EF_trigmuonef_EF_2mu8_EFxe40_tclcw.IsAvailable() &&
-       matchMuonTrigger(lv, d3pd.trig.trig_EF_trigmuonef_EF_2mu8_EFxe40_tclcw()) ) {
+    if(d3pd.trigEfMu.EF_2mu8_EFxe40_tclcw.IsAvailable() &&
+       matchMuonTrigger(lv, d3pd.trigEfMu.EF_2mu8_EFxe40_tclcw()) ) {
       flags |= TRIG_2mu8_EFxe40_tclcw;
     }
     // mu24_j65_a4tchad_EFxe40_tclcw
-    if( matchMuonTrigger(lv, d3pd.trig.trig_EF_trigmuonef_EF_mu24_j65_a4tchad_EFxe40_tclcw()) ) {
+    if( matchMuonTrigger(lv, d3pd.trigEfMu.EF_mu24_j65_a4tchad_EFxe40_tclcw()) ) {
       flags |= TRIG_mu24_j65_a4tchad_EFxe40_tclcw;
     }
     // mu24_j65_a4tchad_EFxe40wMu_tclcw
-    if(d3pd.trig.trig_EF_trigmuonef_EF_mu24_j65_a4tchad_EFxe40wMu_tclcw.IsAvailable() &&
-       matchMuonTrigger(lv, d3pd.trig.trig_EF_trigmuonef_EF_mu24_j65_a4tchad_EFxe40wMu_tclcw()) ) {
+    if(d3pd.trigEfMu.EF_mu24_j65_a4tchad_EFxe40wMu_tclcw.IsAvailable() &&
+       matchMuonTrigger(lv, d3pd.trigEfMu.EF_mu24_j65_a4tchad_EFxe40wMu_tclcw()) ) {
       flags |= TRIG_mu24_j65_a4tchad_EFxe40wMu_tclcw;
     }
 
@@ -823,21 +814,21 @@ void SusyD3PDAna::matchMuonTriggers()
 bool SusyD3PDAna::matchMuonTrigger(const TLorentzVector* lv, vector<int>* passTrig)
 {
   // loop over muon trigger features
-  for(int iTrig=0; iTrig < d3pd.trig.trig_EF_trigmuonef_n(); iTrig++){
+  for(int iTrig=0; iTrig < d3pd.trigEfMu.n(); iTrig++){
 
     // Check to see if this feature passed chain we want
     if(passTrig->at(iTrig)){
 
       // Loop over muon EF tracks
       TLorentzVector lvTrig;
-      for(int iTrk=0; iTrk < d3pd.trig.trig_EF_trigmuonef_track_n()->at(iTrig); iTrk++){
+      for(int iTrk=0; iTrk < d3pd.trigEfMu.track_n()->at(iTrig); iTrk++){
 
-        lvTrig.SetPtEtaPhiM( d3pd.trig.trig_EF_trigmuonef_track_CB_pt()->at(iTrig).at(iTrk),
-                             d3pd.trig.trig_EF_trigmuonef_track_CB_eta()->at(iTrig).at(iTrk),
-                             d3pd.trig.trig_EF_trigmuonef_track_CB_phi()->at(iTrig).at(iTrk),
+        lvTrig.SetPtEtaPhiM( d3pd.trigEfMu.track_CB_pt()->at(iTrig).at(iTrk),
+                             d3pd.trigEfMu.track_CB_eta()->at(iTrig).at(iTrk),
+                             d3pd.trigEfMu.track_CB_phi()->at(iTrig).at(iTrk),
                              0 );       // only eta and phi used to compute dR anyway
         // Require combined offline track...?
-        if(!d3pd.trig.trig_EF_trigmuonef_track_CB_hasCB()->at(iTrig).at(iTrk)) continue;
+        if(!d3pd.trigEfMu.track_CB_hasCB()->at(iTrig).at(iTrk)) continue;
         float dR = lv->DeltaR(lvTrig);
         if(dR < 0.15){
           return true;
@@ -871,27 +862,27 @@ void SusyD3PDAna::matchTauTriggers()
     long long flags = 0;
 
     // tau20_medium1
-    if( matchTauTrigger(lv, d3pd.trig.trig_EF_tau_EF_tau20_medium1()) ){
+    if( matchTauTrigger(lv, d3pd.trigEfTau.EF_tau20_medium1()) ){
       flags |= TRIG_tau20_medium1;
     }
     // tau20Ti_medium1
-    if( matchTauTrigger(lv, d3pd.trig.trig_EF_tau_EF_tau20Ti_medium1()) ){
+    if( matchTauTrigger(lv, d3pd.trigEfTau.EF_tau20Ti_medium1()) ){
       flags |= TRIG_tau20Ti_medium1;
     }
     // tau29Ti_medium1
-    if( matchTauTrigger(lv, d3pd.trig.trig_EF_tau_EF_tau29Ti_medium1()) ){
+    if( matchTauTrigger(lv, d3pd.trigEfTau.EF_tau29Ti_medium1()) ){
       flags |= TRIG_tau29Ti_medium1;
     }
     // tau29Ti_medium1_tau20Ti_medium1
-    if( matchTauTrigger(lv, d3pd.trig.trig_EF_tau_EF_tau29Ti_medium1_tau20Ti_medium1()) ){
+    if( matchTauTrigger(lv, d3pd.trigEfTau.EF_tau29Ti_medium1_tau20Ti_medium1()) ){
       flags |= TRIG_tau29Ti_medium1_tau20Ti_medium1;
     }
     // tau20Ti_medium1_e18vh_medium1
-    if( matchTauTrigger(lv, d3pd.trig.trig_EF_tau_EF_tau20Ti_medium1_e18vh_medium1()) ){
+    if( matchTauTrigger(lv, d3pd.trigEfTau.EF_tau20Ti_medium1_e18vh_medium1()) ){
       flags |= TRIG_tau20Ti_medium1_e18vh_medium1;
     }
     // tau20_medium1_mu15
-    if( matchTauTrigger(lv, d3pd.trig.trig_EF_tau_EF_tau20_medium1_mu15()) ){
+    if( matchTauTrigger(lv, d3pd.trigEfTau.EF_tau20_medium1_mu15()) ){
       flags |= TRIG_tau20_medium1_mu15;
     }
 
@@ -903,13 +894,13 @@ void SusyD3PDAna::matchTauTriggers()
 bool SusyD3PDAna::matchTauTrigger(const TLorentzVector* lv, vector<int>* passTrig)
 {
   // loop over tau trigger features
-  for(int iTrig=0; iTrig < d3pd.trig.trig_EF_tau_n(); iTrig++){
+  for(int iTrig=0; iTrig < d3pd.trigEfTau.n(); iTrig++){
     // Check to see if this feature passed chain we want
     if(passTrig->at(iTrig)){
       // Now, try to match offline tau to this online tau
       static TLorentzVector trigLV;
-      trigLV.SetPtEtaPhiM(d3pd.trig.trig_EF_tau_pt()->at(iTrig), d3pd.trig.trig_EF_tau_eta()->at(iTrig), 
-                          d3pd.trig.trig_EF_tau_phi()->at(iTrig), d3pd.trig.trig_EF_tau_m()->at(iTrig));
+      trigLV.SetPtEtaPhiM(d3pd.trigEfTau.pt()->at(iTrig), d3pd.trigEfTau.eta()->at(iTrig), 
+                          d3pd.trigEfTau.phi()->at(iTrig), d3pd.trigEfTau.m()->at(iTrig));
       float dR = lv->DeltaR(trigLV);
       if(dR < 0.15) return true;
     }
@@ -1025,19 +1016,19 @@ bool SusyD3PDAna::passCosmic()
 float SusyD3PDAna::getEventWeight(float lumi)
 {
   if(!m_isMC) return 1;
-  return d3pd.truth.event_weight() * getXsecWeight() * getPileupWeight() * lumi / m_sumw;
+  return d3pd.evt.mc_event_weight() * getXsecWeight() * getPileupWeight() * lumi / m_sumw;
 }
 /*--------------------------------------------------------------------------------*/
 float SusyD3PDAna::getEventWeightAtoB3()
 {
   if(!m_isMC) return 1;
-  return d3pd.truth.event_weight() * getXsecWeight() * getPileupWeightAB3() * LUMI_A_B3 / m_sumw;
+  return d3pd.evt.mc_event_weight() * getXsecWeight() * getPileupWeightAB3() * LUMI_A_B3 / m_sumw;
 }
 /*--------------------------------------------------------------------------------*/
 float SusyD3PDAna::getEventWeightAtoB()
 {
   if(!m_isMC) return 1;
-  return d3pd.truth.event_weight() * getXsecWeight() * getPileupWeightAB() * LUMI_A_B14 / m_sumw;
+  return d3pd.evt.mc_event_weight() * getXsecWeight() * getPileupWeightAB() * LUMI_A_B14 / m_sumw;
 }
 
 /*--------------------------------------------------------------------------------*/
@@ -1049,7 +1040,7 @@ float SusyD3PDAna::getXsecWeight()
   if(m_xsec > 0) return m_xsec;
 
   // Use SUSY cross section file
-  int id = d3pd.truth.channel_number();
+  int id = d3pd.evt.mc_channel_number();
   if(m_xsecMap.find(id) == m_xsecMap.end()) {
     m_xsecMap[id] = m_susyXsec->process(id);
   }
@@ -1067,32 +1058,32 @@ float SusyD3PDAna::getLumiWeight()
 /*--------------------------------------------------------------------------------*/
 float SusyD3PDAna::getPileupWeight()
 {
-  return m_pileup->GetCombinedWeight(d3pd.evt.RunNumber(), d3pd.truth.channel_number(), d3pd.evt.averageIntPerXing());
+  return m_pileup->GetCombinedWeight(d3pd.evt.RunNumber(), d3pd.evt.mc_channel_number(), d3pd.evt.averageIntPerXing());
 }
 /*--------------------------------------------------------------------------------*/
 float SusyD3PDAna::getPileupWeightUp()
 {
-  return m_pileup_up->GetCombinedWeight(d3pd.evt.RunNumber(), d3pd.truth.channel_number(), d3pd.evt.averageIntPerXing());
+  return m_pileup_up->GetCombinedWeight(d3pd.evt.RunNumber(), d3pd.evt.mc_channel_number(), d3pd.evt.averageIntPerXing());
 }
 /*--------------------------------------------------------------------------------*/
 float SusyD3PDAna::getPileupWeightDown()
 {
-  return m_pileup_dn->GetCombinedWeight(d3pd.evt.RunNumber(), d3pd.truth.channel_number(), d3pd.evt.averageIntPerXing());
+  return m_pileup_dn->GetCombinedWeight(d3pd.evt.RunNumber(), d3pd.evt.mc_channel_number(), d3pd.evt.averageIntPerXing());
 }
 /*--------------------------------------------------------------------------------*/
 float SusyD3PDAna::getPileupWeightAB3()
 {
-  return m_pileupAB3->GetCombinedWeight(d3pd.evt.RunNumber(), d3pd.truth.channel_number(), d3pd.evt.averageIntPerXing());
+  return m_pileupAB3->GetCombinedWeight(d3pd.evt.RunNumber(), d3pd.evt.mc_channel_number(), d3pd.evt.averageIntPerXing());
 }
 /*--------------------------------------------------------------------------------*/
 float SusyD3PDAna::getPileupWeightAB()
 {
-  return m_pileupAB->GetCombinedWeight(d3pd.evt.RunNumber(), d3pd.truth.channel_number(), d3pd.evt.averageIntPerXing());
+  return m_pileupAB->GetCombinedWeight(d3pd.evt.RunNumber(), d3pd.evt.mc_channel_number(), d3pd.evt.averageIntPerXing());
 }
 /*--------------------------------------------------------------------------------*/
 float SusyD3PDAna::getPileupWeightAE()
 {
-  return m_pileupAE->GetCombinedWeight(d3pd.evt.RunNumber(), d3pd.truth.channel_number(), d3pd.evt.averageIntPerXing());
+  return m_pileupAE->GetCombinedWeight(d3pd.evt.RunNumber(), d3pd.evt.mc_channel_number(), d3pd.evt.averageIntPerXing());
 }
 
 /*--------------------------------------------------------------------------------*/
@@ -1176,7 +1167,7 @@ void SusyD3PDAna::calcRandomRunLB()
 /*--------------------------------------------------------------------------------*/
 int SusyD3PDAna::getHFORDecision()
 {
-  return m_hforTool.getDecision(d3pd.truth.channel_number(),
+  return m_hforTool.getDecision(d3pd.evt.mc_channel_number(),
                                 d3pd.truth.n(),
                                 d3pd.truth.pt(),
                                 d3pd.truth.eta(),
@@ -1214,8 +1205,8 @@ void SusyD3PDAna::dumpEvent()
        << " Event " << setw(7) << d3pd.evt.EventNumber()
        << " Stream " << streamName(m_stream);
   if(m_isMC){
-    cout << " MCID " << setw(6) << d3pd.truth.channel_number()
-         << " weight " << d3pd.truth.event_weight();
+    cout << " MCID " << setw(6) << d3pd.evt.mc_channel_number()
+         << " weight " << d3pd.evt.mc_event_weight();
   }
   cout << endl;
 }

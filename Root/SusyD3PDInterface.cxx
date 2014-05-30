@@ -1,6 +1,6 @@
 #include "SusyCommon/SusyD3PDInterface.h"
 
-#include "MultiLep/MuonTools.h"
+// #include "MultiLep/MuonTools.h"
 
 using namespace std;
 
@@ -11,15 +11,20 @@ using namespace std;
 /*--------------------------------------------------------------------------------*/
 SusyD3PDContainer::SusyD3PDContainer(const Long64_t& entry) :
         evt(entry),
+        evtShape(entry),
         ele(entry),
         muo(entry),
         jet(entry),
 	pho(entry),
 	tau(entry),
         met(entry),
+        metTruth(entry),
         trk(entry),
         vtx(entry),
         trig(entry),
+        trigEfEl(entry),
+        trigEfMu(entry),
+        trigEfTau(entry),
         gen(entry),
         truth(entry),
         truthMu(entry),
@@ -32,15 +37,20 @@ SusyD3PDContainer::SusyD3PDContainer(const Long64_t& entry) :
 void SusyD3PDContainer::ReadFrom(TTree* tree)
 {
   evt.ReadFrom(tree);
+  evtShape.ReadFrom(tree);
   ele.ReadFrom(tree);
   muo.ReadFrom(tree);
   jet.ReadFrom(tree);
   pho.ReadFrom(tree);
   tau.ReadFrom(tree);
   met.ReadFrom(tree);
+  metTruth.ReadFrom(tree);
   trk.ReadFrom(tree);
   vtx.ReadFrom(tree);
   trig.ReadFrom(tree);
+  trigEfEl.ReadFrom(tree);
+  trigEfMu.ReadFrom(tree);
+  trigEfTau.ReadFrom(tree);
   gen.ReadFrom(tree);
   truth.ReadFrom(tree);
   truthMu.ReadFrom(tree);
@@ -55,15 +65,20 @@ void SusyD3PDContainer::ReadFrom(TTree* tree)
 void SusyD3PDContainer::WriteTo(TTree* tree)
 {
   evt.WriteTo(tree);
+  evtShape.WriteTo(tree);
   ele.WriteTo(tree);
   muo.WriteTo(tree);
   jet.WriteTo(tree);
   pho.WriteTo(tree);
   tau.WriteTo(tree);
   met.WriteTo(tree);
+  metTruth.WriteTo(tree);
   trk.WriteTo(tree);
   vtx.WriteTo(tree);
   trig.WriteTo(tree);
+  trigEfEl.WriteTo(tree);
+  trigEfMu.WriteTo(tree);
+  trigEfTau.WriteTo(tree);
   gen.WriteTo(tree);
   truth.WriteTo(tree);
   truthMu.WriteTo(tree);
@@ -75,15 +90,20 @@ void SusyD3PDContainer::WriteTo(TTree* tree)
 void SusyD3PDContainer::ReadAllActive()
 {
   evt.ReadAllActive();
+  evtShape.ReadAllActive();
   ele.ReadAllActive();
   muo.ReadAllActive();
   jet.ReadAllActive();
   pho.ReadAllActive();
   tau.ReadAllActive();
   met.ReadAllActive();
+  metTruth.ReadAllActive();
   trk.ReadAllActive();
   vtx.ReadAllActive();
   trig.ReadAllActive();
+  trigEfEl.ReadAllActive();
+  trigEfMu.ReadAllActive();
+  trigEfTau.ReadAllActive();
   gen.ReadAllActive();
   truth.ReadAllActive();
   truthMu.ReadAllActive();

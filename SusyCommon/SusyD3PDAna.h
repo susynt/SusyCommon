@@ -13,12 +13,12 @@
 #include "PileupReweighting/TPileupReweighting.h"
 #include "LeptonTruthTools/RecoTauMatch.h"
 
-#include "MultiLep/LeptonInfo.h"
 
-#ifdef USEPDFTOOL
-#include "MultiLep/PDFTool.h"
-#endif
+/* #ifdef USEPDFTOOL */
+/* #include "MultiLep/PDFTool.h" */
+/* #endif */
 
+#include "SusyCommon/LeptonInfo.h"
 #include "SusyCommon/SusyD3PDInterface.h"
 
 /*

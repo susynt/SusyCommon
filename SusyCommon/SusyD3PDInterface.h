@@ -8,20 +8,25 @@
 #include "TSelector.h"
 #include "TTree.h"
 
-#include "MultiLep/EventInfoD3PDObject.h"
-#include "MultiLep/ElectronD3PDObject.h"
-#include "MultiLep/MuonD3PDObject.h"
-#include "MultiLep/JetD3PDObject.h"
-#include "MultiLep/PhotonD3PDObject.h"
-#include "MultiLep/TauD3PDObject.h"
-#include "MultiLep/METD3PDObject.h"
-#include "MultiLep/TrackD3PDObject.h"
-#include "MultiLep/EFTriggerD3PDObject.h"
-#include "MultiLep/VertexD3PDObject.h"
-#include "MultiLep/GenEventD3PDObject.h"
-#include "MultiLep/TruthParticleD3PDObject.h"
-#include "MultiLep/TruthMuonD3PDObject.h"
-#include "MultiLep/TruthJetD3PDObject.h"
+#include "D3PDReader/EventInfoD3PDObject.h"
+#include "D3PDReader/EventShapeD3PDObject.h"
+#include "D3PDReader/ElectronD3PDObject.h"
+#include "D3PDReader/MuonD3PDObject.h"
+#include "D3PDReader/JetD3PDObject.h"
+#include "D3PDReader/PhotonD3PDObject.h"
+#include "D3PDReader/TauD3PDObject.h"
+#include "D3PDReader/METD3PDObject.h"
+#include "D3PDReader/MissingETTruthD3PDObject.h"
+#include "D3PDReader/TrackD3PDObject.h"
+#include "D3PDReader/triggerBitsD3PDObject.h"
+#include "D3PDReader/EFElectronD3PDObject.h"
+#include "D3PDReader/TrigMuonEFInfoD3PDObject.h"
+#include "D3PDReader/TrigEFTauD3PDObject.h"
+#include "D3PDReader/PrimaryVertexD3PDObject.h"
+#include "D3PDReader/GenEventD3PDObject.h"
+#include "D3PDReader/TruthParticleD3PDObject.h"
+#include "D3PDReader/TruthMuonD3PDObject.h"
+//#include "D3PDReader/TruthJetD3PDObject.h" // now in Event.h -> jet_AntiKt4Truth
 
 
 #include "SusyNtuple/SusyDefs.h"
@@ -40,7 +45,7 @@ typedef D3PDReader::TauD3PDObjectElement TauElement;
 typedef D3PDReader::JetD3PDObjectElement JetElement;
 typedef D3PDReader::PhotonD3PDObjectElement PhotonElement;
 typedef D3PDReader::TruthMuonD3PDObjectElement TruthMuonElement;
-typedef D3PDReader::TruthJetD3PDObjectElement TruthJetElement;
+typedef D3PDReader::JetD3PDObjectElement TruthJetElement;
 
 class SusyD3PDContainer
 {
@@ -59,19 +64,24 @@ class SusyD3PDContainer
     void ReadAllActive();
 
     D3PDReader::EventInfoD3PDObject     evt;
+    D3PDReader::EventShapeD3PDObject    evtShape;
     D3PDReader::ElectronD3PDObject      ele;
     D3PDReader::MuonD3PDObject          muo;
     D3PDReader::JetD3PDObject           jet;
     D3PDReader::PhotonD3PDObject        pho;
     D3PDReader::TauD3PDObject           tau;
     D3PDReader::METD3PDObject           met;
+    D3PDReader::MissingETTruthD3PDObject metTruth;
     D3PDReader::TrackD3PDObject         trk;
-    D3PDReader::VertexD3PDObject        vtx;
-    D3PDReader::EFTriggerD3PDObject     trig;
+    D3PDReader::PrimaryVertexD3PDObject vtx;
+    D3PDReader::triggerBitsD3PDObject   trig;
+    D3PDReader::EFElectronD3PDObject    trigEfEl;
+    D3PDReader::TrigMuonEFInfoD3PDObject trigEfMu;
+    D3PDReader::TrigEFTauD3PDObject     trigEfTau;
     D3PDReader::GenEventD3PDObject      gen;
     D3PDReader::TruthParticleD3PDObject truth;
     D3PDReader::TruthMuonD3PDObject     truthMu;
-    D3PDReader::TruthJetD3PDObject      truthJet;
+    D3PDReader::JetD3PDObject           truthJet;
 };
 
 
