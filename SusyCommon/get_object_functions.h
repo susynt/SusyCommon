@@ -68,8 +68,10 @@ vector<int> get_taus_signal(D3PDReader::TauD3PDObject* taus, vector<int>& taus_b
 vector<int> get_electrons_met(D3PDReader::MissingETCompositionD3PDObject *electrons, SUSYObjDef &susyobj);
 
 // baseline electrons
-vector<int> get_electrons_baseline(D3PDReader::ElectronD3PDObject* electrons, bool kIsData, int run_number, SUSYObjDef& susyobj, float etcut,
-				   float etacut, SystErr::Syste el_syst);
+vector<int> get_electrons_baseline(D3PDReader::ElectronD3PDObject* electrons,
+                                   D3PDReader::MissingETCompositionD3PDObject *metEgamma10NoTau,
+                                   bool kIsData, int run_number, SUSYObjDef& susyobj, float etcut,
+                                   float etacut, SystErr::Syste el_syst);
 
 // signal electrons
 vector<int> get_electrons_signal(D3PDReader::ElectronD3PDObject *electrons, vector<int> electrons_base,

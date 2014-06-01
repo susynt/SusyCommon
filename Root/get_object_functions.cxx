@@ -105,17 +105,16 @@ vector<int> get_electrons_met(D3PDReader::MissingETCompositionD3PDObject *elMetE
     return electrons_met;
 }
 //----------------------------------------------------------
-vector<int> get_electrons_baseline(D3PDReader::ElectronD3PDObject *electrons, bool kIsData, int run_number,
+vector<int> get_electrons_baseline(D3PDReader::ElectronD3PDObject *electrons,
+                                   D3PDReader::MissingETCompositionD3PDObject *metEgamma10NoTau,
+                                   bool kIsData, int run_number,
                                    SUSYObjDef &susyobj, float etcut, float etacut, SystErr::Syste el_syst)
 {
     vector<int> electrons_base;
-    //cout << "get_electrons_baseline" << el_syst << endl;
-
     for (int iel=0; iel<electrons->n(); iel++) {
         const D3PDReader::ElectronD3PDObjectElement* electron = & (*electrons)[iel];
         // electron energy resolution syst is done in susytools
-        #warning "MET_Egamma10NoTau_wet to be fixed"
-        float wet = 0.0; // was electron->MET_Egamma10NoTau_wet().at(0)
+        float wet = metEgamma10NoTau->wet()->at(iel).at(0);
         if (susyobj.FillElectron(iel,
                                  electron->eta(), electron->phi(),
                                  electron->cl_eta(), electron->cl_phi(), electron->cl_E(),

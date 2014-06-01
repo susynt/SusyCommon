@@ -317,7 +317,8 @@ void SusyD3PDAna::selectBaselineObjects(SusyNtSys sys)
                                                   susySys, true);
 
   // Preselection
-  m_preElectrons = get_electrons_baseline(&d3pd.ele, !m_isMC, d3pd.evt.RunNumber(), m_susyObj,
+  m_preElectrons = get_electrons_baseline(&d3pd.ele, &d3pd.elMetEgamma10NoTau,
+                                          !m_isMC, d3pd.evt.RunNumber(), m_susyObj,
                                           7.*GeV, 2.47, susySys);
   m_preMuons = get_muons_baseline(&d3pd.muo, !m_isMC, m_susyObj,
                                   6.*GeV, 2.5, susySys);
