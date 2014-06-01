@@ -13,7 +13,7 @@ using namespace std;
 /*--------------------------------------------------------------------------------*/
 // SusyD3PDAna Constructor
 /*--------------------------------------------------------------------------------*/
-SusyD3PDAna::SusyD3PDAna() : 
+SusyD3PDAna::SusyD3PDAna() :
         m_sample(""),
         m_stream(Stream_Unknown),
         m_isAF2(false),
@@ -80,7 +80,7 @@ void SusyD3PDAna::Begin(TTree* /*tree*/)
   // Make sure MC production is specified
   if(m_isMC && m_mcProd==MCProd_Unknown){
     cout << "SusyD3PDAna::Begin : ERROR : Sample is flagged as MC but "
-         << "MCProduction is Unknown! Use command line argument to set it!" 
+         << "MCProduction is Unknown! Use command line argument to set it!"
          << endl;
     abort();
   }
@@ -108,7 +108,7 @@ void SusyD3PDAna::Begin(TTree* /*tree*/)
                        //"efficiencySF.offline.Tight.2012.8TeV.rel17p2.v02.root",
                        //"efficiencySF.e24vhi_medium1_e60_medium1.Tight.2012.8TeV.rel17p2.v02.root",
                        //gSystem->ExpandPathName("$ROOTCOREBIN/data/MultiLep"));
-                       
+
   // Turn on jet calibration
   m_susyObj.SetJetCalib(true);
 
@@ -144,7 +144,7 @@ void SusyD3PDAna::Begin(TTree* /*tree*/)
       grlName += "data12_8TeV.periodAllYear_DetStatus-v61-pro14-02_DQDefects-00-01-00_PHYS_StandardGRL_All_Good.xml";
       m_grlFileName = gSystem->ExpandPathName(grlName.c_str());
     }
-    
+
     Root::TGoodRunsListReader* grlReader = new Root::TGoodRunsListReader();
     grlReader->AddXMLFile(m_grlFileName);
     if(!grlReader->Interpret()){
@@ -317,26 +317,26 @@ void SusyD3PDAna::selectBaselineObjects(SusyNtSys sys)
                                                   susySys, true);
 
   // Preselection
-  m_preElectrons = get_electrons_baseline(&d3pd.ele, !m_isMC, d3pd.evt.RunNumber(), m_susyObj, 
+  m_preElectrons = get_electrons_baseline(&d3pd.ele, !m_isMC, d3pd.evt.RunNumber(), m_susyObj,
                                           7.*GeV, 2.47, susySys);
-  m_preMuons = get_muons_baseline(&d3pd.muo, !m_isMC, m_susyObj, 
+  m_preMuons = get_muons_baseline(&d3pd.muo, !m_isMC, m_susyObj,
                                   6.*GeV, 2.5, susySys);
   // Removing eta cut for baseline jets. This is for the bad jet veto.
-  m_preJets = get_jet_baseline(&d3pd.jet, &d3pd.vtx, &d3pd.evt, &d3pd.evtShape, !m_isMC, m_susyObj, 
+  m_preJets = get_jet_baseline(&d3pd.jet, &d3pd.vtx, &d3pd.evt, &d3pd.evtShape, !m_isMC, m_susyObj,
                                20.*GeV, std::numeric_limits<float>::max(), susySys, false, goodJets);
-  //m_preJets = get_jet_baseline(&d3pd.jet, &d3pd.vtx, &d3pd.evt, !m_isMC, m_susyObj, 
+  //m_preJets = get_jet_baseline(&d3pd.jet, &d3pd.vtx, &d3pd.evt, !m_isMC, m_susyObj,
   //                             20.*GeV, 4.9, susySys, false, goodJets);
 
   // Selection for met muons
   // Diff with preMuons is pt selection
-  m_metMuons = get_muons_baseline(&d3pd.muo, !m_isMC, m_susyObj, 
+  m_metMuons = get_muons_baseline(&d3pd.muo, !m_isMC, m_susyObj,
                                   10.*GeV, 2.5, susySys);
 
   // Preselect taus
-  if(m_selectTaus) m_preTaus = get_taus_baseline(&d3pd.tau, m_susyObj, 20.*GeV, 2.47, 
-                                                 SUSYTau::TauLoose, SUSYTau::TauLoose, SUSYTau::TauLoose, 
+  if(m_selectTaus) m_preTaus = get_taus_baseline(&d3pd.tau, m_susyObj, 20.*GeV, 2.47,
+                                                 SUSYTau::TauLoose, SUSYTau::TauLoose, SUSYTau::TauLoose,
                                                  susySys, true);
-  
+
   performOverlapRemoval();
 
   // combine leptons
@@ -350,10 +350,10 @@ void SusyD3PDAna::selectBaselineObjects(SusyNtSys sys)
 void SusyD3PDAna::performOverlapRemoval()
 {
   // e-e overlap removal
-  m_baseElectrons = overlap_removal(m_susyObj, &d3pd.ele, m_preElectrons, &d3pd.ele, m_preElectrons, 
+  m_baseElectrons = overlap_removal(m_susyObj, &d3pd.ele, m_preElectrons, &d3pd.ele, m_preElectrons,
                                     0.05, true, true);
   // jet-e overlap removal
-  m_baseJets      = overlap_removal(m_susyObj, &d3pd.jet, m_preJets, &d3pd.ele, m_baseElectrons, 
+  m_baseJets      = overlap_removal(m_susyObj, &d3pd.jet, m_preJets, &d3pd.ele, m_baseElectrons,
                                     0.2, false, false);
 
   if(m_selectTaus) {
@@ -364,7 +364,7 @@ void SusyD3PDAna::performOverlapRemoval()
   }
 
   // e-jet overlap removal
-  m_baseElectrons = overlap_removal(m_susyObj, &d3pd.ele, m_baseElectrons, &d3pd.jet, m_baseJets, 
+  m_baseElectrons = overlap_removal(m_susyObj, &d3pd.ele, m_baseElectrons, &d3pd.jet, m_baseJets,
                                     0.4, false, false);
 
   // m-jet overlap removal
@@ -372,7 +372,7 @@ void SusyD3PDAna::performOverlapRemoval()
 
   // e-m overlap removal
   vector<int> copyElectrons = m_baseElectrons;
-  m_baseElectrons = overlap_removal(m_susyObj, &d3pd.ele, m_baseElectrons, &d3pd.muo, m_baseMuons, 
+  m_baseElectrons = overlap_removal(m_susyObj, &d3pd.ele, m_baseElectrons, &d3pd.muo, m_baseMuons,
                                     0.01, false, false);
   m_baseMuons     = overlap_removal(m_susyObj, &d3pd.muo, m_baseMuons, &d3pd.ele, copyElectrons, 0.01, false, false);
 
@@ -415,7 +415,7 @@ void SusyD3PDAna::selectSignalObjects()
 void SusyD3PDAna::buildMet(SusyNtSys sys)
 {
   if(m_dbg>=5) cout << "buildMet" << endl;
- 
+
   // Need the proper jet systematic for building systematic
   SystErr::Syste susySys = SystErr::NONE;
   if(sys == NtSys_NOM);
@@ -430,14 +430,33 @@ void SusyD3PDAna::buildMet(SusyNtSys sys)
   else if(sys == NtSys_RESOST)      susySys = SystErr::RESOST;      // Met resolution sys up
 
   // Need electrons with nonzero met weight in order to calculate the MET
-  vector<int> metElectrons = get_electrons_met(&d3pd.ele, m_susyObj);
+  vector<int> metElectrons = get_electrons_met(&d3pd.elMetEgamma10NoTau, m_susyObj);
 
   // Calculate the MET
   // We use the metMuons instead of preMuons so that we can have a lower pt cut on preMuons
-  TVector2 metVector = GetMetVector(m_susyObj, &d3pd.jet, &d3pd.muo, &d3pd.ele, &d3pd.met, 
-                                    &d3pd.evt, m_metMuons, m_baseElectrons, metElectrons, 
-                                    susySys, m_metFlavor, m_doMetMuCorr, m_doMetFix);
-    
+  TVector2 metVector =  m_susyObj.GetMET(d3pd.jetMetEgamma10NoTau.wet(), d3pd.jetMetEgamma10NoTau.wpx(),
+                                         d3pd.jetMetEgamma10NoTau.wpy(), d3pd.jetMetEgamma10NoTau.statusWord(),
+                                         metElectrons,
+                                         d3pd.elMetEgamma10NoTau.wet(), d3pd.elMetEgamma10NoTau.wpx(),
+                                         d3pd.elMetEgamma10NoTau.wpy(), d3pd.elMetEgamma10NoTau.statusWord(),
+                                         d3pd.metCellOut.etx(),
+                                         d3pd.metCellOut.ety(),
+                                         d3pd.metCellOut.sumet(),
+                                         d3pd.metCellOutEflowStvf.etx(),
+                                         d3pd.metCellOutEflowStvf.ety(),
+                                         d3pd.metCellOutEflowStvf.sumet(),
+                                         d3pd.metRefGamma.etx(),
+                                         d3pd.metRefGamma.ety(),
+                                         d3pd.metRefGamma.sumet(),
+                                         m_metMuons,
+                                         d3pd.muStaco.ms_qoverp(),
+                                         d3pd.muStaco.ms_theta(),
+                                         d3pd.muStaco.ms_phi(),
+                                         d3pd.muStaco.charge(),
+                                         d3pd.muStaco.energyLossPar(),
+                                         d3pd.evt.averageIntPerXing(),
+                                         m_metFlavor, susySys);
+
   m_met.SetPxPyPzE(metVector.X(), metVector.Y(), 0, metVector.Mod());
 }
 
@@ -449,15 +468,15 @@ void SusyD3PDAna::selectSignalPhotons()
   if(m_dbg>=5) cout << "selectSignalPhotons" << endl;
 
   int phoQual = 2;      // Quality::Tight
-  uint isoType = 1;     // Corresponds to PTED corrected isolation 
-  float etcone40CorrCut = 3*GeV; 
+  uint isoType = 1;     // Corresponds to PTED corrected isolation
+  float etcone40CorrCut = 3*GeV;
 
-  vector<int> base_photons = get_photons_baseline(&d3pd.pho, m_susyObj, 
+  vector<int> base_photons = get_photons_baseline(&d3pd.pho, m_susyObj,
                                                   20.*GeV, 2.47, SystErr::NONE, phoQual);
 
   // Latest and Greatest
   int nPV = getNumGoodVtx();
-  m_sigPhotons = get_photons_signal(&d3pd.pho, base_photons, m_susyObj, nPV, 
+  m_sigPhotons = get_photons_signal(&d3pd.pho, base_photons, m_susyObj, nPV,
                                     20.*GeV, etcone40CorrCut, isoType);
 }
 /*--------------------------------------------------------------------------------*/
@@ -540,7 +559,7 @@ bool SusyD3PDAna::matchTruthJet(int iJet)
 void SusyD3PDAna::fillEventTriggers()
 {
   if(m_dbg>=5) cout << "fillEventTriggers" << endl;
-  
+
   m_evtTrigFlags = 0;
   // e7_medium1 not available at the moment, so use e7T for now
   //if(d3pd.trig.EF_e7_medium1())                 m_evtTrigFlags |= TRIG_e7_medium1;
@@ -690,7 +709,7 @@ bool SusyD3PDAna::matchElectronTrigger(const TLorentzVector* lv, vector<int>* tr
   // matched trigger index - not used
   static int indexEF = -1;
   // Use function defined in egammaAnalysisUtils/egammaTriggerMatching.h
-  return PassedTriggerEF(lv->Eta(), lv->Phi(), trigBools, indexEF, d3pd.trigEfEl.n(), 
+  return PassedTriggerEF(lv->Eta(), lv->Phi(), trigBools, indexEF, d3pd.trigEfEl.n(),
                          d3pd.trigEfEl.eta(), d3pd.trigEfEl.phi());
 }
 
@@ -708,7 +727,7 @@ void SusyD3PDAna::matchMuonTriggers()
 
     int iMu = m_preMuons[i];
     const TLorentzVector* lv = & m_susyObj.GetMuonTLV(iMu);
-    
+
     // trigger flags
     long long flags = 0;
 
@@ -857,7 +876,7 @@ void SusyD3PDAna::matchTauTriggers()
     int iTau = m_preTaus[i];
     //const TLorentzVector* lv = & m_tauLVs[iTau];
     const TLorentzVector* lv = & m_susyObj.GetTauTLV(iTau);
-    
+
     // trigger flags
     long long flags = 0;
 
@@ -899,7 +918,7 @@ bool SusyD3PDAna::matchTauTrigger(const TLorentzVector* lv, vector<int>* passTri
     if(passTrig->at(iTrig)){
       // Now, try to match offline tau to this online tau
       static TLorentzVector trigLV;
-      trigLV.SetPtEtaPhiM(d3pd.trigEfTau.pt()->at(iTrig), d3pd.trigEfTau.eta()->at(iTrig), 
+      trigLV.SetPtEtaPhiM(d3pd.trigEfTau.pt()->at(iTrig), d3pd.trigEfTau.eta()->at(iTrig),
                           d3pd.trigEfTau.phi()->at(iTrig), d3pd.trigEfTau.m()->at(iTrig));
       float dR = lv->DeltaR(trigLV);
       if(dR < 0.15) return true;
@@ -947,8 +966,8 @@ bool SusyD3PDAna::passLarHoleVeto()
   //TVector2 metVector = m_met.Vect().XYvector();
   //vector<int> goodJets;
   //// Do I still need these jets with no eta cut?
-  //// This only uses nominal jets...?  
-  //vector<int> jets = get_jet_baseline(&d3pd.jet, &d3pd.vtx, &d3pd.evt, !m_isMC, m_susyObj, 
+  //// This only uses nominal jets...?
+  //vector<int> jets = get_jet_baseline(&d3pd.jet, &d3pd.vtx, &d3pd.evt, !m_isMC, m_susyObj,
   //                                    20.*GeV, 9999999, SystErr::NONE, false, goodJets);
   //return !check_jet_larhole(&d3pd.jet, jets, !m_isMC, m_susyObj, 180614, metVector, &m_fakeMetEst);
 }
@@ -1190,7 +1209,7 @@ void SusyD3PDAna::setMetFlavor(string metFlav)
   else if(metFlav=="STVF_JVF") m_metFlavor = SUSYMet::STVF_JVF;
   else if(metFlav=="Default") m_metFlavor = SUSYMet::Default;
   else{
-    cout << "SusyD3PDAna::setMetFlavor : ERROR : MET flavor " << metFlav 
+    cout << "SusyD3PDAna::setMetFlavor : ERROR : MET flavor " << metFlav
          << " is not supported!" << endl;
     abort();
   }

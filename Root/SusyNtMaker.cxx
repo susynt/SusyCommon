@@ -3,10 +3,6 @@
 #include "TauCorrUncert/TauSF.h"
 //#include "SUSYTools/MV1.h"
 
-// #include "MultiLep/MuonTools.h"
-// #include "MultiLep/ElectronTools.h"
-// #include "MultiLep/SusyGridCrossSectionTools.h"
-
 #include "SusyCommon/SusyNtMaker.h"
 #include "SusyCommon/TruthTools.h"
 #include "SusyNtuple/SusyNtTools.h"
@@ -521,7 +517,7 @@ void SusyNtMaker::fillEventVars()
   float mZ = -1.0, mZtruthMax = 40.0;
   if(m_isMC){
     int dsid = d3pd.evt.mc_channel_number();
-    if(IsAlpgenLowMass(dsid) || IsAlpgenPythiaZll(dsid)) mZ = MllForAlpgen(&d3pd.evt, &d3pd.truth);
+    if(IsAlpgenLowMass(dsid) || IsAlpgenPythiaZll(dsid)) mZ = MllForAlpgen(&d3pd.truth);
     else if(IsSherpaZll(dsid)) mZ = MllForSherpa(&d3pd.truth);
   }
   evt->mllMcTruth       = mZ;
@@ -711,7 +707,7 @@ void SusyNtMaker::fillElectronVars(const LeptonInfo* lepIn)
 D3PDReader::TruthMuonD3PDObjectElement* getMuonTruth(D3PDReader::MuonD3PDObject* muons, int muIdx, D3PDReader::TruthMuonD3PDObject* truthMuons)
 {
     D3PDReader::TruthMuonD3PDObjectElement* result = NULL;
-    int bc = muons->truth_barcode()->at(muIdx);    
+    int bc = muons->truth_barcode()->at(muIdx);
     if(bc==0){ // if barcode is zero then matching has already failed
         return result;
     }
@@ -890,11 +886,12 @@ void SusyNtMaker::fillJetVar(int jetIdx)
   // by checking status word similar to
   // what is done in met utility
   #warning "Jet::met_wpx is broken, these branches are not available in NTUP_COMMON"
-  //--DG--ntupcommon int sWord = element->MET_Egamma10NoTau_statusWord().at(0);
-  //--DG--ntupcommon bool passSWord = (MissingETTags::DEFAULT == sWord);       // Note assuming default met..
-  //--DG--ntupcommon // 0th element is what we care about
-  //--DG--ntupcommon jetOut->met_wpx = 0; passSWord ? element->MET_Egamma10NoTau_wpx().at(0) : 0;
-  //--DG--ntupcommon jetOut->met_wpy = 0; passSWord ? element->MET_Egamma10NoTau_wpy().at(0) : 0;
+  const D3PDReader::MissingETCompositionD3PDObjectElement &jetMetEgamma10NoTau = d3pd.jetMetEgamma10NoTau[jetIdx];
+  // 0th element is what we care about
+  int sWord = jetMetEgamma10NoTau.statusWord().at(0);
+  bool passSWord = (MissingETTags::DEFAULT == sWord);       // Note assuming default met..
+  jetOut->met_wpx = 0; passSWord ? jetMetEgamma10NoTau.wpx().at(0) : 0;
+  jetOut->met_wpy = 0; passSWord ? jetMetEgamma10NoTau.wpy().at(0) : 0;
 }
 
 /*--------------------------------------------------------------------------------*/
