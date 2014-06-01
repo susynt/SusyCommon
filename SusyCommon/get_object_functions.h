@@ -31,7 +31,10 @@ namespace D3PDReader
 class TauD3PDObject;
 class ElectronD3PDObject;
 class EventInfoD3PDObject;
+class EventShapeD3PDObject;
 class EFTriggerD3PDObject;
+class METD3PDObject;
+class MissingETCompositionD3PDObject;
 class MuonD3PDObject;
 class JetD3PDObject;
 class PhotonD3PDObject;
@@ -62,7 +65,7 @@ vector<int> get_taus_signal(D3PDReader::TauD3PDObject* taus, vector<int>& taus_b
 
 
 // met electrons
-vector<int> get_electrons_met(D3PDReader::ElectronD3PDObject *electrons, SUSYObjDef &susyobj);
+vector<int> get_electrons_met(D3PDReader::MissingETCompositionD3PDObject *electrons, SUSYObjDef &susyobj);
 
 // baseline electrons
 vector<int> get_electrons_baseline(D3PDReader::ElectronD3PDObject* electrons, bool kIsData, int run_number, SUSYObjDef& susyobj, float etcut,
@@ -111,7 +114,8 @@ vector<int> get_muons_signal(D3PDReader::MuonD3PDObject *muons, vector<int> muon
                              bool removeLeps=true);
 
 
-vector<int> get_jet_baseline(D3PDReader::JetD3PDObject *jet, D3PDReader::PrimaryVertexD3PDObject *vertex, D3PDReader::EventInfoD3PDObject *eventinfo, 
+vector<int> get_jet_baseline(D3PDReader::JetD3PDObject *jet, D3PDReader::PrimaryVertexD3PDObject *vertex,
+                             D3PDReader::EventInfoD3PDObject *eventinfo, D3PDReader::EventShapeD3PDObject *evtShape,
                              bool kIsData, SUSYObjDef &susyobj, float etcut, float etacut, SystErr::Syste whichsyste, bool nosmear, vector<int> &goodjets);
 
 vector<int> get_jet_signal(D3PDReader::JetD3PDObject *jet, SUSYObjDef &susyobj, vector<int> jet_base, float ptcut, float etacut, float jvfcut);
@@ -124,8 +128,8 @@ vector<int> get_photons_baseline(D3PDReader::PhotonD3PDObject *photons, SUSYObjD
                                  float ptcut, float etacut, SystErr::Syste whichsyste, int Quality);
 
 // Signal Photons
-vector<int> get_photons_signal(D3PDReader::PhotonD3PDObject *photons, vector<int> photons_base, 
-                               SUSYObjDef &susyObj, int nPV, float ptcut = 130000., 
+vector<int> get_photons_signal(D3PDReader::PhotonD3PDObject *photons, vector<int> photons_base,
+                               SUSYObjDef &susyObj, int nPV, float ptcut = 130000.,
                                float iso = 4000., unsigned int isoType = 1);
 
 //----------------------------------------------------------
@@ -133,12 +137,12 @@ vector<int> get_photons_signal(D3PDReader::PhotonD3PDObject *photons, vector<int
 //----------------------------------------------------------
 
 // define function to calculate MET 2D vector; Now you can control met container via metFlavor
-TVector2 GetMetVector(SUSYObjDef &susyobj, D3PDReader::JetD3PDObject *jet, 
-                      D3PDReader::MuonD3PDObject *muon, D3PDReader::ElectronD3PDObject *electron, 
-                      D3PDReader::METD3PDObject *met, D3PDReader::EventInfoD3PDObject *eventInfo, 
-                      vector<int> baseline_muons, vector<int> baseline_electrons, 
-                      vector<int> all_electrons, SystErr::Syste whichsyste, 
-                      SUSYMet::met_definition metFlavor = SUSYMet::Default, 
+TVector2 GetMetVector(SUSYObjDef &susyobj, D3PDReader::JetD3PDObject *jet,
+                      D3PDReader::MuonD3PDObject *muon, D3PDReader::ElectronD3PDObject *electron,
+                      D3PDReader::METD3PDObject *met, D3PDReader::EventInfoD3PDObject *eventInfo,
+                      vector<int> baseline_muons, vector<int> baseline_electrons,
+                      vector<int> all_electrons, SystErr::Syste whichsyste,
+                      SUSYMet::met_definition metFlavor = SUSYMet::Default,
                       bool doMuonElossCorrection = false, bool doEgammaJetFix = false);
 
 bool PassesPtNCut(vector<int> signal_muons, vector<int> signal_electrons, SUSYObjDef &susyobj, int n, float cutval);
@@ -146,11 +150,11 @@ bool IsBadJetEvent(D3PDReader::JetD3PDObject* jet, std::vector< int > baseline_j
 bool IsCosmic(SUSYObjDef &susyobj, D3PDReader::MuonD3PDObject *muon, vector<int> baseline_muons, float z0cut, float d0cut);
 bool IsBadMuonEvent(SUSYObjDef &susyObj, D3PDReader::MuonD3PDObject *muon, vector<int> baseline_muons, float qoverpcut);
 bool PrimaryVertexCut(SUSYObjDef &susyobj, D3PDReader::PrimaryVertexD3PDObject *vertex);
-// 
-template<class D3PDObject1, class D3PDObject2> 
-vector<int> overlap_removal(SUSYObjDef &susyobj, D3PDObject1 *o1, vector<int> indices_1, 
-                            D3PDObject2 *o2, vector<int> indices_2, float dr, 
-                            bool sameType, bool removeSoft) 
+//
+template<class D3PDObject1, class D3PDObject2>
+vector<int> overlap_removal(SUSYObjDef &susyobj, D3PDObject1 *o1, vector<int> indices_1,
+                            D3PDObject2 *o2, vector<int> indices_2, float dr,
+                            bool sameType, bool removeSoft)
 {
     vector<int> survivors;
     for(unsigned int i=0; i<indices_1.size(); i++) {
@@ -162,15 +166,15 @@ vector<int> overlap_removal(SUSYObjDef &susyobj, D3PDObject1 *o1, vector<int> in
             if(dynamic_cast<D3PDReader::ElectronD3PDObject *>( o1 ))  object1 = susyobj.GetElecTLV(indices_1[i]);
             else if(dynamic_cast<D3PDReader::MuonD3PDObject *>( o1 )) object1 = susyobj.GetMuonTLV(indices_1[i]);
             else if(dynamic_cast<D3PDReader::JetD3PDObject *>( o1 ))  object1 = susyobj.GetJetTLV(indices_1[i]);
-            else object1.SetPtEtaPhiM(o1->pt()->at(indices_1[i]), o1->eta()->at(indices_1[i]), 
+            else object1.SetPtEtaPhiM(o1->pt()->at(indices_1[i]), o1->eta()->at(indices_1[i]),
                                       o1->phi()->at(indices_1[i]), o1->m()->at(indices_1[i]));
             if(dynamic_cast<D3PDReader::ElectronD3PDObject *>( o2 ))  object2 = susyobj.GetElecTLV(indices_2[j]);
             else if(dynamic_cast<D3PDReader::MuonD3PDObject *>( o2 )) object2 = susyobj.GetMuonTLV(indices_2[j]);
             else if(dynamic_cast<D3PDReader::JetD3PDObject *>( o2 ))  object2 = susyobj.GetJetTLV(indices_2[j]);
-            else object2.SetPtEtaPhiM(o2->pt()->at(indices_2[j]), o2->eta()->at(indices_2[j]), 
+            else object2.SetPtEtaPhiM(o2->pt()->at(indices_2[j]), o2->eta()->at(indices_2[j]),
                                       o2->phi()->at(indices_2[j]), o2->m()->at(indices_2[j]));
 
-            // Don't remove an object against itself (for electron-electron overlap) 
+            // Don't remove an object against itself (for electron-electron overlap)
             if(sameType && i==j) continue;
             if (removeSoft) {
                 if ( (object1.E()/cosh(object1.Eta())) > (object2.E()/cosh(object2.Eta()))) {
@@ -216,9 +220,9 @@ template<class particle> vector<int> RemoveSFOSPair(SUSYObjDef &susyobj, particl
                 }
                 // For taus, or other default particles, use the d3pd variables to calculate Mll
                 else{
-                    particle_1.SetPtEtaPhiM(particles->pt()->at(baseline_particle[i]), particles->eta()->at(baseline_particle[i]), 
+                    particle_1.SetPtEtaPhiM(particles->pt()->at(baseline_particle[i]), particles->eta()->at(baseline_particle[i]),
                                             particles->phi()->at(baseline_particle[i]), particles->m()->at(baseline_particle[i]));
-                    particle_2.SetPtEtaPhiM(particles->pt()->at(baseline_particle[j]), particles->eta()->at(baseline_particle[j]), 
+                    particle_2.SetPtEtaPhiM(particles->pt()->at(baseline_particle[j]), particles->eta()->at(baseline_particle[j]),
                                             particles->phi()->at(baseline_particle[j]), particles->m()->at(baseline_particle[j]));
                 }
                 if(sqrt((particle_1+particle_2)*(particle_1+particle_2))<cut) {

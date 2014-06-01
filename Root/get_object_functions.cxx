@@ -2,9 +2,12 @@
 
 #include "D3PDReader/ElectronD3PDObject.h"
 #include "D3PDReader/EventInfoD3PDObject.h"
+#include "D3PDReader/EventShapeD3PDObject.h"
 #include "D3PDReader/MuonD3PDObject.h"
 #include "D3PDReader/PhotonD3PDObject.h"
 #include "D3PDReader/JetD3PDObject.h"
+#include "D3PDReader/METD3PDObject.h"
+#include "D3PDReader/MissingETCompositionD3PDObject.h"
 #include "D3PDReader/PrimaryVertexD3PDObject.h"
 #include "D3PDReader/TauD3PDObject.h"
 
@@ -89,17 +92,17 @@ vector<int> get_taus_signal(D3PDReader::TauD3PDObject* taus, vector<int>& taus_b
     return taus_signal;
 }
 //----------------------------------------------------------
-vector<int> get_electrons_all(D3PDReader::ElectronD3PDObject *electrons, SUSYObjDef &susyobj)
+vector<int> get_electrons_met(D3PDReader::MissingETCompositionD3PDObject *elMetEgamma10NoTau, SUSYObjDef &susyobj)
 {
-    vector<int> electrons_all;
-
-    for (int iel=0; iel<electrons->n(); iel++) {
-        const TLorentzVector* myel = & susyobj.GetElecTLV(iel);
-        if(myel->Pt()!=0) {
-            electrons_all.push_back(iel);
+    vector<int> electrons_met;
+    for (int iel=0; iel<elMetEgamma10NoTau->n(); iel++) {
+        //if(electrons->MET_Egamma10NoTau_wet()->at(iel).at(0) != 0){
+        // DG 2014-06-01: ntupcommon migration, I think that now we don't need to check this anymore...to be tested
+        if(true){
+            electrons_met.push_back(iel);
         }
     }
-    return electrons_all;
+    return electrons_met;
 }
 //----------------------------------------------------------
 vector<int> get_electrons_baseline(D3PDReader::ElectronD3PDObject *electrons, bool kIsData, int run_number,
@@ -110,21 +113,72 @@ vector<int> get_electrons_baseline(D3PDReader::ElectronD3PDObject *electrons, bo
 
     for (int iel=0; iel<electrons->n(); iel++) {
         const D3PDReader::ElectronD3PDObjectElement* electron = & (*electrons)[iel];
-        int isMediumPP = 0;
-
-        // Use D3PD isEM
-        isMediumPP = electron->mediumPP();
-
         // electron energy resolution syst is done in susytools
-        if (susyobj.FillElectron(iel,electron->cl_eta(), electron->cl_phi(), electron->cl_E(),
-                                 electron->tracketa(), electron->trackphi(), electron->author(), isMediumPP,
+        #warning "MET_Egamma10NoTau_wet to be fixed"
+        float wet = 0.0; // was electron->MET_Egamma10NoTau_wet().at(0)
+        if (susyobj.FillElectron(iel,
+                                 electron->eta(), electron->phi(),
+                                 electron->cl_eta(), electron->cl_phi(), electron->cl_E(),
+                                 electron->tracketa(), electron->trackphi(),
+                                 electron->author(), electron->mediumPP(),
                                  electron->OQ(), electron->nPixHits(), electron->nSCTHits(),
-                                 electron->MET_Egamma10NoTau_wet().at(0), etcut, etacut, el_syst))
+                                 wet, etcut, etacut, el_syst))
         {
             electrons_base.push_back(iel);
         }
     }
     return electrons_base;
+}
+//----------------------------------------------------------
+// Get isolation corrections
+float elPtConeCorr(int elIdx, D3PDReader::ElectronD3PDObject *electrons,  vector<int> electrons_base,
+                   D3PDReader::MuonD3PDObject *muons, vector<int> muons_base, SUSYObjDef &susyobj,
+                   bool removeLeps)
+{
+
+    TLorentzVector lv = susyobj.GetElecTLV(elIdx);
+    double ptcone = electrons->ptcone30()->at(elIdx);
+
+    if (removeLeps){
+	//Loop over base electrons
+	for(uint iEl=0; iEl<electrons_base.size(); iEl++){
+	    if(elIdx == electrons_base[iEl]) continue;
+	    TLorentzVector lv1 = susyobj.GetElecTLV(electrons_base[iEl]);
+	    float dR = lv.DeltaR(lv1);
+	    if(dR < 0.3) ptcone -= electrons->trackpt()->at(electrons_base[iEl]);
+	}
+	// Loop over base muons
+	for(uint iMu=0; iMu<muons_base.size(); iMu++){
+	    TLorentzVector lv1 = susyobj.GetMuonTLV(muons_base[iMu]);
+	    float dR = lv.DeltaR(lv1);
+	    if(dR < 0.3){
+		double idTrackPt = muons->id_qoverp_exPV()->at(muons_base[iMu])!=0.?
+		    fabs(sin(muons->id_theta_exPV()->at(muons_base[iMu]))/muons->id_qoverp_exPV()->at(muons_base[iMu])) : 0.;
+		ptcone -= idTrackPt;
+	    }
+	}
+    }
+    return ptcone;
+}
+//----------------------------------------------------------
+float elEtTopoConeCorr(int elIdx, D3PDReader::ElectronD3PDObject *electrons,
+                       vector<int> electrons_base,  SUSYObjDef &susyobj, int nGoodVtx,
+                       bool isData, bool removeLeps) {
+    float mev2gev=1000.0;
+    TLorentzVector lv = susyobj.GetElecTLV(elIdx);
+    float etconeSlope = isData? 0.02015*mev2gev : 0.01794*mev2gev;
+    float etcone = (electrons->topoEtcone30_corrected()->at(elIdx) - etconeSlope*nGoodVtx);
+    if (removeLeps){
+        for(uint iEl=0; iEl<electrons_base.size(); iEl++){
+            if(elIdx == electrons_base[iEl]) continue;
+            TLorentzVector lv1 = susyobj.GetElecTLV(electrons_base[iEl]);
+            float dR = lv.DeltaR(lv1);
+            if( dR < 0.28  ) {
+                etcone -= electrons->cl_E()->at(electrons_base[iEl]) / cosh( electrons->cl_eta()->at(electrons_base[iEl]));
+            }
+        }
+    }
+    return etcone;
 }
 //----------------------------------------------------------
 vector<int> get_electrons_signal(D3PDReader::ElectronD3PDObject *electrons, vector<int> electrons_base,
@@ -187,19 +241,48 @@ vector<int> get_muons_baseline(D3PDReader::MuonD3PDObject *muons, bool kIsData, 
         const D3PDReader::MuonD3PDObjectElement* muon = & (*muons)[imuon];
         if( susyobj.FillMuon(imuon,
                              muon->pt(), muon->eta(), muon->phi(),
-                             //Renaud muon->qoverp_exPV(), muon->cov_qoverp_exPV(),
                              muon->me_qoverp_exPV(), muon->id_qoverp_exPV(),
                              muon->me_theta_exPV(), muon->id_theta_exPV(), muon->id_theta(),
-                             muon->charge(), muon->isCombinedMuon(), muon->isSegmentTaggedMuon(),
-                             muon->loose(),
-                             muon->expectBLayerHit(), muon->nBLHits(), muon->nPixHits(),
+                             muon->charge(),
+                             muon->isCombinedMuon(), muon->isSegmentTaggedMuon(),
+                             muon->loose(), muon->nPixHits(),
                              muon->nPixelDeadSensors(), muon->nPixHoles(), muon->nSCTHits(),
-                             muon->nSCTDeadSensors(), muon->nSCTHoles(),
-                             muon->nTRTHits(), muon->nTRTOutliers(),
-                             ptcut, etacut, mu_syst) ) muon_base.push_back(imuon);
+                             muon->nSCTDeadSensors(), muon->nSCTHoles(), muon->nTRTHits(),
+                             muon->nTRTOutliers(),
+                             ptcut, etacut, mu_syst) )
+            muon_base.push_back(imuon);
     }
 
     return muon_base;
+}
+//----------------------------------------------------------
+// ptcone isolation correction - subtract overlapping leptons
+float muPtConeCorr(int muIdx, D3PDReader::MuonD3PDObject *muons, vector<int> muons_base,
+                   D3PDReader::ElectronD3PDObject *electrons,  vector<int> electrons_base, SUSYObjDef &susyobj,
+                   int nGoodVtx, bool isData, bool removeLeps)
+{
+    float mev2gev=1000.0;
+    TLorentzVector lv = susyobj.GetMuonTLV(muIdx);
+    double ptconeSlope = isData? 0.01098*mev2gev : 0.00627*mev2gev;
+    double ptcone = muons->ptcone30()->at(muIdx) - ptconeSlope*nGoodVtx;
+    if (removeLeps){
+        for(uint iEl=0; iEl<electrons_base.size(); iEl++){
+            TLorentzVector lv1 = susyobj.GetElecTLV(electrons_base[iEl]);
+            float dR = lv.DeltaR(lv1);
+            if(dR < 0.3) ptcone -= electrons->trackpt()->at(electrons_base[iEl]);
+        }
+        for(uint iMu=0; iMu<muons_base.size(); iMu++){
+            if(muIdx == muons_base[iMu]) continue;
+            TLorentzVector lv1 = susyobj.GetMuonTLV(muons_base[iMu]);
+            float dR = lv.DeltaR(lv1);
+            if(dR < 0.3){
+                double idTrackPt = muons->id_qoverp_exPV()->at(muons_base[iMu])!=0.?
+                    fabs(sin(muons->id_theta_exPV()->at(muons_base[iMu]))/ muons->id_qoverp_exPV()->at(muons_base[iMu])) : 0.;
+                ptcone -= idTrackPt;
+            }
+        }
+    }
+    return ptcone;
 }
 //----------------------------------------------------------
 vector<int> get_muons_signal(D3PDReader::MuonD3PDObject *muons, vector<int> muons_base,
@@ -242,8 +325,9 @@ vector<int> get_muons_signal(D3PDReader::MuonD3PDObject *muons, vector<int> muon
     return muon_signal;
 }
 //----------------------------------------------------------
-vector<int> get_jet_baseline(D3PDReader::JetD3PDObject *jets, D3PDReader::PrimaryVertexD3PDObject *vertex, 
-                             D3PDReader::EventInfoD3PDObject *eventInfo, bool kIsData, SUSYObjDef &susyobj, 
+vector<int> get_jet_baseline(D3PDReader::JetD3PDObject *jets, D3PDReader::PrimaryVertexD3PDObject *vertex,
+                             D3PDReader::EventInfoD3PDObject *eventInfo, D3PDReader::EventShapeD3PDObject *evtShape,
+                             bool kIsData, SUSYObjDef &susyobj,
                              float etcut, float etacut, SystErr::Syste whichsyste, bool nosmear, vector<int> &goodjets)
 {
     vector<int> jet_index;
@@ -253,14 +337,14 @@ vector<int> get_jet_baseline(D3PDReader::JetD3PDObject *jets, D3PDReader::Primar
         susyobj.FillJet(iJet, jet->pt(), jet->eta(), jet->phi(), jet->E(),
                         jet->constscale_eta(), jet->constscale_phi(), jet->constscale_E(), jet->constscale_m(),
                         jet->ActiveAreaPx(), jet->ActiveAreaPy(), jet->ActiveAreaPz(), jet->ActiveAreaE(),
-                        eventInfo->Eventshape_rhoKt4LC(),
-                        eventInfo->averageIntPerXing(), 
+                        evtShape->rhoKt4LC(),
+                        eventInfo->averageIntPerXing(),
                         vertex->nTracks());
 
         if(!kIsData) local_truth_label = jet->flavor_truth_label();
         susyobj.ApplyJetSystematics(iJet, jet->constscale_eta(),
                                     local_truth_label,
-                                    eventInfo->averageIntPerXing(), 
+                                    eventInfo->averageIntPerXing(),
                                     vertex->nTracks(), whichsyste);
 
         if(susyobj.IsGoodJet(iJet, jet->constscale_eta(),
@@ -269,7 +353,7 @@ vector<int> get_jet_baseline(D3PDReader::JetD3PDObject *jets, D3PDReader::Primar
                              eventInfo->RunNumber(), etcut, etacut, JetID::VeryLooseBad))
             goodjets.push_back(iJet);
 
-        float jetPt = susyobj.GetJetTLV(iJet).Pt(); 
+        float jetPt = susyobj.GetJetTLV(iJet).Pt();
         if(jetPt>etcut && fabs(jet->eta())<etacut && jet->E()>0) {
             jet_index.push_back(iJet);
         }
@@ -282,14 +366,18 @@ vector<int> get_jet_signal(D3PDReader::JetD3PDObject *jets, SUSYObjDef &susyobj,
     for(unsigned int ijet=0; ijet<jets_base.size(); ijet++) {
         int jetID = jets_base.at(ijet);
         float jetPt = susyobj.GetJetTLV(jetID).Pt();
-        if(MyIsSignalJet(jetPt, jets->eta()->at(jetID), jets->jvtxf()->at(jetID), ptcut, etacut, jvfcut)) {
+        bool isSignalJet = (jetPt>ptcut &&
+                            fabs(jets->eta()->at(jetID))<etacut &&
+                            jets->jvtxf()->at(jetID)>jvfcut);
+
+        if(isSignalJet) {
             jets_signal.push_back(jetID);
         }
     }
     return jets_signal;
 }
 //----------------------------------------------------------
-bool check_jet_tileHotSpot(D3PDReader::JetD3PDObject* jet, vector<int>& baseline_jets, SUSYObjDef& susyObj, 
+bool check_jet_tileHotSpot(D3PDReader::JetD3PDObject* jet, vector<int>& baseline_jets, SUSYObjDef& susyObj,
                            bool isData, int run_number)
 {
     if(isData)
@@ -298,7 +386,7 @@ bool check_jet_tileHotSpot(D3PDReader::JetD3PDObject* jet, vector<int>& baseline
             int idx = baseline_jets.at(i);
             const TLorentzVector* jetLV = & susyObj.GetJetTLV(idx);
 
-            if(susyObj.isHotTile(run_number, jet->fracSamplingMax()->at(idx), 
+            if(susyObj.isHotTile(run_number, jet->fracSamplingMax()->at(idx),
                                  jet->SamplingMax()->at(idx), jetLV->Eta(), jetLV->Phi())) return true;
         }
     }
@@ -309,57 +397,34 @@ vector<int> get_photons_baseline(D3PDReader::PhotonD3PDObject *photons, SUSYObjD
 				 float ptcut, float etacut, SystErr::Syste whichsyste, int Quality)
 {
     vector<int> photons_base;
-    unsigned int ph_Quality;
-  
+    unsigned int ph_Quality; // DG 2014-05-30 why is this not initialized? are we ok with '0'?
+    int CutEnabButFailTight=0;
     for(int iph=0; iph<photons->n(); iph++){
-    
-        int CutEnabButFailTight=0;
-
+        const D3PDReader::PhotonD3PDObjectElement *ph = & (*photons)[iph];
         if( susyObj.FillPhoton(iph,
-			       photons->cl_eta()->at(iph),
-			       photons->cl_phi()->at(iph),
-			       photons->cl_E()->at(iph),
-			       photons->etas2()->at(iph),
-			       photons->isEM()->at(iph),
-			       photons->OQ()->at(iph),
-			       photons->isConv()->at(iph),
-			       photons->reta()->at(iph),
-			       photons->rphi()->at(iph),
-			       photons->Ethad1()->at(iph),
-			       photons->Ethad()->at(iph),
-			       photons->E277()->at(iph),
-			       photons->weta2()->at(iph),
-			       photons->f1()->at(iph),
-			       photons->emaxs1()->at(iph),
-			       photons->Emax2()->at(iph),
-			       photons->Emins1()->at(iph),
-			       photons->fside()->at(iph),
-			       photons->wstot()->at(iph),
-			       photons->ws3()->at(iph),
-			       ph_Quality,
-                               CutEnabButFailTight,
-			       ptcut,
-			       etacut,
-			       whichsyste,
-			       Quality) )
-        {
-	    // Save Photon
-	    photons_base.push_back(iph);
+                               ph->eta(), ph->phi(),
+                               ph->cl_eta(), ph->cl_phi(), ph->cl_E(), ph->etas2(),
+                               ph->isEM(), ph->OQ(), ph->isConv(),
+                               ph->reta(), ph->rphi(), ph->Ethad1(), ph->Ethad(),
+                               ph->E277(), ph->weta2(), ph->f1(),
+                               ph->emaxs1(), ph->Emax2(), ph->Emins1(),
+                               ph->fside(), ph->wstot(), ph->ws3(),
+                               ph_Quality, CutEnabButFailTight, ptcut, etacut,
+                               whichsyste, Quality)) {
+            photons_base.push_back(iph);
         }
-    
     } // end loop over photons
-  
     return photons_base;
 }
 //----------------------------------------------------------
-vector<int> get_photons_signal(D3PDReader::PhotonD3PDObject *photons, vector<int> photons_base, 
-			       SUSYObjDef &susyObj, int nPV, float ptcut, 
+vector<int> get_photons_signal(D3PDReader::PhotonD3PDObject *photons, vector<int> photons_base,
+			       SUSYObjDef &susyObj, int nPV, float ptcut,
                                float isocut, unsigned int isoType)
 {
     vector<int> photons_signal;
-  
+
     for(unsigned int iph=0; iph<photons_base.size(); iph++){
-    
+
         int idx = photons_base.at(iph);
         if( susyObj.IsSignalPhotonCompIso(idx,
 				          photons->ED_median()->at(idx),
@@ -378,51 +443,10 @@ vector<int> get_photons_signal(D3PDReader::PhotonD3PDObject *photons, vector<int
 	    // Save Photon
 	    photons_signal.push_back(idx);
         }
-    
+
     } // end loop over base photons
-  
+
     return photons_signal;
-}
-//----------------------------------------------------------
-TVector2 GetMetVector(SUSYObjDef &susyObj, D3PDReader::JetD3PDObject *jet, 
-                      D3PDReader::MuonD3PDObject *muon, D3PDReader::ElectronD3PDObject *electron, 
-                      D3PDReader::METD3PDObject *met, D3PDReader::EventInfoD3PDObject *eventInfo, 
-                      vector<int> baseline_muons, vector<int> baseline_electrons, 
-                      vector<int> all_electrons, SystErr::Syste whichsyste, 
-                      SUSYMet::met_definition metFlavor, 
-                      bool doMuonElossCorrection, bool doEgammaJetFix)
-{
-    TVector2 myMet;
-
-    // Calculate Egamma10NoTau STVF MET
-    // Will add functionality to change MET flavor later
-    myMet = susyObj.GetMET(jet->MET_Egamma10NoTau_wet(), jet->MET_Egamma10NoTau_wpx(), 
-                           jet->MET_Egamma10NoTau_wpy(), jet->MET_Egamma10NoTau_statusWord(),
-                           //
-                           all_electrons,
-                           electron->MET_Egamma10NoTau_wet(), electron->MET_Egamma10NoTau_wpx(), 
-                           electron->MET_Egamma10NoTau_wpy(), electron->MET_Egamma10NoTau_statusWord(),
-                           // Standard CellOut
-                           met->Egamma10NoTau_CellOut_etx(), 
-                           met->Egamma10NoTau_CellOut_ety(), 
-                           met->Egamma10NoTau_CellOut_sumet(),
-                           // Pileup suppressed CellOut
-                           met->Egamma10NoTau_CellOut_Eflow_STVF_etx(), 
-                           met->Egamma10NoTau_CellOut_Eflow_STVF_ety(), 
-                           met->Egamma10NoTau_CellOut_Eflow_STVF_sumet(),
-                           //
-                           met->Egamma10NoTau_RefGamma_etx(), 
-                           met->Egamma10NoTau_RefGamma_ety(), 
-                           met->Egamma10NoTau_RefGamma_sumet(),
-                           //
-                           baseline_muons,
-                           muon->ms_qoverp(), muon->ms_theta(), muon->ms_phi(), 
-                           muon->charge(), muon->energyLossPar(),
-                           eventInfo->averageIntPerXing(),
-                           metFlavor, whichsyste,
-                           doMuonElossCorrection, doEgammaJetFix);
-
-    return myMet;
 }
 //----------------------------------------------------------
 bool PassesPtNCut(vector<int> signal_muons, vector<int> signal_electrons, SUSYObjDef &susyObj, int n, float cutval){
@@ -437,7 +461,7 @@ bool PassesPtNCut(vector<int> signal_muons, vector<int> signal_electrons, SUSYOb
 
     // Sort the pt's
     sort(signalLeptonPt.begin(),signalLeptonPt.end(),greater<float>());
-    
+
     if((int)signalLeptonPt.size()<n) return false;
     if(signalLeptonPt[n-1]<cutval) return false;
 
