@@ -885,7 +885,6 @@ void SusyNtMaker::fillJetVar(int jetIdx)
   // Save the met weights for the jets
   // by checking status word similar to
   // what is done in met utility
-  #warning "Jet::met_wpx is broken, these branches are not available in NTUP_COMMON"
   const D3PDReader::MissingETCompositionD3PDObjectElement &jetMetEgamma10NoTau = d3pd.jetMetEgamma10NoTau[jetIdx];
   // 0th element is what we care about
   int sWord = jetMetEgamma10NoTau.statusWord().at(0);
