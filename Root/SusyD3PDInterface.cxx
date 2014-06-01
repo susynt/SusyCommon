@@ -14,10 +14,16 @@ SusyD3PDContainer::SusyD3PDContainer(const Long64_t& entry) :
         evtShape(entry),
         ele(entry),
         muo(entry),
+        muStaco(entry),
         jet(entry),
 	pho(entry),
 	tau(entry),
         met(entry),
+        metCellOut(entry),
+        metCellOutEflowStvf(entry),
+        metRefGamma(entry),
+        elMetEgamma10NoTau(entry),
+        jetMetEgamma10NoTau(entry),
         metTruth(entry),
         trk(entry),
         vtx(entry),
@@ -36,14 +42,28 @@ SusyD3PDContainer::SusyD3PDContainer(const Long64_t& entry) :
 /*--------------------------------------------------------------------------------*/
 void SusyD3PDContainer::ReadFrom(TTree* tree)
 {
+
+    muStaco.SetPrefix("mu_staco_");
+    metCellOut.SetPrefix("MET_CellOut_");
+    metCellOutEflowStvf.SetPrefix("MET_CellOut_Eflow_STVF_");
+    metRefGamma.SetPrefix("MET_RefGamma_");
+    elMetEgamma10NoTau.SetPrefix("el_MET_Egamma10LooseTau_");
+    jetMetEgamma10NoTau.SetPrefix("jet_AntiKt4LCTopo_MET_Egamma10NoTau_");
+
   evt.ReadFrom(tree);
   evtShape.ReadFrom(tree);
   ele.ReadFrom(tree);
   muo.ReadFrom(tree);
+  muStaco.ReadFrom(tree);
   jet.ReadFrom(tree);
   pho.ReadFrom(tree);
   tau.ReadFrom(tree);
   met.ReadFrom(tree);
+  metCellOut.ReadFrom(tree);
+  metCellOutEflowStvf.ReadFrom(tree);
+  metRefGamma.ReadFrom(tree);
+  elMetEgamma10NoTau.ReadFrom(tree);
+  jetMetEgamma10NoTau.ReadFrom(tree);
   metTruth.ReadFrom(tree);
   trk.ReadFrom(tree);
   vtx.ReadFrom(tree);
@@ -68,10 +88,16 @@ void SusyD3PDContainer::WriteTo(TTree* tree)
   evtShape.WriteTo(tree);
   ele.WriteTo(tree);
   muo.WriteTo(tree);
+  muStaco.WriteTo(tree);
   jet.WriteTo(tree);
   pho.WriteTo(tree);
   tau.WriteTo(tree);
   met.WriteTo(tree);
+  metCellOut.WriteTo(tree);
+  metCellOutEflowStvf.WriteTo(tree);
+  metRefGamma.WriteTo(tree);
+  elMetEgamma10NoTau.WriteTo(tree);
+  jetMetEgamma10NoTau.WriteTo(tree);
   metTruth.WriteTo(tree);
   trk.WriteTo(tree);
   vtx.WriteTo(tree);
@@ -93,10 +119,16 @@ void SusyD3PDContainer::ReadAllActive()
   evtShape.ReadAllActive();
   ele.ReadAllActive();
   muo.ReadAllActive();
+  muStaco.ReadAllActive();
   jet.ReadAllActive();
   pho.ReadAllActive();
   tau.ReadAllActive();
   met.ReadAllActive();
+  metCellOut.ReadAllActive();
+  metCellOutEflowStvf.ReadAllActive();
+  metRefGamma.ReadAllActive();
+  elMetEgamma10NoTau.ReadAllActive();
+  jetMetEgamma10NoTau.ReadAllActive();
   metTruth.ReadAllActive();
   trk.ReadAllActive();
   vtx.ReadAllActive();

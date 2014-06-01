@@ -16,7 +16,9 @@
 #include "D3PDReader/PhotonD3PDObject.h"
 #include "D3PDReader/TauD3PDObject.h"
 #include "D3PDReader/METD3PDObject.h"
+#include "D3PDReader/RefFinalMETD3PDObject.h"
 #include "D3PDReader/MissingETTruthD3PDObject.h"
+#include "D3PDReader/MissingETCompositionD3PDObject.h"
 #include "D3PDReader/TrackD3PDObject.h"
 #include "D3PDReader/triggerBitsD3PDObject.h"
 #include "D3PDReader/EFElectronD3PDObject.h"
@@ -51,7 +53,7 @@ class SusyD3PDContainer
 {
   public:
 
-    // Constructor 
+    // Constructor
     SusyD3PDContainer(const Long64_t& entry);
 
     // Connect the objects to an input tree
@@ -67,10 +69,16 @@ class SusyD3PDContainer
     D3PDReader::EventShapeD3PDObject    evtShape;
     D3PDReader::ElectronD3PDObject      ele;
     D3PDReader::MuonD3PDObject          muo;
+    D3PDReader::MuonD3PDObject          muStaco;
     D3PDReader::JetD3PDObject           jet;
     D3PDReader::PhotonD3PDObject        pho;
     D3PDReader::TauD3PDObject           tau;
     D3PDReader::METD3PDObject           met;
+    D3PDReader::RefFinalMETD3PDObject   metCellOut;
+    D3PDReader::RefFinalMETD3PDObject   metCellOutEflowStvf;
+    D3PDReader::RefFinalMETD3PDObject   metRefGamma;
+    D3PDReader::MissingETCompositionD3PDObject elMetEgamma10NoTau;
+    D3PDReader::MissingETCompositionD3PDObject jetMetEgamma10NoTau;
     D3PDReader::MissingETTruthD3PDObject metTruth;
     D3PDReader::TrackD3PDObject         trk;
     D3PDReader::PrimaryVertexD3PDObject vtx;
@@ -124,7 +132,7 @@ class SusyD3PDInterface : public TSelector
     // Main event loop function
     virtual Bool_t  Process(Long64_t entry);
 
-    // Get entry simply communicates the entry number from TSelector 
+    // Get entry simply communicates the entry number from TSelector
     // to this class and hence to all of the VarHandles
     virtual Int_t   GetEntry(Long64_t e, Int_t getall = 0) {
       m_entry=e;
