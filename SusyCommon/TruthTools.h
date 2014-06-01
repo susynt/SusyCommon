@@ -51,8 +51,7 @@ float MllForAlpgen(Int_t mc_n,
 				   Bool_t DEBUG_PASSMLL_ALPGEN=false);
 
 //! Just a wrapper of the above for D3PDReader classes
-float MllForAlpgen(D3PDReader::EventInfoD3PDObject *eventInfo,
-                   D3PDReader::TruthParticleD3PDObject* truthParticles,
+float MllForAlpgen(D3PDReader::TruthParticleD3PDObject* truthParticles,
 				   Bool_t DEBUG_PASSMLL_ALPGEN=false);
 //! mass of the Z boson from the Sherpa truth; -1.0 if there is no Z in the MC truth record
 float MllForSherpa(vector<float>* mc_pt,
@@ -103,12 +102,7 @@ bool IsSherpaZll(UInt_t datasetId);
 // DG Mar2013
 
 // <begin>
-std::string vecToString(const vector<int> &vec)
-{
-  std::stringstream ss;
-  std::copy(vec.begin(), vec.end(), std::ostream_iterator<int>(ss,", "));
-  return ss.str();
-}
+std::string vecToString(const vector<int> &vec);
 //----------------------------------
 enum PdgIds{
   kPd=+1, kAd=-1,
@@ -127,89 +121,15 @@ enum PdgIds{
   kPgam=+22,
   kPz=+23,
   kPw=+24, kAw=-24,
-    kPh=+25
+  kPh=+25
 };
-//----------------------------------
-const char* pdgidToString(const int &id)
-{
-  switch(id) {
-  case kAd     :  return "/d"   ;
-  case kPd     :  return "d"    ;
-  case kAu     :  return "/u"   ;
-  case kPu     :  return "u"    ;
-  case kAs     :  return "/s"   ;
-  case kPs     :  return "s"    ;
-  case kAc     :  return "/c"   ;
-  case kPc     :  return "c"    ;
-  case kAb     :  return "/b"   ;
-  case kPb     :  return "b"    ;
-  case kAt     :  return "/t"   ;
-  case kPt     :  return "t"    ;
-  case kAele   :  return "e+"   ;
-  case kPele   :  return "e-"   ;
-  case kAve    :  return "ve"   ;
-  case kPve    :  return "ve"   ;
-  case kAmu    :  return "mu+"  ;
-  case kPmu    :  return "mu-"  ;
-  case kAvmu   :  return "vmu"  ;
-  case kPvmu   :  return "vmu"  ;
-  case kAtau   :  return "tau+" ;
-  case kPtau   :  return "tau-" ;
-  case kAvtau  :  return "vtau" ;
-  case kPvtau  :  return "vtau" ;
-  case kPg     :  return "g"    ;
-  case kPgam   :  return "gamma";
-  case kPz     :  return "Z"    ;
-  case kPw     :  return "W-"   ;
-  case kAw     :  return "W+"   ;
-  case kPh     :  return "h"    ;
-  default                 :  return "unkn" ;
-  } // end switch(id)
-}
-//----------------------------------
+
+const char* pdgidToString(const int &id);
 void printEvent(const vector<int>* pdg,
 				const vector<int>* status,
-				const vector<vector<int> >* parents)
-{
-  using std::left;
-  using std::right;
-  size_t maxNpartToPrint=30;
-  maxNpartToPrint = (pdg->size() < maxNpartToPrint
-					 ?
-					 pdg->size() : maxNpartToPrint);
-  int colW=8;
-  cout
-    <<"--------------------------------"<<endl
-    << left  << setw(colW)<<"i"
-    << left  << setw(colW)<<"status"
-    << right << setw(colW)<<"par"
-    << right << setw(colW)<<"id"
-    << right << setw(colW)<<"name"
-    << endl
-    <<"--------------------------------"<<endl;
-
-  for(size_t iP=0; iP < maxNpartToPrint; ++iP){
-    int id = pdg->at(iP);
-    cout
-      << left  << setw(colW)<<iP
-	  << right << setw(colW)<<status->at(iP)
-      << right << setw(colW)<<vecToString(parents->at(iP))
-      << right << setw(colW)<<id
-      << right << setw(colW)<<pdgidToString(id)
-      << endl;
-  } // end for(iP)
-}
+				const vector<vector<int> >* parents);
 // <end>
-//----------------------------------
 //! Just a wrapper of the above for MultiLep classes
-float MllForSherpa(D3PDReader::TruthParticleD3PDObject* truthParticles,
-				   Bool_t verbose=false)
-{
-  D3PDReader::TruthParticleD3PDObject *tp = truthParticles;
-  //if(verbose) printEvent(tp->pdgId(), tp->status(), tp->parent_index());
-  return MllForSherpa(tp->pt(), tp->eta(), tp->phi(), tp->m(),
-					  tp->pdgId(), tp->status(),
-					  verbose);
-}
+float MllForSherpa(D3PDReader::TruthParticleD3PDObject* truthParticles, Bool_t verbose=false);
 
 #endif

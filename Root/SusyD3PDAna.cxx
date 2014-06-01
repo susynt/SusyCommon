@@ -322,7 +322,7 @@ void SusyD3PDAna::selectBaselineObjects(SusyNtSys sys)
   m_preMuons = get_muons_baseline(&d3pd.muo, !m_isMC, m_susyObj, 
                                   6.*GeV, 2.5, susySys);
   // Removing eta cut for baseline jets. This is for the bad jet veto.
-  m_preJets = get_jet_baseline(&d3pd.jet, &d3pd.vtx, &d3pd.evt, !m_isMC, m_susyObj, 
+  m_preJets = get_jet_baseline(&d3pd.jet, &d3pd.vtx, &d3pd.evt, &d3pd.evtShape, !m_isMC, m_susyObj, 
                                20.*GeV, std::numeric_limits<float>::max(), susySys, false, goodJets);
   //m_preJets = get_jet_baseline(&d3pd.jet, &d3pd.vtx, &d3pd.evt, !m_isMC, m_susyObj, 
   //                             20.*GeV, 4.9, susySys, false, goodJets);

@@ -166,6 +166,13 @@ bool IsSherpaZll(UInt_t datasetId)
             datasetId==173046 ); // Sherpa_CT10_DYtautauM15to40
 }
 //-------------------------------------------
+std::string vecToString(const vector<int> &vec)
+{
+  std::stringstream ss;
+  std::copy(vec.begin(), vec.end(), std::ostream_iterator<int>(ss,", "));
+  return ss.str();
+}
+//-------------------------------------------
 bool findIndicesLeptonsZll(const vector<int>* pdg, const vector<int>* status,
                            std::pair<size_t, size_t> &result,
                            bool verbose)
@@ -222,5 +229,84 @@ float MllForSherpa(vector<float>* pt, vector<float>* eta, vector<float>* phi, ve
     l1.SetPtEtaPhiM(pt->at(iL1), eta->at(iL1), phi->at(iL1), m->at(iL1));
     mll = (l0+l1).M() * MeV2GeV;
     return mll;
+}
+//----------------------------------
+const char* pdgidToString(const int &id)
+{
+  switch(id) {
+  case kAd     :  return "/d"   ;
+  case kPd     :  return "d"    ;
+  case kAu     :  return "/u"   ;
+  case kPu     :  return "u"    ;
+  case kAs     :  return "/s"   ;
+  case kPs     :  return "s"    ;
+  case kAc     :  return "/c"   ;
+  case kPc     :  return "c"    ;
+  case kAb     :  return "/b"   ;
+  case kPb     :  return "b"    ;
+  case kAt     :  return "/t"   ;
+  case kPt     :  return "t"    ;
+  case kAele   :  return "e+"   ;
+  case kPele   :  return "e-"   ;
+  case kAve    :  return "ve"   ;
+  case kPve    :  return "ve"   ;
+  case kAmu    :  return "mu+"  ;
+  case kPmu    :  return "mu-"  ;
+  case kAvmu   :  return "vmu"  ;
+  case kPvmu   :  return "vmu"  ;
+  case kAtau   :  return "tau+" ;
+  case kPtau   :  return "tau-" ;
+  case kAvtau  :  return "vtau" ;
+  case kPvtau  :  return "vtau" ;
+  case kPg     :  return "g"    ;
+  case kPgam   :  return "gamma";
+  case kPz     :  return "Z"    ;
+  case kPw     :  return "W-"   ;
+  case kAw     :  return "W+"   ;
+  case kPh     :  return "h"    ;
+  default                 :  return "unkn" ;
+  } // end switch(id)
+}
+//----------------------------------
+void printEvent(const vector<int>* pdg,
+				const vector<int>* status,
+				const vector<vector<int> >* parents)
+{
+  using std::left;
+  using std::right;
+  size_t maxNpartToPrint=30;
+  maxNpartToPrint = (pdg->size() < maxNpartToPrint
+					 ?
+					 pdg->size() : maxNpartToPrint);
+  int colW=8;
+  cout
+    <<"--------------------------------"<<endl
+    << left  << setw(colW)<<"i"
+    << left  << setw(colW)<<"status"
+    << right << setw(colW)<<"par"
+    << right << setw(colW)<<"id"
+    << right << setw(colW)<<"name"
+    << endl
+    <<"--------------------------------"<<endl;
+
+  for(size_t iP=0; iP < maxNpartToPrint; ++iP){
+    int id = pdg->at(iP);
+    cout
+      << left  << setw(colW)<<iP
+	  << right << setw(colW)<<status->at(iP)
+      << right << setw(colW)<<vecToString(parents->at(iP))
+      << right << setw(colW)<<id
+      << right << setw(colW)<<pdgidToString(id)
+      << endl;
+  } // end for(iP)
+}
+//----------------------------------
+float MllForSherpa(D3PDReader::TruthParticleD3PDObject* truthParticles, Bool_t verbose)
+{
+  D3PDReader::TruthParticleD3PDObject *tp = truthParticles;
+  //if(verbose) printEvent(tp->pdgId(), tp->status(), tp->parent_index());
+  return MllForSherpa(tp->pt(), tp->eta(), tp->phi(), tp->m(),
+					  tp->pdgId(), tp->status(),
+					  verbose);
 }
 //----------------------------------
