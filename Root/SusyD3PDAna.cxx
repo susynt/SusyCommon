@@ -37,9 +37,6 @@ SusyD3PDAna::SusyD3PDAna() :
         m_pileup(0),
         m_pileup_up(0),
         m_pileup_dn(0),
-        m_pileupAB3(0),
-        m_pileupAB(0),
-        m_pileupAE(0),
         m_susyXsec(0),
         m_hforTool()
 {
@@ -159,10 +156,8 @@ void SusyD3PDAna::Begin(TTree* /*tree*/)
   if(m_isMC){
     m_pileup = new Root::TPileupReweighting("PileupReweighting");
     m_pileup->SetDataScaleFactors(1/1.11);
-    //m_pileup->AddConfigFile("$ROOTCOREBIN/data/SUSYTools/MC12b_MyPRW.prw.root");
     m_pileup->AddConfigFile("$ROOTCOREBIN/data/PileupReweighting/mc12ab_defaults.prw.root");
-    //m_pileup->AddLumiCalcFile("$ROOTCOREBIN/data/MultiLep/ilumicalc_histograms_EF_2e12Tvh_loose1_200842-215643_v2.root");
-    m_pileup->AddLumiCalcFile("$ROOTCOREBIN/data/MultiLep/ilumicalc_histograms_EF_2e12Tvh_loose1_200842-215643_grl_v61.root");
+    m_pileup->AddLumiCalcFile("$ROOTCOREBIN/data/SusyCommon/ilumicalc_histograms_EF_2e12Tvh_loose1_200842-215643_grl_v61.root");
     m_pileup->SetUnrepresentedDataAction(2);
     int pileupError = m_pileup->Initialize();
     if(pileupError){
@@ -172,7 +167,7 @@ void SusyD3PDAna::Begin(TTree* /*tree*/)
     m_pileup_up = new Root::TPileupReweighting("PileupReweighting");
     m_pileup_up->SetDataScaleFactors(1/1.08);
     m_pileup_up->AddConfigFile("$ROOTCOREBIN/data/PileupReweighting/mc12ab_defaults.prw.root");
-    m_pileup_up->AddLumiCalcFile("$ROOTCOREBIN/data/MultiLep/ilumicalc_histograms_EF_2e12Tvh_loose1_200842-215643_grl_v61.root");
+    m_pileup_up->AddLumiCalcFile("$ROOTCOREBIN/data/SusyCommon/ilumicalc_histograms_EF_2e12Tvh_loose1_200842-215643_grl_v61.root");
     m_pileup_up->SetUnrepresentedDataAction(2);
     pileupError = m_pileup_up->Initialize();
     if(pileupError){
@@ -182,43 +177,9 @@ void SusyD3PDAna::Begin(TTree* /*tree*/)
     m_pileup_dn = new Root::TPileupReweighting("PileupReweighting");
     m_pileup_dn->SetDataScaleFactors(1/1.14);
     m_pileup_dn->AddConfigFile("$ROOTCOREBIN/data/PileupReweighting/mc12ab_defaults.prw.root");
-    m_pileup_dn->AddLumiCalcFile("$ROOTCOREBIN/data/MultiLep/ilumicalc_histograms_EF_2e12Tvh_loose1_200842-215643_grl_v61.root");
+    m_pileup_dn->AddLumiCalcFile("$ROOTCOREBIN/data/SusyCommon/ilumicalc_histograms_EF_2e12Tvh_loose1_200842-215643_grl_v61.root");
     m_pileup_dn->SetUnrepresentedDataAction(2);
     pileupError = m_pileup_dn->Initialize();
-    if(pileupError){
-      cout << "Problem in pileup initialization.  pileupError = " << pileupError << endl;
-      abort();
-    }
-
-    // pileup reweighting for 2012 A-B3 only
-    m_pileupAB3 = new Root::TPileupReweighting("PileupReweightingAB3");
-    m_pileupAB3->SetDataScaleFactors(1/1.11);
-    m_pileupAB3->AddConfigFile("$ROOTCOREBIN/data/PileupReweighting/mc12ab_defaults.prw.root");
-    m_pileupAB3->AddLumiCalcFile("$ROOTCOREBIN/data/MultiLep/ilumicalc_histograms_EF_2e12Tvh_loose1_200841-203195.root");
-    m_pileupAB3->SetUnrepresentedDataAction(2);
-    pileupError = m_pileupAB3->Initialize();
-    if(pileupError){
-      cout << "Problem in pileup initialization.  pileupError = " << pileupError << endl;
-      abort();
-    }
-    // pileup reweighting for 2012 A-B only
-    m_pileupAB = new Root::TPileupReweighting("PileupReweightingAB");
-    m_pileupAB->SetDataScaleFactors(1/1.11);
-    m_pileupAB->AddConfigFile("$ROOTCOREBIN/data/PileupReweighting/mc12ab_defaults.prw.root");
-    m_pileupAB->AddLumiCalcFile("$ROOTCOREBIN/data/MultiLep/ilumicalc_histograms_EF_e24vhi_medium1_200841-205113.root");
-    m_pileupAB->SetUnrepresentedDataAction(2);
-    pileupError = m_pileupAB->Initialize();
-    if(pileupError){
-      cout << "Problem in pileup initialization.  pileupError = " << pileupError << endl;
-      abort();
-    }
-    // pileup reweighting for 2012 A-E only
-    m_pileupAE = new Root::TPileupReweighting("PileupReweightingAE");
-    m_pileupAE->SetDataScaleFactors(1/1.11);
-    m_pileupAE->AddConfigFile("$ROOTCOREBIN/data/PileupReweighting/mc12ab_defaults.prw.root");
-    m_pileupAE->AddLumiCalcFile("$ROOTCOREBIN/data/MultiLep/ilumicalc_histograms_EF_2e12Tvh_loose1_200841-210308.root");
-    m_pileupAE->SetUnrepresentedDataAction(2);
-    pileupError = m_pileupAE->Initialize();
     if(pileupError){
       cout << "Problem in pileup initialization.  pileupError = " << pileupError << endl;
       abort();
@@ -267,9 +228,6 @@ void SusyD3PDAna::Terminate()
     delete m_pileup;
     delete m_pileup_up;
     delete m_pileup_dn;
-    delete m_pileupAB3;
-    delete m_pileupAB;
-    delete m_pileupAE;
   }
 }
 
@@ -1039,19 +997,6 @@ float SusyD3PDAna::getEventWeight(float lumi)
   return d3pd.evt.mc_event_weight() * getXsecWeight() * getPileupWeight() * lumi / m_sumw;
 }
 /*--------------------------------------------------------------------------------*/
-float SusyD3PDAna::getEventWeightAtoB3()
-{
-  if(!m_isMC) return 1;
-  return d3pd.evt.mc_event_weight() * getXsecWeight() * getPileupWeightAB3() * LUMI_A_B3 / m_sumw;
-}
-/*--------------------------------------------------------------------------------*/
-float SusyD3PDAna::getEventWeightAtoB()
-{
-  if(!m_isMC) return 1;
-  return d3pd.evt.mc_event_weight() * getXsecWeight() * getPileupWeightAB() * LUMI_A_B14 / m_sumw;
-}
-
-/*--------------------------------------------------------------------------------*/
 // Cross section and lumi scaling
 /*--------------------------------------------------------------------------------*/
 float SusyD3PDAna::getXsecWeight()
@@ -1089,21 +1034,6 @@ float SusyD3PDAna::getPileupWeightUp()
 float SusyD3PDAna::getPileupWeightDown()
 {
   return m_pileup_dn->GetCombinedWeight(d3pd.evt.RunNumber(), d3pd.evt.mc_channel_number(), d3pd.evt.averageIntPerXing());
-}
-/*--------------------------------------------------------------------------------*/
-float SusyD3PDAna::getPileupWeightAB3()
-{
-  return m_pileupAB3->GetCombinedWeight(d3pd.evt.RunNumber(), d3pd.evt.mc_channel_number(), d3pd.evt.averageIntPerXing());
-}
-/*--------------------------------------------------------------------------------*/
-float SusyD3PDAna::getPileupWeightAB()
-{
-  return m_pileupAB->GetCombinedWeight(d3pd.evt.RunNumber(), d3pd.evt.mc_channel_number(), d3pd.evt.averageIntPerXing());
-}
-/*--------------------------------------------------------------------------------*/
-float SusyD3PDAna::getPileupWeightAE()
-{
-  return m_pileupAE->GetCombinedWeight(d3pd.evt.RunNumber(), d3pd.evt.mc_channel_number(), d3pd.evt.averageIntPerXing());
 }
 
 /*--------------------------------------------------------------------------------*/

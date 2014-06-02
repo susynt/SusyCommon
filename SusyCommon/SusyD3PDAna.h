@@ -145,11 +145,6 @@ class SusyD3PDAna : public SusyD3PDInterface
     // You can supply a different integrated luminosity, 
     // but the the pileup weights will still correspond to A-E.
     float getEventWeight(float lumi = LUMI_A_E);
-    // This function will give the MC weight corresponding to the A-B3 unblinded dataset
-    // with correct pileup weights 
-    float getEventWeightAtoB3();
-    // MC weight corresponding to A-B dataset (5.83/fb)
-    float getEventWeightAtoB();
 
     // event weight (xsec*kfac) 
     float getXsecWeight();
@@ -168,12 +163,6 @@ class SusyD3PDAna : public SusyD3PDInterface
     float getPileupWeight();
     float getPileupWeightUp();
     float getPileupWeightDown();
-    // pileup weight for A-B3 (1.037/fb)
-    float getPileupWeightAB3();
-    // pileup weight for A-B (5.83/fb)
-    float getPileupWeightAB();
-    // pileup weight for A-E HCP dataset
-    float getPileupWeightAE();
     // PDF reweighting of 7TeV -> 8TeV
     float getPDFWeight8TeV();
 
@@ -348,10 +337,6 @@ class SusyD3PDAna : public SusyD3PDInterface
     Root::TPileupReweighting*   m_pileup;       // pileup reweighting
     Root::TPileupReweighting*   m_pileup_up;    // pileup reweighting
     Root::TPileupReweighting*   m_pileup_dn;    // pileup reweighting
-
-    Root::TPileupReweighting*   m_pileupAB3;    // pileup reweighting for 2012 A-B3 only
-    Root::TPileupReweighting*   m_pileupAB;     // pileup reweighting for 2012 A-B
-    Root::TPileupReweighting*   m_pileupAE;     // pileup reweighting for 2012 A-H (HCP dataset)
 
     // The SUSY CrossSectionDB has its own map for retrieving xsec info, but
     // it has a lot of entries so lookup is slow.  Save our own xsec map
