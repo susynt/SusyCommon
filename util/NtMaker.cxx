@@ -229,7 +229,7 @@ int main(int argc, char** argv)
   cout << endl;
 
   // Build the input chain
-  TChain* chain = new TChain("susy");
+  TChain* chain = new TChain("physics");
   int fileErr = ChainHelper::addFileList(chain, fileList);
   if(fileErr) return 1;
   Long64_t nEntries = chain->GetEntries();
