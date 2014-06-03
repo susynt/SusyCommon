@@ -135,7 +135,6 @@ void D3PDAna::Begin(TTree* /*tree*/)
   // SUSY cross sections
   if(m_isMC){
     // Back to using the SUSYTools file
-    //string xsecFileName  = gSystem->ExpandPathName("$ROOTCOREBIN/data/MultiLep/susy_crosssections_8TeV_mod.txt");
     string xsecFileName  = gSystem->ExpandPathName("$ROOTCOREBIN/data/SUSYTools/susy_crosssections_8TeV.txt");
     m_susyXsec = new SUSY::CrossSectionDB(xsecFileName);
   }
@@ -143,7 +142,7 @@ void D3PDAna::Begin(TTree* /*tree*/)
   // GRL
   if(!m_isMC){
     if(m_grlFileName.Length() == 0){
-      string grlName = "$ROOTCOREBIN/data/MultiLep/";
+      string grlName = "$ROOTCOREBIN/data/SUSYTools/GRL/Summer2013/";
       grlName += "data12_8TeV.periodAllYear_DetStatus-v61-pro14-02_DQDefects-00-01-00_PHYS_StandardGRL_All_Good.xml";
       m_grlFileName = gSystem->ExpandPathName(grlName.c_str());
     }
@@ -1053,7 +1052,7 @@ float D3PDAna::getPDFWeight8TeV()
   int id1 = m_event.mcevt.pdf_id1()->at(0);
   int id2 = m_event.mcevt.pdf_id2()->at(0);
 
-  // MultiLep function... Not working?
+  // MultLeip function... Not working?
   //return scaleBeamEnergy(*m_pdfTool, 21000, m_event.mcevt.pdf_scale()->at(0), m_event.mcevt.pdf_x1()->at(0),
                          //m_event.mcevt.pdf_x2()->at(0), m_event.mcevt.pdf_id1()->at(0), m_event.mcevt.pdf_id2()->at(0));
   // Simple scaling

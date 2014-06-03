@@ -53,6 +53,7 @@ class D3PDAna : public TSelector
     virtual void    SlaveTerminate(){};
     /// Due to ROOT's stupid design, need to specify version >= 2 or the tree will not connect automatically
     virtual Int_t   Version() const { return 2; }
+    virtual D3PDAna& setDebug(int debugLevel) { m_dbg = debugLevel; return *this; }
     //--------
 
 
