@@ -6,6 +6,7 @@
 #include "SusyCommon/SusyD3PDSkimmer.h"
 #include "SusyCommon/SusyNtMaker.h"
 #include "SusyCommon/SusyMetValidation.h"
+#include "SusyCommon/D3PDAna.h"
 
 
 #ifdef __CINT__
@@ -22,6 +23,7 @@
 #pragma link C++ class SusyD3PDSkimmer;
 #pragma link C++ class SusyNtMaker;
 #pragma link C++ class SusyMetValidation;
-
+#pragma link C++ namespace susy;
+#pragma link C++ class susy::D3PDAna;
 
 #endif
