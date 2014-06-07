@@ -253,6 +253,12 @@ void SusyNtMaker::Terminate()
 /*--------------------------------------------------------------------------------*/
 // Select event
 /*--------------------------------------------------------------------------------*/
+bool isSimplifiedModel(const TString &sampleName)
+{
+    return sampleName.Contains("simplifiedModel");
+}
+//----------------------------------------------------------
+
 bool SusyNtMaker::selectEvent()
 {
   if(m_dbg>=5) cout << "selectEvent" << endl;
@@ -281,7 +287,7 @@ bool SusyNtMaker::selectEvent()
 
   // This assumes that sparticle branches are present for any
   // sample that might have the SUSY propagators problem
-  m_hasSusyProp = (isSusySample ?
+  m_hasSusyProp = ((isSusySample && isSimplifiedModel(m_sample)) ?
                    SusyNtTools::eventHasSusyPropagators(*d3pd.truth.pdgId(), *d3pd.truth.parent_index()) :
                    false);
 
