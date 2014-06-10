@@ -441,7 +441,7 @@ bool SusyNtMaker::selectEvent()
                                     d3pd.ele.type(), d3pd.ele.origin(),
                                     d3pd.truthMu.pt(), d3pd.truthMu.eta(), d3pd.truthMu.phi(), d3pd.truthMu.m(),
                                     d3pd.truthMu.type(), d3pd.truthMu.origin(),
-                                    d3pd.trk.pt(), d3pd.trk.eta(), d3pd.trk.phi_wrtPV(), d3pd.trk10.mc_barcode());
+                                    d3pd.trk.pt(), d3pd.trk.eta(), d3pd.trk.phi_wrtPV(), d3pd.trk.mc_barcode());
   }
 
   if(m_fillNt){
