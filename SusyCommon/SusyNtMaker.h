@@ -6,7 +6,7 @@
 
 #include "TStopwatch.h"
 
-#include "SusyCommon/SusyD3PDAna.h"
+#include "SusyCommon/D3PDAna.h"
 #include "SusyNtuple/SusyNtObject.h"
 
 
@@ -19,7 +19,7 @@
 namespace Root { class TElectronEfficiencyCorrectionTool; }
 
 namespace susy {
-class SusyNtMaker : public SusyD3PDAna
+class SusyNtMaker : public D3PDAna
 {
 
  public:
