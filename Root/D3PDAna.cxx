@@ -405,15 +405,15 @@ void D3PDAna::buildMet(SusyNtSys sys)
                                          metElectrons,
                                          m_event.el_MET_Egamma10NoTau.wet(), m_event.el_MET_Egamma10NoTau.wpx(),
                                          m_event.el_MET_Egamma10NoTau.wpy(), m_event.el_MET_Egamma10NoTau.statusWord(),
-                                         m_event.MET_CellOut.etx(),
-                                         m_event.MET_CellOut.ety(),
-                                         m_event.MET_CellOut.sumet(),
-                                         m_event.MET_CellOut_Eflow_STVF.etx(),
-                                         m_event.MET_CellOut_Eflow_STVF.ety(),
-                                         m_event.MET_CellOut_Eflow_STVF.sumet(),
-                                         m_event.MET_RefGamma.etx(),
-                                         m_event.MET_RefGamma.ety(),
-                                         m_event.MET_RefGamma.sumet(),
+                                         m_event.MET_CellOut_Egamma10NoTau.etx(),
+                                         m_event.MET_CellOut_Egamma10NoTau.ety(),
+                                         m_event.MET_CellOut_Egamma10NoTau.sumet(),
+                                         m_event.MET_CellOut_Eflow_STVF_Egamma10NoTau.etx(),
+                                         m_event.MET_CellOut_Eflow_STVF_Egamma10NoTau.ety(),
+                                         m_event.MET_CellOut_Eflow_STVF_Egamma10NoTau.sumet(),
+                                         m_event.MET_RefGamma_Egamma10NoTau.etx(),
+                                         m_event.MET_RefGamma_Egamma10NoTau.ety(),
+                                         m_event.MET_RefGamma_Egamma10NoTau.sumet(),
                                          m_metMuons,
                                          m_event.mu_staco.ms_qoverp(),
                                          m_event.mu_staco.ms_theta(),
@@ -422,7 +422,6 @@ void D3PDAna::buildMet(SusyNtSys sys)
                                          m_event.mu_staco.energyLossPar(),
                                          m_event.eventinfo.averageIntPerXing(),
                                          m_metFlavor, susySys);
-
   m_met.SetPxPyPzE(metVector.X(), metVector.Y(), 0, metVector.Mod());
 }
 
