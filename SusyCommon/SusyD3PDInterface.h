@@ -15,11 +15,10 @@
 #include "D3PDReader/JetD3PDObject.h"
 #include "D3PDReader/PhotonD3PDObject.h"
 #include "D3PDReader/TauD3PDObject.h"
-#include "D3PDReader/METD3PDObject.h"
 #include "D3PDReader/RefFinalMETD3PDObject.h"
 #include "D3PDReader/MissingETTruthD3PDObject.h"
 #include "D3PDReader/MissingETCompositionD3PDObject.h"
-#include "D3PDReader/TrackD3PDObject.h"
+#include "D3PDReader/TrackParticleD3PDObject.h"
 #include "D3PDReader/triggerBitsD3PDObject.h"
 #include "D3PDReader/EFElectronD3PDObject.h"
 #include "D3PDReader/TrigMuonEFInfoD3PDObject.h"
@@ -73,14 +72,14 @@ class SusyD3PDContainer
     D3PDReader::JetD3PDObject           jet;
     D3PDReader::PhotonD3PDObject        pho;
     D3PDReader::TauD3PDObject           tau;
-    D3PDReader::METD3PDObject           met;
+    D3PDReader::RefFinalMETD3PDObject   met;
     D3PDReader::RefFinalMETD3PDObject   metCellOut;
     D3PDReader::RefFinalMETD3PDObject   metCellOutEflowStvf;
     D3PDReader::RefFinalMETD3PDObject   metRefGamma;
     D3PDReader::MissingETCompositionD3PDObject elMetEgamma10NoTau;
     D3PDReader::MissingETCompositionD3PDObject jetMetEgamma10NoTau;
     D3PDReader::MissingETTruthD3PDObject metTruth;
-    D3PDReader::TrackD3PDObject         trk;
+    D3PDReader::TrackParticleD3PDObject trk;
     D3PDReader::PrimaryVertexD3PDObject vtx;
     D3PDReader::triggerBitsD3PDObject   trig;
     D3PDReader::EFElectronD3PDObject    trigEfEl;
