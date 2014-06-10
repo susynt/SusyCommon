@@ -16,6 +16,8 @@
 using namespace std;
 namespace smc =susy::mc;
 
+using susy::SusyNtMaker;
+
 #define GeV 1000.
 
 /*--------------------------------------------------------------------------------*/

@@ -18,7 +18,7 @@
 
 namespace Root { class TElectronEfficiencyCorrectionTool; }
 
-
+namespace susy {
 class SusyNtMaker : public SusyD3PDAna
 {
 
@@ -200,5 +200,7 @@ class SusyNtMaker : public SusyD3PDAna
     TStopwatch          m_timer;
 
 };
+
+} // susy
 
 #endif
