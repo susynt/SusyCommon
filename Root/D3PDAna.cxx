@@ -273,6 +273,7 @@ void D3PDAna::selectBaselineObjects(SusyNtSys sys)
   else if(sys == NtSys_TES_UP    ) susySys = SystErr::TESUP;      // TES up
   else if(sys == NtSys_TES_DN    ) susySys = SystErr::TESDOWN;    // TES down
 
+  D3PDReader::JetD3PDObject *jets = &m_event.jet_AntiKt4LCTopo;
   // Container object selection
   if(m_selectTaus) m_contTaus = get_taus_baseline(&m_event.tau, m_susyObj, 20.*GeV, 2.47,
                                                   SUSYTau::TauNone, SUSYTau::TauNone, SUSYTau::TauNone,
@@ -285,9 +286,9 @@ void D3PDAna::selectBaselineObjects(SusyNtSys sys)
   m_preMuons = get_muons_baseline(&m_event.mu, !m_isMC, m_susyObj,
                                   6.*GeV, 2.5, susySys);
   // Removing eta cut for baseline jets. This is for the bad jet veto.
-  m_preJets = get_jet_baseline(&m_event.jet, &m_event.vxp, &m_event.eventinfo, &m_event.Eventshape, !m_isMC, m_susyObj,
+  m_preJets = get_jet_baseline(jets, &m_event.vxp, &m_event.eventinfo, &m_event.Eventshape, !m_isMC, m_susyObj,
                                20.*GeV, std::numeric_limits<float>::max(), susySys, false, goodJets);
-  //m_preJets = get_jet_baseline(&m_event.jet, &m_event.vxp, &m_event.eventinfo, !m_isMC, m_susyObj,
+  //m_preJets = get_jet_baseline(jets, &m_event.vxp, &m_event.eventinfo, !m_isMC, m_susyObj,
   //                             20.*GeV, 4.9, susySys, false, goodJets);
 
   // Selection for met muons
@@ -312,11 +313,12 @@ void D3PDAna::selectBaselineObjects(SusyNtSys sys)
 /*--------------------------------------------------------------------------------*/
 void D3PDAna::performOverlapRemoval()
 {
+  D3PDReader::JetD3PDObject *jets = &m_event.jet_AntiKt4LCTopo;
   // e-e overlap removal
   m_baseElectrons = overlap_removal(m_susyObj, &m_event.el, m_preElectrons, &m_event.el, m_preElectrons,
                                     0.05, true, true);
   // jet-e overlap removal
-  m_baseJets      = overlap_removal(m_susyObj, &m_event.jet, m_preJets, &m_event.el, m_baseElectrons,
+  m_baseJets      = overlap_removal(m_susyObj, jets, m_preJets, &m_event.el, m_baseElectrons,
                                     0.2, false, false);
 
   if(m_selectTaus) {
@@ -327,11 +329,11 @@ void D3PDAna::performOverlapRemoval()
   }
 
   // e-jet overlap removal
-  m_baseElectrons = overlap_removal(m_susyObj, &m_event.el, m_baseElectrons, &m_event.jet, m_baseJets,
+  m_baseElectrons = overlap_removal(m_susyObj, &m_event.el, m_baseElectrons, jets, m_baseJets,
                                     0.4, false, false);
 
   // m-jet overlap removal
-  m_baseMuons     = overlap_removal(m_susyObj, &m_event.mu, m_preMuons, &m_event.jet, m_baseJets, 0.4, false, false);
+  m_baseMuons     = overlap_removal(m_susyObj, &m_event.mu, m_preMuons, jets, m_baseJets, 0.4, false, false);
 
   // e-m overlap removal
   vector<int> copyElectrons = m_baseElectrons;
@@ -343,7 +345,7 @@ void D3PDAna::performOverlapRemoval()
   m_baseMuons     = overlap_removal(m_susyObj, &m_event.mu, m_baseMuons, &m_event.mu, m_baseMuons, 0.05, true, false);
 
   // jet-tau overlap removal
-  m_baseJets      = overlap_removal(m_susyObj, &m_event.jet, m_baseJets, &m_event.tau, m_baseTaus, 0.2, false, false);
+  m_baseJets      = overlap_removal(m_susyObj, jets, m_baseJets, &m_event.tau, m_baseTaus, 0.2, false, false);
 
   // remove SFOS lepton pairs with Mll < 12 GeV
   m_baseElectrons = RemoveSFOSPair(m_susyObj, &m_event.el, m_baseElectrons, 12.*GeV);
@@ -358,11 +360,12 @@ void D3PDAna::selectSignalObjects()
 {
   if(m_dbg>=5) cout << "selectSignalObjects" << endl;
   uint nVtx = getNumGoodVtx();
+  D3PDReader::JetD3PDObject *jets =  &m_event.jet_AntiKt4LCTopo;
   m_sigElectrons = get_electrons_signal(&m_event.el, m_baseElectrons, &m_event.mu, m_baseMuons,
                                         nVtx, !m_isMC, m_susyObj, 10.*GeV, 0.16, 0.18, 5., 0.4);
   m_sigMuons     = get_muons_signal(&m_event.mu, m_baseMuons, &m_event.el, m_baseElectrons,
                                     nVtx, !m_isMC, m_susyObj, 10.*GeV, .12, 3., 1.);
-  m_sigJets      = get_jet_signal(&m_event.jet, m_susyObj, m_baseJets, 20.*GeV, 2.5, 0.75);
+  m_sigJets      = get_jet_signal(jets, m_susyObj, m_baseJets, 20.*GeV, 2.5, 0.75);
   m_sigTaus      = get_taus_signal(&m_event.tau, m_baseTaus, m_susyObj);
 
   // combine light leptons
@@ -453,8 +456,8 @@ void D3PDAna::selectTruthObjects()
   // Done under SusyNtMaker::fillTruthParticleVars
 
   // ==>> Second the truth jets
-  for(int index=0; index < m_event.jet_AntiKt4Truth.n(); index++) {
-      const D3PDReader::JetD3PDObjectElement &trueJet = m_event.jet_AntiKt4Truth[index];
+  for(int index=0; index < m_event.AntiKt4Truth.n(); index++) {
+      const D3PDReader::JetD3PDObjectElement &trueJet = m_event.AntiKt4Truth[index];
       if( trueJet.pt()/GeV > 15. && fabs(trueJet.eta()) < 4.5) m_truJets.push_back(index);
   }
 
@@ -507,8 +510,8 @@ bool D3PDAna::matchTruthJet(int iJet)
 {
   // Loop over truth jets looking for a match
   const TLorentzVector* jetLV = & m_susyObj.GetJetTLV(iJet);
-  for(int i=0; i<m_event.jet_AntiKt4Truth.n(); i++){
-    const D3PDReader::JetD3PDObjectElement &trueJet = m_event.jet_AntiKt4Truth[i];
+  for(int i=0; i<m_event.AntiKt4Truth.n(); i++){
+    const D3PDReader::JetD3PDObjectElement &trueJet = m_event.AntiKt4Truth[i];
     TLorentzVector trueJetLV;
     trueJetLV.SetPtEtaPhiE(trueJet.pt(), trueJet.eta(), trueJet.phi(), trueJet.E());
     if(jetLV->DeltaR(trueJetLV) < 0.3) return true;
@@ -939,14 +942,16 @@ bool D3PDAna::passLarHoleVeto()
 /*--------------------------------------------------------------------------------*/
 bool D3PDAna::passTileHotSpot()
 {
-  return !check_jet_tileHotSpot(&m_event.jet, m_preJets, m_susyObj, !m_isMC, m_event.eventinfo.RunNumber());
+  D3PDReader::JetD3PDObject *jets =  &m_event.jet_AntiKt4LCTopo;
+  return !check_jet_tileHotSpot(jets, m_preJets, m_susyObj, !m_isMC, m_event.eventinfo.RunNumber());
 }
 /*--------------------------------------------------------------------------------*/
 // Pass bad jet cut
 /*--------------------------------------------------------------------------------*/
 bool D3PDAna::passBadJet()
 {
-  return !IsBadJetEvent(&m_event.jet, m_baseJets, 20.*GeV, m_susyObj);
+  D3PDReader::JetD3PDObject *jets =  &m_event.jet_AntiKt4LCTopo;
+  return !IsBadJetEvent(jets, m_baseJets, 20.*GeV, m_susyObj);
 }
 /*--------------------------------------------------------------------------------*/
 // Pass good vertex
@@ -1211,7 +1216,7 @@ void D3PDAna::dumpBaselineObjects()
     for(uint i=0; i < nJet; i++){
       int iJet = m_baseJets[i];
       const TLorentzVector* lv = & m_susyObj.GetJetTLV(iJet);
-      const D3PDReader::JetD3PDObjectElement* jet = & m_event.jet[iJet];
+      const D3PDReader::JetD3PDObjectElement* jet = & m_event.jet_AntiKt4LCTopo[iJet];
       cout << "  Jet : " << fixed
            << " pt " << setw(6) << lv->Pt()/GeV
            << " eta " << setw(5) << lv->Eta()
@@ -1270,7 +1275,7 @@ void D3PDAna::dumpSignalObjects()
     for(uint i=0; i < nJet; i++){
       int iJet = m_sigJets[i];
       const TLorentzVector* lv = & m_susyObj.GetJetTLV(iJet);
-      const D3PDReader::JetD3PDObjectElement* jet = & m_event.jet[iJet];
+      const D3PDReader::JetD3PDObjectElement* jet = & m_event.jet_AntiKt4LCTopo[iJet];
       cout << "  Jet : " << fixed
            << " pt " << setw(6) << lv->Pt()/GeV
            << " eta " << setw(5) << lv->Eta()
