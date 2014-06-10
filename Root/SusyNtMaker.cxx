@@ -272,18 +272,13 @@ bool SusyNtMaker::selectEvent()
   m_susyNt.clear();
 
   // Dynamically determine if SUSY sample by looking for sparticle branches
-  #warning "isSusySample is broken, these branches are not available in NTUP_COMMON"
-  bool isSusySample = false;
-  //--DG--ntupcommonbool isSusySample = d3pd.evt.SUSY_Spart1_pdgId.IsAvailable() &&
-  //--DG--ntupcommon                    d3pd.evt.SUSY_Spart2_pdgId.IsAvailable() &&
-  //--DG--ntupcommon                    d3pd.evt.SUSY_Spart1_pdgId() != 0        &&
-  //--DG--ntupcommon                    d3pd.evt.SUSY_Spart2_pdgId() != 0;
+  bool isSusySample = m_event.SUSY.Spart1_pdgId.IsAvailable() &&
+                      m_event.SUSY.Spart2_pdgId.IsAvailable() &&
+                      m_event.SUSY.Spart1_pdgId() != 0        &&
+                      m_event.SUSY.Spart2_pdgId() != 0;
 
   // Susy final state - NOTE: DEFAULT VALUE CHANGED FROM -1 TO 0
-  m_susyFinalState = isSusySample ?
-      0 :
-      //--DG--ntupcommon m_susyObj.finalState(d3pd.evt.SUSY_Spart1_pdgId(), d3pd.evt.SUSY_Spart2_pdgId()) :
-      0;
+  m_susyFinalState = isSusySample ? m_susyObj.finalState(m_event.SUSY.Spart1_pdgId(), m_event.SUSY.Spart2_pdgId()) : 0;
   m_hDecay = smc::kUnknown;
   if(m_isWhSample) m_hDecay = WhTruthExtractor().update(m_event.mc.pdgId(),
                                                         m_event.mc.child_index(),
@@ -527,9 +522,8 @@ void SusyNtMaker::fillEventVars()
 
   // SUSY final state
   evt->susyFinalState   = m_susyFinalState;
-  #warning "susySpartId is broken, these branches are not available in NTUP_COMMON"
-  //--DG--ntupcommon evt->susySpartId1     = d3pd.evt.SUSY_Spart1_pdgId.IsAvailable()? d3pd.evt.SUSY_Spart1_pdgId() : 0;
-  //--DG--ntupcommon evt->susySpartId2     = d3pd.evt.SUSY_Spart2_pdgId.IsAvailable()? d3pd.evt.SUSY_Spart2_pdgId() : 0;
+  evt->susySpartId1     = m_event.SUSY.Spart1_pdgId.IsAvailable()? m_event.SUSY.Spart1_pdgId() : 0;
+  evt->susySpartId2     = m_event.SUSY.Spart2_pdgId.IsAvailable()? m_event.SUSY.Spart2_pdgId() : 0;
 
   float mZ = -1.0, mZtruthMax = 40.0;
   if(m_isMC){
@@ -1012,8 +1006,7 @@ void SusyNtMaker::fillTauVar(int tauIdx)
 
   tauOut->muonVeto              = element->muonVeto();
 
-  #warning "Tau::trueTau is broken, these branches are not available in NTUP_COMMON"
-  //--DG--ntupcommon tauOut->trueTau               = m_isMC? element->trueTauAssocSmall_matched() : false;
+  tauOut->trueTau               = m_isMC? element->trueTauAssoc_matched() : false;
 
   tauOut->matched2TruthLepton   = m_isMC? m_recoTruthMatch.Matched2TruthLepton(*tauLV, true) : false;
   tauOut->detailedTruthType     = m_isMC? m_recoTruthMatch.TauDetailedFakeType(*tauLV) : -1;
