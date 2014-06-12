@@ -67,22 +67,16 @@ D3PDAna::~D3PDAna()
   #endif
 }
 /*--------------------------------------------------------------------------------*/
-// The Begin() function is called at the start of the query.
-// When running with PROOF Begin() is only called on the client.
-// The tree argument is deprecated (on PROOF 0 is passed).
-/*--------------------------------------------------------------------------------*/
-void D3PDAna::Begin(TTree* /*tree*/)
+void D3PDAna::SlaveBegin(TTree *tree)
 {
-  if(m_dbg) cout << "D3PDAna::Begin" << endl;
+  if(m_dbg) cout << "D3PDAna::SlaveBegin" << endl;
 
-  // Use sample name to set MC flag
-  if(m_sample.Contains("data", TString::kIgnoreCase)) {
-    m_isMC = false;
-  }
+  bool isData = m_sample.Contains("data", TString::kIgnoreCase);
+  m_isMC = !isData;
 
   // Make sure MC production is specified
   if(m_isMC && m_mcProd==MCProd_Unknown){
-    cout << "D3PDAna::Begin : ERROR : Sample is flagged as MC but "
+    cout << "D3PDAna::SlaveBegin : ERROR : Sample is flagged as MC but "
          << "MCProduction is Unknown! Use command line argument to set it!"
          << endl;
     abort();
@@ -104,13 +98,6 @@ void D3PDAna::Begin(TTree* /*tree*/)
   bool isMC12b = (m_mcProd == MCProd_MC12b);
   bool useLeptonTrigger = false;
   m_susyObj.initialize(!m_isMC, m_isAF2, isMC12b, useLeptonTrigger);
-                       //gSystem->ExpandPathName("$ROOTCOREBIN/data/MuonMomentumCorrections/"),
-                       //gSystem->ExpandPathName("$ROOTCOREBIN/data/MuonEfficiencyCorrections/"));
-                       //"STACO_CB_plus_ST",
-                       //"efficiencySF.offline.RecoTrk.2012.8TeV.rel17p2.v02.root",
-                       //"efficiencySF.offline.Tight.2012.8TeV.rel17p2.v02.root",
-                       //"efficiencySF.e24vhi_medium1_e60_medium1.Tight.2012.8TeV.rel17p2.v02.root",
-                       //gSystem->ExpandPathName("$ROOTCOREBIN/data/MultiLep"));
 
   // Turn on jet calibration
   m_susyObj.SetJetCalib(true);
@@ -121,14 +108,10 @@ void D3PDAna::Begin(TTree* /*tree*/)
   eleMedFile += "/data/ElectronEfficiencyCorrection/efficiencySF.offline.Medium.2012.8TeV.rel17p2.v07.root";
   m_eleMediumSFTool->addFileName(eleMedFile.c_str());
   if(!m_eleMediumSFTool->initialize()){
-    cout << "D3PDAna::Begin : ERROR initializing TElectronEfficiencyCorrectionTool with file "
+    cout << "D3PDAna::SlaveBegin : ERROR initializing TElectronEfficiencyCorrectionTool with file "
          << eleMedFile << endl;
     abort();
   }
-
-  // Set the MissingEt flag for STVF
-  // This is now done automatically when you call SUSYObjDef::GetMET
-  //if(m_metFlavor.Contains("STVF")) m_susyObj.GetMETUtility()->configMissingET(true, true);
 
   m_fakeMetEst.initialize("$ROOTCOREBIN/data/MultiLep/fest_periodF_v1.root");
 

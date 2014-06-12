@@ -39,7 +39,6 @@ class D3PDAna : public TSelector
     D3PDAna();
     virtual ~D3PDAna();
     
-    virtual void    Begin(TTree *tree);
     virtual Bool_t  Process(Long64_t entry);
     virtual void    Terminate();
 
@@ -47,7 +46,7 @@ class D3PDAna : public TSelector
     //--------
     // Init is called every time a new TTree is attached
     virtual void    Init(TTree *tree) { m_event.ReadFrom(tree); }
-    virtual void    SlaveBegin(TTree *tree){};
+    virtual void    SlaveBegin(TTree *tree);
     
     virtual Bool_t  Notify() { return kTRUE; } /// Called at the first entry of a new file in a chain
     virtual void    SlaveTerminate(){};

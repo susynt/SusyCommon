@@ -73,14 +73,10 @@ SusyNtMaker::~SusyNtMaker()
 {
 }
 /*--------------------------------------------------------------------------------*/
-// The Begin() function is called at the start of the query.
-// When running with PROOF Begin() is only called on the client.
-// The tree argument is deprecated (on PROOF 0 is passed).
-/*--------------------------------------------------------------------------------*/
-void SusyNtMaker::Begin(TTree* /*tree*/)
+void SusyNtMaker::SlaveBegin(TTree* tree)
 {
-  D3PDAna::Begin(0);
-  if(m_dbg) cout << "SusyNtMaker::Begin" << endl;
+  D3PDAna::SlaveBegin(tree);
+  if(m_dbg) cout << "SusyNtMaker::SlaveBegin" << endl;
 
   if(m_fillNt){
 

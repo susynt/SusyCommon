@@ -30,8 +30,7 @@ class SusyNtMaker : public D3PDAna
     SusyNtMaker();
     virtual ~SusyNtMaker();
 
-    // Begin is called before looping on entries
-    virtual void    Begin(TTree *tree);
+    virtual void    SlaveBegin(TTree *tree);
     // Main event loop function
     virtual Bool_t  Process(Long64_t entry);
     // Terminate is called after looping is finished
