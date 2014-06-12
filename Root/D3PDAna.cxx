@@ -44,7 +44,9 @@ D3PDAna::D3PDAna() :
         m_tree(0),
         m_entry(0),
         m_dbg(0),
-        m_isMC(false)
+        m_isMC(false),
+        m_flagsAreConsistent(false),
+        m_flagsHaveBeenChecked(false)
 {
   m_hforTool.setVerbosity(HforToolD3PD::ERROR);
 
@@ -1269,6 +1271,48 @@ void D3PDAna::dumpSignalObjects()
   cout.precision(6);
   cout.unsetf(ios_base::fixed);
 }
+//----------------------------------------------------------
+bool D3PDAna::runningOptionsAreValid()
+{
+    bool valid=true;
+    bool isSimulation = m_event.eventinfo.isSimulation();
+    bool isData = !isSimulation;
+    bool isStreamEgamma = m_event.eventinfo.streamDecision_Egamma();
+    bool isStreamJetEt  = m_event.eventinfo.streamDecision_JetTauEtmiss();
+    bool isStreamMuons  = m_event.eventinfo.streamDecision_Muons();
+    if(m_isMC != isSimulation) {
+        valid=false;
+        if(m_dbg)
+            cout<<"D3PDAna::runningOptionsAreValid invalid isMc:"
+                <<" (m_isMC:"<<m_isMC<<" != isSimulation:"<<isSimulation<<")"
+                <<endl;
+    }
+    if(isData) {
+        bool consistentStream = (isStreamMuons  ? m_stream==Stream_Muons :
+                                 isStreamEgamma ? m_stream==Stream_Egamma :
+                                 isStreamJetEt  ? m_stream==Stream_JetTauEtmiss :
+                                 false);
+        if(!consistentStream) {
+            valid=false;
+            if(m_dbg)
+                cout<<"D3PDAna::runningOptionsAreValid: inconsistent stream"
+                    <<" m_stream: "<<(m_stream==Stream_Muons        ? "Stream_Muons":
+                                      m_stream==Stream_Egamma       ? "Stream_Egamma":
+                                      m_stream==Stream_JetTauEtmiss ? "Stream_JetTauEtmiss":
+                                      "unknown")
+                    <<" eventinfo: "<<(isStreamMuons ? "Muons":
+                                       isStreamEgamma ? "Egamma":
+                                       isStreamJetEt ? "JetTauEtmiss":
+                                       "unknown")
+                    <<endl;
+
+        }
+    }
+    if(m_dbg)
+        cout<<"D3PDAna::runningOptionsAreValid(): "<<(valid?"true":"false")<<endl;
+    return valid;
+}
+//----------------------------------------------------------
 
 #undef GeV
 

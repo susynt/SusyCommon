@@ -233,6 +233,25 @@ class D3PDAna : public TSelector
     void setMetFlavor(std::string metFlav);
     void setDoMetMuonCorrection(bool doMetMuCorr) { m_doMetMuCorr = doMetMuCorr; }
     void setDoMetFix(bool doMetFix) { m_doMetFix = doMetFix; }
+    /// whether the options specified by the user are consistent with the event info
+    /**
+       This function should be called when the first event is being
+       read. Leave it up to the user to decide whether aborting in
+       case of inconsistent options (need to check that all the input
+       branches from the D3PD are filled in correctly).
+       In the class inheriting from D3PDAna, one should have:
+       \code{.cpp}
+       Process() {
+           GetEntry(entry);
+           if(!m_flagsHaveBeenChecked) {
+               m_flagsAreConsistent = runningOptionsAreValid();
+               m_flagsHaveBeenChecked=true;
+           }
+       ...
+       }
+       \endcode
+     */
+    bool runningOptionsAreValid();
     //void setUseMetMuons(bool useMetMu) { m_useMetMuons = useMetMu; }
 
     //
@@ -361,6 +380,8 @@ class D3PDAna : public TSelector
     Long64_t m_entry;           // Current entry in the current tree (not chain index!)
     int m_dbg;                  // debug level
     bool m_isMC;                // is MC flag
+    bool m_flagsAreConsistent;  ///< whether the cmd-line flags are consistent with the event
+    bool m_flagsHaveBeenChecked;///< whether the cmd-line have been checked
 
     D3PDReader::Event m_event;
 

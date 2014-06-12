@@ -162,6 +162,15 @@ Bool_t SusyNtMaker::Process(Long64_t entry)
   // Communicate the entry number to the interface objects
   GetEntry(entry);
 
+  if(!m_flagsHaveBeenChecked) {
+      m_flagsAreConsistent = runningOptionsAreValid();
+      m_flagsHaveBeenChecked=true;
+      if(!m_flagsAreConsistent) {
+          cout<<"ERROR: Inconsistent options. Stopping here."<<endl;
+          abort();
+      }
+  }
+
   static Long64_t chainEntry = -1;
   chainEntry++;
   if(m_dbg || chainEntry%5000==0)
