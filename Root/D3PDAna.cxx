@@ -224,6 +224,21 @@ D3PDReader::MuonD3PDObject* D3PDAna::d3pdMuons()
 {
     return &m_event.mu_staco;
 }
+//----------------------------------------------------------
+D3PDReader::ElectronD3PDObject* D3PDAna::d3pdElectrons()
+{
+    return &m_event.el;
+}
+//----------------------------------------------------------
+D3PDReader::TauD3PDObject* D3PDAna::d3pdTaus()
+{
+    return &m_event.tau;
+}
+//----------------------------------------------------------
+D3PDReader::JetD3PDObject* D3PDAna::d3pdJets()
+{
+    return &m_event.jet_AntiKt4LCTopo;
+}
 /*--------------------------------------------------------------------------------*/
 // Baseline object selection
 /*--------------------------------------------------------------------------------*/
@@ -262,14 +277,14 @@ void D3PDAna::selectBaselineObjects(SusyNtSys sys)
   else if(sys == NtSys_TES_UP    ) susySys = SystErr::TESUP;      // TES up
   else if(sys == NtSys_TES_DN    ) susySys = SystErr::TESDOWN;    // TES down
 
-  D3PDReader::JetD3PDObject *jets = &m_event.jet_AntiKt4LCTopo;
+  D3PDReader::JetD3PDObject *jets = d3pdJets();
   // Container object selection
-  if(m_selectTaus) m_contTaus = get_taus_baseline(&m_event.tau, m_susyObj, 20.*GeV, 2.47,
+  if(m_selectTaus) m_contTaus = get_taus_baseline(d3pdTaus(), m_susyObj, 20.*GeV, 2.47,
                                                   SUSYTau::TauNone, SUSYTau::TauNone, SUSYTau::TauNone,
                                                   susySys, true);
 
   // Preselection
-  m_preElectrons = get_electrons_baseline(&m_event.el, &m_event.el_MET_Egamma10NoTau,
+  m_preElectrons = get_electrons_baseline(d3pdElectrons(), &m_event.el_MET_Egamma10NoTau,
                                           !m_isMC, m_event.eventinfo.RunNumber(), m_susyObj,
                                           7.*GeV, 2.47, susySys);
   m_preMuons = get_muons_baseline(d3pdMuons(), !m_isMC, m_susyObj,
@@ -286,15 +301,15 @@ void D3PDAna::selectBaselineObjects(SusyNtSys sys)
                                   10.*GeV, 2.5, susySys);
 
   // Preselect taus
-  if(m_selectTaus) m_preTaus = get_taus_baseline(&m_event.tau, m_susyObj, 20.*GeV, 2.47,
+  if(m_selectTaus) m_preTaus = get_taus_baseline(d3pdTaus(), m_susyObj, 20.*GeV, 2.47,
                                                  SUSYTau::TauLoose, SUSYTau::TauLoose, SUSYTau::TauLoose,
                                                  susySys, true);
 
   performOverlapRemoval();
 
   // combine leptons
-  m_preLeptons    = buildLeptonInfos(&m_event.el, m_preElectrons, d3pdMuons(), m_preMuons, m_susyObj);
-  m_baseLeptons   = buildLeptonInfos(&m_event.el, m_baseElectrons, d3pdMuons(), m_baseMuons, m_susyObj);
+  m_preLeptons    = buildLeptonInfos(d3pdElectrons(), m_preElectrons, d3pdMuons(), m_preMuons, m_susyObj);
+  m_baseLeptons   = buildLeptonInfos(d3pdElectrons(), m_baseElectrons, d3pdMuons(), m_baseMuons, m_susyObj);
 }
 
 /*--------------------------------------------------------------------------------*/
@@ -302,23 +317,23 @@ void D3PDAna::selectBaselineObjects(SusyNtSys sys)
 /*--------------------------------------------------------------------------------*/
 void D3PDAna::performOverlapRemoval()
 {
-  D3PDReader::JetD3PDObject *jets = &m_event.jet_AntiKt4LCTopo;
+  D3PDReader::JetD3PDObject *jets = d3pdJets();
   // e-e overlap removal
-  m_baseElectrons = overlap_removal(m_susyObj, &m_event.el, m_preElectrons, &m_event.el, m_preElectrons,
+  m_baseElectrons = overlap_removal(m_susyObj, d3pdElectrons(), m_preElectrons, d3pdElectrons(), m_preElectrons,
                                     0.05, true, true);
   // jet-e overlap removal
-  m_baseJets      = overlap_removal(m_susyObj, jets, m_preJets, &m_event.el, m_baseElectrons,
+  m_baseJets      = overlap_removal(m_susyObj, jets, m_preJets, d3pdElectrons(), m_baseElectrons,
                                     0.2, false, false);
 
   if(m_selectTaus) {
     // tau-e overlap removal
-    m_baseTaus    = overlap_removal(m_susyObj, &m_event.tau, m_preTaus, &m_event.el, m_baseElectrons, 0.2, false, false);
+    m_baseTaus    = overlap_removal(m_susyObj, d3pdTaus(), m_preTaus, d3pdElectrons(), m_baseElectrons, 0.2, false, false);
     // tau-mu overlap removal
-    m_baseTaus    = overlap_removal(m_susyObj, &m_event.tau, m_baseTaus, d3pdMuons(), m_preMuons, 0.2, false, false);
+    m_baseTaus    = overlap_removal(m_susyObj, d3pdTaus(), m_baseTaus, d3pdMuons(), m_preMuons, 0.2, false, false);
   }
 
   // e-jet overlap removal
-  m_baseElectrons = overlap_removal(m_susyObj, &m_event.el, m_baseElectrons, jets, m_baseJets,
+  m_baseElectrons = overlap_removal(m_susyObj, d3pdElectrons(), m_baseElectrons, jets, m_baseJets,
                                     0.4, false, false);
 
   // m-jet overlap removal
@@ -326,20 +341,20 @@ void D3PDAna::performOverlapRemoval()
 
   // e-m overlap removal
   vector<int> copyElectrons = m_baseElectrons;
-  m_baseElectrons = overlap_removal(m_susyObj, &m_event.el, m_baseElectrons, d3pdMuons(), m_baseMuons,
+  m_baseElectrons = overlap_removal(m_susyObj, d3pdElectrons(), m_baseElectrons, d3pdMuons(), m_baseMuons,
                                     0.01, false, false);
-  m_baseMuons     = overlap_removal(m_susyObj, d3pdMuons(), m_baseMuons, &m_event.el, copyElectrons, 0.01, false, false);
+  m_baseMuons     = overlap_removal(m_susyObj, d3pdMuons(), m_baseMuons, d3pdElectrons(), copyElectrons, 0.01, false, false);
 
   // m-m overlap removal
   m_baseMuons     = overlap_removal(m_susyObj, d3pdMuons(), m_baseMuons, d3pdMuons(), m_baseMuons, 0.05, true, false);
 
   // jet-tau overlap removal
-  m_baseJets      = overlap_removal(m_susyObj, jets, m_baseJets, &m_event.tau, m_baseTaus, 0.2, false, false);
+  m_baseJets      = overlap_removal(m_susyObj, jets, m_baseJets, d3pdTaus(), m_baseTaus, 0.2, false, false);
 
   // remove SFOS lepton pairs with Mll < 12 GeV
-  m_baseElectrons = RemoveSFOSPair(m_susyObj, &m_event.el, m_baseElectrons, 12.*GeV);
+  m_baseElectrons = RemoveSFOSPair(m_susyObj, d3pdElectrons(), m_baseElectrons, 12.*GeV);
   m_baseMuons     = RemoveSFOSPair(m_susyObj, d3pdMuons(), m_baseMuons,     12.*GeV);
-  //m_baseTaus      = RemoveSFOSPair(m_susyObj, &m_event.tau, m_baseTaus,      12.*GeV);
+  //m_baseTaus      = RemoveSFOSPair(m_susyObj, d3pdTaus(), m_baseTaus,      12.*GeV);
 }
 
 /*--------------------------------------------------------------------------------*/
@@ -349,16 +364,16 @@ void D3PDAna::selectSignalObjects()
 {
   if(m_dbg>=5) cout << "selectSignalObjects" << endl;
   uint nVtx = getNumGoodVtx();
-  D3PDReader::JetD3PDObject *jets =  &m_event.jet_AntiKt4LCTopo;
-  m_sigElectrons = get_electrons_signal(&m_event.el, m_baseElectrons, d3pdMuons(), m_baseMuons,
+  D3PDReader::JetD3PDObject *jets =  d3pdJets();
+  m_sigElectrons = get_electrons_signal(d3pdElectrons(), m_baseElectrons, d3pdMuons(), m_baseMuons,
                                         nVtx, !m_isMC, m_susyObj, 10.*GeV, 0.16, 0.18, 5., 0.4);
-  m_sigMuons     = get_muons_signal(d3pdMuons(), m_baseMuons, &m_event.el, m_baseElectrons,
+  m_sigMuons     = get_muons_signal(d3pdMuons(), m_baseMuons, d3pdElectrons(), m_baseElectrons,
                                     nVtx, !m_isMC, m_susyObj, 10.*GeV, .12, 3., 1.);
   m_sigJets      = get_jet_signal(jets, m_susyObj, m_baseJets, 20.*GeV, 2.5, 0.75);
-  m_sigTaus      = get_taus_signal(&m_event.tau, m_baseTaus, m_susyObj);
+  m_sigTaus      = get_taus_signal(d3pdTaus(), m_baseTaus, m_susyObj);
 
   // combine light leptons
-  m_sigLeptons   = buildLeptonInfos(&m_event.el, m_sigElectrons, d3pdMuons(), m_sigMuons, m_susyObj);
+  m_sigLeptons   = buildLeptonInfos(d3pdElectrons(), m_sigElectrons, d3pdMuons(), m_sigMuons, m_susyObj);
 
   // photon selection done in separate method, why?
   if(m_selectPhotons) selectSignalPhotons();
@@ -929,7 +944,7 @@ bool D3PDAna::passLarHoleVeto()
 /*--------------------------------------------------------------------------------*/
 bool D3PDAna::passTileHotSpot()
 {
-  D3PDReader::JetD3PDObject *jets =  &m_event.jet_AntiKt4LCTopo;
+  D3PDReader::JetD3PDObject *jets =  d3pdJets();
   return !check_jet_tileHotSpot(jets, m_preJets, m_susyObj, !m_isMC, m_event.eventinfo.RunNumber());
 }
 /*--------------------------------------------------------------------------------*/
@@ -937,7 +952,7 @@ bool D3PDAna::passTileHotSpot()
 /*--------------------------------------------------------------------------------*/
 bool D3PDAna::passBadJet()
 {
-  D3PDReader::JetD3PDObject *jets =  &m_event.jet_AntiKt4LCTopo;
+  D3PDReader::JetD3PDObject *jets =  d3pdJets();
   return !IsBadJetEvent(jets, m_baseJets, 20.*GeV, m_susyObj);
 }
 /*--------------------------------------------------------------------------------*/
@@ -1173,7 +1188,7 @@ void D3PDAna::dumpBaselineObjects()
     for(uint i=0; i < nEle; i++){
       int iEl = m_baseElectrons[i];
       const TLorentzVector &lv = m_susyObj.GetElecTLV(iEl);
-      const D3PDReader::ElectronD3PDObjectElement &ele = m_event.el[iEl];
+      const D3PDReader::ElectronD3PDObjectElement &ele = (*d3pdElectrons())[iEl];
       cout << "  El : " << fixed
            << " q " << setw(2) << (int) ele.charge()
            << " pt " << setw(6) << lv.Pt()/GeV
@@ -1203,7 +1218,7 @@ void D3PDAna::dumpBaselineObjects()
     for(uint i=0; i < nJet; i++){
       int iJet = m_baseJets[i];
       const TLorentzVector &lv = m_susyObj.GetJetTLV(iJet);
-      const D3PDReader::JetD3PDObjectElement &jet = m_event.jet_AntiKt4LCTopo[iJet];
+      const D3PDReader::JetD3PDObjectElement &jet = (*d3pdJets())[iJet];
       cout << "  Jet : " << fixed
            << " pt " << setw(6) << lv.Pt()/GeV
            << " eta " << setw(5) << lv.Eta()
@@ -1232,7 +1247,7 @@ void D3PDAna::dumpSignalObjects()
     for(uint i=0; i < nEle; i++){
       int iEl = m_sigElectrons[i];
       const TLorentzVector &lv = m_susyObj.GetElecTLV(iEl);
-      const D3PDReader::ElectronD3PDObjectElement &ele = m_event.el[iEl];
+      const D3PDReader::ElectronD3PDObjectElement &ele = (*d3pdElectrons())[iEl];
       cout << "  El : " << fixed
            << " q " << setw(2) << (int) ele.charge()
            << " pt " << setw(6) << lv.Pt()/GeV
@@ -1262,7 +1277,7 @@ void D3PDAna::dumpSignalObjects()
     for(uint i=0; i < nJet; i++){
       int iJet = m_sigJets[i];
       const TLorentzVector &lv = m_susyObj.GetJetTLV(iJet);
-      const D3PDReader::JetD3PDObjectElement &jet = m_event.jet_AntiKt4LCTopo[iJet];
+      const D3PDReader::JetD3PDObjectElement &jet = (*d3pdJets())[iJet];
       cout << "  Jet : " << fixed
            << " pt " << setw(6) << lv.Pt()/GeV
            << " eta " << setw(5) << lv.Eta()

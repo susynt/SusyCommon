@@ -33,7 +33,7 @@ namespace D3PDReader
   class JetD3PDObjectl;
 }
 
-/*
+/**
 
     D3PDAna - a class for performing object selections and event cleaning on susy d3pds
 
@@ -69,6 +69,24 @@ class D3PDAna : public TSelector
        muon collection.
      */
     virtual D3PDReader::MuonD3PDObject* d3pdMuons();
+    /// access the default collection of electrons from the D3PDReader
+    /**
+       By default returns m_event.el; for its motivation, see D3PDAna::d3pdMuons().
+       \todo In this case there might be some ambiguity to be sorted out when calling SUSYObjDef::GetMET().
+     */
+    virtual D3PDReader::ElectronD3PDObject* d3pdElectrons();
+    /// access the default collection of taus from the D3PDReader
+    /**
+       By default returns m_event.tau; for its motivation, see D3PDAna::d3pdMuons().
+     */
+    virtual D3PDReader::TauD3PDObject* d3pdTaus();
+    /// access the default collection of jets from the D3PDReader
+    /**
+       By default returns m_event.jet_AntiKt4LCTopo; for its motivation, see D3PDAna::d3pdMuons().
+       \todo In this case there might be some ambiguity to be sorted out when calling SUSYObjDef::GetMET().
+     */
+    virtual D3PDReader::JetD3PDObject* d3pdJets();
+
 
     //
     // Object selection
