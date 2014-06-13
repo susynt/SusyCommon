@@ -801,7 +801,7 @@ void SusyNtMaker::fillMuonVars(const LeptonInfo* lepIn)
     // If type and origin are zero, try matching to the muons in the truthMuon block
     // This might not actually do anything
     if(element->type()==0 && element->origin()==0 && element->truth_barcode()!=0){
-      const D3PDReader::TruthMuonD3PDObjectElement* trueMuon = getMuonTruth(&m_event.mu_staco, lepIn->idx(), &m_event.muonTruth);
+      const D3PDReader::TruthMuonD3PDObjectElement* trueMuon = getMuonTruth(d3pdMuons(), lepIn->idx(), &m_event.muonTruth);
       muOut->mcType     = trueMuon? trueMuon->type()   : 0;
       muOut->mcOrigin   = trueMuon? trueMuon->origin() : 0;
     }

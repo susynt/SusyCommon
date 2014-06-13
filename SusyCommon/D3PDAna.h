@@ -25,6 +25,14 @@
 #include "SusyNtuple/SusyDefs.h"
 #include "D3PDReader/Event.h"
 
+namespace D3PDReader
+{
+  class MuonD3PDObject;
+  class ElectronD3PDObject;
+  class TauD3PDObject;
+  class JetD3PDObjectl;
+}
+
 /*
 
     D3PDAna - a class for performing object selections and event cleaning on susy d3pds
@@ -43,7 +51,6 @@ class D3PDAna : public TSelector
     virtual void    Terminate();
 
 
-    //--------
     // Init is called every time a new TTree is attached
     virtual void    Init(TTree *tree) { m_event.ReadFrom(tree); }
     virtual void    SlaveBegin(TTree *tree);
@@ -53,9 +60,15 @@ class D3PDAna : public TSelector
     /// Due to ROOT's stupid design, need to specify version >= 2 or the tree will not connect automatically
     virtual Int_t   Version() const { return 2; }
     virtual D3PDAna& setDebug(int debugLevel) { m_dbg = debugLevel; return *this; }
-    //--------
-
-
+    /// access the default collection of muons from the D3PDReader
+    /**
+       By default this function returns a pointer to
+       mu_staco. However, if we always call this function (rather than
+       accessing directly m_event.mu_staco), one can decide to
+       override this member function, and easily switch to another
+       muon collection.
+     */
+    virtual D3PDReader::MuonD3PDObject* d3pdMuons();
 
     //
     // Object selection
