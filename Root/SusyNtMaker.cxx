@@ -161,6 +161,7 @@ Bool_t SusyNtMaker::Process(Long64_t entry)
 {
   // Communicate the entry number to the interface objects
   GetEntry(entry);
+  m_event.GetEntry(entry);
 
   if(!m_flagsHaveBeenChecked) {
       m_flagsAreConsistent = runningOptionsAreValid();
