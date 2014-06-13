@@ -497,12 +497,12 @@ uint D3PDAna::getNumGoodVtx()
 bool D3PDAna::matchTruthJet(int iJet)
 {
   // Loop over truth jets looking for a match
-  const TLorentzVector* jetLV = & m_susyObj.GetJetTLV(iJet);
+  const TLorentzVector &jetLV = m_susyObj.GetJetTLV(iJet);
   for(int i=0; i<m_event.AntiKt4Truth.n(); i++){
     const D3PDReader::JetD3PDObjectElement &trueJet = m_event.AntiKt4Truth[i];
     TLorentzVector trueJetLV;
     trueJetLV.SetPtEtaPhiE(trueJet.pt(), trueJet.eta(), trueJet.phi(), trueJet.E());
-    if(jetLV->DeltaR(trueJetLV) < 0.3) return true;
+    if(jetLV.DeltaR(trueJetLV) < 0.3) return true;
   }
   return false;
 }
@@ -584,7 +584,7 @@ void D3PDAna::matchElectronTriggers()
   // loop over all pre electrons
   for(uint i=0; i<m_preElectrons.size(); i++){
     int iEl = m_preElectrons[i];
-    const TLorentzVector* lv = & m_susyObj.GetElecTLV(iEl);
+    const TLorentzVector &lv = m_susyObj.GetElecTLV(iEl);
 
     // trigger flags
     long long flags = 0;
@@ -658,12 +658,12 @@ void D3PDAna::matchElectronTriggers()
   }
 }
 /*--------------------------------------------------------------------------------*/
-bool D3PDAna::matchElectronTrigger(const TLorentzVector* lv, vector<int>* trigBools)
+bool D3PDAna::matchElectronTrigger(const TLorentzVector &lv, vector<int>* trigBools)
 {
   // matched trigger index - not used
   static int indexEF = -1;
   // Use function defined in egammaAnalysisUtils/egammaTriggerMatching.h
-  return PassedTriggerEF(lv->Eta(), lv->Phi(), trigBools, indexEF, m_event.trig_EF_el.n(),
+  return PassedTriggerEF(lv.Eta(), lv.Phi(), trigBools, indexEF, m_event.trig_EF_el.n(),
                          m_event.trig_EF_el.eta(), m_event.trig_EF_el.phi());
 }
 
@@ -680,7 +680,7 @@ void D3PDAna::matchMuonTriggers()
   for(uint i=0; i<m_preMuons.size(); i++){
 
     int iMu = m_preMuons[i];
-    const TLorentzVector* lv = & m_susyObj.GetMuonTLV(iMu);
+    const TLorentzVector &lv = m_susyObj.GetMuonTLV(iMu);
 
     // trigger flags
     long long flags = 0;
@@ -784,7 +784,7 @@ void D3PDAna::matchMuonTriggers()
   }
 }
 /*--------------------------------------------------------------------------------*/
-bool D3PDAna::matchMuonTrigger(const TLorentzVector* lv, vector<int>* passTrig)
+bool D3PDAna::matchMuonTrigger(const TLorentzVector &lv, vector<int>* passTrig)
 {
   // loop over muon trigger features
   for(int iTrig=0; iTrig < m_event.trig_EF_trigmuonef.n(); iTrig++){
@@ -802,7 +802,7 @@ bool D3PDAna::matchMuonTrigger(const TLorentzVector* lv, vector<int>* passTrig)
                              0 );       // only eta and phi used to compute dR anyway
         // Require combined offline track...?
         if(!m_event.trig_EF_trigmuonef.track_CB_hasCB()->at(iTrig).at(iTrk)) continue;
-        float dR = lv->DeltaR(lvTrig);
+        float dR = lv.DeltaR(lvTrig);
         if(dR < 0.15){
           return true;
         }
@@ -828,8 +828,7 @@ void D3PDAna::matchTauTriggers()
   for(uint i=0; i<m_preTaus.size(); i++){
 
     int iTau = m_preTaus[i];
-    //const TLorentzVector* lv = & m_tauLVs[iTau];
-    const TLorentzVector* lv = & m_susyObj.GetTauTLV(iTau);
+    const TLorentzVector &lv = m_susyObj.GetTauTLV(iTau);
 
     // trigger flags
     long long flags = 0;
@@ -864,7 +863,7 @@ void D3PDAna::matchTauTriggers()
   }
 }
 /*--------------------------------------------------------------------------------*/
-bool D3PDAna::matchTauTrigger(const TLorentzVector* lv, vector<int>* passTrig)
+bool D3PDAna::matchTauTrigger(const TLorentzVector &lv, vector<int>* passTrig)
 {
   // loop over tau trigger features
   for(int iTrig=0; iTrig < m_event.trig_EF_tau.n(); iTrig++){
@@ -874,7 +873,7 @@ bool D3PDAna::matchTauTrigger(const TLorentzVector* lv, vector<int>* passTrig)
       static TLorentzVector trigLV;
       trigLV.SetPtEtaPhiM(m_event.trig_EF_tau.pt()->at(iTrig), m_event.trig_EF_tau.eta()->at(iTrig),
                           m_event.trig_EF_tau.phi()->at(iTrig), m_event.trig_EF_tau.m()->at(iTrig));
-      float dR = lv->DeltaR(trigLV);
+      float dR = lv.DeltaR(trigLV);
       if(dR < 0.15) return true;
     }
   }
@@ -1073,15 +1072,15 @@ float D3PDAna::getLepSF(const vector<LeptonInfo>& leptons)
   if(m_isMC){
     // Loop over leptons
     for(uint iLep=0; iLep<leptons.size(); iLep++){
-      const LeptonInfo* lep = & leptons[iLep];
+      const LeptonInfo &lep = leptons[iLep];
       // Electrons
-      if(lep->isElectron()){
-          const D3PDReader::ElectronD3PDObjectElement* el = lep->getElectronElement();
-        lepSF *= m_susyObj.GetSignalElecSF(el->cl_eta(), lep->lv()->Pt(), true, true, false);
+      if(lep.isElectron()){
+          const D3PDReader::ElectronD3PDObjectElement* el = lep.getElectronElement();
+        lepSF *= m_susyObj.GetSignalElecSF(el->cl_eta(), lep.lv()->Pt(), true, true, false);
       }
       // Muons
       else{
-        lepSF *= m_susyObj.GetSignalMuonSF(lep->idx());
+        lepSF *= m_susyObj.GetSignalMuonSF(lep.idx());
       }
     }
   }
@@ -1173,14 +1172,14 @@ void D3PDAna::dumpBaselineObjects()
     cout << "Baseline electrons" << endl;
     for(uint i=0; i < nEle; i++){
       int iEl = m_baseElectrons[i];
-      const TLorentzVector* lv = & m_susyObj.GetElecTLV(iEl);
-      const D3PDReader::ElectronD3PDObjectElement* ele = & m_event.el[iEl];
+      const TLorentzVector &lv = m_susyObj.GetElecTLV(iEl);
+      const D3PDReader::ElectronD3PDObjectElement &ele = m_event.el[iEl];
       cout << "  El : " << fixed
-           << " q " << setw(2) << (int) ele->charge()
-           << " pt " << setw(6) << lv->Pt()/GeV
-           << " eta " << setw(5) << lv->Eta()
-           << " phi " << setw(5) << lv->Phi();
-      if(m_isMC) cout << " type " << setw(2) << ele->type() << " origin " << setw(2) << ele->origin();
+           << " q " << setw(2) << (int) ele.charge()
+           << " pt " << setw(6) << lv.Pt()/GeV
+           << " eta " << setw(5) << lv.Eta()
+           << " phi " << setw(5) << lv.Phi();
+      if(m_isMC) cout << " type " << setw(2) << ele.type() << " origin " << setw(2) << ele.origin();
       cout << endl;
     }
   }
@@ -1188,14 +1187,14 @@ void D3PDAna::dumpBaselineObjects()
     cout << "Baseline muons" << endl;
     for(uint i=0; i < nMu; i++){
       int iMu = m_baseMuons[i];
-      const TLorentzVector* lv = & m_susyObj.GetMuonTLV(iMu);
-      const D3PDReader::MuonD3PDObjectElement* muo = &((*d3pdMuons())[iMu]);
+      const TLorentzVector &lv = m_susyObj.GetMuonTLV(iMu);
+      const D3PDReader::MuonD3PDObjectElement &muo = (*d3pdMuons())[iMu];
       cout << "  Mu : " << fixed
-           << " q " << setw(2) << (int) muo->charge()
-           << " pt " << setw(6) << lv->Pt()/GeV
-           << " eta " << setw(5) << lv->Eta()
-           << " phi " << setw(5) << lv->Phi();
-      if(m_isMC) cout << " type " << setw(2) << muo->type() << " origin " << setw(2) << muo->origin();
+           << " q " << setw(2) << (int) muo.charge()
+           << " pt " << setw(6) << lv.Pt()/GeV
+           << " eta " << setw(5) << lv.Eta()
+           << " phi " << setw(5) << lv.Phi();
+      if(m_isMC) cout << " type " << setw(2) << muo.type() << " origin " << setw(2) << muo.origin();
       cout << endl;
     }
   }
@@ -1203,13 +1202,13 @@ void D3PDAna::dumpBaselineObjects()
     cout << "Baseline jets" << endl;
     for(uint i=0; i < nJet; i++){
       int iJet = m_baseJets[i];
-      const TLorentzVector* lv = & m_susyObj.GetJetTLV(iJet);
-      const D3PDReader::JetD3PDObjectElement* jet = & m_event.jet_AntiKt4LCTopo[iJet];
+      const TLorentzVector &lv = m_susyObj.GetJetTLV(iJet);
+      const D3PDReader::JetD3PDObjectElement &jet = m_event.jet_AntiKt4LCTopo[iJet];
       cout << "  Jet : " << fixed
-           << " pt " << setw(6) << lv->Pt()/GeV
-           << " eta " << setw(5) << lv->Eta()
-           << " phi " << setw(5) << lv->Phi()
-           << " mv1 " << jet->flavor_weight_MV1();
+           << " pt " << setw(6) << lv.Pt()/GeV
+           << " eta " << setw(5) << lv.Eta()
+           << " phi " << setw(5) << lv.Phi()
+           << " mv1 " << jet.flavor_weight_MV1();
       cout << endl;
     }
   }
@@ -1232,14 +1231,14 @@ void D3PDAna::dumpSignalObjects()
     cout << "Signal electrons" << endl;
     for(uint i=0; i < nEle; i++){
       int iEl = m_sigElectrons[i];
-      const TLorentzVector* lv = & m_susyObj.GetElecTLV(iEl);
-      const D3PDReader::ElectronD3PDObjectElement* ele = & m_event.el[iEl];
+      const TLorentzVector &lv = m_susyObj.GetElecTLV(iEl);
+      const D3PDReader::ElectronD3PDObjectElement &ele = m_event.el[iEl];
       cout << "  El : " << fixed
-           << " q " << setw(2) << (int) ele->charge()
-           << " pt " << setw(6) << lv->Pt()/GeV
-           << " eta " << setw(5) << lv->Eta()
-           << " phi " << setw(5) << lv->Phi();
-      if(m_isMC) cout << " type " << setw(2) << ele->type() << " origin " << setw(2) << ele->origin();
+           << " q " << setw(2) << (int) ele.charge()
+           << " pt " << setw(6) << lv.Pt()/GeV
+           << " eta " << setw(5) << lv.Eta()
+           << " phi " << setw(5) << lv.Phi();
+      if(m_isMC) cout << " type " << setw(2) << ele.type() << " origin " << setw(2) << ele.origin();
       cout << endl;
     }
   }
@@ -1247,14 +1246,14 @@ void D3PDAna::dumpSignalObjects()
     cout << "Signal muons" << endl;
     for(uint i=0; i < nMu; i++){
       int iMu = m_sigMuons[i];
-      const TLorentzVector* lv = & m_susyObj.GetMuonTLV(iMu);
-      const D3PDReader::MuonD3PDObjectElement* muo = &((*d3pdMuons())[iMu]);
+      const TLorentzVector &lv = m_susyObj.GetMuonTLV(iMu);
+      const D3PDReader::MuonD3PDObjectElement &muo = (*d3pdMuons())[iMu];
       cout << "  Mu : " << fixed
-           << " q " << setw(2) << (int) muo->charge()
-           << " pt " << setw(6) << lv->Pt()/GeV
-           << " eta " << setw(5) << lv->Eta()
-           << " phi " << setw(5) << lv->Phi();
-      if(m_isMC) cout << " type " << setw(2) << muo->type() << " origin " << setw(2) << muo->origin();
+           << " q " << setw(2) << (int) muo.charge()
+           << " pt " << setw(6) << lv.Pt()/GeV
+           << " eta " << setw(5) << lv.Eta()
+           << " phi " << setw(5) << lv.Phi();
+      if(m_isMC) cout << " type " << setw(2) << muo.type() << " origin " << setw(2) << muo.origin();
       cout << endl;
     }
   }
@@ -1262,13 +1261,13 @@ void D3PDAna::dumpSignalObjects()
     cout << "Signal jets" << endl;
     for(uint i=0; i < nJet; i++){
       int iJet = m_sigJets[i];
-      const TLorentzVector* lv = & m_susyObj.GetJetTLV(iJet);
-      const D3PDReader::JetD3PDObjectElement* jet = & m_event.jet_AntiKt4LCTopo[iJet];
+      const TLorentzVector &lv = m_susyObj.GetJetTLV(iJet);
+      const D3PDReader::JetD3PDObjectElement &jet = m_event.jet_AntiKt4LCTopo[iJet];
       cout << "  Jet : " << fixed
-           << " pt " << setw(6) << lv->Pt()/GeV
-           << " eta " << setw(5) << lv->Eta()
-           << " phi " << setw(5) << lv->Phi()
-           << " mv1 " << jet->flavor_weight_MV1();
+           << " pt " << setw(6) << lv.Pt()/GeV
+           << " eta " << setw(5) << lv.Eta()
+           << " phi " << setw(5) << lv.Phi()
+           << " mv1 " << jet.flavor_weight_MV1();
       cout << endl;
     }
   }

@@ -112,11 +112,11 @@ class D3PDAna : public TSelector
     }
     void fillEventTriggers();
     void matchElectronTriggers();
-    bool matchElectronTrigger(const TLorentzVector* lv, std::vector<int>* trigBools);
+    bool matchElectronTrigger(const TLorentzVector &lv, std::vector<int>* trigBools);
     void matchMuonTriggers();
-    bool matchMuonTrigger(const TLorentzVector* lv, std::vector<int>* trigBools);
+    bool matchMuonTrigger(const TLorentzVector &lv, std::vector<int>* trigBools);
     void matchTauTriggers();
-    bool matchTauTrigger(const TLorentzVector* lv, std::vector<int>* trigBools);
+    bool matchTauTrigger(const TLorentzVector &lv, std::vector<int>* trigBools);
 
 
 
