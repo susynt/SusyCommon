@@ -269,6 +269,12 @@ void SusyNtMaker::Terminate()
 /*--------------------------------------------------------------------------------*/
 // Select event
 /*--------------------------------------------------------------------------------*/
+bool isSimplifiedModel(const TString &sampleName)
+{
+    return sampleName.Contains("simplifiedModel");
+}
+//----------------------------------------------------------
+
 bool SusyNtMaker::selectEvent()
 {
   if(m_dbg>=5) cout << "selectEvent" << endl;
@@ -292,7 +298,7 @@ bool SusyNtMaker::selectEvent()
 
   // This assumes that sparticle branches are present for any
   // sample that might have the SUSY propagators problem
-  m_hasSusyProp = (isSusySample ?
+  m_hasSusyProp = ((isSusySample && isSimplifiedModel(m_sample)) ?
                    SusyNtTools::eventHasSusyPropagators(*m_event.mc.pdgId(),
                                                         *m_event.mc.parent_index()) :
                    false);
@@ -303,20 +309,20 @@ bool SusyNtMaker::selectEvent()
   TH1F* h_procCutFlow = getProcCutFlow(m_susyFinalState);
   float w = m_isMC? m_event.eventinfo.mc_event_weight() : 1;
 
-  // Cut index
-  int cut = 0;
-
-  // Use a preprocessor macro to assist in filling the cutflow hists
-  #define FillCutFlow()             \
-    do{                             \
-      h_rawCutFlow->Fill(cut);      \
-      h_genCutFlow->Fill(cut, w);   \
-      h_procCutFlow->Fill(cut, w);  \
-      cut++;                        \
-    } while(0)
+  struct FillCutFlow { ///< local function object to fill the cutflow histograms
+      FillCutFlow(TH1 *r, TH1* g, TH1* p) : raw(r), gen(g), perProcess(p), iCut(0) {}
+      void operator()(float weight) {
+          if(raw       ) raw       ->Fill(iCut);
+          if(gen       ) gen       ->Fill(iCut, weight);
+          if(perProcess) perProcess->Fill(iCut, weight);
+          iCut++;
+      }
+      TH1 *raw, *gen, *perProcess; ///< histos with counters
+      int iCut; ///< index of the sequential cut (note that this depends on the binning of the counter histos)
+  } fillCutFlow(h_rawCutFlow, h_genCutFlow, h_procCutFlow);
 
   n_evt_initial++;
-  FillCutFlow();
+  fillCutFlow(w);
 
   //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-//
   // Obj Independent checks
@@ -324,32 +330,32 @@ bool SusyNtMaker::selectEvent()
   checkEventCleaning();
 
   // susyProp (just counts, doesn't drop)
-  if(!m_hasSusyProp) { FillCutFlow(); n_evt_susyProp++; }
-  else { cut++; }
+  if(!m_hasSusyProp) { fillCutFlow(w); n_evt_susyProp++; }
+  else { fillCutFlow.iCut++; }
 
   // grl
   if(m_filter && (m_cutFlags & ECut_GRL) == 0) return false;
-  FillCutFlow();
+  fillCutFlow(w);
   n_evt_grl++;
 
   // larErr
   if(m_filter && (m_cutFlags & ECut_LarErr) == 0) return false;
-  FillCutFlow();
+  fillCutFlow(w);
   n_evt_larErr++;
 
   // tileErr
   if(m_filter && (m_cutFlags & ECut_TileErr) == 0) return false;
-  FillCutFlow();
+  fillCutFlow(w);
   n_evt_tileErr++;
 
   // Incomplete TTC event veto
   if(m_filter && (m_cutFlags & ECut_TTC) == 0) return false;
-  FillCutFlow();
+  fillCutFlow(w);
   n_evt_ttcVeto++;
 
   // primary vertex cut is actually filtered
   if(m_filter && (m_cutFlags & ECut_GoodVtx) == 0) return false;
-  FillCutFlow();
+  fillCutFlow(w);
   n_evt_goodVtx++;
 
   // Sherpa WW fix, remove radiative b-quark processes that overlap with single top
@@ -360,12 +366,12 @@ bool SusyNtMaker::selectEvent()
                                                     m_event.mc.status(),
                                                     m_event.mc.pdgId(),
                                                     m_event.mc.charge())) return false;
-  FillCutFlow();
+  fillCutFlow(w);
   n_evt_WwSherpa++;
 
   // Tile trip cut
   if(m_filter && (m_cutFlags & ECut_TileTrip) == 0) return false;
-  FillCutFlow();
+  fillCutFlow(w);
   n_evt_tileTrip++;
 
   //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-//
@@ -383,25 +389,25 @@ bool SusyNtMaker::selectEvent()
   // Tile hot spot
   if(m_cutFlags & ECut_HotSpot)
   {
-    FillCutFlow();
+    fillCutFlow(w);
     n_evt_hotSpot++;
 
     // Bad jet cut
     if(m_cutFlags & ECut_BadJet)
     {
-      FillCutFlow();
+      fillCutFlow(w);
       n_evt_badJet++;
 
       // Bad muon veto
       if(m_cutFlags & ECut_BadMuon)
       {
-	FillCutFlow();
+	fillCutFlow(w);
         n_evt_badMu++;
 
         // Cosmic muon veto
         if(m_cutFlags & ECut_Cosmic)
         {
-          FillCutFlow();
+          fillCutFlow(w);
           n_evt_cosmic++;
 
           n_base_ele += m_baseElectrons.size();
@@ -417,13 +423,13 @@ bool SusyNtMaker::selectEvent()
           uint nSigLep = m_sigElectrons.size() + m_sigMuons.size();
           //cout << "nSigLep " << nSigLep << endl;
           if(nSigLep >= 1){
-            FillCutFlow();
+            fillCutFlow(w);
             n_evt_1Lep++;
             if(nSigLep >= 2){
-              FillCutFlow();
+              fillCutFlow(w);
               n_evt_2Lep++;
               if(nSigLep == 3){
-                FillCutFlow();
+                fillCutFlow(w);
                 n_evt_3Lep++;
                 //cout << "Event " << d3pd.evt.EventNumber() << endl;
               }
