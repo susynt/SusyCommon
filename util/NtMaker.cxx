@@ -12,6 +12,7 @@
 
 using namespace std;
 using namespace Susy;
+using susy::SusyNtMaker;
 
 /*
 

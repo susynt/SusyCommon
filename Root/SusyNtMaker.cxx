@@ -1,4 +1,6 @@
 #include "egammaAnalysisUtils/CaloIsoCorrection.h"
+
+
 //#include "TauCorrections/TauCorrections.h"
 #include "TauCorrUncert/TauSF.h"
 //#include "SUSYTools/MV1.h"
@@ -9,10 +11,18 @@
 #include "SusyNtuple/WhTruthExtractor.h"
 #include "SusyNtuple/mc_truth_utils.h"
 
+#include "D3PDReader/ElectronD3PDObject.h"
+#include "D3PDReader/JetD3PDObject.h"
+#include "D3PDReader/MuonD3PDObject.h"
+#include "D3PDReader/PhotonD3PDObject.h"
+#include "D3PDReader/TauD3PDObject.h"
+
 #include "ElectronEfficiencyCorrection/TElectronEfficiencyCorrectionTool.h"
 
 using namespace std;
 namespace smc =susy::mc;
+
+using susy::SusyNtMaker;
 
 #define GeV 1000.
 
@@ -63,14 +73,10 @@ SusyNtMaker::~SusyNtMaker()
 {
 }
 /*--------------------------------------------------------------------------------*/
-// The Begin() function is called at the start of the query.
-// When running with PROOF Begin() is only called on the client.
-// The tree argument is deprecated (on PROOF 0 is passed).
-/*--------------------------------------------------------------------------------*/
-void SusyNtMaker::Begin(TTree* /*tree*/)
+void SusyNtMaker::SlaveBegin(TTree* tree)
 {
-  SusyD3PDAna::Begin(0);
-  if(m_dbg) cout << "SusyNtMaker::Begin" << endl;
+  D3PDAna::SlaveBegin(tree);
+  if(m_dbg) cout << "SusyNtMaker::SlaveBegin" << endl;
 
   if(m_fillNt){
 
@@ -155,14 +161,24 @@ Bool_t SusyNtMaker::Process(Long64_t entry)
 {
   // Communicate the entry number to the interface objects
   GetEntry(entry);
+  m_event.GetEntry(entry);
+
+  if(!m_flagsHaveBeenChecked) {
+      m_flagsAreConsistent = runningOptionsAreValid();
+      m_flagsHaveBeenChecked=true;
+      if(!m_flagsAreConsistent) {
+          cout<<"ERROR: Inconsistent options. Stopping here."<<endl;
+          abort();
+      }
+  }
 
   static Long64_t chainEntry = -1;
   chainEntry++;
   if(m_dbg || chainEntry%5000==0)
   {
     cout << "**** Processing entry " << setw(6) << chainEntry
-         << " run " << setw(6) << d3pd.evt.RunNumber()
-         << " event " << setw(7) << d3pd.evt.EventNumber() << " ****" << endl;
+         << " run " << setw(6) << m_event.eventinfo.RunNumber()
+         << " event " << setw(7) << m_event.eventinfo.EventNumber() << " ****" << endl;
   }
 
   if(selectEvent() && m_fillNt){
@@ -187,7 +203,7 @@ void SusyNtMaker::Terminate()
   // Stop the timer
   m_timer.Stop();
 
-  SusyD3PDAna::Terminate();
+  D3PDAna::Terminate();
   if(m_dbg) cout << "SusyNtMaker::Terminate" << endl;
 
   cout << endl;
@@ -268,34 +284,30 @@ bool SusyNtMaker::selectEvent()
   m_susyNt.clear();
 
   // Dynamically determine if SUSY sample by looking for sparticle branches
-  #warning "isSusySample is broken, these branches are not available in NTUP_COMMON"
-  bool isSusySample = false;
-  //--DG--ntupcommonbool isSusySample = d3pd.evt.SUSY_Spart1_pdgId.IsAvailable() &&
-  //--DG--ntupcommon                    d3pd.evt.SUSY_Spart2_pdgId.IsAvailable() &&
-  //--DG--ntupcommon                    d3pd.evt.SUSY_Spart1_pdgId() != 0        &&
-  //--DG--ntupcommon                    d3pd.evt.SUSY_Spart2_pdgId() != 0;
+  bool isSusySample = m_event.SUSY.Spart1_pdgId.IsAvailable() &&
+                      m_event.SUSY.Spart2_pdgId.IsAvailable() &&
+                      m_event.SUSY.Spart1_pdgId() != 0        &&
+                      m_event.SUSY.Spart2_pdgId() != 0;
 
   // Susy final state - NOTE: DEFAULT VALUE CHANGED FROM -1 TO 0
-  m_susyFinalState = isSusySample ?
-      0 :
-      //--DG--ntupcommon m_susyObj.finalState(d3pd.evt.SUSY_Spart1_pdgId(), d3pd.evt.SUSY_Spart2_pdgId()) :
-      0;
+  m_susyFinalState = isSusySample ? m_susyObj.finalState(m_event.SUSY.Spart1_pdgId(), m_event.SUSY.Spart2_pdgId()) : 0;
   m_hDecay = smc::kUnknown;
-  if(m_isWhSample) m_hDecay = WhTruthExtractor().update(d3pd.truth.pdgId(),
-                                                        d3pd.truth.child_index(),
-                                                        d3pd.truth.parent_index());
+  if(m_isWhSample) m_hDecay = WhTruthExtractor().update(m_event.mc.pdgId(),
+                                                        m_event.mc.child_index(),
+                                                        m_event.mc.parent_index());
 
   // This assumes that sparticle branches are present for any
   // sample that might have the SUSY propagators problem
   m_hasSusyProp = ((isSusySample && isSimplifiedModel(m_sample)) ?
-                   SusyNtTools::eventHasSusyPropagators(*d3pd.truth.pdgId(), *d3pd.truth.parent_index()) :
+                   SusyNtTools::eventHasSusyPropagators(*m_event.mc.pdgId(),
+                                                        *m_event.mc.parent_index()) :
                    false);
 
   // It should be safe to always do procCutFlow, not just for susy samples.
   // This way we can eventually drop the genCutFlow and just rely on procCutFlow
   //TH1F* h_procCutFlow = m_isSusySample ? getProcCutFlow(m_susyFinalState) : 0;
   TH1F* h_procCutFlow = getProcCutFlow(m_susyFinalState);
-  float w = m_isMC? d3pd.evt.mc_event_weight() : 1;
+  float w = m_isMC? m_event.eventinfo.mc_event_weight() : 1;
 
   struct FillCutFlow { ///< local function object to fill the cutflow histograms
       FillCutFlow(TH1 *r, TH1* g, TH1* p) : raw(r), gen(g), perProcess(p), iCut(0) {}
@@ -349,11 +361,11 @@ bool SusyNtMaker::selectEvent()
   // Sherpa WW fix, remove radiative b-quark processes that overlap with single top
   //if(m_filter && m_isMC && isBuggyWWSherpaSample(d3pd.truth.channel_number()) &&
      //hasRadiativeBQuark(d3pd.truth.pdgId(), d3pd.truth.status())) return false;
-  if(m_filter && m_isMC && m_susyObj.Sherpa_WW_veto(d3pd.truth.n(),
-                                                    d3pd.evt.mc_channel_number(),
-                                                    d3pd.truth.status(),
-                                                    d3pd.truth.pdgId(),
-                                                    d3pd.truth.charge())) return false;
+  if(m_filter && m_isMC && m_susyObj.Sherpa_WW_veto(m_event.mc.n(),
+                                                    m_event.eventinfo.mc_channel_number(),
+                                                    m_event.mc.status(),
+                                                    m_event.mc.pdgId(),
+                                                    m_event.mc.charge())) return false;
   fillCutFlow(w);
   n_evt_WwSherpa++;
 
@@ -435,18 +447,24 @@ bool SusyNtMaker::selectEvent()
 
   // Setup reco truth matching
   if(m_isMC){
-    m_recoTruthMatch = RecoTauMatch(0.1, d3pd.evt.mc_channel_number(),
-                                    d3pd.truth.n(), d3pd.truth.barcode(), d3pd.truth.status(), d3pd.truth.pdgId(),
-                                    d3pd.truth.parents(), d3pd.truth.children(),
-                                    d3pd.truth.pt(), d3pd.truth.eta(), d3pd.truth.phi(), d3pd.truth.m(),
-                                    d3pd.jet.pt(), d3pd.jet.eta(), d3pd.jet.phi(), d3pd.jet.m(),
-                                    d3pd.jet.flavor_truth_label(),
-                                    d3pd.ele.pt(), d3pd.ele.eta(), d3pd.ele.phi(), d3pd.ele.m(),
-                                    d3pd.ele.type(), d3pd.ele.origin(),
-                                    d3pd.truthMu.pt(), d3pd.truthMu.eta(), d3pd.truthMu.phi(), d3pd.truthMu.m(),
-                                    d3pd.truthMu.type(), d3pd.truthMu.origin(),
-                                    d3pd.trk.pt(), d3pd.trk.eta(), d3pd.trk.phi_wrtPV(), d3pd.trk.mc_barcode());
-  }
+    D3PDReader::TruthParticleD3PDObject  &mc = m_event.mc;
+    D3PDReader::EventInfoD3PDObject    &info = m_event.eventinfo;
+    D3PDReader::JetD3PDObject          &jets = m_event.jet_AntiKt4LCTopo;
+    D3PDReader::ElectronD3PDObject    &elecs = m_event.el;
+    D3PDReader::TruthMuonD3PDObject &truthMu = m_event.muonTruth;
+    D3PDReader::TrackParticleD3PDObject &trk = m_event.trk;
+    m_recoTruthMatch = RecoTauMatch(0.1, info.mc_channel_number(),
+                                    mc.n(), mc.barcode(), mc.status(), mc.pdgId(),
+                                    mc.parents(), mc.children(),
+                                    mc.pt(), mc.eta(), mc.phi(), mc.m(),
+                                    jets.pt(), jets.eta(), jets.phi(), jets.m(),
+                                    jets.flavor_truth_label(),
+                                    elecs.pt(), elecs.eta(), elecs.phi(), elecs.m(),
+                                    elecs.type(), elecs.origin(),
+                                    truthMu.pt(), truthMu.eta(), truthMu.phi(), truthMu.m(),
+                                    truthMu.type(), truthMu.origin(),
+                                    trk.pt(), trk.eta(), trk.phi_wrtPV(), trk.mc_barcode());
+   }
 
   if(m_fillNt){
 
@@ -498,33 +516,32 @@ void SusyNtMaker::fillEventVars()
   if(m_dbg>=5) cout << "fillEventVars" << endl;
   Susy::Event* evt = m_susyNt.evt();
 
-  evt->run              = d3pd.evt.RunNumber();
-  evt->event            = d3pd.evt.EventNumber();
-  evt->lb               = d3pd.evt.lbn();
+  evt->run              = m_event.eventinfo.RunNumber();
+  evt->event            = m_event.eventinfo.EventNumber();
+  evt->lb               = m_event.eventinfo.lbn();
   evt->stream           = m_stream;
 
   evt->isMC             = m_isMC;
-  evt->mcChannel        = m_isMC? d3pd.evt.mc_channel_number() : 0;
-  evt->w                = m_isMC? d3pd.evt.mc_event_weight()   : 1;
+  evt->mcChannel        = m_isMC? m_event.eventinfo.mc_channel_number() : 0;
+  evt->w                = m_isMC? m_event.eventinfo.mc_event_weight()   : 1;
 
-  evt->larError         = d3pd.evt.larError();
+  evt->larError         = m_event.eventinfo.larError();
 
   evt->nVtx             = getNumGoodVtx();
-  evt->avgMu            = d3pd.evt.averageIntPerXing();
+  evt->avgMu            = m_event.eventinfo.averageIntPerXing();
 
   evt->hfor             = m_isMC? getHFORDecision() : -1;
 
   // SUSY final state
   evt->susyFinalState   = m_susyFinalState;
-  #warning "susySpartId is broken, these branches are not available in NTUP_COMMON"
-  //--DG--ntupcommon evt->susySpartId1     = d3pd.evt.SUSY_Spart1_pdgId.IsAvailable()? d3pd.evt.SUSY_Spart1_pdgId() : 0;
-  //--DG--ntupcommon evt->susySpartId2     = d3pd.evt.SUSY_Spart2_pdgId.IsAvailable()? d3pd.evt.SUSY_Spart2_pdgId() : 0;
+  evt->susySpartId1     = m_event.SUSY.Spart1_pdgId.IsAvailable()? m_event.SUSY.Spart1_pdgId() : 0;
+  evt->susySpartId2     = m_event.SUSY.Spart2_pdgId.IsAvailable()? m_event.SUSY.Spart2_pdgId() : 0;
 
   float mZ = -1.0, mZtruthMax = 40.0;
   if(m_isMC){
-    int dsid = d3pd.evt.mc_channel_number();
-    if(IsAlpgenLowMass(dsid) || IsAlpgenPythiaZll(dsid)) mZ = MllForAlpgen(&d3pd.truth);
-    else if(IsSherpaZll(dsid)) mZ = MllForSherpa(&d3pd.truth);
+    int dsid = m_event.eventinfo.mc_channel_number();
+    if(IsAlpgenLowMass(dsid) || IsAlpgenPythiaZll(dsid)) mZ = MllForAlpgen(&m_event.mc);
+    else if(IsSherpaZll(dsid)) mZ = MllForSherpa(&m_event.mc);
   }
   evt->mllMcTruth       = mZ;
   evt->passMllForAlpgen = m_isMC ? (mZ < mZtruthMax) : true;
@@ -540,11 +557,11 @@ void SusyNtMaker::fillEventVars()
   evt->errXsec          = m_isMC? m_errXsec : 1;
   evt->sumw             = m_isMC? m_sumw : 1;
 
-  evt->pdf_id1          = m_isMC? d3pd.gen.pdf_id1()->at(0)    : 0;
-  evt->pdf_id2          = m_isMC? d3pd.gen.pdf_id2()->at(0)    : 0;
-  evt->pdf_x1           = m_isMC? d3pd.gen.pdf_x1()->at(0)     : 0;
-  evt->pdf_x2           = m_isMC? d3pd.gen.pdf_x2()->at(0)     : 0;
-  evt->pdf_scale        = m_isMC? d3pd.gen.pdf_scale()->at(0)  : 0;
+  evt->pdf_id1          = m_isMC? m_event.mcevt.pdf_id1()->at(0)    : 0;
+  evt->pdf_id2          = m_isMC? m_event.mcevt.pdf_id2()->at(0)    : 0;
+  evt->pdf_x1           = m_isMC? m_event.mcevt.pdf_x1()->at(0)     : 0;
+  evt->pdf_x2           = m_isMC? m_event.mcevt.pdf_x2()->at(0)     : 0;
+  evt->pdf_scale        = m_isMC? m_event.mcevt.pdf_scale()->at(0)  : 0;
 
   evt->pdfSF            = m_isMC? getPDFWeight8TeV() : 1;
 
@@ -601,7 +618,7 @@ void SusyNtMaker::fillElectronVars(const LeptonInfo* lepIn)
   if(m_dbg>=5) cout << "fillElectronVars" << endl;
   m_susyNt.ele()->push_back( Susy::Electron() );
   Susy::Electron* eleOut = & m_susyNt.ele()->back();
-  const ElectronElement* element = lepIn->getElectronElement();
+  const D3PDReader::ElectronD3PDObjectElement* element = lepIn->getElectronElement();
 
   // LorentzVector
   const TLorentzVector* lv = lepIn->lv();
@@ -728,7 +745,7 @@ void SusyNtMaker::fillMuonVars(const LeptonInfo* lepIn)
   if(m_dbg>=5) cout << "fillMuonVars" << endl;
   m_susyNt.muo()->push_back( Susy::Muon() );
   Susy::Muon* muOut = & m_susyNt.muo()->back();
-  const MuonElement* element = lepIn->getMuonElement();
+  const D3PDReader::MuonD3PDObjectElement* element = lepIn->getMuonElement();
 
   // LorentzVector
   const TLorentzVector* lv = lepIn->lv();
@@ -790,7 +807,7 @@ void SusyNtMaker::fillMuonVars(const LeptonInfo* lepIn)
     // If type and origin are zero, try matching to the muons in the truthMuon block
     // This might not actually do anything
     if(element->type()==0 && element->origin()==0 && element->truth_barcode()!=0){
-      const TruthMuonElement* trueMuon = getMuonTruth(&d3pd.muo, lepIn->idx(), &d3pd.truthMu);
+      const D3PDReader::TruthMuonD3PDObjectElement* trueMuon = getMuonTruth(d3pdMuons(), lepIn->idx(), &m_event.muonTruth);
       muOut->mcType     = trueMuon? trueMuon->type()   : 0;
       muOut->mcOrigin   = trueMuon? trueMuon->origin() : 0;
     }
@@ -826,7 +843,7 @@ void SusyNtMaker::fillJetVars()
 /*--------------------------------------------------------------------------------*/
 void SusyNtMaker::fillJetVar(int jetIdx)
 {
-  const JetElement* element = & d3pd.jet[jetIdx];
+  const D3PDReader::JetD3PDObjectElement *element = &m_event.jet_AntiKt4LCTopo[jetIdx];
   m_susyNt.jet()->push_back( Susy::Jet() );
   Susy::Jet* jetOut = & m_susyNt.jet()->back();
 
@@ -871,12 +888,12 @@ void SusyNtMaker::fillJetVar(int jetIdx)
                                           element->fracSamplingMax(),
                                           element->NegativeE(),
                                           element->AverageLArQF());
-  jetOut->isHotTile     = m_susyObj.isHotTile(d3pd.evt.RunNumber(), element->fracSamplingMax(),
+  jetOut->isHotTile     = m_susyObj.isHotTile(m_event.eventinfo.RunNumber(), element->fracSamplingMax(),
                                               element->SamplingMax(), eta, phi);
 
   // BCH cleaning flags
-  uint bchRun = m_isMC? m_mcRun : d3pd.evt.RunNumber();
-  uint bchLB = m_isMC? m_mcLB : d3pd.evt.lbn();
+  uint bchRun = m_isMC? m_mcRun : m_event.eventinfo.RunNumber();
+  uint bchLB = m_isMC? m_mcLB : m_event.eventinfo.lbn();
   #define BCH_ARGS bchRun, bchLB, jetOut->detEta, jetOut->phi, jetOut->bch_corr_cell, jetOut->emfrac, jetOut->pt*1000.
   jetOut->isBadMediumBCH = !m_susyObj.passBCHCleaningMedium(BCH_ARGS, 0);
   jetOut->isBadMediumBCH_up = !m_susyObj.passBCHCleaningMedium(BCH_ARGS, 1);
@@ -887,7 +904,7 @@ void SusyNtMaker::fillJetVar(int jetIdx)
   // Save the met weights for the jets
   // by checking status word similar to
   // what is done in met utility
-  const D3PDReader::MissingETCompositionD3PDObjectElement &jetMetEgamma10NoTau = d3pd.jetMetEgamma10NoTau[jetIdx];
+  const D3PDReader::MissingETCompositionD3PDObjectElement &jetMetEgamma10NoTau = m_event.jet_AntiKt4LCTopo_MET_Egamma10NoTau[jetIdx];
   // 0th element is what we care about
   int sWord = jetMetEgamma10NoTau.statusWord().at(0);
   bool passSWord = (MissingETTags::DEFAULT == sWord);       // Note assuming default met..
@@ -915,7 +932,7 @@ void SusyNtMaker::fillPhotonVar(int phIdx)
   if(m_dbg>=5) cout << "fillPhotonVar" << endl;
   m_susyNt.pho()->push_back( Susy::Photon() );
   Susy::Photon* phoOut = & m_susyNt.pho()->back();
-  const PhotonElement* element = & d3pd.pho[phIdx];
+  const D3PDReader::PhotonD3PDObjectElement* element = & m_event.ph[phIdx];
 
 
   // Set TLV
@@ -959,7 +976,7 @@ void SusyNtMaker::fillTauVar(int tauIdx)
   if(m_dbg>=5) cout << "fillTauVar" << endl;
   m_susyNt.tau()->push_back( Susy::Tau() );
   Susy::Tau* tauOut = & m_susyNt.tau()->back();
-  const TauElement* element = & d3pd.tau[tauIdx];
+  const D3PDReader::TauD3PDObjectElement* element = & m_event.tau[tauIdx];
 
   // Set TLV
   //const TLorentzVector* tauLV = & m_tauLVs.at(tauIdx);
@@ -1001,8 +1018,7 @@ void SusyNtMaker::fillTauVar(int tauIdx)
 
   tauOut->muonVeto              = element->muonVeto();
 
-  #warning "Tau::trueTau is broken, these branches are not available in NTUP_COMMON"
-  //--DG--ntupcommon tauOut->trueTau               = m_isMC? element->trueTauAssocSmall_matched() : false;
+  tauOut->trueTau               = m_isMC? element->trueTauAssoc_matched() : false;
 
   tauOut->matched2TruthLepton   = m_isMC? m_recoTruthMatch.Matched2TruthLepton(*tauLV, true) : false;
   tauOut->detailedTruthType     = m_isMC? m_recoTruthMatch.TauDetailedFakeType(*tauLV) : -1;
@@ -1150,9 +1166,9 @@ void SusyNtMaker::fillTruthParticleVars()
   m_truParticles        = m_recoTruthMatch.LepFromHS_McIdx();
   vector<int> truthTaus = m_recoTruthMatch.TauFromHS_McIdx();
   m_truParticles.insert( m_truParticles.end(), truthTaus.begin(), truthTaus.end() );
-  if(m_isMC && isMcAtNloTtbar(d3pd.evt.mc_channel_number())){
-    vector<int> ttbarPart(WhTruthExtractor::ttbarMcAtNloParticles(d3pd.truth.pdgId(),
-                                                                  d3pd.truth.child_index()));
+  if(m_isMC && isMcAtNloTtbar(m_event.eventinfo.mc_channel_number())){
+    vector<int> ttbarPart(WhTruthExtractor::ttbarMcAtNloParticles(m_event.mc.pdgId(),
+                                                                  m_event.mc.child_index()));
     m_truParticles.insert(m_truParticles.end(), ttbarPart.begin(), ttbarPart.end());
   }
 
@@ -1164,10 +1180,10 @@ void SusyNtMaker::fillTruthParticleVars()
     Susy::TruthParticle* tprOut         = & m_susyNt.tpr()->back();
 
     // Set TLV
-    float pt  = d3pd.truth.pt() ->at(truParIdx) / GeV;
-    float eta = d3pd.truth.eta()->at(truParIdx);
-    float phi = d3pd.truth.phi()->at(truParIdx);
-    float m   = d3pd.truth.m()  ->at(truParIdx) / GeV;
+    float pt  = m_event.mc.pt() ->at(truParIdx) / GeV;
+    float eta = m_event.mc.eta()->at(truParIdx);
+    float phi = m_event.mc.phi()->at(truParIdx);
+    float m   = m_event.mc.m()  ->at(truParIdx) / GeV;
 
     tprOut->SetPtEtaPhiM(pt, eta, phi, m);
     tprOut->pt          = pt;
@@ -1175,11 +1191,11 @@ void SusyNtMaker::fillTruthParticleVars()
     tprOut->phi         = phi;
     tprOut->m           = m;
 
-    tprOut->charge      = d3pd.truth.charge()->at(truParIdx);
-    tprOut->pdgId       = d3pd.truth.pdgId() ->at(truParIdx);
-    tprOut->status      = d3pd.truth.status()->at(truParIdx);
-    tprOut->motherPdgId = smc::determineParentPdg(d3pd.truth.pdgId(),
-                                                  d3pd.truth.parent_index(),
+    tprOut->charge      = m_event.mc.charge()->at(truParIdx);
+    tprOut->pdgId       = m_event.mc.pdgId() ->at(truParIdx);
+    tprOut->status      = m_event.mc.status()->at(truParIdx);
+    tprOut->motherPdgId = smc::determineParentPdg(m_event.mc.pdgId(),
+                                                  m_event.mc.parent_index(),
                                                   truParIdx);
   }
 }
@@ -1195,7 +1211,7 @@ void SusyNtMaker::fillTruthJetVars()
 
     m_susyNt.tjt()->push_back( Susy::TruthJet() );
     Susy::TruthJet* truJetOut = & m_susyNt.tjt()->back();
-    const TruthJetElement* element = & d3pd.truthJet[truJetIdx];
+    const D3PDReader::JetD3PDObjectElement* element = & m_event.AntiKt4Truth[truJetIdx];
 
     // Set TLV
     float pt  = element->pt() / GeV;
@@ -1498,7 +1514,7 @@ void SusyNtMaker::addMissingElectron(const LeptonInfo* lep, SusyNtSys sys)
   // Reset the Nominal TLV
   // NOTE: this overwrites the TLV in SUSYObjDef with the nominal variables,
   // regardless of our current systematic.
-  const ElectronElement* element = lep->getElectronElement();
+  const D3PDReader::ElectronD3PDObjectElement* element = lep->getElectronElement();
   m_susyObj.SetElecTLV(lep->idx(), element->eta(), element->phi(), element->cl_eta(), element->cl_phi(), element->cl_E(),
                        element->tracketa(), element->trackphi(), element->nPixHits(), element->nSCTHits(), SystErr::NONE);
 
@@ -1548,7 +1564,7 @@ void SusyNtMaker::addMissingMuon(const LeptonInfo* lep, SusyNtSys sys)
   // Reset the Nominal TLV
   // NOTE: this overwrites the TLV in SUSYObjDef with the nominal variables,
   // regardless of our current systematic.
-  const MuonElement* element = lep->getMuonElement();
+  const D3PDReader::MuonD3PDObjectElement* element = lep->getMuonElement();
   m_susyObj.SetMuonTLV(lep->idx(), element->pt(), element->eta(), element->phi(),
                        element->me_qoverp_exPV(), element->id_qoverp_exPV(), element->me_theta_exPV(),
                        element->id_theta_exPV(), element->charge(), element->isCombinedMuon(),
@@ -1582,13 +1598,13 @@ void SusyNtMaker::addMissingJet(int index, SusyNtSys sys)
   // Reset the Nominal TLV
   // NOTE: this overwrites the TLV in SUSYObjDef with the nominal variables,
   // regardless of our current systematic.
-  const D3PDReader::JetD3PDObjectElement* jet = & d3pd.jet[index];
+  const D3PDReader::JetD3PDObjectElement* jet = &m_event.jet_AntiKt4LCTopo[index];
   m_susyObj.FillJet(index, jet->pt(), jet->eta(), jet->phi(), jet->E(),
                     jet->constscale_eta(), jet->constscale_phi(), jet->constscale_E(), jet->constscale_m(),
                     jet->ActiveAreaPx(), jet->ActiveAreaPy(), jet->ActiveAreaPz(), jet->ActiveAreaE(),
-                    d3pd.evtShape.rhoKt4LC(),
-                    d3pd.evt.averageIntPerXing(),
-                    d3pd.vtx.nTracks());
+                    m_event.Eventshape.rhoKt4LC(),
+                    m_event.eventinfo.averageIntPerXing(),
+                    m_event.vxp.nTracks());
 
   // Need to save the calibrated TLV
   //TLorentzVector tlv_nom;
@@ -1601,8 +1617,8 @@ void SusyNtMaker::addMissingJet(int index, SusyNtSys sys)
   //                         d3pd.jet.ActiveAreaPy()->at(index),
   //                         d3pd.jet.ActiveAreaPz()->at(index),
   //                         d3pd.jet.ActiveAreaE()->at(index),
-  //                         d3pd.evt.Eventshape_rhoKt4LC(),
-  //                         d3pd.evt.averageIntPerXing(),
+  //                         m_event.eventinfo.Eventshape_rhoKt4LC(),
+  //                         m_event.eventinfo.averageIntPerXing(),
   //                         d3pd.vtx.nTracks());
 
   //D3PDReader::JetD3PDObject* jets = & d3pd.jet;
@@ -1643,7 +1659,7 @@ void SusyNtMaker::addMissingTau(int index, SusyNtSys sys)
   //float E_sys = m_susyObj.GetTauTLV(index).E();
 
   // Grab the d3pd variables
-  const TauElement* element = & d3pd.tau[index];
+  const D3PDReader::TauD3PDObjectElement* element = & m_event.tau[index];
 
   // Reset the Nominal TLV
   // NOTE: this overwrites the TLV in SUSYObjDef with the nominal variables,

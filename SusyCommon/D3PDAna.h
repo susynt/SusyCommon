@@ -25,7 +25,15 @@
 #include "SusyNtuple/SusyDefs.h"
 #include "D3PDReader/Event.h"
 
-/*
+namespace D3PDReader
+{
+  class MuonD3PDObject;
+  class ElectronD3PDObject;
+  class TauD3PDObject;
+  class JetD3PDObjectl;
+}
+
+/**
 
     D3PDAna - a class for performing object selections and event cleaning on susy d3pds
 
@@ -39,23 +47,45 @@ class D3PDAna : public TSelector
     D3PDAna();
     virtual ~D3PDAna();
     
-    virtual void    Begin(TTree *tree);
     virtual Bool_t  Process(Long64_t entry);
     virtual void    Terminate();
 
 
-    //--------
     // Init is called every time a new TTree is attached
     virtual void    Init(TTree *tree) { m_event.ReadFrom(tree); }
-    virtual void    SlaveBegin(TTree *tree){};
+    virtual void    SlaveBegin(TTree *tree);
     
     virtual Bool_t  Notify() { return kTRUE; } /// Called at the first entry of a new file in a chain
     virtual void    SlaveTerminate(){};
     /// Due to ROOT's stupid design, need to specify version >= 2 or the tree will not connect automatically
     virtual Int_t   Version() const { return 2; }
     virtual D3PDAna& setDebug(int debugLevel) { m_dbg = debugLevel; return *this; }
-    //--------
-
+    /// access the default collection of muons from the D3PDReader
+    /**
+       By default this function returns a pointer to
+       mu_staco. However, if we always call this function (rather than
+       accessing directly m_event.mu_staco), one can decide to
+       override this member function, and easily switch to another
+       muon collection.
+     */
+    virtual D3PDReader::MuonD3PDObject* d3pdMuons();
+    /// access the default collection of electrons from the D3PDReader
+    /**
+       By default returns m_event.el; for its motivation, see D3PDAna::d3pdMuons().
+       \todo In this case there might be some ambiguity to be sorted out when calling SUSYObjDef::GetMET().
+     */
+    virtual D3PDReader::ElectronD3PDObject* d3pdElectrons();
+    /// access the default collection of taus from the D3PDReader
+    /**
+       By default returns m_event.tau; for its motivation, see D3PDAna::d3pdMuons().
+     */
+    virtual D3PDReader::TauD3PDObject* d3pdTaus();
+    /// access the default collection of jets from the D3PDReader
+    /**
+       By default returns m_event.jet_AntiKt4LCTopo; for its motivation, see D3PDAna::d3pdMuons().
+       \todo In this case there might be some ambiguity to be sorted out when calling SUSYObjDef::GetMET().
+     */
+    virtual D3PDReader::JetD3PDObject* d3pdJets();
 
 
     //
@@ -100,11 +130,11 @@ class D3PDAna : public TSelector
     }
     void fillEventTriggers();
     void matchElectronTriggers();
-    bool matchElectronTrigger(const TLorentzVector* lv, std::vector<int>* trigBools);
+    bool matchElectronTrigger(const TLorentzVector &lv, std::vector<int>* trigBools);
     void matchMuonTriggers();
-    bool matchMuonTrigger(const TLorentzVector* lv, std::vector<int>* trigBools);
+    bool matchMuonTrigger(const TLorentzVector &lv, std::vector<int>* trigBools);
     void matchTauTriggers();
-    bool matchTauTrigger(const TLorentzVector* lv, std::vector<int>* trigBools);
+    bool matchTauTrigger(const TLorentzVector &lv, std::vector<int>* trigBools);
 
 
 
@@ -234,6 +264,25 @@ class D3PDAna : public TSelector
     void setMetFlavor(std::string metFlav);
     void setDoMetMuonCorrection(bool doMetMuCorr) { m_doMetMuCorr = doMetMuCorr; }
     void setDoMetFix(bool doMetFix) { m_doMetFix = doMetFix; }
+    /// whether the options specified by the user are consistent with the event info
+    /**
+       This function should be called when the first event is being
+       read. Leave it up to the user to decide whether aborting in
+       case of inconsistent options (need to check that all the input
+       branches from the D3PD are filled in correctly).
+       In the class inheriting from D3PDAna, one should have:
+       \code{.cpp}
+       Process() {
+           GetEntry(entry);
+           if(!m_flagsHaveBeenChecked) {
+               m_flagsAreConsistent = runningOptionsAreValid();
+               m_flagsHaveBeenChecked=true;
+           }
+       ...
+       }
+       \endcode
+     */
+    bool runningOptionsAreValid();
     //void setUseMetMuons(bool useMetMu) { m_useMetMuons = useMetMu; }
 
     //
@@ -362,6 +411,8 @@ class D3PDAna : public TSelector
     Long64_t m_entry;           // Current entry in the current tree (not chain index!)
     int m_dbg;                  // debug level
     bool m_isMC;                // is MC flag
+    bool m_flagsAreConsistent;  ///< whether the cmd-line flags are consistent with the event
+    bool m_flagsHaveBeenChecked;///< whether the cmd-line have been checked
 
     D3PDReader::Event m_event;
 

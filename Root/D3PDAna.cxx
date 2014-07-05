@@ -44,7 +44,9 @@ D3PDAna::D3PDAna() :
         m_tree(0),
         m_entry(0),
         m_dbg(0),
-        m_isMC(false)
+        m_isMC(false),
+        m_flagsAreConsistent(false),
+        m_flagsHaveBeenChecked(false)
 {
   m_hforTool.setVerbosity(HforToolD3PD::ERROR);
 
@@ -67,22 +69,16 @@ D3PDAna::~D3PDAna()
   #endif
 }
 /*--------------------------------------------------------------------------------*/
-// The Begin() function is called at the start of the query.
-// When running with PROOF Begin() is only called on the client.
-// The tree argument is deprecated (on PROOF 0 is passed).
-/*--------------------------------------------------------------------------------*/
-void D3PDAna::Begin(TTree* /*tree*/)
+void D3PDAna::SlaveBegin(TTree *tree)
 {
-  if(m_dbg) cout << "D3PDAna::Begin" << endl;
+  if(m_dbg) cout << "D3PDAna::SlaveBegin" << endl;
 
-  // Use sample name to set MC flag
-  if(m_sample.Contains("data", TString::kIgnoreCase)) {
-    m_isMC = false;
-  }
+  bool isData = m_sample.Contains("data", TString::kIgnoreCase);
+  m_isMC = !isData;
 
   // Make sure MC production is specified
   if(m_isMC && m_mcProd==MCProd_Unknown){
-    cout << "D3PDAna::Begin : ERROR : Sample is flagged as MC but "
+    cout << "D3PDAna::SlaveBegin : ERROR : Sample is flagged as MC but "
          << "MCProduction is Unknown! Use command line argument to set it!"
          << endl;
     abort();
@@ -104,13 +100,6 @@ void D3PDAna::Begin(TTree* /*tree*/)
   bool isMC12b = (m_mcProd == MCProd_MC12b);
   bool useLeptonTrigger = false;
   m_susyObj.initialize(!m_isMC, m_isAF2, isMC12b, useLeptonTrigger);
-                       //gSystem->ExpandPathName("$ROOTCOREBIN/data/MuonMomentumCorrections/"),
-                       //gSystem->ExpandPathName("$ROOTCOREBIN/data/MuonEfficiencyCorrections/"));
-                       //"STACO_CB_plus_ST",
-                       //"efficiencySF.offline.RecoTrk.2012.8TeV.rel17p2.v02.root",
-                       //"efficiencySF.offline.Tight.2012.8TeV.rel17p2.v02.root",
-                       //"efficiencySF.e24vhi_medium1_e60_medium1.Tight.2012.8TeV.rel17p2.v02.root",
-                       //gSystem->ExpandPathName("$ROOTCOREBIN/data/MultiLep"));
 
   // Turn on jet calibration
   m_susyObj.SetJetCalib(true);
@@ -121,14 +110,10 @@ void D3PDAna::Begin(TTree* /*tree*/)
   eleMedFile += "/data/ElectronEfficiencyCorrection/efficiencySF.offline.Medium.2012.8TeV.rel17p2.v07.root";
   m_eleMediumSFTool->addFileName(eleMedFile.c_str());
   if(!m_eleMediumSFTool->initialize()){
-    cout << "D3PDAna::Begin : ERROR initializing TElectronEfficiencyCorrectionTool with file "
+    cout << "D3PDAna::SlaveBegin : ERROR initializing TElectronEfficiencyCorrectionTool with file "
          << eleMedFile << endl;
     abort();
   }
-
-  // Set the MissingEt flag for STVF
-  // This is now done automatically when you call SUSYObjDef::GetMET
-  //if(m_metFlavor.Contains("STVF")) m_susyObj.GetMETUtility()->configMissingET(true, true);
 
   m_fakeMetEst.initialize("$ROOTCOREBIN/data/MultiLep/fest_periodF_v1.root");
 
@@ -234,7 +219,26 @@ void D3PDAna::Terminate()
     delete m_pileup_dn;
   }
 }
-
+//----------------------------------------------------------
+D3PDReader::MuonD3PDObject* D3PDAna::d3pdMuons()
+{
+    return &m_event.mu_staco;
+}
+//----------------------------------------------------------
+D3PDReader::ElectronD3PDObject* D3PDAna::d3pdElectrons()
+{
+    return &m_event.el;
+}
+//----------------------------------------------------------
+D3PDReader::TauD3PDObject* D3PDAna::d3pdTaus()
+{
+    return &m_event.tau;
+}
+//----------------------------------------------------------
+D3PDReader::JetD3PDObject* D3PDAna::d3pdJets()
+{
+    return &m_event.jet_AntiKt4LCTopo;
+}
 /*--------------------------------------------------------------------------------*/
 // Baseline object selection
 /*--------------------------------------------------------------------------------*/
@@ -273,38 +277,39 @@ void D3PDAna::selectBaselineObjects(SusyNtSys sys)
   else if(sys == NtSys_TES_UP    ) susySys = SystErr::TESUP;      // TES up
   else if(sys == NtSys_TES_DN    ) susySys = SystErr::TESDOWN;    // TES down
 
+  D3PDReader::JetD3PDObject *jets = d3pdJets();
   // Container object selection
-  if(m_selectTaus) m_contTaus = get_taus_baseline(&m_event.tau, m_susyObj, 20.*GeV, 2.47,
+  if(m_selectTaus) m_contTaus = get_taus_baseline(d3pdTaus(), m_susyObj, 20.*GeV, 2.47,
                                                   SUSYTau::TauNone, SUSYTau::TauNone, SUSYTau::TauNone,
                                                   susySys, true);
 
   // Preselection
-  m_preElectrons = get_electrons_baseline(&m_event.el, &m_event.el_MET_Egamma10NoTau,
+  m_preElectrons = get_electrons_baseline(d3pdElectrons(), &m_event.el_MET_Egamma10NoTau,
                                           !m_isMC, m_event.eventinfo.RunNumber(), m_susyObj,
                                           7.*GeV, 2.47, susySys);
-  m_preMuons = get_muons_baseline(&m_event.mu, !m_isMC, m_susyObj,
+  m_preMuons = get_muons_baseline(d3pdMuons(), !m_isMC, m_susyObj,
                                   6.*GeV, 2.5, susySys);
   // Removing eta cut for baseline jets. This is for the bad jet veto.
-  m_preJets = get_jet_baseline(&m_event.jet, &m_event.vxp, &m_event.eventinfo, &m_event.Eventshape, !m_isMC, m_susyObj,
+  m_preJets = get_jet_baseline(jets, &m_event.vxp, &m_event.eventinfo, &m_event.Eventshape, !m_isMC, m_susyObj,
                                20.*GeV, std::numeric_limits<float>::max(), susySys, false, goodJets);
-  //m_preJets = get_jet_baseline(&m_event.jet, &m_event.vxp, &m_event.eventinfo, !m_isMC, m_susyObj,
+  //m_preJets = get_jet_baseline(jets, &m_event.vxp, &m_event.eventinfo, !m_isMC, m_susyObj,
   //                             20.*GeV, 4.9, susySys, false, goodJets);
 
   // Selection for met muons
   // Diff with preMuons is pt selection
-  m_metMuons = get_muons_baseline(&m_event.mu, !m_isMC, m_susyObj,
+  m_metMuons = get_muons_baseline(d3pdMuons(), !m_isMC, m_susyObj,
                                   10.*GeV, 2.5, susySys);
 
   // Preselect taus
-  if(m_selectTaus) m_preTaus = get_taus_baseline(&m_event.tau, m_susyObj, 20.*GeV, 2.47,
+  if(m_selectTaus) m_preTaus = get_taus_baseline(d3pdTaus(), m_susyObj, 20.*GeV, 2.47,
                                                  SUSYTau::TauLoose, SUSYTau::TauLoose, SUSYTau::TauLoose,
                                                  susySys, true);
 
   performOverlapRemoval();
 
   // combine leptons
-  m_preLeptons    = buildLeptonInfos(&m_event.el, m_preElectrons, &m_event.mu, m_preMuons, m_susyObj);
-  m_baseLeptons   = buildLeptonInfos(&m_event.el, m_baseElectrons, &m_event.mu, m_baseMuons, m_susyObj);
+  m_preLeptons    = buildLeptonInfos(d3pdElectrons(), m_preElectrons, d3pdMuons(), m_preMuons, m_susyObj);
+  m_baseLeptons   = buildLeptonInfos(d3pdElectrons(), m_baseElectrons, d3pdMuons(), m_baseMuons, m_susyObj);
 }
 
 /*--------------------------------------------------------------------------------*/
@@ -312,43 +317,44 @@ void D3PDAna::selectBaselineObjects(SusyNtSys sys)
 /*--------------------------------------------------------------------------------*/
 void D3PDAna::performOverlapRemoval()
 {
+  D3PDReader::JetD3PDObject *jets = d3pdJets();
   // e-e overlap removal
-  m_baseElectrons = overlap_removal(m_susyObj, &m_event.el, m_preElectrons, &m_event.el, m_preElectrons,
+  m_baseElectrons = overlap_removal(m_susyObj, d3pdElectrons(), m_preElectrons, d3pdElectrons(), m_preElectrons,
                                     0.05, true, true);
   // jet-e overlap removal
-  m_baseJets      = overlap_removal(m_susyObj, &m_event.jet, m_preJets, &m_event.el, m_baseElectrons,
+  m_baseJets      = overlap_removal(m_susyObj, jets, m_preJets, d3pdElectrons(), m_baseElectrons,
                                     0.2, false, false);
 
   if(m_selectTaus) {
     // tau-e overlap removal
-    m_baseTaus    = overlap_removal(m_susyObj, &m_event.tau, m_preTaus, &m_event.el, m_baseElectrons, 0.2, false, false);
+    m_baseTaus    = overlap_removal(m_susyObj, d3pdTaus(), m_preTaus, d3pdElectrons(), m_baseElectrons, 0.2, false, false);
     // tau-mu overlap removal
-    m_baseTaus    = overlap_removal(m_susyObj, &m_event.tau, m_baseTaus, &m_event.mu, m_preMuons, 0.2, false, false);
+    m_baseTaus    = overlap_removal(m_susyObj, d3pdTaus(), m_baseTaus, d3pdMuons(), m_preMuons, 0.2, false, false);
   }
 
   // e-jet overlap removal
-  m_baseElectrons = overlap_removal(m_susyObj, &m_event.el, m_baseElectrons, &m_event.jet, m_baseJets,
+  m_baseElectrons = overlap_removal(m_susyObj, d3pdElectrons(), m_baseElectrons, jets, m_baseJets,
                                     0.4, false, false);
 
   // m-jet overlap removal
-  m_baseMuons     = overlap_removal(m_susyObj, &m_event.mu, m_preMuons, &m_event.jet, m_baseJets, 0.4, false, false);
+  m_baseMuons     = overlap_removal(m_susyObj, d3pdMuons(), m_preMuons, jets, m_baseJets, 0.4, false, false);
 
   // e-m overlap removal
   vector<int> copyElectrons = m_baseElectrons;
-  m_baseElectrons = overlap_removal(m_susyObj, &m_event.el, m_baseElectrons, &m_event.mu, m_baseMuons,
+  m_baseElectrons = overlap_removal(m_susyObj, d3pdElectrons(), m_baseElectrons, d3pdMuons(), m_baseMuons,
                                     0.01, false, false);
-  m_baseMuons     = overlap_removal(m_susyObj, &m_event.mu, m_baseMuons, &m_event.el, copyElectrons, 0.01, false, false);
+  m_baseMuons     = overlap_removal(m_susyObj, d3pdMuons(), m_baseMuons, d3pdElectrons(), copyElectrons, 0.01, false, false);
 
   // m-m overlap removal
-  m_baseMuons     = overlap_removal(m_susyObj, &m_event.mu, m_baseMuons, &m_event.mu, m_baseMuons, 0.05, true, false);
+  m_baseMuons     = overlap_removal(m_susyObj, d3pdMuons(), m_baseMuons, d3pdMuons(), m_baseMuons, 0.05, true, false);
 
   // jet-tau overlap removal
-  m_baseJets      = overlap_removal(m_susyObj, &m_event.jet, m_baseJets, &m_event.tau, m_baseTaus, 0.2, false, false);
+  m_baseJets      = overlap_removal(m_susyObj, jets, m_baseJets, d3pdTaus(), m_baseTaus, 0.2, false, false);
 
   // remove SFOS lepton pairs with Mll < 12 GeV
-  m_baseElectrons = RemoveSFOSPair(m_susyObj, &m_event.el, m_baseElectrons, 12.*GeV);
-  m_baseMuons     = RemoveSFOSPair(m_susyObj, &m_event.mu, m_baseMuons,     12.*GeV);
-  //m_baseTaus      = RemoveSFOSPair(m_susyObj, &m_event.tau, m_baseTaus,      12.*GeV);
+  m_baseElectrons = RemoveSFOSPair(m_susyObj, d3pdElectrons(), m_baseElectrons, 12.*GeV);
+  m_baseMuons     = RemoveSFOSPair(m_susyObj, d3pdMuons(), m_baseMuons,     12.*GeV);
+  //m_baseTaus      = RemoveSFOSPair(m_susyObj, d3pdTaus(), m_baseTaus,      12.*GeV);
 }
 
 /*--------------------------------------------------------------------------------*/
@@ -358,15 +364,16 @@ void D3PDAna::selectSignalObjects()
 {
   if(m_dbg>=5) cout << "selectSignalObjects" << endl;
   uint nVtx = getNumGoodVtx();
-  m_sigElectrons = get_electrons_signal(&m_event.el, m_baseElectrons, &m_event.mu, m_baseMuons,
+  D3PDReader::JetD3PDObject *jets =  d3pdJets();
+  m_sigElectrons = get_electrons_signal(d3pdElectrons(), m_baseElectrons, d3pdMuons(), m_baseMuons,
                                         nVtx, !m_isMC, m_susyObj, 10.*GeV, 0.16, 0.18, 5., 0.4);
-  m_sigMuons     = get_muons_signal(&m_event.mu, m_baseMuons, &m_event.el, m_baseElectrons,
+  m_sigMuons     = get_muons_signal(d3pdMuons(), m_baseMuons, d3pdElectrons(), m_baseElectrons,
                                     nVtx, !m_isMC, m_susyObj, 10.*GeV, .12, 3., 1.);
-  m_sigJets      = get_jet_signal(&m_event.jet, m_susyObj, m_baseJets, 20.*GeV, 2.5, 0.75);
-  m_sigTaus      = get_taus_signal(&m_event.tau, m_baseTaus, m_susyObj);
+  m_sigJets      = get_jet_signal(jets, m_susyObj, m_baseJets, 20.*GeV, 2.5, 0.75);
+  m_sigTaus      = get_taus_signal(d3pdTaus(), m_baseTaus, m_susyObj);
 
   // combine light leptons
-  m_sigLeptons   = buildLeptonInfos(&m_event.el, m_sigElectrons, &m_event.mu, m_sigMuons, m_susyObj);
+  m_sigLeptons   = buildLeptonInfos(d3pdElectrons(), m_sigElectrons, d3pdMuons(), m_sigMuons, m_susyObj);
 
   // photon selection done in separate method, why?
   if(m_selectPhotons) selectSignalPhotons();
@@ -402,24 +409,23 @@ void D3PDAna::buildMet(SusyNtSys sys)
                                          metElectrons,
                                          m_event.el_MET_Egamma10NoTau.wet(), m_event.el_MET_Egamma10NoTau.wpx(),
                                          m_event.el_MET_Egamma10NoTau.wpy(), m_event.el_MET_Egamma10NoTau.statusWord(),
-                                         m_event.MET_CellOut.etx(),
-                                         m_event.MET_CellOut.ety(),
-                                         m_event.MET_CellOut.sumet(),
-                                         m_event.MET_CellOut_Eflow_STVF.etx(),
-                                         m_event.MET_CellOut_Eflow_STVF.ety(),
-                                         m_event.MET_CellOut_Eflow_STVF.sumet(),
-                                         m_event.MET_RefGamma.etx(),
-                                         m_event.MET_RefGamma.ety(),
-                                         m_event.MET_RefGamma.sumet(),
+                                         m_event.MET_CellOut_Egamma10NoTau.etx(),
+                                         m_event.MET_CellOut_Egamma10NoTau.ety(),
+                                         m_event.MET_CellOut_Egamma10NoTau.sumet(),
+                                         m_event.MET_CellOut_Eflow_STVF_Egamma10NoTau.etx(),
+                                         m_event.MET_CellOut_Eflow_STVF_Egamma10NoTau.ety(),
+                                         m_event.MET_CellOut_Eflow_STVF_Egamma10NoTau.sumet(),
+                                         m_event.MET_RefGamma_Egamma10NoTau.etx(),
+                                         m_event.MET_RefGamma_Egamma10NoTau.ety(),
+                                         m_event.MET_RefGamma_Egamma10NoTau.sumet(),
                                          m_metMuons,
-                                         m_event.mu_staco.ms_qoverp(),
-                                         m_event.mu_staco.ms_theta(),
-                                         m_event.mu_staco.ms_phi(),
-                                         m_event.mu_staco.charge(),
-                                         m_event.mu_staco.energyLossPar(),
+                                         d3pdMuons()->ms_qoverp(),
+                                         d3pdMuons()->ms_theta(),
+                                         d3pdMuons()->ms_phi(),
+                                         d3pdMuons()->charge(),
+                                         d3pdMuons()->energyLossPar(),
                                          m_event.eventinfo.averageIntPerXing(),
                                          m_metFlavor, susySys);
-
   m_met.SetPxPyPzE(metVector.X(), metVector.Y(), 0, metVector.Mod());
 }
 
@@ -453,8 +459,8 @@ void D3PDAna::selectTruthObjects()
   // Done under SusyNtMaker::fillTruthParticleVars
 
   // ==>> Second the truth jets
-  for(int index=0; index < m_event.jet_AntiKt4Truth.n(); index++) {
-      const D3PDReader::JetD3PDObjectElement &trueJet = m_event.jet_AntiKt4Truth[index];
+  for(int index=0; index < m_event.AntiKt4Truth.n(); index++) {
+      const D3PDReader::JetD3PDObjectElement &trueJet = m_event.AntiKt4Truth[index];
       if( trueJet.pt()/GeV > 15. && fabs(trueJet.eta()) < 4.5) m_truJets.push_back(index);
   }
 
@@ -506,12 +512,12 @@ uint D3PDAna::getNumGoodVtx()
 bool D3PDAna::matchTruthJet(int iJet)
 {
   // Loop over truth jets looking for a match
-  const TLorentzVector* jetLV = & m_susyObj.GetJetTLV(iJet);
-  for(int i=0; i<m_event.jet_AntiKt4Truth.n(); i++){
-    const D3PDReader::JetD3PDObjectElement &trueJet = m_event.jet_AntiKt4Truth[i];
+  const TLorentzVector &jetLV = m_susyObj.GetJetTLV(iJet);
+  for(int i=0; i<m_event.AntiKt4Truth.n(); i++){
+    const D3PDReader::JetD3PDObjectElement &trueJet = m_event.AntiKt4Truth[i];
     TLorentzVector trueJetLV;
     trueJetLV.SetPtEtaPhiE(trueJet.pt(), trueJet.eta(), trueJet.phi(), trueJet.E());
-    if(jetLV->DeltaR(trueJetLV) < 0.3) return true;
+    if(jetLV.DeltaR(trueJetLV) < 0.3) return true;
   }
   return false;
 }
@@ -593,7 +599,7 @@ void D3PDAna::matchElectronTriggers()
   // loop over all pre electrons
   for(uint i=0; i<m_preElectrons.size(); i++){
     int iEl = m_preElectrons[i];
-    const TLorentzVector* lv = & m_susyObj.GetElecTLV(iEl);
+    const TLorentzVector &lv = m_susyObj.GetElecTLV(iEl);
 
     // trigger flags
     long long flags = 0;
@@ -667,12 +673,12 @@ void D3PDAna::matchElectronTriggers()
   }
 }
 /*--------------------------------------------------------------------------------*/
-bool D3PDAna::matchElectronTrigger(const TLorentzVector* lv, vector<int>* trigBools)
+bool D3PDAna::matchElectronTrigger(const TLorentzVector &lv, vector<int>* trigBools)
 {
   // matched trigger index - not used
   static int indexEF = -1;
   // Use function defined in egammaAnalysisUtils/egammaTriggerMatching.h
-  return PassedTriggerEF(lv->Eta(), lv->Phi(), trigBools, indexEF, m_event.trig_EF_el.n(),
+  return PassedTriggerEF(lv.Eta(), lv.Phi(), trigBools, indexEF, m_event.trig_EF_el.n(),
                          m_event.trig_EF_el.eta(), m_event.trig_EF_el.phi());
 }
 
@@ -689,7 +695,7 @@ void D3PDAna::matchMuonTriggers()
   for(uint i=0; i<m_preMuons.size(); i++){
 
     int iMu = m_preMuons[i];
-    const TLorentzVector* lv = & m_susyObj.GetMuonTLV(iMu);
+    const TLorentzVector &lv = m_susyObj.GetMuonTLV(iMu);
 
     // trigger flags
     long long flags = 0;
@@ -793,7 +799,7 @@ void D3PDAna::matchMuonTriggers()
   }
 }
 /*--------------------------------------------------------------------------------*/
-bool D3PDAna::matchMuonTrigger(const TLorentzVector* lv, vector<int>* passTrig)
+bool D3PDAna::matchMuonTrigger(const TLorentzVector &lv, vector<int>* passTrig)
 {
   // loop over muon trigger features
   for(int iTrig=0; iTrig < m_event.trig_EF_trigmuonef.n(); iTrig++){
@@ -811,7 +817,7 @@ bool D3PDAna::matchMuonTrigger(const TLorentzVector* lv, vector<int>* passTrig)
                              0 );       // only eta and phi used to compute dR anyway
         // Require combined offline track...?
         if(!m_event.trig_EF_trigmuonef.track_CB_hasCB()->at(iTrig).at(iTrk)) continue;
-        float dR = lv->DeltaR(lvTrig);
+        float dR = lv.DeltaR(lvTrig);
         if(dR < 0.15){
           return true;
         }
@@ -837,8 +843,7 @@ void D3PDAna::matchTauTriggers()
   for(uint i=0; i<m_preTaus.size(); i++){
 
     int iTau = m_preTaus[i];
-    //const TLorentzVector* lv = & m_tauLVs[iTau];
-    const TLorentzVector* lv = & m_susyObj.GetTauTLV(iTau);
+    const TLorentzVector &lv = m_susyObj.GetTauTLV(iTau);
 
     // trigger flags
     long long flags = 0;
@@ -873,7 +878,7 @@ void D3PDAna::matchTauTriggers()
   }
 }
 /*--------------------------------------------------------------------------------*/
-bool D3PDAna::matchTauTrigger(const TLorentzVector* lv, vector<int>* passTrig)
+bool D3PDAna::matchTauTrigger(const TLorentzVector &lv, vector<int>* passTrig)
 {
   // loop over tau trigger features
   for(int iTrig=0; iTrig < m_event.trig_EF_tau.n(); iTrig++){
@@ -883,7 +888,7 @@ bool D3PDAna::matchTauTrigger(const TLorentzVector* lv, vector<int>* passTrig)
       static TLorentzVector trigLV;
       trigLV.SetPtEtaPhiM(m_event.trig_EF_tau.pt()->at(iTrig), m_event.trig_EF_tau.eta()->at(iTrig),
                           m_event.trig_EF_tau.phi()->at(iTrig), m_event.trig_EF_tau.m()->at(iTrig));
-      float dR = lv->DeltaR(trigLV);
+      float dR = lv.DeltaR(trigLV);
       if(dR < 0.15) return true;
     }
   }
@@ -939,14 +944,16 @@ bool D3PDAna::passLarHoleVeto()
 /*--------------------------------------------------------------------------------*/
 bool D3PDAna::passTileHotSpot()
 {
-  return !check_jet_tileHotSpot(&m_event.jet, m_preJets, m_susyObj, !m_isMC, m_event.eventinfo.RunNumber());
+  D3PDReader::JetD3PDObject *jets =  d3pdJets();
+  return !check_jet_tileHotSpot(jets, m_preJets, m_susyObj, !m_isMC, m_event.eventinfo.RunNumber());
 }
 /*--------------------------------------------------------------------------------*/
 // Pass bad jet cut
 /*--------------------------------------------------------------------------------*/
 bool D3PDAna::passBadJet()
 {
-  return !IsBadJetEvent(&m_event.jet, m_baseJets, 20.*GeV, m_susyObj);
+  D3PDReader::JetD3PDObject *jets =  d3pdJets();
+  return !IsBadJetEvent(jets, m_baseJets, 20.*GeV, m_susyObj);
 }
 /*--------------------------------------------------------------------------------*/
 // Pass good vertex
@@ -967,14 +974,14 @@ bool D3PDAna::passTileTrip()
 /*--------------------------------------------------------------------------------*/
 bool D3PDAna::passBadMuon()
 {
-  return !IsBadMuonEvent(m_susyObj, &m_event.mu, m_preMuons, 0.2);
+  return !IsBadMuonEvent(m_susyObj, d3pdMuons(), m_preMuons, 0.2);
 }
 /*--------------------------------------------------------------------------------*/
 // Pass cosmic veto
 /*--------------------------------------------------------------------------------*/
 bool D3PDAna::passCosmic()
 {
-  return !IsCosmic(m_susyObj, &m_event.mu, m_baseMuons, 1., 0.2);
+  return !IsCosmic(m_susyObj, d3pdMuons(), m_baseMuons, 1., 0.2);
 }
 
 /*--------------------------------------------------------------------------------*/
@@ -1080,15 +1087,15 @@ float D3PDAna::getLepSF(const vector<LeptonInfo>& leptons)
   if(m_isMC){
     // Loop over leptons
     for(uint iLep=0; iLep<leptons.size(); iLep++){
-      const LeptonInfo* lep = & leptons[iLep];
+      const LeptonInfo &lep = leptons[iLep];
       // Electrons
-      if(lep->isElectron()){
-          const D3PDReader::ElectronD3PDObjectElement* el = lep->getElectronElement();
-        lepSF *= m_susyObj.GetSignalElecSF(el->cl_eta(), lep->lv()->Pt(), true, true, false);
+      if(lep.isElectron()){
+          const D3PDReader::ElectronD3PDObjectElement* el = lep.getElectronElement();
+        lepSF *= m_susyObj.GetSignalElecSF(el->cl_eta(), lep.lv()->Pt(), true, true, false);
       }
       // Muons
       else{
-        lepSF *= m_susyObj.GetSignalMuonSF(lep->idx());
+        lepSF *= m_susyObj.GetSignalMuonSF(lep.idx());
       }
     }
   }
@@ -1180,14 +1187,14 @@ void D3PDAna::dumpBaselineObjects()
     cout << "Baseline electrons" << endl;
     for(uint i=0; i < nEle; i++){
       int iEl = m_baseElectrons[i];
-      const TLorentzVector* lv = & m_susyObj.GetElecTLV(iEl);
-      const D3PDReader::ElectronD3PDObjectElement* ele = & m_event.el[iEl];
+      const TLorentzVector &lv = m_susyObj.GetElecTLV(iEl);
+      const D3PDReader::ElectronD3PDObjectElement &ele = (*d3pdElectrons())[iEl];
       cout << "  El : " << fixed
-           << " q " << setw(2) << (int) ele->charge()
-           << " pt " << setw(6) << lv->Pt()/GeV
-           << " eta " << setw(5) << lv->Eta()
-           << " phi " << setw(5) << lv->Phi();
-      if(m_isMC) cout << " type " << setw(2) << ele->type() << " origin " << setw(2) << ele->origin();
+           << " q " << setw(2) << (int) ele.charge()
+           << " pt " << setw(6) << lv.Pt()/GeV
+           << " eta " << setw(5) << lv.Eta()
+           << " phi " << setw(5) << lv.Phi();
+      if(m_isMC) cout << " type " << setw(2) << ele.type() << " origin " << setw(2) << ele.origin();
       cout << endl;
     }
   }
@@ -1195,14 +1202,14 @@ void D3PDAna::dumpBaselineObjects()
     cout << "Baseline muons" << endl;
     for(uint i=0; i < nMu; i++){
       int iMu = m_baseMuons[i];
-      const TLorentzVector* lv = & m_susyObj.GetMuonTLV(iMu);
-      const D3PDReader::MuonD3PDObjectElement* muo = & m_event.mu[iMu];
+      const TLorentzVector &lv = m_susyObj.GetMuonTLV(iMu);
+      const D3PDReader::MuonD3PDObjectElement &muo = (*d3pdMuons())[iMu];
       cout << "  Mu : " << fixed
-           << " q " << setw(2) << (int) muo->charge()
-           << " pt " << setw(6) << lv->Pt()/GeV
-           << " eta " << setw(5) << lv->Eta()
-           << " phi " << setw(5) << lv->Phi();
-      if(m_isMC) cout << " type " << setw(2) << muo->type() << " origin " << setw(2) << muo->origin();
+           << " q " << setw(2) << (int) muo.charge()
+           << " pt " << setw(6) << lv.Pt()/GeV
+           << " eta " << setw(5) << lv.Eta()
+           << " phi " << setw(5) << lv.Phi();
+      if(m_isMC) cout << " type " << setw(2) << muo.type() << " origin " << setw(2) << muo.origin();
       cout << endl;
     }
   }
@@ -1210,13 +1217,13 @@ void D3PDAna::dumpBaselineObjects()
     cout << "Baseline jets" << endl;
     for(uint i=0; i < nJet; i++){
       int iJet = m_baseJets[i];
-      const TLorentzVector* lv = & m_susyObj.GetJetTLV(iJet);
-      const D3PDReader::JetD3PDObjectElement* jet = & m_event.jet[iJet];
+      const TLorentzVector &lv = m_susyObj.GetJetTLV(iJet);
+      const D3PDReader::JetD3PDObjectElement &jet = (*d3pdJets())[iJet];
       cout << "  Jet : " << fixed
-           << " pt " << setw(6) << lv->Pt()/GeV
-           << " eta " << setw(5) << lv->Eta()
-           << " phi " << setw(5) << lv->Phi()
-           << " mv1 " << jet->flavor_weight_MV1();
+           << " pt " << setw(6) << lv.Pt()/GeV
+           << " eta " << setw(5) << lv.Eta()
+           << " phi " << setw(5) << lv.Phi()
+           << " mv1 " << jet.flavor_weight_MV1();
       cout << endl;
     }
   }
@@ -1239,14 +1246,14 @@ void D3PDAna::dumpSignalObjects()
     cout << "Signal electrons" << endl;
     for(uint i=0; i < nEle; i++){
       int iEl = m_sigElectrons[i];
-      const TLorentzVector* lv = & m_susyObj.GetElecTLV(iEl);
-      const D3PDReader::ElectronD3PDObjectElement* ele = & m_event.el[iEl];
+      const TLorentzVector &lv = m_susyObj.GetElecTLV(iEl);
+      const D3PDReader::ElectronD3PDObjectElement &ele = (*d3pdElectrons())[iEl];
       cout << "  El : " << fixed
-           << " q " << setw(2) << (int) ele->charge()
-           << " pt " << setw(6) << lv->Pt()/GeV
-           << " eta " << setw(5) << lv->Eta()
-           << " phi " << setw(5) << lv->Phi();
-      if(m_isMC) cout << " type " << setw(2) << ele->type() << " origin " << setw(2) << ele->origin();
+           << " q " << setw(2) << (int) ele.charge()
+           << " pt " << setw(6) << lv.Pt()/GeV
+           << " eta " << setw(5) << lv.Eta()
+           << " phi " << setw(5) << lv.Phi();
+      if(m_isMC) cout << " type " << setw(2) << ele.type() << " origin " << setw(2) << ele.origin();
       cout << endl;
     }
   }
@@ -1254,14 +1261,14 @@ void D3PDAna::dumpSignalObjects()
     cout << "Signal muons" << endl;
     for(uint i=0; i < nMu; i++){
       int iMu = m_sigMuons[i];
-      const TLorentzVector* lv = & m_susyObj.GetMuonTLV(iMu);
-      const D3PDReader::MuonD3PDObjectElement* muo = & m_event.mu[iMu];
+      const TLorentzVector &lv = m_susyObj.GetMuonTLV(iMu);
+      const D3PDReader::MuonD3PDObjectElement &muo = (*d3pdMuons())[iMu];
       cout << "  Mu : " << fixed
-           << " q " << setw(2) << (int) muo->charge()
-           << " pt " << setw(6) << lv->Pt()/GeV
-           << " eta " << setw(5) << lv->Eta()
-           << " phi " << setw(5) << lv->Phi();
-      if(m_isMC) cout << " type " << setw(2) << muo->type() << " origin " << setw(2) << muo->origin();
+           << " q " << setw(2) << (int) muo.charge()
+           << " pt " << setw(6) << lv.Pt()/GeV
+           << " eta " << setw(5) << lv.Eta()
+           << " phi " << setw(5) << lv.Phi();
+      if(m_isMC) cout << " type " << setw(2) << muo.type() << " origin " << setw(2) << muo.origin();
       cout << endl;
     }
   }
@@ -1269,19 +1276,61 @@ void D3PDAna::dumpSignalObjects()
     cout << "Signal jets" << endl;
     for(uint i=0; i < nJet; i++){
       int iJet = m_sigJets[i];
-      const TLorentzVector* lv = & m_susyObj.GetJetTLV(iJet);
-      const D3PDReader::JetD3PDObjectElement* jet = & m_event.jet[iJet];
+      const TLorentzVector &lv = m_susyObj.GetJetTLV(iJet);
+      const D3PDReader::JetD3PDObjectElement &jet = (*d3pdJets())[iJet];
       cout << "  Jet : " << fixed
-           << " pt " << setw(6) << lv->Pt()/GeV
-           << " eta " << setw(5) << lv->Eta()
-           << " phi " << setw(5) << lv->Phi()
-           << " mv1 " << jet->flavor_weight_MV1();
+           << " pt " << setw(6) << lv.Pt()/GeV
+           << " eta " << setw(5) << lv.Eta()
+           << " phi " << setw(5) << lv.Phi()
+           << " mv1 " << jet.flavor_weight_MV1();
       cout << endl;
     }
   }
   cout.precision(6);
   cout.unsetf(ios_base::fixed);
 }
+//----------------------------------------------------------
+bool D3PDAna::runningOptionsAreValid()
+{
+    bool valid=true;
+    bool isSimulation = m_event.eventinfo.isSimulation();
+    bool isData = !isSimulation;
+    bool isStreamEgamma = m_event.eventinfo.streamDecision_Egamma();
+    bool isStreamJetEt  = m_event.eventinfo.streamDecision_JetTauEtmiss();
+    bool isStreamMuons  = m_event.eventinfo.streamDecision_Muons();
+    if(m_isMC != isSimulation) {
+        valid=false;
+        if(m_dbg)
+            cout<<"D3PDAna::runningOptionsAreValid invalid isMc:"
+                <<" (m_isMC:"<<m_isMC<<" != isSimulation:"<<isSimulation<<")"
+                <<endl;
+    }
+    if(isData) {
+        bool consistentStream = (isStreamMuons  ? m_stream==Stream_Muons :
+                                 isStreamEgamma ? m_stream==Stream_Egamma :
+                                 isStreamJetEt  ? m_stream==Stream_JetTauEtmiss :
+                                 false);
+        if(!consistentStream) {
+            valid=false;
+            if(m_dbg)
+                cout<<"D3PDAna::runningOptionsAreValid: inconsistent stream"
+                    <<" m_stream: "<<(m_stream==Stream_Muons        ? "Stream_Muons":
+                                      m_stream==Stream_Egamma       ? "Stream_Egamma":
+                                      m_stream==Stream_JetTauEtmiss ? "Stream_JetTauEtmiss":
+                                      "unknown")
+                    <<" eventinfo: "<<(isStreamMuons ? "Muons":
+                                       isStreamEgamma ? "Egamma":
+                                       isStreamJetEt ? "JetTauEtmiss":
+                                       "unknown")
+                    <<endl;
+
+        }
+    }
+    if(m_dbg)
+        cout<<"D3PDAna::runningOptionsAreValid(): "<<(valid?"true":"false")<<endl;
+    return valid;
+}
+//----------------------------------------------------------
 
 #undef GeV
 

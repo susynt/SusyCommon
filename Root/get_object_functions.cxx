@@ -6,7 +6,6 @@
 #include "D3PDReader/MuonD3PDObject.h"
 #include "D3PDReader/PhotonD3PDObject.h"
 #include "D3PDReader/JetD3PDObject.h"
-#include "D3PDReader/METD3PDObject.h"
 #include "D3PDReader/MissingETCompositionD3PDObject.h"
 #include "D3PDReader/PrimaryVertexD3PDObject.h"
 #include "D3PDReader/TauD3PDObject.h"
