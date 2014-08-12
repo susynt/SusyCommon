@@ -1,13 +1,5 @@
-#include <vector>
-
-
-#include "SusyCommon/SusyD3PDInterface.h"
-#include "SusyCommon/SusyD3PDAna.h"
-#include "SusyCommon/SusyD3PDSkimmer.h"
+#include "SusyCommon/XaodAnalysis.h"
 #include "SusyCommon/SusyNtMaker.h"
-#include "SusyCommon/SusyMetValidation.h"
-#include "SusyCommon/D3PDAna.h"
-
 
 #ifdef __CINT__
 
@@ -17,13 +9,8 @@
 #pragma link C++ nestedclass;
 #pragma link C++ nestedtypedef;
 
-
-#pragma link C++ class SusyD3PDInterface;
-#pragma link C++ class SusyD3PDAna;
-#pragma link C++ class SusyD3PDSkimmer;
-#pragma link C++ class SusyMetValidation;
 #pragma link C++ namespace susy;
-#pragma link C++ class susy::D3PDAna;
+#pragma link C++ class susy::XaodAnalysis;
 #pragma link C++ class susy::SusyNtMaker;
 
 #endif
