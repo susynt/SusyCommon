@@ -27,7 +27,6 @@ XaodAnalysis::XaodAnalysis() :
         m_metFlavor(SUSYMet::Default),
         m_doMetMuCorr(false),
         m_doMetFix(false),
-        //m_useMetMuons(false),
         m_lumi(LUMI_A_E),
         m_sumw(1),
         m_xsec(-1),
@@ -48,25 +47,13 @@ XaodAnalysis::XaodAnalysis() :
         m_flagsAreConsistent(false),
         m_flagsHaveBeenChecked(false)
 {
-  m_hforTool.setVerbosity(HforToolD3PD::ERROR);
-
-  // Create the addition electron efficiency SF tool for medium SFs
-  m_eleMediumSFTool = new Root::TElectronEfficiencyCorrectionTool;
-
-  #ifdef USEPDFTOOL
-  m_pdfTool = new PDFTool(3500000, 1, -1, 21000);
-  //m_pdfTool = new PDFTool(3500000, 4./3.5);
-  #endif
 }
 /*--------------------------------------------------------------------------------*/
 // Destructor
 /*--------------------------------------------------------------------------------*/
 XaodAnalysis::~XaodAnalysis()
 {
-  if(m_eleMediumSFTool) delete m_eleMediumSFTool;
-  #ifdef USEPDFTOOL
-  if(m_pdfTool) delete m_pdfTool;
-  #endif
+    cout<<"~XaodAnalysis : todo"<<endl;
 }
 /*--------------------------------------------------------------------------------*/
 void XaodAnalysis::SlaveBegin(TTree *tree)
@@ -93,89 +80,33 @@ void XaodAnalysis::SlaveBegin(TTree *tree)
 
   if(m_isMC) cout << "Processing as MC"   << endl;
   else       cout << "Processing as DATA" << endl;
-
   cout << "DataStream: " << streamName(m_stream) << endl;
 
   // Setup SUSYTools
   bool isMC12b = (m_mcProd == MCProd_MC12b);
   bool useLeptonTrigger = false;
-  m_susyObj.initialize(!m_isMC, m_isAF2, isMC12b, useLeptonTrigger);
-
-  // Turn on jet calibration
-  m_susyObj.SetJetCalib(true);
-
-  // Initialize electron medium SF
-  // TODO: update this whenever it gets updated in SUSYTools!
-  string eleMedFile = "${ROOTCOREBIN}";
-  eleMedFile += "/data/ElectronEfficiencyCorrection/efficiencySF.offline.Medium.2012.8TeV.rel17p2.v07.root";
-  m_eleMediumSFTool->addFileName(eleMedFile.c_str());
-  if(!m_eleMediumSFTool->initialize()){
-    cout << "XaodAnalysis::SlaveBegin : ERROR initializing TElectronEfficiencyCorrectionTool with file "
-         << eleMedFile << endl;
-    abort();
+  if(true /*m_dbg*/) objTool.msg().setLevel( MSG::DEBUG);
+  objTool.setProperty("IsData",isData);
+  objTool.setProperty("IsAtlfast", m_isAF2);   
+  objTool.setProperty("IsMC12b", isMC12b);
+  objTool.setProperty("UseLeptonTrigger",useLeptonTrigger);
+  if( objTool.initialize() != StatusCode::SUCCESS){
+      Error( APP_NAME, "Cannot intialize SUSYObjDef_xAOD..." );
+      Error( APP_NAME, "Exiting... " );
+      exit(-1);
+  }else{
+      Info( APP_NAME, "SUSYObjDef_xAOD initialized... " );
   }
 
-  m_fakeMetEst.initialize("$ROOTCOREBIN/data/MultiLep/fest_periodF_v1.root");
-
-  // SUSY cross sections
+#warning TElectronEfficiencyCorrectionTool not initialized
+#warning fakemet_est tool not initialized
+  if(isData){ initGrlTool(); }
   if(m_isMC){
-    // Back to using the SUSYTools file
-    string xsecFileName  = gSystem->ExpandPathName("$ROOTCOREBIN/data/SUSYTools/susy_crosssections_8TeV.txt");
-    m_susyXsec = new SUSY::CrossSectionDB(xsecFileName);
-  }
-
-  // GRL
-  if(!m_isMC){
-    if(m_grlFileName.Length() == 0){
-      string grlName = "$ROOTCOREBIN/data/SUSYTools/GRL/Summer2013/";
-      grlName += "data12_8TeV.periodAllYear_DetStatus-v61-pro14-02_DQDefects-00-01-00_PHYS_StandardGRL_All_Good.xml";
-      m_grlFileName = gSystem->ExpandPathName(grlName.c_str());
-    }
-
-    Root::TGoodRunsListReader* grlReader = new Root::TGoodRunsListReader();
-    grlReader->AddXMLFile(m_grlFileName);
-    if(!grlReader->Interpret()){
-      cout << "XaodAnalysis::initialize - ERROR in GRL. Aborting" << endl;
-      abort();
-    }
-    m_grl = grlReader->GetMergedGoodRunsList();
-    delete grlReader;
-  }
-
-  // Pileup reweighting
-  if(m_isMC){
-    m_pileup = new Root::TPileupReweighting("PileupReweighting");
-    m_pileup->SetDataScaleFactors(1/1.11);
-    m_pileup->AddConfigFile("$ROOTCOREBIN/data/PileupReweighting/mc12ab_defaults.prw.root");
-    m_pileup->AddLumiCalcFile("$ROOTCOREBIN/data/SusyCommon/ilumicalc_histograms_EF_2e12Tvh_loose1_200842-215643_grl_v61.root");
-    m_pileup->SetUnrepresentedDataAction(2);
-    int pileupError = m_pileup->Initialize();
-    if(pileupError){
-      cout << "Problem in pileup initialization.  pileupError = " << pileupError << endl;
-      abort();
-    }
-    m_pileup_up = new Root::TPileupReweighting("PileupReweighting");
-    m_pileup_up->SetDataScaleFactors(1/1.08);
-    m_pileup_up->AddConfigFile("$ROOTCOREBIN/data/PileupReweighting/mc12ab_defaults.prw.root");
-    m_pileup_up->AddLumiCalcFile("$ROOTCOREBIN/data/SusyCommon/ilumicalc_histograms_EF_2e12Tvh_loose1_200842-215643_grl_v61.root");
-    m_pileup_up->SetUnrepresentedDataAction(2);
-    pileupError = m_pileup_up->Initialize();
-    if(pileupError){
-      cout << "Problem in pileup initialization.  pileupError = " << pileupError << endl;
-      abort();
-    }
-    m_pileup_dn = new Root::TPileupReweighting("PileupReweighting");
-    m_pileup_dn->SetDataScaleFactors(1/1.14);
-    m_pileup_dn->AddConfigFile("$ROOTCOREBIN/data/PileupReweighting/mc12ab_defaults.prw.root");
-    m_pileup_dn->AddLumiCalcFile("$ROOTCOREBIN/data/SusyCommon/ilumicalc_histograms_EF_2e12Tvh_loose1_200842-215643_grl_v61.root");
-    m_pileup_dn->SetUnrepresentedDataAction(2);
-    pileupError = m_pileup_dn->Initialize();
-    if(pileupError){
-      cout << "Problem in pileup initialization.  pileupError = " << pileupError << endl;
-      abort();
-    }
+#warning susy xsec tool not initialized
+#warning pileup rew tool not initialized
   }
 }
+
 
 /*--------------------------------------------------------------------------------*/
 // Main process loop function - This is just an example for testing
@@ -1329,6 +1260,25 @@ bool XaodAnalysis::runningOptionsAreValid()
     if(m_dbg)
         cout<<"XaodAnalysis::runningOptionsAreValid(): "<<(valid?"true":"false")<<endl;
     return valid;
+}
+//----------------------------------------------------------
+std::string XaodAnalysis::defauldGrlFile()
+{
+    return std::string( "$ROOTCOREBIN/../SUSYTools/data/GRL/Summer2013/"
+                        "data12_8TeV.periodAllYear_DetStatus-v61-pro14-02"
+                        "_DQDefects-00-01-00_PHYS_StandardGRL_All_Good.xml");
+}
+//----------------------------------------------------------
+bool XaodAnalysis::initGrlTool()
+{
+    bool success = false;
+    m_grl = new GoodRunsListSelectionTool("GoodRunsListSelectionTool");
+    std::vector<std::string> grl_files;
+    grl_files.push_back(XaodAnalysis::defauldGrlFile());
+    m_grl->setProperty("GoodRunsListVec", grl_files);
+    m_grl->setProperty("PassThrough", false);
+    success = m_grl->initialize(); // DG any check we should do here? (file_exists?)
+    return success;
 }
 //----------------------------------------------------------
 

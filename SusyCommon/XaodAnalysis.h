@@ -7,39 +7,31 @@
 #include "TSelector.h"
 #include "TTree.h"
 
-#include "GoodRunsLists/TGoodRunsList.h"
-#include "GoodRunsLists/TGoodRunsListReader.h"
-#include "SUSYTools/SUSYObjDef.h"
-#include "SUSYTools/FakeMetEstimator.h"
-#include "SUSYTools/SUSYCrossSection.h"
-#include "SUSYTools/HforToolD3PD.h"
-#include "PileupReweighting/TPileupReweighting.h"
+// Infrastructure include(s):
+#ifdef ROOTCORE
+#   include "xAODRootAccess/Init.h"
+#   include "xAODRootAccess/TEvent.h"
+#endif // ROOTCORE
+
+#include "GoodRunsLists/GoodRunsListSelectionTool.h"
+#include "SUSYTools/SUSYObjDef_xAOD.h"
 #include "LeptonTruthTools/RecoTauMatch.h"
-
-
-/* #ifdef USEPDFTOOL */
-/* #include "MultiLep/PDFTool.h" */
-/* #endif */
 
 #include "SusyCommon/LeptonInfo.h"
 #include "SusyNtuple/SusyDefs.h"
-#include "D3PDReader/Event.h"
 
-namespace D3PDReader
+namespace xAOD
 {
-  class MuonD3PDObject;
-  class ElectronD3PDObject;
-  class TauD3PDObject;
-  class JetD3PDObjectl;
+  class MuonContainer;
+  class ElectronContainer;
+  class TauJetContainer;
+  class JetContainer;
 }
 
-/**
-
-    XaodAnalysis - a class for performing object selections and event cleaning on susy d3pds
-
-*/
 
 namespace susy {
+
+///  a class for performing object selections and event cleaning on xaod
 class XaodAnalysis : public TSelector
 {
 
@@ -68,24 +60,24 @@ class XaodAnalysis : public TSelector
        override this member function, and easily switch to another
        muon collection.
      */
-    virtual D3PDReader::MuonD3PDObject* d3pdMuons();
+    virtual xAOD::MuonContainer* xaodMuons();
     /// access the default collection of electrons from the D3PDReader
     /**
-       By default returns m_event.el; for its motivation, see XaodAnalysis::d3pdMuons().
+       By default returns m_event.el; for its motivation, see XaodAnalysis::xaodMuons().
        \todo In this case there might be some ambiguity to be sorted out when calling SUSYObjDef::GetMET().
      */
-    virtual D3PDReader::ElectronD3PDObject* d3pdElectrons();
+    virtual xAOD::ElectronContainer* xaodElectrons();
     /// access the default collection of taus from the D3PDReader
     /**
-       By default returns m_event.tau; for its motivation, see XaodAnalysis::d3pdMuons().
+       By default returns m_event.tau; for its motivation, see XaodAnalysis::xaodMuons().
      */
-    virtual D3PDReader::TauD3PDObject* d3pdTaus();
+    virtual xAOD::TauJetContainer* xaodTaus();
     /// access the default collection of jets from the D3PDReader
     /**
-       By default returns m_event.jet_AntiKt4LCTopo; for its motivation, see XaodAnalysis::d3pdMuons().
+       By default returns m_event.jet_AntiKt4LCTopo; for its motivation, see XaodAnalysis::xaodMuons().
        \todo In this case there might be some ambiguity to be sorted out when calling SUSYObjDef::GetMET().
      */
-    virtual D3PDReader::JetD3PDObject* d3pdJets();
+    virtual xAOD::JetContainer* xaodJets();
 
 
     //
@@ -144,6 +136,8 @@ class XaodAnalysis : public TSelector
 
     // grl
     void setGRLFile(TString fileName) { m_grlFileName = fileName; }
+    static std::string defauldGrlFile();
+    bool initGrlTool();
     bool passGRL() { return m_isMC || m_grl.HasRunLumiBlock(m_event.eventinfo.RunNumber(), m_event.eventinfo.lbn()); }
     // incomplete TTC event veto
     bool passTTCVeto() { return (m_event.eventinfo.coreFlags() & 0x40000) == 0; }
@@ -380,33 +374,23 @@ class XaodAnalysis : public TSelector
     // Tools
     //
 
-    SUSYObjDef                  m_susyObj;      // SUSY object definitions
-    Root::TElectronEfficiencyCorrectionTool* m_eleMediumSFTool;
+    ST::SUSYObjDef_xAOD          m_susyObj;      // SUSY object definitions
+    /* Root::TElectronEfficiencyCorrectionTool* m_eleMediumSFTool; */
 
     TString                     m_grlFileName;  // grl file name
-    Root::TGoodRunsList         m_grl;          // good runs list
+    GoodRunsListSelectionTool   m_grl;          // good runs list
 
-    FakeMetEstimator            m_fakeMetEst;   // fake met estimator for lar hole veto
-
-    Root::TPileupReweighting*   m_pileup;       // pileup reweighting
-    Root::TPileupReweighting*   m_pileup_up;    // pileup reweighting
-    Root::TPileupReweighting*   m_pileup_dn;    // pileup reweighting
+    /* Root::TPileupReweighting*   m_pileup;       // pileup reweighting */
+    /* Root::TPileupReweighting*   m_pileup_up;    // pileup reweighting */
+    /* Root::TPileupReweighting*   m_pileup_dn;    // pileup reweighting */
 
     // The SUSY CrossSectionDB has its own map for retrieving xsec info, but
     // it has a lot of entries so lookup is slow.  Save our own xsec map
-
-    SUSY::CrossSectionDB*                       m_susyXsec;     // SUSY cross section database
-    std::map<int,SUSY::CrossSectionDB::Process> m_xsecMap;      // our own xsec map for faster lookup times
-
-    HforToolD3PD                m_hforTool;     // heavy flavor overlap removal tool
-
-    #ifdef USEPDFTOOL
-    PDFTool*                    m_pdfTool;      // PDF reweighting tool (In MultiLep pkg)
-    #endif
+    /* SUSY::CrossSectionDB*                       m_susyXsec;     // SUSY cross section database */
+    /* std::map<int,SUSY::CrossSectionDB::Process> m_xsecMap;      // our own xsec map for faster lookup times */
 
     RecoTauMatch                m_recoTruthMatch;       // Lepton truth matching tool
 
-    // stuff imported from SusyD3PDInterface
     TTree* m_tree;              // Current tree
     Long64_t m_entry;           // Current entry in the current tree (not chain index!)
     int m_dbg;                  // debug level
@@ -414,7 +398,7 @@ class XaodAnalysis : public TSelector
     bool m_flagsAreConsistent;  ///< whether the cmd-line flags are consistent with the event
     bool m_flagsHaveBeenChecked;///< whether the cmd-line have been checked
 
-    D3PDReader::Event m_event;
+    xAOD::TEvent m_event;
 
 };
 
