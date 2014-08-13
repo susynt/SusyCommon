@@ -20,13 +20,12 @@
 #include "SusyCommon/LeptonInfo.h"
 #include "SusyNtuple/SusyDefs.h"
 
-namespace xAOD
-{
-  class MuonContainer;
-  class ElectronContainer;
-  class TauJetContainer;
-  class JetContainer;
-}
+#include "xAODEventInfo/EventInfo.h"
+#include "xAODMuon/MuonContainer.h"
+#include "xAODEgamma/ElectronContainer.h"
+#include "xAODEgamma/PhotonContainer.h"
+#include "xAODTau/TauJetContainer.h"
+#include "xAODJet/JetContainer.h"
 
 
 namespace susy {
@@ -41,10 +40,7 @@ class XaodAnalysis : public TSelector
     
     virtual Bool_t  Process(Long64_t entry);
     virtual void    Terminate();
-
-
-    // Init is called every time a new TTree is attached
-    virtual void    Init(TTree *tree) { m_event.ReadFrom(tree); }
+    virtual void    Init(TTree *tree); ///< Init is called every time a new TTree is attached
     virtual void    SlaveBegin(TTree *tree);
     
     virtual Bool_t  Notify() { return kTRUE; } /// Called at the first entry of a new file in a chain
@@ -135,127 +131,64 @@ class XaodAnalysis : public TSelector
     //
 
     // grl
-    void setGRLFile(TString fileName) { m_grlFileName = fileName; }
+    XaodAnalysis& setGRLFile(TString fileName);
     static std::string defauldGrlFile();
     bool initGrlTool();
-    bool passGRL() { return m_isMC || m_grl.HasRunLumiBlock(m_event.eventinfo.RunNumber(), m_event.eventinfo.lbn()); }
-    // incomplete TTC event veto
-    bool passTTCVeto() { return (m_event.eventinfo.coreFlags() & 0x40000) == 0; }
-    // Tile error
-    bool passTileErr() { return m_isMC || (m_event.eventinfo.tileError()!=2); }
-    // lar error
-    bool passLarErr() { return m_isMC || (m_event.eventinfo.larError()!=2); }
-    // lar hole veto
-    bool passLarHoleVeto();
-    // tile hot spot
-    bool passTileHotSpot();
-    // bad jet
-    bool passBadJet();
-    // good vertex
-    bool passGoodVtx();
-    // tile trip
-    bool passTileTrip();
-    // bad muon veto
-    bool passBadMuon();
-    // cosmic veto
-    bool passCosmic();
+    bool passGRL();
+    bool passTTCVeto(); ///< incomplete TTC event veto
+    bool passTileErr(); ///< Tile error
+    bool passLarErr(); ///< lar error
 
-    // Event level cleaning cuts
-    void checkEventCleaning();
-    // Object level cleaning cuts; these depend on sys
-    void checkObjectCleaning();
+    bool passLarHoleVeto(); ///< lar hole veto
+    bool passTileHotSpot(); ///< tile hot spot
+    bool passBadJet(); ///< bad jet
+    bool passGoodVtx(); ///< good vertex
+    bool passTileTrip(); ///< tile trip
+    bool passBadMuon(); ///< bad muon veto
+    bool passCosmic(); ///< cosmic veto
 
-    //
+    void checkEventCleaning(); ///< Event level cleaning cuts
+    void checkObjectCleaning();// Object level cleaning cuts;  t/<hese depend on sys
+
     // Event weighting
-    //
 
-    // Full event weight includes generator, xsec, pileup, and lumi weights.
-    // Default weight uses A-E lumi.
-    // You can supply a different integrated luminosity, 
-    // but the the pileup weights will still correspond to A-E.
+    /// Full event weight includes generator, xsec, pileup, and lumi weights.
+    /** Default weight uses A-E lumi.
+     You can supply a different integrated luminosity, 
+     but the the pileup weights will still correspond to A-E.
+    */
     float getEventWeight(float lumi = LUMI_A_E);
-
-    // event weight (xsec*kfac) 
-    float getXsecWeight();
-    // lumi weight (lumi/sumw) normalized to 4.7/fb
-    float getLumiWeight();
-    // luminosity to normalize to (in 1/pb)
-    void setLumi(float lumi) { m_lumi = lumi; }
-    // sum of mc weights for sample
-    void setSumw(float sumw) { m_sumw = sumw; }
-    // user cross section, overrides susy cross section
-    void setXsec(float xsec) { m_xsec = xsec; }
-    // user cross section uncert
-    void setErrXsec(float err) { m_errXsec = err; }
-
-    // pileup weight for full dataset: currently A-L
-    float getPileupWeight();
+    float getXsecWeight(); ///< event weight (xsec*kfac) 
+    float getLumiWeight(); ///< lumi weight (lumi/sumw) normalized to 4.7/fb
+    void setLumi(float lumi) { m_lumi = lumi; } ///< luminosity to normalize to (in 1/pb)
+    void setSumw(float sumw) { m_sumw = sumw;  } ///< sum of mc weights for sample
+    void setXsec(float xsec) { m_xsec = xsec;  } ///< user cross section, overrides susy cross section
+    void setErrXsec(float err) { m_errXsec = err;  } ///< user cross section uncert    
+    float getPileupWeight(); ///< pileup weight for full dataset: currently A-L
     float getPileupWeightUp();
-    float getPileupWeightDown();
-    // PDF reweighting of 7TeV -> 8TeV
-    float getPDFWeight8TeV();
+    float getPileupWeightDown();    
+    float getPDFWeight8TeV(); ///< PDF reweighting of 7TeV -> 8TeV
+    float getLepSF(const std::vector<LeptonInfo>& leptons); ///< Lepton efficiency SF
+    float getBTagSF(const std::vector<int>& jets); ///< BTag efficiency SF
 
-    // Lepton efficiency SF
-    float getLepSF(const std::vector<LeptonInfo>& leptons);
-
-    // BTag efficiency SF
-    float getBTagSF(const std::vector<int>& jets);
-
-
-    //
     // Utility methods
-    //
+    void calcRandomRunLB(); ///< calculate random run/lb numbers for MC
+    int getHFORDecision(); ///< HF overlap removal decision (DG obsolete?)    
+    uint getNumGoodVtx(); ///< Count number of good vertices
+    bool matchTruthJet(int iJet); ///< Match a reco jet to a truth jet
 
-    // calculate random run/lb numbers for MC
-    void calcRandomRunLB();
-
-    // Mass helpers
-    //float Mll();
-    //bool isZ();
-    //bool hasZ();
-
-    // HF overlap removal decision
-    int getHFORDecision();
-
-    // Count number of good vertices
-    uint getNumGoodVtx();
-
-    // Match a reco jet to a truth jet
-    bool matchTruthJet(int iJet);
-
-    //
     // Running conditions
-    //
-
-    // Sample name - used to set isMC flag
-    TString sample() { return m_sample; }
-    void setSample(TString s) { m_sample = s; }
-
-    // AF2 flag
-    void setAF2(bool isAF2=true) { m_isAF2 = isAF2; }
-
-    // Set MC Production flag
-    void setMCProduction(MCProduction prod) { m_mcProd = prod; }
-
-    // Set SUSY D3PD tag to know which branches are ok
-    void setD3PDTag(D3PDTag tag) { m_d3pdTag = tag; }
-
-    // Set sys run
-    void setSys(bool sysOn){ m_sys = sysOn; };
-    
-    // Toggle photon selection
-    void setSelectPhotons(bool doIt) { m_selectPhotons = doIt; }
-
-    // Toggle tau selection and overlap removal
-    void setSelectTaus(bool doIt) { m_selectTaus = doIt; }
-
-    // Set-Get truth selection
-    void setSelectTruthObjects(bool doIt) { m_selectTruth = doIt; }
+    TString sample() { return m_sample; } ///< Sample name - used to set isMC flag
+    XaodAnalysis& setSample(TString s) { m_sample = s; return *this; }
+    void setAF2(bool isAF2=true) { m_isAF2 = isAF2; } ///< AF2 flag
+    void setMCProduction(MCProduction prod) { m_mcProd = prod; } ///< Set MC Production flag
+    void setD3PDTag(D3PDTag tag) { m_d3pdTag = tag; } ///< Set SUSY D3PD tag to know which branches are ok
+    void setSys(bool sysOn){ m_sys = sysOn; }; ///< Set sys run
+    void setSelectPhotons(bool doIt) { m_selectPhotons = doIt; } ///< Toggle photon selection
+    void setSelectTaus(bool doIt) { m_selectTaus = doIt; } ///< Toggle tau selection and overlap removal    
+    void setSelectTruthObjects(bool doIt) { m_selectTruth = doIt; } ///< Set-Get truth selection
     bool getSelectTruthObjects(         ) { return m_selectTruth; }
-
-    // Set MET flavor - at the moment, only STVF and STVF_JVF are available.
-    // Anything else will raise an error.
-    void setMetFlavor(std::string metFlav);
+    void setMetFlavor(std::string metFlav); ///< only STVF and STVF_JVF are available (anything else will raise an error)
     void setDoMetMuonCorrection(bool doMetMuCorr) { m_doMetMuCorr = doMetMuCorr; }
     void setDoMetFix(bool doMetFix) { m_doMetFix = doMetFix; }
     /// whether the options specified by the user are consistent with the event info
@@ -378,7 +311,7 @@ class XaodAnalysis : public TSelector
     /* Root::TElectronEfficiencyCorrectionTool* m_eleMediumSFTool; */
 
     TString                     m_grlFileName;  // grl file name
-    GoodRunsListSelectionTool   m_grl;          // good runs list
+    GoodRunsListSelectionTool*   m_grl;         // good runs list
 
     /* Root::TPileupReweighting*   m_pileup;       // pileup reweighting */
     /* Root::TPileupReweighting*   m_pileup_up;    // pileup reweighting */
