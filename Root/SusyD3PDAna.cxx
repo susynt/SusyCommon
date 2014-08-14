@@ -607,6 +607,10 @@ void SusyD3PDAna::fillEventTriggers()
   if(d3pd.trig.EF_mu24_j65_a4tchad_EFxe40_tclcw())      m_evtTrigFlags |= TRIG_mu24_j65_a4tchad_EFxe40_tclcw;
   if(d3pd.trig.EF_mu24_j65_a4tchad_EFxe40wMu_tclcw.IsAvailable() && d3pd.trig.EF_mu24_j65_a4tchad_EFxe40wMu_tclcw())
     m_evtTrigFlags |= TRIG_mu24_j65_a4tchad_EFxe40wMu_tclcw;
+
+  if(d3pd.trig.EF_e60_medium1())                        m_evtTrigFlags |= TRIG_e60_medium1;
+  if(d3pd.trig.EF_mu24_tight ())                        m_evtTrigFlags |= TRIG_mu24_tight ;
+  if(d3pd.trig.EF_mu36_tight ())                        m_evtTrigFlags |= TRIG_mu36_tight ;
 }
 
 /*--------------------------------------------------------------------------------*/
@@ -688,6 +692,8 @@ void SusyD3PDAna::matchElectronTriggers()
     if( matchElectronTrigger(lv, d3pd.trig.trig_EF_el_EF_e24vh_medium1_EFxe35_tclcw()) ){
       flags |= TRIG_e24vh_medium1_EFxe35_tclcw;
     }
+
+    if(matchElectronTrigger(lv, d3pd.trig.trig_EF_el_EF_e60_medium1()) ){ flags |= TRIG_e60_medium1; }
 
     // assign the trigger flags for this electron
     m_eleTrigFlags[iEl] = flags;
@@ -814,6 +820,11 @@ void SusyD3PDAna::matchMuonTriggers()
        matchMuonTrigger(lv, d3pd.trig.trig_EF_trigmuonef_EF_mu24_j65_a4tchad_EFxe40wMu_tclcw()) ) {
       flags |= TRIG_mu24_j65_a4tchad_EFxe40wMu_tclcw;
     }
+
+    if(d3pd.trig.trig_EF_trigmuonef_EF_mu24_tight.IsAvailable() &&
+       matchMuonTrigger(lv, d3pd.trig.trig_EF_trigmuonef_EF_mu24_tight()) ) { flags |= TRIG_mu24_tight; }
+    if(d3pd.trig.trig_EF_trigmuonef_EF_mu36_tight.IsAvailable() &&
+       matchMuonTrigger(lv, d3pd.trig.trig_EF_trigmuonef_EF_mu36_tight()) ) { flags |= TRIG_mu36_tight; }
 
     // assign the trigger flags for this muon
     m_muoTrigFlags[iMu] = flags;
