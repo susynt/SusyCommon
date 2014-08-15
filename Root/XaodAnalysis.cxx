@@ -66,28 +66,7 @@ void XaodAnalysis::Init(TTree *tree)
    m_isMC = XaodAnalysis::isSimuFromSamplename(m_sample);
    bool isData = XaodAnalysis::isDataFromSamplename(m_sample);
    m_stream = XaodAnalysis::streamFromSamplename(m_sample, isData);
-
-  if(m_isMC) cout << "Processing as MC"   << endl;
-  else       cout << "Processing as DATA" << endl;
-  cout << "DataStream: " << streamName(m_stream) << endl;
-
-  // Setup SUSYTools
-  bool isMC12b = (m_mcProd == MCProd_MC12b);
-  bool useLeptonTrigger = false;
-
-  if(true /*m_dbg*/) m_susyObj.msg().setLevel( MSG::DEBUG);
-  m_susyObj.setProperty("IsData",    static_cast<int>(isData));
-  m_susyObj.setProperty("IsAtlfast", static_cast<int>(m_isAF2));
-  m_susyObj.setProperty("IsMC12b",   static_cast<int>(isMC12b));
-  m_susyObj.setProperty("UseLeptonTrigger",int(useLeptonTrigger));
-  if( m_susyObj.initialize() != StatusCode::SUCCESS){
-      cout<<"Cannot intialize SUSYObjDef_xAOD..."<<endl;
-      cout<<"Exiting... "<<endl;
-      exit(-1);
-  }else{
-      cout<<"SUSYObjDef_xAOD initialized... "<<endl;
-  }
-
+   initSusyTools();
 }
 //----------------------------------------------------------
 XaodAnalysis::~XaodAnalysis()
@@ -147,6 +126,25 @@ void XaodAnalysis::Terminate()
     // delete m_pileup_up;
     // delete m_pileup_dn;
   }
+}
+//----------------------------------------------------------
+XaodAnalysis& XaodAnalysis::initSusyTools()
+{
+  bool useLeptonTrigger = false;
+  if(true /*m_dbg*/) m_susyObj.msg().setLevel( MSG::DEBUG); // DG-2014-08-15 temporarily toggle dbg always on
+  m_susyObj.setProperty("IsData",          static_cast<int>(!m_isMC));
+  m_susyObj.setProperty("IsAtlfast",       static_cast<int>(m_isAF2));
+  m_susyObj.setProperty("IsMC12b",         static_cast<int>(processingMc12b()));
+  m_susyObj.setProperty("UseLeptonTrigger",static_cast<int>(useLeptonTrigger));
+  if(m_susyObj.initialize() != StatusCode::SUCCESS){
+      cout<<"XaodAnalysis::initSusyTools: cannot intialize SUSYObjDef_xAOD..."<<endl
+          <<"Exiting... "<<endl
+          <<endl;
+      exit(-1);
+  }else if(m_dbg){
+      cout<<"XaodAnalysis::initSusyTools: SUSYObjDef_xAOD initialized... "<<endl;
+  }
+  return *this;
 }
 //----------------------------------------------------------
 xAOD::MuonContainer* XaodAnalysis::xaodMuons()

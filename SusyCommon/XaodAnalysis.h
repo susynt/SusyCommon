@@ -48,6 +48,8 @@ class XaodAnalysis : public TSelector
     /// Due to ROOT's stupid design, need to specify version >= 2 or the tree will not connect automatically
     virtual Int_t   Version() const { return 2; }
     virtual XaodAnalysis& setDebug(int debugLevel) { m_dbg = debugLevel; return *this; }
+    XaodAnalysis& initSusyTools(); ///< initialize SUSYObjDef_xAOD
+    bool processingMc12b() const { return m_mcProd == MCProd_MC12b; }
     /// access the default collection of muons from the D3PDReader
     /**
        By default this function returns a pointer to
