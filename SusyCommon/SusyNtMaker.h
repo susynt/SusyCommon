@@ -1,13 +1,12 @@
 #ifndef SusyCommon_SusyNtMaker_h
 #define SusyCommon_SusyNtMaker_h
 
-
-#include <iostream>
+#include "SusyNtuple/SusyNtObject.h" // DG-2014-08-15 note to self: reversed include order breaks things (VarHandle bug?)
+#include "SusyCommon/XaodAnalysis.h"
 
 #include "TStopwatch.h"
 
-#include "SusyCommon/XaodAnalysis.h"
-#include "SusyNtuple/SusyNtObject.h"
+#include <iostream>
 
 
 /*

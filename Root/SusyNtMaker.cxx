@@ -27,7 +27,11 @@ using susy::SusyNtMaker;
 /*--------------------------------------------------------------------------------*/
 // SusyNtMaker Constructor
 /*--------------------------------------------------------------------------------*/
-SusyNtMaker::SusyNtMaker() : m_fillNt(true),
+SusyNtMaker::SusyNtMaker() :
+    m_outTreeFile(NULL),
+    m_outTree(NULL),
+    m_susyNt(0),
+    m_fillNt(true),
                              m_filter(true),
                              m_nLepFilter(0),
                              m_nLepTauFilter(2),
@@ -78,20 +82,13 @@ void SusyNtMaker::SlaveBegin(TTree* tree)
   if(m_dbg) cout << "SusyNtMaker::SlaveBegin" << endl;
 
   if(m_fillNt){
-
     // Open the output tree
     m_outTreeFile = new TFile("susyNt.root", "recreate");
     m_outTree = new TTree("susyNt", "susyNt");
-
-    // Set autosave size (determines how often tree writes to disk)
-    m_outTree->SetAutoSave(10000000);
-    // Max tree size determines when a new file and tree are written
+    m_outTree->SetAutoSave(10000000); // DG-2014-08-15 magic numbers, ask Steve
     m_outTree->SetMaxTreeSize(3000000000u);
-    // Set all branches active for writing, for now.
-    // Later, add switch for systematics
     m_susyNt.SetActive();
     m_susyNt.WriteTo(m_outTree);
-
   }
 
   // Susy sample determination is now done dynamically
@@ -283,6 +280,7 @@ bool SusyNtMaker::selectEvent()
   if(m_dbg>=5) cout << "selectEvent" << endl;
   clearObjects();
   m_susyNt.clear();
+
   return false;
 }
 // bool SusyNtMaker::selectEvent()
