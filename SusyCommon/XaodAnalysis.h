@@ -218,6 +218,11 @@ class XaodAnalysis : public TSelector
     void dumpEvent();
     void dumpBaselineObjects();
     void dumpSignalObjects();
+    // helpers
+    /// guess data stream from sample name
+    static DataStream streamFromSamplename(const std::string &s, bool isdata);
+    static bool isDataFromSamplename(const std::string &s); ///< guess from sample name whether it's data sample
+    static bool isSimuFromSamplename(const std::string &s); ///< guess from sample name whether it's a simulated sample
 
 
   protected:

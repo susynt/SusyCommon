@@ -54,7 +54,7 @@ XaodAnalysis::XaodAnalysis() :
         m_isMC(false),
         m_flagsAreConsistent(false),
     m_flagsHaveBeenChecked(false),
-    m_event( xAOD::TEvent::kClassAccess )
+    m_event(xAOD::TEvent::kClassAccess)
 {
 }
 //----------------------------------------------------------
@@ -62,7 +62,42 @@ void XaodAnalysis::Init(TTree *tree)
 {
    xAOD::Init("susy::XaodAnalysis");
    m_event.readFrom(tree);
-   cout<<"Number of events in the file: "<<m_event.getEntries()<<endl;
+   //xAOD::TStore store; // DG-2014-08-15 I think this is needed only to output xaod
+   m_isMC = XaodAnalysis::isSimuFromSamplename(m_sample);
+   m_stream = XaodAnalysis::streamFromSamplename(m_sample.Data(), isData);
+
+   bool isData = XaodAnalysis::isDataFromSamplename(m_sample);
+
+  // Make sure MC production is specified
+  if(m_isMC && m_mcProd==MCProd_Unknown){
+    cout << "XaodAnalysis::SlaveBegin : ERROR : Sample is flagged as MC but "
+         << "MCProduction is Unknown! Use command line argument to set it!"
+         << endl;
+    abort();
+  }
+
+
+  if(m_isMC) cout << "Processing as MC"   << endl;
+  else       cout << "Processing as DATA" << endl;
+  cout << "DataStream: " << streamName(m_stream) << endl;
+
+  // Setup SUSYTools
+  bool isMC12b = (m_mcProd == MCProd_MC12b);
+  bool useLeptonTrigger = false;
+
+  if(true /*m_dbg*/) m_susyObj.msg().setLevel( MSG::DEBUG);
+  m_susyObj.setProperty("IsData",    static_cast<int>(isData));
+  m_susyObj.setProperty("IsAtlfast", static_cast<int>(m_isAF2));
+  m_susyObj.setProperty("IsMC12b",   static_cast<int>(isMC12b));
+  m_susyObj.setProperty("UseLeptonTrigger",int(useLeptonTrigger));
+  if( m_susyObj.initialize() != StatusCode::SUCCESS){
+      cout<<"Cannot intialize SUSYObjDef_xAOD..."<<endl;
+      cout<<"Exiting... "<<endl;
+      exit(-1);
+  }else{
+      cout<<"SUSYObjDef_xAOD initialized... "<<endl;
+  }
+
 }
 //----------------------------------------------------------
 XaodAnalysis::~XaodAnalysis()
@@ -73,46 +108,7 @@ XaodAnalysis::~XaodAnalysis()
 void XaodAnalysis::SlaveBegin(TTree *tree)
 {
   if(m_dbg) cout << "XaodAnalysis::SlaveBegin" << endl;
-
   bool isData = m_sample.Contains("data", TString::kIgnoreCase);
-  m_isMC = !isData;
-
-  // Make sure MC production is specified
-  if(m_isMC && m_mcProd==MCProd_Unknown){
-    cout << "XaodAnalysis::SlaveBegin : ERROR : Sample is flagged as MC but "
-         << "MCProduction is Unknown! Use command line argument to set it!"
-         << endl;
-    abort();
-  }
-
-  // Use sample name to set data stream
-  if(m_isMC) m_stream = Stream_MC;
-  else if(m_sample.Contains("muons", TString::kIgnoreCase)) m_stream = Stream_Muons;
-  else if(m_sample.Contains("egamma", TString::kIgnoreCase)) m_stream = Stream_Egamma;
-  else if(m_sample.Contains("jettauetmiss", TString::kIgnoreCase)) m_stream = Stream_JetTauEtmiss;
-  else m_stream = Stream_Unknown;
-
-  if(m_isMC) cout << "Processing as MC"   << endl;
-  else       cout << "Processing as DATA" << endl;
-  cout << "DataStream: " << streamName(m_stream) << endl;
-
-  // Setup SUSYTools
-  bool isMC12b = (m_mcProd == MCProd_MC12b);
-  bool useLeptonTrigger = false;
-
-
-  if(true /*m_dbg*/) m_susyObj.msg().setLevel( MSG::DEBUG);
-  m_susyObj.setProperty("IsData",isData);
-  m_susyObj.setProperty("IsAtlfast", m_isAF2);   
-  m_susyObj.setProperty("IsMC12b", isMC12b);
-  m_susyObj.setProperty("UseLeptonTrigger",useLeptonTrigger);
-  if( m_susyObj.initialize() != StatusCode::SUCCESS){
-      cout<<"Cannot intialize SUSYObjDef_xAOD..."<<endl;
-      cout<<"Exiting... "<<endl;
-      exit(-1);
-  }else{
-      cout<<"SUSYObjDef_xAOD initialized... "<<endl;
-  }
 
 #warning TElectronEfficiencyCorrectionTool not initialized
 #warning fakemet_est tool not initialized
@@ -1118,4 +1114,28 @@ bool XaodAnalysis::initGrlTool()
     return success;
 }
 //----------------------------------------------------------
-
+DataStream XaodAnalysis::streamFromSamplename(const std::string &s, bool isdata)
+{
+    bool ismc(!isdata);
+    TString sample(s.c_str());
+    DataStream stream = Stream_Unknown;
+    if(ismc) stream = Stream_MC;
+    else if(sample.Contains("muons",        TString::kIgnoreCase)) stream = Stream_Muons;
+    else if(sample.Contains("egamma",       TString::kIgnoreCase)) stream = Stream_Egamma;
+    else if(sample.Contains("jettauetmiss", TString::kIgnoreCase)) stream = Stream_JetTauEtmiss;
+    else
+        cout<<"XaodAnalysis::streamFromSamplename('"<<s<<"',isdata="<<(isdata?"true":"false")<<")"
+            <<" : cannot determine the stream, returning "<<streamName(stream)<<endl;
+    return stream;
+}
+//----------------------------------------------------------
+bool XaodAnalysis::isDataFromSamplename(const std::string &s)
+{
+    return TString(s.c_str()).Contains("data", TString::kIgnoreCase);
+}
+//----------------------------------------------------------
+bool XaodAnalysis::isSimuFromSamplename(const std::string &s)
+{
+    return !XaodAnalysis::isDataFromSamplename(s);
+}
+//----------------------------------------------------------
