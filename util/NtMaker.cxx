@@ -230,8 +230,8 @@ int main(int argc, char** argv)
   cout << endl;
 
   // Build the input chain
-  TChain* chain = new TChain("physics");
-  int fileErr = ChainHelper::addFileList(chain, fileList);
+  TChain* chain = new TChain("CollectionTree");
+  int fileErr = ChainHelper::addInput(chain, fileList, dbg);
   if(fileErr) return 1;
   Long64_t nEntries = chain->GetEntries();
   chain->ls();
