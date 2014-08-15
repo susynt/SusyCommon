@@ -21,12 +21,7 @@
 
 #include "SusyCommon/SusyD3PDInterface.h"
 
-/*
-
-    SusyD3PDAna - a class for performing object selections and event cleaning on susy d3pds
-
-*/
-
+/// a class for performing object selections and event cleaning on susy d3pds
 class SusyD3PDAna : public SusyD3PDInterface
 {
 

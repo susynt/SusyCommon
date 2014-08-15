@@ -4,12 +4,7 @@
 #include "SusyCommon/SusyD3PDAna.h"
 
 
-/*
-
-    SusyD3PDSkimmer - a class for skimming/slimming SUSY D3PDs
-
-*/
-
+/// SusyD3PDSkimmer - a class for skimming/slimming SUSY D3PDs
 class SusyD3PDSkimmer : public SusyD3PDAna
 {
 

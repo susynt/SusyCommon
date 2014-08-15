@@ -10,12 +10,7 @@
 #include "SusyNtuple/SusyNtObject.h"
 
 
-/*
-
-    SusyNtMaker - a class for making SusyNt from Susy D3PDs
-    
-*/
-
+/// SusyNtMaker - a class for making SusyNt from Susy D3PDs
 class SusyNtMaker : public SusyD3PDAna
 {
 
