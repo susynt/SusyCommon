@@ -64,18 +64,8 @@ void XaodAnalysis::Init(TTree *tree)
    m_event.readFrom(tree);
    //xAOD::TStore store; // DG-2014-08-15 I think this is needed only to output xaod
    m_isMC = XaodAnalysis::isSimuFromSamplename(m_sample);
-   m_stream = XaodAnalysis::streamFromSamplename(m_sample.Data(), isData);
-
    bool isData = XaodAnalysis::isDataFromSamplename(m_sample);
-
-  // Make sure MC production is specified
-  if(m_isMC && m_mcProd==MCProd_Unknown){
-    cout << "XaodAnalysis::SlaveBegin : ERROR : Sample is flagged as MC but "
-         << "MCProduction is Unknown! Use command line argument to set it!"
-         << endl;
-    abort();
-  }
-
+   m_stream = XaodAnalysis::streamFromSamplename(m_sample, isData);
 
   if(m_isMC) cout << "Processing as MC"   << endl;
   else       cout << "Processing as DATA" << endl;
@@ -108,7 +98,7 @@ XaodAnalysis::~XaodAnalysis()
 void XaodAnalysis::SlaveBegin(TTree *tree)
 {
   if(m_dbg) cout << "XaodAnalysis::SlaveBegin" << endl;
-  bool isData = m_sample.Contains("data", TString::kIgnoreCase);
+  bool isData(!m_isMC);
 
 #warning TElectronEfficiencyCorrectionTool not initialized
 #warning fakemet_est tool not initialized
@@ -1054,9 +1044,17 @@ void XaodAnalysis::dumpSignalObjects()
 //----------------------------------------------------------
 bool XaodAnalysis::runningOptionsAreValid()
 {
-#warning runningOptionsAreValid not implemented
-    return false;
-    // bool valid=true;
+    bool valid=true;
+    if(m_isMC && m_mcProd==MCProd_Unknown){
+        valid=false;
+        if(m_dbg)
+            cout<<"XaodAnalysis::runningOptionsAreValid invalid production"
+                <<" 'MCProd_Unknown' is not a valid choice for simulated samples."
+                <<" You should call XaodAnalysis::setMCProduction()"
+                <<endl;
+    }
+    return valid;
+#warning runningOptionsAreValid not complete
     // bool isSimulation = m_event.eventinfo.isSimulation();
     // bool isData = !isSimulation;
     // bool isStreamEgamma = m_event.eventinfo.streamDecision_Egamma();
@@ -1114,27 +1112,27 @@ bool XaodAnalysis::initGrlTool()
     return success;
 }
 //----------------------------------------------------------
-DataStream XaodAnalysis::streamFromSamplename(const std::string &s, bool isdata)
+DataStream XaodAnalysis::streamFromSamplename(const TString &sample, bool isdata)
 {
     bool ismc(!isdata);
-    TString sample(s.c_str());
+//    TString sample(s.c_str());
     DataStream stream = Stream_Unknown;
     if(ismc) stream = Stream_MC;
     else if(sample.Contains("muons",        TString::kIgnoreCase)) stream = Stream_Muons;
     else if(sample.Contains("egamma",       TString::kIgnoreCase)) stream = Stream_Egamma;
     else if(sample.Contains("jettauetmiss", TString::kIgnoreCase)) stream = Stream_JetTauEtmiss;
     else
-        cout<<"XaodAnalysis::streamFromSamplename('"<<s<<"',isdata="<<(isdata?"true":"false")<<")"
+        cout<<"XaodAnalysis::streamFromSamplename('"<<sample<<"',isdata="<<(isdata?"true":"false")<<")"
             <<" : cannot determine the stream, returning "<<streamName(stream)<<endl;
     return stream;
 }
 //----------------------------------------------------------
-bool XaodAnalysis::isDataFromSamplename(const std::string &s)
+bool XaodAnalysis::isDataFromSamplename(const TString &sample)
 {
-    return TString(s.c_str()).Contains("data", TString::kIgnoreCase);
+    return sample.Contains("data", TString::kIgnoreCase);
 }
 //----------------------------------------------------------
-bool XaodAnalysis::isSimuFromSamplename(const std::string &s)
+bool XaodAnalysis::isSimuFromSamplename(const TString &s)
 {
     return !XaodAnalysis::isDataFromSamplename(s);
 }
