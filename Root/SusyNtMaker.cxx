@@ -81,16 +81,7 @@ void SusyNtMaker::SlaveBegin(TTree* tree)
   XaodAnalysis::SlaveBegin(tree);
   if(m_dbg) cout << "SusyNtMaker::SlaveBegin" << endl;
 
-  if(m_fillNt){
-    // Open the output tree
-    m_outTreeFile = new TFile("susyNt.root", "recreate");
-    m_outTree = new TTree("susyNt", "susyNt");
-    m_outTree->SetAutoSave(10000000); // DG-2014-08-15 magic numbers, ask Steve
-    m_outTree->SetMaxTreeSize(3000000000u);
-    m_susyNt.SetActive();
-    m_susyNt.WriteTo(m_outTree);
-  }
-
+  if(m_fillNt) initializeOuputTree();
   // Susy sample determination is now done dynamically
   //m_isSusySample = m_sample.Contains("DGemt") || m_sample.Contains("DGstau") ||
   //                 m_sample.Contains("RPV") || m_sample.Contains("simplifiedModel") ||
@@ -1527,5 +1518,17 @@ void SusyNtMaker::addMissingTau(int index, SusyNtSys sys)
 //  for(size_t i=0; i<p.size(); ++i) if(abs(p[i])==pdgB && s[i]==statRad) return true;
 //  return false;
 //}
+//----------------------------------------------------------
+SusyNtMaker& SusyNtMaker::initializeOuputTree()
+{
+    m_outTreeFile = new TFile("susyNt.root", "recreate");
+    m_outTree = new TTree("susyNt", "susyNt");
+    m_outTree->SetAutoSave(10000000); // DG-2014-08-15 magic numbers, ask Steve
+    m_outTree->SetMaxTreeSize(3000000000u);
+    m_susyNt.SetActive();
+    m_susyNt.WriteTo(m_outTree);
+    return *this;
+}
+//----------------------------------------------------------
 
 #undef GeV
