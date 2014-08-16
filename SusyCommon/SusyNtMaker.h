@@ -7,7 +7,7 @@
 #include "TStopwatch.h"
 
 #include <iostream>
-
+#include <string>
 
 /*
 
@@ -114,9 +114,13 @@ class SusyNtMaker : public XaodAnalysis
 
     // Toggle saving container taus instead of selected taus
     void setSaveContTaus(bool saveContTaus=true) { m_saveContTaus = saveContTaus; }
-
+    static bool guessWhetherIsWhSample(const TString &samplename);
+    std::string timerSummary();
+    std::string counterSummary() const;
  protected:
     SusyNtMaker& initializeOuputTree();
+    SusyNtMaker& saveOutputTree();
+    SusyNtMaker& initializeCutflowHistograms();
  private:
     //static bool isBuggyWwSherpaSample(const int &dsid); //!< see thread "Diboson MC Truth Discrepancy" atlas-phys-susy-d3pd.cern.ch, Mar2013
     //static bool hasRadiativeBquark(const vint_t *pdg, const vint_t *status);

@@ -1,6 +1,5 @@
 #include "egammaAnalysisUtils/CaloIsoCorrection.h"
 
-
 //#include "TauCorrections/TauCorrections.h"
 #include "TauCorrUncert/TauSF.h"
 //#include "SUSYTools/MV1.h"
@@ -16,6 +15,8 @@
 
 #include "xAODTruth/TruthEvent.h"
 #include "xAODTruth/TruthEventContainer.h"
+
+#include <sstream> // std::ostringstream
 
 using namespace std;
 namespace smc =susy::mc;
@@ -79,25 +80,12 @@ SusyNtMaker::~SusyNtMaker()
 void SusyNtMaker::SlaveBegin(TTree* tree)
 {
   XaodAnalysis::SlaveBegin(tree);
-  if(m_dbg) cout << "SusyNtMaker::SlaveBegin" << endl;
-
-  if(m_fillNt) initializeOuputTree();
-  // Susy sample determination is now done dynamically
-  //m_isSusySample = m_sample.Contains("DGemt") || m_sample.Contains("DGstau") ||
-  //                 m_sample.Contains("RPV") || m_sample.Contains("simplifiedModel") ||
-  //                 m_sample.Contains("pMSSM") || m_sample.Contains("DG_MeadePoint");
-
-  // Still hardcoded. Currently no other known solution
-  m_isWhSample = m_sample.Contains("simplifiedModel_wA_noslep_WH") ||
-                 m_sample.Contains("Herwigpp_sM_wA_noslep_notauhad_WH");
-
-  // create histograms for cutflow
-  // Raw event weights
-  h_rawCutFlow = makeCutFlow("rawCutFlow", "rawCutFlow;Cuts;Events");
-  // Generator event weights
-  h_genCutFlow = makeCutFlow("genCutFlow", "genCutFlow;Cuts;Events");
-
-  // Start the timer
+  if(m_dbg)
+      cout<<"SusyNtMaker::SlaveBegin"<<endl;
+  if(m_fillNt)
+      initializeOuputTree();
+  m_isWhSample = guessWhetherIsWhSample(m_sample);
+  initializeCutflowHistograms();
   m_timer.Start();
 }
 /*--------------------------------------------------------------------------------*/
@@ -149,11 +137,9 @@ Bool_t SusyNtMaker::Process(Long64_t entry)
   // Communicate the entry number to the interface objects
   m_event.getEntry(entry);
 
-
   const xAOD::EventInfo* eventinfo = 0;
   m_event.retrieve(eventinfo, "EventInfo");
   cout<<"run "<<eventinfo->eventNumber()<<" event "<<eventinfo->runNumber()<<endl;
-
 
   if(!m_flagsHaveBeenChecked) {
       m_flagsAreConsistent = runningOptionsAreValid();
@@ -192,70 +178,12 @@ Bool_t SusyNtMaker::Process(Long64_t entry)
 /*--------------------------------------------------------------------------------*/
 void SusyNtMaker::Terminate()
 {
-  // Stop the timer
-  m_timer.Stop();
-
   XaodAnalysis::Terminate();
-  if(m_dbg) cout << "SusyNtMaker::Terminate" << endl;
-
-  cout << endl;
-  cout << "Object counter" << endl;
-  cout << "  BaseEle   " << n_base_ele    << endl;
-  cout << "  BaseMuo   " << n_base_muo    << endl;
-  cout << "  BaseTau   " << n_base_tau    << endl;
-  cout << "  BaseJet   " << n_base_jet    << endl;
-  cout << "  SigEle    " << n_sig_ele     << endl;
-  cout << "  SigMuo    " << n_sig_muo     << endl;
-  cout << "  SigTau    " << n_sig_tau     << endl;
-  cout << "  SigJet    " << n_sig_jet     << endl;
-  cout << endl;
-  cout << "Event counter" << endl;
-  cout << "  Initial   " << n_evt_initial << endl;
-  cout << "  SusyProp  " << n_evt_susyProp<< endl;
-  cout << "  GRL       " << n_evt_grl     << endl;
-  cout << "  LarErr    " << n_evt_larErr  << endl;
-  cout << "  TileErr   " << n_evt_tileErr  << endl;
-  cout << "  TTC Veto  " << n_evt_ttcVeto << endl;
-  cout << "  GoodVtx   " << n_evt_goodVtx << endl;
-  cout << "  WW Sherpa " << n_evt_WwSherpa<< endl;
-  cout << "  TileTrip  " << n_evt_tileTrip<< endl;
-  //cout << "  LarHole   " << n_evt_larHole << endl;
-  cout << "  HotSpot   " << n_evt_hotSpot << endl;
-  cout << "  BadJet    " << n_evt_badJet  << endl;
-  cout << "  BadMuon   " << n_evt_badMu   << endl;
-  cout << "  Cosmic    " << n_evt_cosmic  << endl;
-  cout << "  >=1 Lep   " << n_evt_1Lep    << endl;
-  cout << "  >=2 Lep   " << n_evt_2Lep    << endl;
-  cout << "  ==3 Lep   " << n_evt_3Lep    << endl;
-  cout << endl;
-
-  if(m_fillNt){
-
-    // Save the output tree
-    m_outTreeFile = m_outTree->GetCurrentFile();
-    m_outTreeFile->Write(0, TObject::kOverwrite);
-    cout << "susyNt tree saved to " << m_outTreeFile->GetName() << endl;
-    m_outTreeFile->Close();
-
-  }
-
-  // Report timer
-  double realTime = m_timer.RealTime();
-  double cpuTime  = m_timer.CpuTime();
-  int hours = int(realTime / 3600);
-  realTime -= hours * 3600;
-  int min   = int(realTime / 60);
-  realTime -= min * 60;
-  int sec   = int(realTime);
-
-  float speed = n_evt_initial/m_timer.RealTime()/1000;
-
-  printf("---------------------------------------------------\n");
-  printf(" Number of events processed: %d \n",n_evt_initial);
-  printf(" Number of events saved:     %d \n",n_evt_saved);
-  printf("\t Analysis time: Real %d:%02d:%02d, CPU %.3f      \n", hours, min, sec, cpuTime);
-  printf("\t Analysis speed [kHz]: %2.3f                     \n",speed);
-  printf("---------------------------------------------------\n\n");
+  m_timer.Stop();
+  if(m_dbg) cout<<"SusyNtMaker::Terminate"<<endl;
+  cout<<counterSummary()<<endl;
+  if(m_fillNt) saveOutputTree();
+  cout<<timerSummary()<<endl;
 }
 
 /*--------------------------------------------------------------------------------*/
@@ -1528,6 +1456,86 @@ SusyNtMaker& SusyNtMaker::initializeOuputTree()
     m_susyNt.SetActive();
     m_susyNt.WriteTo(m_outTree);
     return *this;
+}
+//----------------------------------------------------------
+SusyNtMaker& SusyNtMaker::initializeCutflowHistograms()
+{
+  h_rawCutFlow = makeCutFlow("rawCutFlow", "rawCutFlow;Cuts;Events");
+  h_genCutFlow = makeCutFlow("genCutFlow", "genCutFlow;Cuts;Events");
+  return *this;
+}
+//----------------------------------------------------------
+bool SusyNtMaker::guessWhetherIsWhSample(const TString &samplename)
+{
+    return (samplename.Contains("simplifiedModel_wA_noslep_WH") ||
+            samplename.Contains("Herwigpp_sM_wA_noslep_notauhad_WH"));
+}
+//----------------------------------------------------------
+SusyNtMaker& SusyNtMaker::saveOutputTree()
+{
+    m_outTreeFile = m_outTree->GetCurrentFile();
+    m_outTreeFile->Write(0, TObject::kOverwrite);
+    cout<<"susyNt tree saved to "<<m_outTreeFile->GetName()<<endl;
+    m_outTreeFile->Close();
+    return *this;
+}
+//----------------------------------------------------------
+std::string SusyNtMaker::timerSummary() /*const*/ // TStopwatch::<*>Time is not const
+{
+  double realTime = m_timer.RealTime();
+  double cpuTime  = m_timer.CpuTime();
+  int hours = int(realTime / 3600);
+  realTime -= hours * 3600;
+  int min   = int(realTime / 60);
+  realTime -= min * 60;
+  int sec   = int(realTime);
+  float speed = n_evt_initial/m_timer.RealTime()/1000;
+  TString line1; line1.Form("Real %d:%02d:%02d, CPU %.3f", hours, min, sec, cpuTime);
+  TString line2; line2.Form("[kHz]: %2.3f",speed);
+  ostringstream oss;
+  oss<<"---------------------------------------------------\n"
+     <<" Number of events processed: "<<n_evt_initial<<endl
+     <<" Number of events saved:     "<<n_evt_saved<<endl
+     <<"\t Analysis time: "<<line1<<endl
+     <<"\t Analysis speed "<<line2<<endl
+     <<"---------------------------------------------------"<<endl
+     <<endl;
+  return oss.str();
+}
+//----------------------------------------------------------
+std::string SusyNtMaker::counterSummary() const
+{
+  ostringstream oss;
+  oss<<"Object counter"<<endl
+     <<"  BaseEle   "<<n_base_ele   <<endl
+     <<"  BaseMuo   "<<n_base_muo   <<endl
+     <<"  BaseTau   "<<n_base_tau   <<endl
+     <<"  BaseJet   "<<n_base_jet   <<endl
+     <<"  SigEle    "<<n_sig_ele    <<endl
+     <<"  SigMuo    "<<n_sig_muo    <<endl
+     <<"  SigTau    "<<n_sig_tau    <<endl
+     <<"  SigJet    "<<n_sig_jet    <<endl
+     <<endl
+     <<"Event counter"<<endl
+     <<"  Initial   "<<n_evt_initial  <<endl
+     <<"  SusyProp  "<<n_evt_susyProp <<endl
+     <<"  GRL       "<<n_evt_grl      <<endl
+     <<"  LarErr    "<<n_evt_larErr   <<endl
+     <<"  TileErr   "<<n_evt_tileErr  <<endl
+     <<"  TTC Veto  "<<n_evt_ttcVeto  <<endl
+     <<"  GoodVtx   "<<n_evt_goodVtx  <<endl
+     <<"  WW Sherpa "<<n_evt_WwSherpa <<endl
+     <<"  TileTrip  "<<n_evt_tileTrip <<endl
+     <<"  LarHole   "<<n_evt_larHole  <<endl
+     <<"  HotSpot   "<<n_evt_hotSpot  <<endl
+     <<"  BadJet    "<<n_evt_badJet   <<endl
+     <<"  BadMuon   "<<n_evt_badMu    <<endl
+     <<"  Cosmic    "<<n_evt_cosmic   <<endl
+     <<"  >=1 Lep   "<<n_evt_1Lep     <<endl
+     <<"  >=2 Lep   "<<n_evt_2Lep     <<endl
+     <<"  ==3 Lep   "<<n_evt_3Lep     <<endl
+     <<endl;
+  return oss.str();
 }
 //----------------------------------------------------------
 
