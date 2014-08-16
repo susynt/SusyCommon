@@ -149,8 +149,8 @@ class XaodAnalysis : public TSelector
     bool passBadMuon(); ///< bad muon veto
     bool passCosmic(); ///< cosmic veto
 
-    void checkEventCleaning(); ///< Event level cleaning cuts
-    void checkObjectCleaning();// Object level cleaning cuts;  t/<hese depend on sys
+    void assignEventCleaningFlags(); ///< Event level cleaning cuts
+    void assignObjectCleaningFlags();// Object level cleaning cuts;  t/<hese depend on sys
 
     // Event weighting
 

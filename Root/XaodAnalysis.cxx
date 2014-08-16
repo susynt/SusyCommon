@@ -718,7 +718,7 @@ bool XaodAnalysis::passLarErr()
 /*--------------------------------------------------------------------------------*/
 // Check event level cleaning cuts like GRL, LarError, etc.
 /*--------------------------------------------------------------------------------*/
-void XaodAnalysis::checkEventCleaning()
+void XaodAnalysis::assignEventCleaningFlags()
 {
   if(passGRL())      m_cutFlags |= ECut_GRL;
   if(passTTCVeto())  m_cutFlags |= ECut_TTC;
@@ -728,7 +728,7 @@ void XaodAnalysis::checkEventCleaning()
   if(passTileTrip()) m_cutFlags |= ECut_TileTrip;
 }
 //----------------------------------------------------------
-void XaodAnalysis::checkObjectCleaning()
+void XaodAnalysis::assignObjectCleaningFlags()
 {
   if(passTileHotSpot()) m_cutFlags |= ECut_HotSpot;
   if(passBadJet())      m_cutFlags |= ECut_BadJet;

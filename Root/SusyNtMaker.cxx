@@ -253,7 +253,7 @@ bool SusyNtMaker::selectEvent()
 //   //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-//
 //   // Obj Independent checks
 
-//   checkEventCleaning();
+//   assignEventCleaningFlags();
 
 //   // susyProp (just counts, doesn't drop)
 //   if(!m_hasSusyProp) { fillCutFlow(w); n_evt_susyProp++; }
@@ -306,7 +306,7 @@ bool SusyNtMaker::selectEvent()
 //   selectObjects();
 //   buildMet();
 //   //evtCheck();
-//   checkObjectCleaning();
+//   assignObjectCleaningFlags();
 
 
 //   // These next cuts are not used to filter the SusyNt because they depend on systematics.
@@ -1201,8 +1201,8 @@ void SusyNtMaker::doSystematic()
     clearObjects();
     selectObjects(sys);
     buildMet(sys);
-    checkEventCleaning();
-    checkObjectCleaning();
+    assignEventCleaningFlags();
+    assignObjectCleaningFlags();
     if     (isElecSys(sys)) saveElectronSF(sys); // Lepton Specific sys
     else if(isMuonSys(sys)) saveMuonSF(sys);
     else if(isJetSys(sys))  saveJetSF(sys);
