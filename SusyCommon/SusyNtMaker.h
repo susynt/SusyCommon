@@ -8,6 +8,7 @@
 
 #include <iostream>
 #include <string>
+#include <vector>
 
 /*
 
@@ -55,7 +56,11 @@ class SusyNtMaker : public XaodAnalysis
        bookkeeping and normalization.
      */
     virtual bool passObjectlevelSelection();
-
+    /// labels of the cut stages used in the selection
+    /**
+       They are used to book the histograms and the counters.
+     */
+    static const std::vector< std::string > cutflowLabels();
     // Initialize a cutflow histo
     TH1F* makeCutFlow(const char* name, const char* title);
     TH1F* getProcCutFlow(int signalProcess);
@@ -184,29 +189,6 @@ class SusyNtMaker : public XaodAnalysis
     uint                n_sig_tau;
     uint                n_sig_jet;
 
-    // Some event counts
-    uint                n_evt_initial;
-    uint                n_evt_grl;
-    uint                n_evt_ttcVeto;
-    uint                n_evt_WwSherpa;
-    uint                n_evt_tileTrip;
-    uint                n_evt_larErr;
-    uint                n_evt_tileErr;
-    uint                n_evt_larHole;
-    uint                n_evt_hotSpot;
-    uint                n_evt_badJet;
-    uint                n_evt_goodVtx;
-    uint                n_evt_badMu;
-    uint                n_evt_cosmic;
-    uint                n_evt_susyProp;
-    uint                n_evt_1Lep;
-    uint                n_evt_2Lep;
-    uint                n_evt_3Lep;
-    uint                n_evt_saved;    // number of events save in the SusyNt
-
-    // histogram to save cutflow
-    //TH1F*               h_cutFlow;
-
     // We are currently changing the procedure for counting events in the cutflow!
     // We would like to have a histogram with total raw numbers, as above, but in
     // addition we would like a similar histo filled with the generator weights.
@@ -217,6 +199,7 @@ class SusyNtMaker : public XaodAnalysis
     TH1F*               h_rawCutFlow;           // cutflow filled always with weight=1
     TH1F*               h_genCutFlow;           // cutflow filled with generator weights
     std::map<int,TH1F*> m_procCutFlows;         // cutflows, one for each subprocess
+    std::vector< size_t > m_cutstageCounters; ///< used to print the summary cutflow table
 
     // Timer
     TStopwatch          m_timer;

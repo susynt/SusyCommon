@@ -16,6 +16,8 @@
 #include "xAODTruth/TruthEvent.h"
 #include "xAODTruth/TruthEventContainer.h"
 
+#include <algorithm> // max_element
+#include <iomanip> // setw
 #include <sstream> // std::ostringstream
 
 using namespace std;
@@ -33,14 +35,17 @@ SusyNtMaker::SusyNtMaker() :
     m_outTree(NULL),
     m_susyNt(0),
     m_fillNt(true),
-                             m_filter(true),
-                             m_nLepFilter(0),
-                             m_nLepTauFilter(2),
-                             m_filterTrigger(false),
-                             m_saveContTaus(false),
-                             m_isWhSample(false),
-                             m_hDecay(0),
-                             m_hasSusyProp(false)
+    m_filter(true),
+    m_nLepFilter(0),
+    m_nLepTauFilter(2),
+    m_filterTrigger(false),
+    m_saveContTaus(false),
+    m_isWhSample(false),
+    m_hDecay(0),
+    m_hasSusyProp(false),
+    h_rawCutFlow(NULL),
+    h_genCutFlow(NULL),
+    m_cutstageCounters(SusyNtMaker::cutflowLabels().size(), 0)
 {
   n_base_ele=0;
   n_base_muo=0;
@@ -50,24 +55,6 @@ SusyNtMaker::SusyNtMaker() :
   n_sig_muo=0;
   n_sig_tau=0;
   n_sig_jet=0;
-  n_evt_initial=0;
-  n_evt_susyProp=0;
-  n_evt_grl=0;
-  n_evt_ttcVeto=0;
-  n_evt_WwSherpa=0;
-  n_evt_tileTrip=0;
-  n_evt_larErr=0;
-  n_evt_tileErr=0;
-  n_evt_larHole=0;
-  n_evt_hotSpot=0;
-  n_evt_badJet=0;
-  n_evt_goodVtx=0;
-  n_evt_badMu=0;
-  n_evt_cosmic=0;
-  n_evt_1Lep=0;
-  n_evt_2Lep=0;
-  n_evt_3Lep=0;
-  n_evt_saved=0;
 }
 /*--------------------------------------------------------------------------------*/
 // Destructor
@@ -89,26 +76,35 @@ void SusyNtMaker::SlaveBegin(TTree* tree)
   m_timer.Start();
 }
 /*--------------------------------------------------------------------------------*/
+const std::vector< std::string > SusyNtMaker::cutflowLabels()
+{
+    vector<string> labels;
+    labels.push_back("Initial"        );
+    labels.push_back("SusyProp Veto"  );
+    labels.push_back("GRL"            );
+    labels.push_back("LAr Error"      );
+    labels.push_back("Tile Error"     );
+    labels.push_back("TTC Veto"       );
+    labels.push_back("Good Vertex"    );
+    labels.push_back("Buggy WWSherpa" );
+    labels.push_back("Hot Spot"       );
+    labels.push_back("Bad Jet"        );
+    labels.push_back("Bad Muon"       );
+    labels.push_back("Cosmic"         );
+    labels.push_back(">=1 lep"        );
+    labels.push_back(">=2 lep"        );
+    labels.push_back("==3 lep"        );
+    return labels;
+}
+//----------------------------------------------------------
 TH1F* SusyNtMaker::makeCutFlow(const char* name, const char* title)
 {
-  //TH1F* h = new TH1F(name, title, 9, -0.5, 3.5);
-  TH1F* h = new TH1F(name, title, 15, 0., 15.);
-  h->GetXaxis()->SetBinLabel(1, "Initial");
-  h->GetXaxis()->SetBinLabel(2, "SusyProp Veto");
-  h->GetXaxis()->SetBinLabel(3, "GRL");
-  h->GetXaxis()->SetBinLabel(4, "LAr Error");
-  h->GetXaxis()->SetBinLabel(5, "Tile Error");
-  h->GetXaxis()->SetBinLabel(6, "TTC Veto");
-  h->GetXaxis()->SetBinLabel(7, "Good Vertex");
-  h->GetXaxis()->SetBinLabel(8, "Buggy WWSherpa");
-  h->GetXaxis()->SetBinLabel(9, "Hot Spot");
-  h->GetXaxis()->SetBinLabel(10, "Bad Jet");
-  h->GetXaxis()->SetBinLabel(11, "Bad Muon");
-  h->GetXaxis()->SetBinLabel(12, "Cosmic");
-  h->GetXaxis()->SetBinLabel(13, ">=1 lep");
-  h->GetXaxis()->SetBinLabel(14, ">=2 lep");
-  h->GetXaxis()->SetBinLabel(15, "==3 lep");
-  return h;
+    vector<string> labels = SusyNtMaker::cutflowLabels();
+    int nCuts = labels.size();
+    TH1F* h = new TH1F(name, title, nCuts, 0., static_cast<float>(nCuts));
+    for(int iCut=0; iCut<nCuts; ++iCut)
+        h->GetXaxis()->SetBinLabel(iCut+1, labels[iCut].c_str());
+    return h;
 }
 /*--------------------------------------------------------------------------------*/
 TH1F* SusyNtMaker::getProcCutFlow(int signalProcess)
@@ -165,7 +161,6 @@ Bool_t SusyNtMaker::Process(Long64_t entry)
       cout << "SusyNtMaker ERROR filling tree!  Abort!" << endl;
       abort();
     }
-    n_evt_saved++;
   }
 
   return kTRUE;
@@ -182,8 +177,8 @@ void SusyNtMaker::Terminate()
   m_timer.Stop();
   if(m_dbg) cout<<"SusyNtMaker::Terminate"<<endl;
   cout<<counterSummary()<<endl;
-  if(m_fillNt) saveOutputTree();
   cout<<timerSummary()<<endl;
+  if(m_fillNt) saveOutputTree();
 }
 
 /*--------------------------------------------------------------------------------*/
@@ -204,57 +199,6 @@ bool SusyNtMaker::selectEvent()
 }
 // bool SusyNtMaker::selectEvent()
 // {
-
-
-//   //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-//
-//   // Obj Independent checks
-
-//   assignEventCleaningFlags();
-
-//   // susyProp (just counts, doesn't drop)
-//   if(!m_hasSusyProp) { fillCutFlow(w); n_evt_susyProp++; }
-//   else { fillCutFlow.iCut++; }
-
-//   // grl
-//   if(m_filter && (m_cutFlags & ECut_GRL) == 0) return false;
-//   fillCutFlow(w);
-//   n_evt_grl++;
-
-//   // larErr
-//   if(m_filter && (m_cutFlags & ECut_LarErr) == 0) return false;
-//   fillCutFlow(w);
-//   n_evt_larErr++;
-
-//   // tileErr
-//   if(m_filter && (m_cutFlags & ECut_TileErr) == 0) return false;
-//   fillCutFlow(w);
-//   n_evt_tileErr++;
-
-//   // Incomplete TTC event veto
-//   if(m_filter && (m_cutFlags & ECut_TTC) == 0) return false;
-//   fillCutFlow(w);
-//   n_evt_ttcVeto++;
-
-//   // primary vertex cut is actually filtered
-//   if(m_filter && (m_cutFlags & ECut_GoodVtx) == 0) return false;
-//   fillCutFlow(w);
-//   n_evt_goodVtx++;
-
-//   // Sherpa WW fix, remove radiative b-quark processes that overlap with single top
-//   //if(m_filter && m_isMC && isBuggyWWSherpaSample(d3pd.truth.channel_number()) &&
-//      //hasRadiativeBQuark(d3pd.truth.pdgId(), d3pd.truth.status())) return false;
-//   if(m_filter && m_isMC && m_susyObj.Sherpa_WW_veto(m_event.mc.n(),
-//                                                     m_event.eventinfo.mc_channel_number(),
-//                                                     m_event.mc.status(),
-//                                                     m_event.mc.pdgId(),
-//                                                     m_event.mc.charge())) return false;
-//   fillCutFlow(w);
-//   n_evt_WwSherpa++;
-
-//   // Tile trip cut
-//   if(m_filter && (m_cutFlags & ECut_TileTrip) == 0) return false;
-//   fillCutFlow(w);
-//   n_evt_tileTrip++;
 
 //   //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-//
 //   // Get Nominal Objects
@@ -1445,13 +1389,15 @@ std::string SusyNtMaker::timerSummary() /*const*/ // TStopwatch::<*>Time is not 
   int min   = int(realTime / 60);
   realTime -= min * 60;
   int sec   = int(realTime);
-  float speed = n_evt_initial/m_timer.RealTime()/1000;
+  int nEventInput = m_cutstageCounters.front();
+  int nEventOutput = m_outTree ? m_outTree->GetEntries() : -1;
+  float speed = nEventInput/m_timer.RealTime()/1000;
   TString line1; line1.Form("Real %d:%02d:%02d, CPU %.3f", hours, min, sec, cpuTime);
   TString line2; line2.Form("[kHz]: %2.3f",speed);
   ostringstream oss;
   oss<<"---------------------------------------------------\n"
-     <<" Number of events processed: "<<n_evt_initial<<endl
-     <<" Number of events saved:     "<<n_evt_saved<<endl
+     <<" Number of events processed: "<<nEventInput<<endl
+     <<" Number of events saved:     "<<nEventOutput<<endl
      <<"\t Analysis time: "<<line1<<endl
      <<"\t Analysis speed "<<line2<<endl
      <<"---------------------------------------------------"<<endl
@@ -1471,26 +1417,16 @@ std::string SusyNtMaker::counterSummary() const
      <<"  SigMuo    "<<n_sig_muo    <<endl
      <<"  SigTau    "<<n_sig_tau    <<endl
      <<"  SigJet    "<<n_sig_jet    <<endl
-     <<endl
-     <<"Event counter"<<endl
-     <<"  Initial   "<<n_evt_initial  <<endl
-     <<"  SusyProp  "<<n_evt_susyProp <<endl
-     <<"  GRL       "<<n_evt_grl      <<endl
-     <<"  LarErr    "<<n_evt_larErr   <<endl
-     <<"  TileErr   "<<n_evt_tileErr  <<endl
-     <<"  TTC Veto  "<<n_evt_ttcVeto  <<endl
-     <<"  GoodVtx   "<<n_evt_goodVtx  <<endl
-     <<"  WW Sherpa "<<n_evt_WwSherpa <<endl
-     <<"  TileTrip  "<<n_evt_tileTrip <<endl
-     <<"  LarHole   "<<n_evt_larHole  <<endl
-     <<"  HotSpot   "<<n_evt_hotSpot  <<endl
-     <<"  BadJet    "<<n_evt_badJet   <<endl
-     <<"  BadMuon   "<<n_evt_badMu    <<endl
-     <<"  Cosmic    "<<n_evt_cosmic   <<endl
-     <<"  >=1 Lep   "<<n_evt_1Lep     <<endl
-     <<"  >=2 Lep   "<<n_evt_2Lep     <<endl
-     <<"  ==3 Lep   "<<n_evt_3Lep     <<endl
      <<endl;
+
+  oss<<"Event counter"<<endl;
+  vector<string> labels = SusyNtMaker::cutflowLabels();
+  struct shorter { bool operator()(const string &a, const string &b) { return a.size() < b.size(); } };
+  size_t max_label_length = max_element(labels.begin(), labels.end(), shorter())->size();
+
+  for(size_t i=0; i<m_cutstageCounters.size(); ++i)
+      oss<<"  "<<setw(max_label_length+2)<<std::left<<labels[i]<<m_cutstageCounters[i]<<endl;
+  oss<<endl;
   return oss.str();
 }
 //----------------------------------------------------------
@@ -1504,12 +1440,15 @@ bool SusyNtMaker::passEventlevelSelection()
         int iCut; ///< index of the sequential cut (must match bin labels, see SusyNtMaker::makeCutFlow())
         bool passAll; ///< whether we've survived all cuts so far
         bool includeThisCut_; ///< whether this cut should be used when computing passAll
-        FillCutFlow(TH1 *r, TH1* g, TH1* p) : raw(r), gen(g), perProcess(p), iCut(0), passAll(true), includeThisCut_(true) {}
+        vector< size_t > *counters;
+        FillCutFlow(TH1 *r, TH1* g, TH1* p, vector< size_t > *cs) :
+            raw(r), gen(g), perProcess(p), iCut(0), passAll(true), includeThisCut_(true), counters(cs) {}
         void operator()(bool thisEventDoesPassThisCut, float weight) {
             if(thisEventDoesPassThisCut && passAll) {
                 if(raw       ) raw       ->Fill(iCut);
                 if(gen       ) gen       ->Fill(iCut, weight);
                 if(perProcess) perProcess->Fill(iCut, weight);
+                counters->at(iCut) += 1;
             } else {
                 if(includeThisCut_) passAll = false;
             }
@@ -1517,15 +1456,14 @@ bool SusyNtMaker::passEventlevelSelection()
         }
         FillCutFlow& includeThisCut(bool v) { includeThisCut_ = v; return *this; }
     }
-    fillCutFlow(h_rawCutFlow, h_genCutFlow, h_procCutFlow);
+    fillCutFlow(h_rawCutFlow, h_genCutFlow, h_procCutFlow, &m_cutstageCounters);
 
     bool keep_all_events(!m_filter);
     bool pass_susyprop(!m_hasSusyProp);
     bool pass_grl(m_cutFlags & ECut_GRL), pass_lar(m_cutFlags & ECut_LarErr), pass_tile(m_cutFlags & ECut_TileErr);
     bool pass_ttc(m_cutFlags & ECut_TTC), pass_goodpv(m_cutFlags & ECut_GoodVtx), pass_tiletrip(m_cutFlags & ECut_TileTrip);
-    //bool pass_sherpawwbugfix(!m_isMC || (m_susyObj.Sherpa_WW_veto())); // DG-2014-08-16 probably obsolete
+    bool pass_wwfix(true); //(!m_isMC || (m_susyObj.Sherpa_WW_veto())); // DG-2014-08-16 sherpa ww bugfix probably obsolete
 
-    n_evt_initial++;  // DG-2014-08-16 most of these counters are now broken; \todo re-implemement them as vec<size_t>
     fillCutFlow(true, w); // initial bin
     fillCutFlow.includeThisCut(false); // susyProp just counts (for normalization), doesn't drop
     fillCutFlow(pass_susyprop, w);
@@ -1535,6 +1473,7 @@ bool SusyNtMaker::passEventlevelSelection()
     fillCutFlow(pass_tile, w);
     fillCutFlow(pass_ttc, w);
     fillCutFlow(pass_goodpv, w);
+    fillCutFlow(pass_wwfix, w);
     return (keep_all_events || fillCutFlow.passAll);
 }
 //----------------------------------------------------------
