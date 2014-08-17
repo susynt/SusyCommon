@@ -56,7 +56,7 @@ class XaodAnalysis : public TSelector
     /**
       \todo: all these xaod getters should be cached (if they are a bottleneck) DG-2014-08-16 to be checked
      */
-    virtual xAOD::EventInfo* xaodEventInfo();
+    virtual const xAOD::EventInfo* xaodEventInfo();
     /// access the default collection of muons from the D3PDReader
     /**
        By default this function returns a pointer to

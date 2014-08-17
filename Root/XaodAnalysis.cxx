@@ -146,9 +146,9 @@ XaodAnalysis& XaodAnalysis::initSusyTools()
   return *this;
 }
 //----------------------------------------------------------
-xAOD::EventInfo* XaodAnalysis::xaodEventInfo()
+const xAOD::EventInfo* XaodAnalysis::xaodEventInfo()
 {
-    xAOD::EventInfo* evt = NULL;
+    const xAOD::EventInfo* evt = NULL;
     m_event.retrieve(evt, "EventInfo");
     if(m_dbg){
         if(evt) cout<<"XaodAnalysis::xaodEventInfo: retrieved"<<endl;
@@ -788,9 +788,10 @@ bool XaodAnalysis::passTTCVeto()
 //----------------------------------------------------------
 bool XaodAnalysis::passTileErr(const xAOD::EventInfo* eventinfo)
 {
-	bool eventPassesTileTrip = m_susyObj.m_SUSYObjDef->IsTileTrip(eventinfo->runNumber(),
-                                                                  eventinfo->lumiBlock(),
-                                                                  eventinfo->eventNumber());
+	bool eventPassesTileTrip = (m_isMC ||
+                                m_susyObj.m_SUSYObjDef->IsTileTrip(eventinfo->runNumber(),
+                                                                   eventinfo->lumiBlock(),
+                                                                   eventinfo->eventNumber()));
     return eventPassesTileTrip;
 }
 //----------------------------------------------------------

@@ -1458,6 +1458,7 @@ bool SusyNtMaker::passEventlevelSelection()
     }
     fillCutFlow(h_rawCutFlow, h_genCutFlow, h_procCutFlow, &m_cutstageCounters);
 
+    assignEventCleaningFlags();
     bool keep_all_events(!m_filter);
     bool pass_susyprop(!m_hasSusyProp);
     bool pass_grl(m_cutFlags & ECut_GRL), pass_lar(m_cutFlags & ECut_LarErr), pass_tile(m_cutFlags & ECut_TileErr);
@@ -1479,6 +1480,9 @@ bool SusyNtMaker::passEventlevelSelection()
 //----------------------------------------------------------
 bool SusyNtMaker::passObjectlevelSelection()
 {
+    // selectObjects(sys);
+    // buildMet(sys);
+    // assignObjectCleaningFlags();
     return true;
 }
 //----------------------------------------------------------
