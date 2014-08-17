@@ -148,33 +148,111 @@ XaodAnalysis& XaodAnalysis::initSusyTools()
 //----------------------------------------------------------
 xAOD::EventInfo* XaodAnalysis::xaodEventInfo()
 {
-    xAOD::EventInfo* eventinfo = NULL;
-    m_event.retrieve(eventinfo, "EventInfo");
-    return eventinfo;
+    xAOD::EventInfo* evt = NULL;
+    m_event.retrieve(evt, "EventInfo");
+    if(m_dbg){
+        if(evt) cout<<"XaodAnalysis::xaodEventInfo: retrieved"<<endl;
+        else    cout<<"XaodAnalysis::xaodEventInfo: failed"<<endl;
+    }
+    return evt;
 }
 //----------------------------------------------------------
 xAOD::MuonContainer* XaodAnalysis::xaodMuons()
 {
-    //return &m_event.mu_staco;  TODO
-    return 0;
+    /*const*/ xAOD::MuonContainer* muo = 0;
+    m_event.retrieve(muo, "Muons");
+    //std::pair< xAOD::MuonContainer*, xAOD::ShallowAuxContainer* > muons_shallowCopy = xAOD::shallowCopyContainer( *muons );
+    if(m_dbg){
+        if(muo) cout<<"XaodAnalysis::xaodElectrons: retrieved "<<muo->size()<<endl;
+        else    cout<<"XaodAnalysis::xaodElectrons: failed"<<endl;
+    }
+    return muo;
 }
 //----------------------------------------------------------
 xAOD::ElectronContainer* XaodAnalysis::xaodElectrons()
 {
-    //return &m_event.el; TODO
-    return 0;
+    /*const*/ xAOD::ElectronContainer* ele = 0;
+    m_event.retrieve(ele, "ElectronCollection");
+    if(m_dbg){
+        if(ele) cout<<"XaodAnalysis::xaodElectrons: retrieved "<<ele->size()<<endl;
+        else    cout<<"XaodAnalysis::xaodElectrons: failed"<<endl;
+    }
+    return ele;
 }
 //----------------------------------------------------------
-xAOD::TauJetContainer* XaodAnalysis::xaodTaus()
+const xAOD::TauJetContainer* XaodAnalysis::xaodTaus()
 {
-    //return &m_event.tau; TODO
-    return 0;
+    const xAOD::TauJetContainer* tau = 0;
+    m_event.retrieve(tau, "TauRecContainer");
+    //std::pair< xAOD::TauJetContainer*, xAOD::ShallowAuxContainer* > taus_shallowCopy = xAOD::shallowCopyContainer( *taus );
+    if(m_dbg){
+        if(tau) cout<<"XaodAnalysis::xaodTaus: retrieved "<<tau->size()<<endl;
+        else    cout<<"XaodAnalysis::xaodTaus: failed"<<endl;
+    }
+    return tau;
 }
 //----------------------------------------------------------
-xAOD::JetContainer* XaodAnalysis::xaodJets()
+const xAOD::JetContainer* XaodAnalysis::xaodJets()
 {
-    //return &m_event.jet_AntiKt4LCTopo; TODO
-    return 0;
+    const xAOD::JetContainer* jet = 0;
+    m_event.retrieve(jet, "AntiKt4LCTopoJets");
+    if(m_dbg){
+        if(jet) cout<<"XaodAnalysis::xaodJets: retrieved "<<jet->size()<<endl;
+        else    cout<<"XaodAnalysis::xaodJets: failed"<<endl;
+    }
+    //std::pair< xAOD::JetContainer*, xAOD::ShallowAuxContainer* > jets_shallowCopy = xAOD::shallowCopyContainer( *jets );
+    return jet;
+}
+//----------------------------------------------------------
+const xAOD::PhotonContainer* XaodAnalysis::xaodPhothons()
+{
+    const xAOD::PhotonContainer* photons = 0;
+    m_event.retrieve(photons, "PhotonCollection");
+    // std::pair< xAOD::PhotonContainer*, xAOD::ShallowAuxContainer* > photons_shallowCopy = xAOD::shallowCopyContainer( *photons );
+    if(m_dbg){
+        if(photons) cout<<"XaodAnalysis::xaodPhotons: retrieved "<<photons->size()<<endl;
+        else        cout<<"XaodAnalysis::xaodPhotons: failed"<<endl;
+    }
+    return photons;
+}
+//----------------------------------------------------------
+const xAOD::TruthEventContainer* XaodAnalysis::xaodTruthEvent()
+{
+    const xAOD::TruthEventContainer* truth = 0;
+    m_event.retrieve(truth, "TruthEvent");
+    if(m_dbg){
+        if(truth) cout<<"XaodAnalysis::xaodPhotons: retrieved "<<endl;
+        else      cout<<"XaodAnalysis::xaodPhotons: failed"<<endl;
+    }
+    return truth;
+}
+//----------------------------------------------------------
+const xAOD::TruthParticleContainer* XaodAnalysis::xaodTruthParticles()
+{
+    const xAOD::TruthParticleContainer* truthP = 0;
+    m_event.retrieve(truthP, "TruthParticle");
+    if(m_dbg){
+        if(truthP) cout<<"XaodAnalysis::xaodTruthParticles: retrieved "<<truthP->size()<<endl;
+        else       cout<<"XaodAnalysis::xaodTruthParticles: failed"<<endl;
+    }
+    return truthP;
+}
+//----------------------------------------------------------
+void XaodAnalysis::clearShallowCopies()
+{
+/// \todo
+/*
+    delete jets_shallowCopy.first;
+    delete jets_shallowCopy.second;
+    delete taus_shallowCopy.first;
+    delete taus_shallowCopy.second;
+    delete muons_shallowCopy.first;
+    delete muons_shallowCopy.second;
+    delete electrons_shallowCopy.first;
+    delete electrons_shallowCopy.second;
+    delete photons_shallowCopy.first;
+    delete photons_shallowCopy.second;
+*/
 }
 //----------------------------------------------------------
 SystErr::Syste ntsys2systerr(const SusyNtSys &s)
@@ -212,7 +290,7 @@ void XaodAnalysis::selectBaselineObjects(SusyNtSys sys)
   if(m_dbg>=5) cout << "selectBaselineObjects" << endl;
   vector<int> goodJets;  // What the hell is this??
   SystErr::Syste susySys = ntsys2systerr(sys);
-  xAOD::JetContainer *jets = xaodJets();
+  const xAOD::JetContainer *jets = xaodJets();
   // Container object selection
   //-DG-if(m_selectTaus) m_contTaus = get_taus_baseline(xaodTaus(), m_susyObj, 20.*GeV, 2.47,
   //-DG-                                                SUSYTau::TauNone, SUSYTau::TauNone, SUSYTau::TauNone,
@@ -249,7 +327,7 @@ void XaodAnalysis::selectBaselineObjects(SusyNtSys sys)
 /*--------------------------------------------------------------------------------*/
 void XaodAnalysis::performOverlapRemoval()
 {
-  xAOD::JetContainer *jets = xaodJets();
+  const xAOD::JetContainer *jets = xaodJets();
 //-DG-  // e-e overlap removal
 //-DG-  m_baseElectrons = overlap_removal(m_susyObj, xaodElectrons(), m_preElectrons, xaodElectrons(), m_preElectrons,
 //-DG-                                    0.05, true, true);
@@ -759,7 +837,7 @@ bool XaodAnalysis::passTileHotSpot()
 //----------------------------------------------------------
 bool XaodAnalysis::passBadJet()
 {
-  xAOD::JetContainer *jets =  xaodJets();
+  const xAOD::JetContainer *jets =  xaodJets();
   return false;
 //  return !IsBadJetEvent(jets, m_baseJets, 20.*GeV, m_susyObj);
 }

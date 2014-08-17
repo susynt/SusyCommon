@@ -26,6 +26,8 @@
 #include "xAODEgamma/PhotonContainer.h"
 #include "xAODTau/TauJetContainer.h"
 #include "xAODJet/JetContainer.h"
+#include "xAODTruth/TruthParticleContainer.h"
+#include "xAODTruth/TruthEventContainer.h"
 
 
 namespace susy {
@@ -62,6 +64,8 @@ class XaodAnalysis : public TSelector
        accessing directly m_event.mu_staco), one can decide to
        override this member function, and easily switch to another
        muon collection.
+       In addition we can call here all the functions needed to access
+       the auxilliary information.
      */
     virtual xAOD::MuonContainer* xaodMuons();
     /// access the default collection of electrons from the D3PDReader
@@ -74,13 +78,21 @@ class XaodAnalysis : public TSelector
     /**
        By default returns m_event.tau; for its motivation, see XaodAnalysis::xaodMuons().
      */
-    virtual xAOD::TauJetContainer* xaodTaus();
+    virtual const xAOD::TauJetContainer* xaodTaus();
     /// access the default collection of jets from the D3PDReader
     /**
        By default returns m_event.jet_AntiKt4LCTopo; for its motivation, see XaodAnalysis::xaodMuons().
        \todo In this case there might be some ambiguity to be sorted out when calling SUSYObjDef::GetMET().
      */
-    virtual xAOD::JetContainer* xaodJets();
+    virtual const xAOD::JetContainer* xaodJets();
+    /// access the default collection of photons
+    virtual const xAOD::PhotonContainer* xaodPhothons();
+    /// access the truth event
+    virtual const xAOD::TruthEventContainer* xaodTruthEvent();
+    /// access the truth particles
+    virtual const xAOD::TruthParticleContainer* xaodTruthParticles();
+    /// delete the objects created when accessing the aux info with shallow copies
+    void clearShallowCopies();
 
 
     //
