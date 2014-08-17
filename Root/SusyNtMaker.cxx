@@ -199,56 +199,12 @@ bool SusyNtMaker::selectEvent()
   if(m_dbg>=5) cout << "selectEvent" << endl;
   clearObjects();
   m_susyNt.clear();
-
-  return false;
+  return (passEventlevelSelection() &&
+          passObjectlevelSelection());
 }
 // bool SusyNtMaker::selectEvent()
 // {
-//   if(m_dbg>=5) cout << "selectEvent" << endl;
-//   clearObjects();
-//   m_susyNt.clear();
 
-
-//   // Dynamically determine if SUSY sample by looking for sparticle branches
-//   bool isSusySample = m_event.SUSY.Spart1_pdgId.IsAvailable() &&
-//                       m_event.SUSY.Spart2_pdgId.IsAvailable() &&
-//                       m_event.SUSY.Spart1_pdgId() != 0        &&
-//                       m_event.SUSY.Spart2_pdgId() != 0;
-
-//   // Susy final state - NOTE: DEFAULT VALUE CHANGED FROM -1 TO 0
-//   m_susyFinalState = isSusySample ? m_susyObj.finalState(m_event.SUSY.Spart1_pdgId(), m_event.SUSY.Spart2_pdgId()) : 0;
-//   m_hDecay = smc::kUnknown;
-//   if(m_isWhSample) m_hDecay = WhTruthExtractor().update(m_event.mc.pdgId(),
-//                                                         m_event.mc.child_index(),
-//                                                         m_event.mc.parent_index());
-
-//   // This assumes that sparticle branches are present for any
-//   // sample that might have the SUSY propagators problem
-//   m_hasSusyProp = ((isSusySample && isSimplifiedModel(m_sample)) ?
-//                    SusyNtTools::eventHasSusyPropagators(*m_event.mc.pdgId(),
-//                                                         *m_event.mc.parent_index()) :
-//                    false);
-
-//   // It should be safe to always do procCutFlow, not just for susy samples.
-//   // This way we can eventually drop the genCutFlow and just rely on procCutFlow
-//   //TH1F* h_procCutFlow = m_isSusySample ? getProcCutFlow(m_susyFinalState) : 0;
-//   TH1F* h_procCutFlow = getProcCutFlow(m_susyFinalState);
-//   float w = m_isMC? eventinfo->mc_event_weight() : 1;
-
-//   struct FillCutFlow { ///< local function object to fill the cutflow histograms
-//       FillCutFlow(TH1 *r, TH1* g, TH1* p) : raw(r), gen(g), perProcess(p), iCut(0) {}
-//       void operator()(float weight) {
-//           if(raw       ) raw       ->Fill(iCut);
-//           if(gen       ) gen       ->Fill(iCut, weight);
-//           if(perProcess) perProcess->Fill(iCut, weight);
-//           iCut++;
-//       }
-//       TH1 *raw, *gen, *perProcess; ///< histos with counters
-//       int iCut; ///< index of the sequential cut (note that this depends on the binning of the counter histos)
-//   } fillCutFlow(h_rawCutFlow, h_genCutFlow, h_procCutFlow);
-
-//   n_evt_initial++;
-//   fillCutFlow(w);
 
 //   //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-//
 //   // Obj Independent checks
@@ -451,7 +407,7 @@ void SusyNtMaker::fillEventVars()
 
   evt->isMC             = m_isMC;
   evt->mcChannel        = m_isMC? eventinfo->mcChannelNumber() : 0;
-  evt->w                = m_isMC? eventinfo->mcEventWeight()   : 1; // \todo DG this now had an arg, is 0 the right one?
+  evt->w                = m_isMC? eventinfo->mcEventWeight()   : 1; // \todo DG this now has an arg, is 0 the right one?
   //evt->larError         = m_event.eventinfo.larError();  // \todo DG still relevant?
 
   evt->nVtx             = getNumGoodVtx();
@@ -1538,5 +1494,53 @@ std::string SusyNtMaker::counterSummary() const
   return oss.str();
 }
 //----------------------------------------------------------
+bool SusyNtMaker::passEventlevelSelection()
+{
+    TH1F* h_procCutFlow = getProcCutFlow(m_susyFinalState);
+    float w = 1.0; // DG-2014-08-16, not available yet in xAOD??? \todo m_isMC? d3pd.truth.event_weight() : 1;
 
+    struct FillCutFlow { ///< local function object to fill the cutflow histograms
+        TH1 *raw, *gen, *perProcess; ///< ptr to histos with counters
+        int iCut; ///< index of the sequential cut (must match bin labels, see SusyNtMaker::makeCutFlow())
+        bool passAll; ///< whether we've survived all cuts so far
+        bool includeThisCut_; ///< whether this cut should be used when computing passAll
+        FillCutFlow(TH1 *r, TH1* g, TH1* p) : raw(r), gen(g), perProcess(p), iCut(0), passAll(true), includeThisCut_(true) {}
+        void operator()(bool thisEventDoesPassThisCut, float weight) {
+            if(thisEventDoesPassThisCut && passAll) {
+                if(raw       ) raw       ->Fill(iCut);
+                if(gen       ) gen       ->Fill(iCut, weight);
+                if(perProcess) perProcess->Fill(iCut, weight);
+            } else {
+                if(includeThisCut_) passAll = false;
+            }
+            iCut++;
+        }
+        FillCutFlow& includeThisCut(bool v) { includeThisCut_ = v; return *this; }
+    }
+    fillCutFlow(h_rawCutFlow, h_genCutFlow, h_procCutFlow);
+
+    bool keep_all_events(!m_filter);
+    bool pass_susyprop(!m_hasSusyProp);
+    bool pass_grl(m_cutFlags & ECut_GRL), pass_lar(m_cutFlags & ECut_LarErr), pass_tile(m_cutFlags & ECut_TileErr);
+    bool pass_ttc(m_cutFlags & ECut_TTC), pass_goodpv(m_cutFlags & ECut_GoodVtx), pass_tiletrip(m_cutFlags & ECut_TileTrip);
+    //bool pass_sherpawwbugfix(!m_isMC || (m_susyObj.Sherpa_WW_veto())); // DG-2014-08-16 probably obsolete
+
+    n_evt_initial++;  // DG-2014-08-16 most of these counters are now broken; \todo re-implemement them as vec<size_t>
+    fillCutFlow(true, w); // initial bin
+    fillCutFlow.includeThisCut(false); // susyProp just counts (for normalization), doesn't drop
+    fillCutFlow(pass_susyprop, w);
+    fillCutFlow.includeThisCut(true);
+    fillCutFlow(pass_grl, w);
+    fillCutFlow(pass_lar, w);
+    fillCutFlow(pass_tile, w);
+    fillCutFlow(pass_ttc, w);
+    fillCutFlow(pass_goodpv, w);
+    return (keep_all_events || fillCutFlow.passAll);
+}
+//----------------------------------------------------------
+bool SusyNtMaker::passObjectlevelSelection()
+{
+    return true;
+}
+//----------------------------------------------------------
 #undef GeV

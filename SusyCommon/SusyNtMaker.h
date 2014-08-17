@@ -35,8 +35,26 @@ class SusyNtMaker : public XaodAnalysis
     // Terminate is called after looping is finished
     virtual void    Terminate();
 
-    // Event selection - loose object/event cuts for filling tree
+    /// whether this event should be written to the output
+    /**
+       This selection includes the event-level criteria and the
+       object-level ones
+    */
     virtual bool    selectEvent();
+    /// whether this event passes the event-level criteria
+    /**
+       These are the criteria that only depend on flags, and not on
+       objects. Also increment the counters/histos used for
+       bookkeeping and normalization.
+     */
+    virtual bool passEventlevelSelection();
+    /// whether this event passes the object-level criteria
+    /**
+       These are the criteria that depend on the reconstructed
+       objects. Also increment the counters/histos used for
+       bookkeeping and normalization.
+     */
+    virtual bool passObjectlevelSelection();
 
     // Initialize a cutflow histo
     TH1F* makeCutFlow(const char* name, const char* title);
