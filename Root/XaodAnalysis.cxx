@@ -100,8 +100,7 @@ Bool_t XaodAnalysis::Process(Long64_t entry)
   chainEntry++;
   if(m_dbg || chainEntry%10000==0)
   {
-      const xAOD::EventInfo* eventinfo = 0;
-      m_event.retrieve(eventinfo, "EventInfo");
+      const xAOD::EventInfo* eventinfo = xaodEventInfo();
       cout<<"run "<<eventinfo->eventNumber()<<" event "<<eventinfo->runNumber()<<endl;
   }
   // Object selection
@@ -145,6 +144,13 @@ XaodAnalysis& XaodAnalysis::initSusyTools()
       cout<<"XaodAnalysis::initSusyTools: SUSYObjDef_xAOD initialized... "<<endl;
   }
   return *this;
+}
+//----------------------------------------------------------
+xAOD::EventInfo* XaodAnalysis::xaodEventInfo()
+{
+    xAOD::EventInfo* eventinfo = NULL;
+    m_event.retrieve(eventinfo, "EventInfo");
+    return eventinfo;
 }
 //----------------------------------------------------------
 xAOD::MuonContainer* XaodAnalysis::xaodMuons()
@@ -690,29 +696,29 @@ XaodAnalysis& XaodAnalysis::setGRLFile(TString fileName)
     m_grlFileName = fileName; return *this;
 }
 //----------------------------------------------------------
-bool XaodAnalysis::passGRL()
+bool XaodAnalysis::passGRL(const xAOD::EventInfo* eventinfo)
 {
-      const xAOD::EventInfo* eventinfo = 0;
-      m_event.retrieve(eventinfo, "EventInfo");
     return (m_isMC ||
             m_grl->passRunLB(eventinfo->eventNumber(), eventinfo->runNumber()));
 }
 //----------------------------------------------------------
 bool XaodAnalysis::passTTCVeto()
 {
-    return false;
+    return true; // DG-2014-08-16 \todo
     //   return (m_event.eventinfo.coreFlags() & 0x40000) == 0;
 }
 //----------------------------------------------------------
-bool XaodAnalysis::passTileErr()
+bool XaodAnalysis::passTileErr(const xAOD::EventInfo* eventinfo)
 {
-    return false;
-//    return m_isMC || (m_event.eventinfo.tileError()!=2);
+	bool eventPassesTileTrip = m_susyObj.m_SUSYObjDef->IsTileTrip(eventinfo->runNumber(),
+                                                                  eventinfo->lumiBlock(),
+                                                                  eventinfo->eventNumber());
+    return eventPassesTileTrip;
 }
 //----------------------------------------------------------
 bool XaodAnalysis::passLarErr()
 {
-    return false;
+    return true; // DG-2014-08-16 \todo
 //    return m_isMC || (m_event.eventinfo.larError()!=2);
 }
 /*--------------------------------------------------------------------------------*/
@@ -720,12 +726,13 @@ bool XaodAnalysis::passLarErr()
 /*--------------------------------------------------------------------------------*/
 void XaodAnalysis::assignEventCleaningFlags()
 {
-  if(passGRL())      m_cutFlags |= ECut_GRL;
-  if(passTTCVeto())  m_cutFlags |= ECut_TTC;
-  if(passLarErr())   m_cutFlags |= ECut_LarErr;
-  if(passTileErr())  m_cutFlags |= ECut_TileErr;
-  if(passGoodVtx())  m_cutFlags |= ECut_GoodVtx;
-  if(passTileTrip()) m_cutFlags |= ECut_TileTrip;
+    const xAOD::EventInfo* eventinfo = xaodEventInfo();
+    if(passGRL(eventinfo))      m_cutFlags |= ECut_GRL;
+    if(passTTCVeto())           m_cutFlags |= ECut_TTC;
+    if(passLarErr())            m_cutFlags |= ECut_LarErr;
+    if(passTileErr(eventinfo))  m_cutFlags |= ECut_TileErr;
+    if(passGoodVtx())           m_cutFlags |= ECut_GoodVtx;
+    if(passTileTrip())          m_cutFlags |= ECut_TileTrip;
 }
 //----------------------------------------------------------
 void XaodAnalysis::assignObjectCleaningFlags()
@@ -759,7 +766,7 @@ bool XaodAnalysis::passBadJet()
 //----------------------------------------------------------
 bool XaodAnalysis::passGoodVtx()
 {
-    return false;
+    return true; // DG-2014-08-16 \todo
 //  return PrimaryVertexCut(m_susyObj, &m_event.vxp);
 }
 //----------------------------------------------------------

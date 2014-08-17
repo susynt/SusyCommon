@@ -50,6 +50,11 @@ class XaodAnalysis : public TSelector
     virtual XaodAnalysis& setDebug(int debugLevel) { m_dbg = debugLevel; return *this; }
     XaodAnalysis& initSusyTools(); ///< initialize SUSYObjDef_xAOD
     bool processingMc12b() const { return m_mcProd == MCProd_MC12b; }
+    /// access the event info
+    /**
+      \todo: all these xaod getters should be cached (if they are a bottleneck) DG-2014-08-16 to be checked
+     */
+    virtual xAOD::EventInfo* xaodEventInfo();
     /// access the default collection of muons from the D3PDReader
     /**
        By default this function returns a pointer to
@@ -136,9 +141,9 @@ class XaodAnalysis : public TSelector
     XaodAnalysis& setGRLFile(TString fileName);
     static std::string defauldGrlFile();
     bool initGrlTool();
-    bool passGRL();
+    bool passGRL(const xAOD::EventInfo* eventinfo); ///< good run list
     bool passTTCVeto(); ///< incomplete TTC event veto
-    bool passTileErr(); ///< Tile error
+    bool passTileErr(const xAOD::EventInfo* eventinfo); ///< Tile error
     bool passLarErr(); ///< lar error
 
     bool passLarHoleVeto(); ///< lar hole veto
