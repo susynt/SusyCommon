@@ -263,8 +263,8 @@ int main(int argc, char** argv)
 
   // MC production campaign
   MCProduction mcProd = MCProd_Unknown;
-  if(mcProdStr.CompareTo("mc12a", TString::kIgnoreCase)==0) mcProd = MCProd_MC12a;
-  else if(mcProdStr.CompareTo("mc12b", TString::kIgnoreCase)==0) mcProd = MCProd_MC12b;
+  if(mcProdStr.EqualTo("mc12a", TString::kIgnoreCase)) mcProd = MCProd_MC12a;
+  else if(mcProdStr.EqualTo("mc12b", TString::kIgnoreCase)) mcProd = MCProd_MC12b;
   susyAna->setMCProduction(mcProd);
 
   // Run the job
