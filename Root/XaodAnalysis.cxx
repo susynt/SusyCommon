@@ -219,12 +219,14 @@ const xAOD::PhotonContainer* XaodAnalysis::xaodPhothons()
 {
     const xAOD::PhotonContainer* photons = 0;
     m_event.retrieve(photons, "PhotonCollection");
-    // std::pair< xAOD::PhotonContainer*, xAOD::ShallowAuxContainer* > photons_shallowCopy = xAOD::shallowCopyContainer( *photons );
     if(m_dbg){
         if(photons) cout<<"XaodAnalysis::xaodPhotons: retrieved "<<photons->size()<<endl;
         else        cout<<"XaodAnalysis::xaodPhotons: failed"<<endl;
     }
-    return photons;
+    std::pair<xAOD::PhotonContainer*, xAOD::ShallowAuxContainer*> photons_with_shallow = xAOD::shallowCopyContainer(*photons);
+    m_xaodPhotons = photons_with_shallow.first;
+    m_xaodPhotonsAux = photons_with_shallow.second;
+    return m_xaodPhotons;
 }
 //----------------------------------------------------------
 const xAOD::TruthEventContainer* XaodAnalysis::xaodTruthEvent()
