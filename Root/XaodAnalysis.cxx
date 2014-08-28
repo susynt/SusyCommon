@@ -187,16 +187,18 @@ xAOD::ElectronContainer* XaodAnalysis::xaodElectrons()
     return m_xaodElectrons;
 }
 //----------------------------------------------------------
-const xAOD::TauJetContainer* XaodAnalysis::xaodTaus()
+xAOD::TauJetContainer* XaodAnalysis::xaodTaus()
 {
     const xAOD::TauJetContainer* tau = 0;
     m_event.retrieve(tau, "TauRecContainer");
-    //std::pair< xAOD::TauJetContainer*, xAOD::ShallowAuxContainer* > taus_shallowCopy = xAOD::shallowCopyContainer( *taus );
+    std::pair<xAOD::TauJetContainer*, xAOD::ShallowAuxContainer*> taus_with_shallow = xAOD::shallowCopyContainer(*tau);
     if(m_dbg){
         if(tau) cout<<"XaodAnalysis::xaodTaus: retrieved "<<tau->size()<<endl;
         else    cout<<"XaodAnalysis::xaodTaus: failed"<<endl;
     }
-    return tau;
+    m_xaodTaus = taus_with_shallow.first;
+    m_xaodTausAux = taus_with_shallow.second;
+    return m_xaodTaus;
 }
 //----------------------------------------------------------
 const xAOD::JetContainer* XaodAnalysis::xaodJets()

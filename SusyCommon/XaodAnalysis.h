@@ -79,7 +79,7 @@ class XaodAnalysis : public TSelector
     /**
        By default returns m_event.tau; for its motivation, see XaodAnalysis::xaodMuons().
      */
-    virtual const xAOD::TauJetContainer* xaodTaus();
+    virtual xAOD::TauJetContainer* xaodTaus();
     /// access the default collection of jets from the D3PDReader
     /**
        By default returns m_event.jet_AntiKt4LCTopo; for its motivation, see XaodAnalysis::xaodMuons().
@@ -361,6 +361,8 @@ class XaodAnalysis : public TSelector
     xAOD::ShallowAuxContainer* m_xaodMuonsAux; ///< muon aux info
     xAOD::ElectronContainer* m_xaodElectrons;
     xAOD::ShallowAuxContainer* m_xaodElectronsAux; ///< electron aux info
+    xAOD::TauJetContainer* m_xaodTaus;
+    xAOD::ShallowAuxContainer* m_xaodTausAux; ///< tau aux info
     XaodAnalysis& deleteShallowCopies();
 };
 
