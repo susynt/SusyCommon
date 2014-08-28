@@ -46,23 +46,24 @@ XaodAnalysis::XaodAnalysis() :
 //        m_pileup_dn(0),
 //        m_susyXsec(0),
 //        m_hforTool(),
-        m_susyObj("SUSYObjDef_xAOD"),
         m_grl(NULL),
         m_tree(NULL),
         m_entry(0),
         m_dbg(0),
         m_isMC(false),
         m_flagsAreConsistent(false),
-    m_flagsHaveBeenChecked(false),
-    m_event(xAOD::TEvent::kClassAccess)
+        m_flagsHaveBeenChecked(false),
+        m_event(xAOD::TEvent::kClassAccess),
+        m_store(),
+        m_susyObj("SUSYObjDef_xAOD")
 {
 }
 //----------------------------------------------------------
 void XaodAnalysis::Init(TTree *tree)
 {
+    cout<<"calling xAOD::Init"<<endl;
    xAOD::Init("susy::XaodAnalysis");
    m_event.readFrom(tree);
-   //xAOD::TStore store; // DG-2014-08-15 I think this is needed only to output xaod
    m_isMC = XaodAnalysis::isSimuFromSamplename(m_sample);
    bool isData = XaodAnalysis::isDataFromSamplename(m_sample);
    m_stream = XaodAnalysis::streamFromSamplename(m_sample, isData);
@@ -105,7 +106,8 @@ Bool_t XaodAnalysis::Process(Long64_t entry)
   }
   // Object selection
   clearObjects();
-  selectObjects();
+  SusyNtSys sys = NtSys_NOM;
+  selectObjects(sys);
   buildMet();
   return kTRUE;
 }
@@ -163,21 +165,24 @@ xAOD::MuonContainer* XaodAnalysis::xaodMuons()
     m_event.retrieve(muo, "Muons");
     //std::pair< xAOD::MuonContainer*, xAOD::ShallowAuxContainer* > muons_shallowCopy = xAOD::shallowCopyContainer( *muons );
     if(m_dbg){
-        if(muo) cout<<"XaodAnalysis::xaodElectrons: retrieved "<<muo->size()<<endl;
-        else    cout<<"XaodAnalysis::xaodElectrons: failed"<<endl;
+        if(muo) cout<<"XaodAnalysis::xaodMuons: retrieved "<<muo->size()<<endl;
+        else    cout<<"XaodAnalysis::xaodMuons: failed"<<endl;
     }
     return muo;
 }
 //----------------------------------------------------------
 xAOD::ElectronContainer* XaodAnalysis::xaodElectrons()
 {
-    /*const*/ xAOD::ElectronContainer* ele = 0;
+    const xAOD::ElectronContainer* ele = 0;
     m_event.retrieve(ele, "ElectronCollection");
     if(m_dbg){
         if(ele) cout<<"XaodAnalysis::xaodElectrons: retrieved "<<ele->size()<<endl;
         else    cout<<"XaodAnalysis::xaodElectrons: failed"<<endl;
     }
-    return ele;
+    std::pair<xAOD::ElectronContainer*, xAOD::ShallowAuxContainer*> elec_with_shallow = xAOD::shallowCopyContainer(*ele);
+    m_xaodElectrons = elec_with_shallow.first;
+    m_xaodElectronsAux = elec_with_shallow.second;
+    return m_xaodElectrons;
 }
 //----------------------------------------------------------
 const xAOD::TauJetContainer* XaodAnalysis::xaodTaus()
@@ -257,7 +262,7 @@ void XaodAnalysis::clearShallowCopies()
 //----------------------------------------------------------
 SystErr::Syste ntsys2systerr(const SusyNtSys &s)
 {
-    SystErr::Syste sys = SystErr::NONE;    
+    SystErr::Syste sys = SystErr::NONE;
     switch(s){
     case NtSys_NOM :                                     break; // No need to check needlessly
         //case NtSys_EES_UP : sys = SystErr::EESUP;        break; // E scale up
@@ -278,7 +283,7 @@ SystErr::Syste ntsys2systerr(const SusyNtSys &s)
     case NtSys_ID_DN      : sys = SystErr::MIDLOW;     break; // ID scale down
     case NtSys_JES_UP     : sys = SystErr::JESUP;      break; // JES up
     case NtSys_JES_DN     : sys = SystErr::JESDOWN;    break; // JES down
-    case NtSys_JER        : sys = SystErr::JER;        break; // JER (gaussian)        
+    case NtSys_JER        : sys = SystErr::JER;        break; // JER (gaussian)
     case NtSys_TES_UP     : sys = SystErr::TESUP;      break; // TES up
     case NtSys_TES_DN     : sys = SystErr::TESDOWN;    break; // TES down
     }
@@ -287,10 +292,29 @@ SystErr::Syste ntsys2systerr(const SusyNtSys &s)
 //----------------------------------------------------------
 void XaodAnalysis::selectBaselineObjects(SusyNtSys sys)
 {
-  if(m_dbg>=5) cout << "selectBaselineObjects" << endl;
-  vector<int> goodJets;  // What the hell is this??
-  SystErr::Syste susySys = ntsys2systerr(sys);
-  const xAOD::JetContainer *jets = xaodJets();
+    if(m_dbg>=5) cout << "selectBaselineObjects" << endl;
+    SystErr::Syste susySys = ntsys2systerr(sys);
+    const xAOD::JetContainer *jets = xaodJets();
+
+    xAOD::ElectronContainer* electrons = xaodElectrons();
+    xAOD::ElectronContainer::iterator el_itr = electrons->begin();
+    xAOD::ElectronContainer::iterator el_end = electrons->end();
+    int iEl = 0;
+    for(;el_itr!=el_end; ++el_itr){ // todo: use std::transform
+        xAOD::Electron &el = **el_itr;
+        if(true) // DG 2014-08-27 used to be mediumPP, don't know what will be for RunII
+            m_preElectrons.push_back(iEl);
+        m_susyObj.FillElectron(el, iEl ) ;
+        m_susyObj.IsSignalElectron(el, iEl);
+        if(m_dbg) cout<<"El passing"
+                      <<" baseline? "<<el.auxdata< int >("baseline")
+                      <<" signal? "<<el.auxdata< int >("signal")
+                      <<endl;
+        // if(baseline) m_baseElectrons.push_back(iEl);
+        // if(signal) m_sigElectrons.push_back(iEl);
+        iEl++;
+    }
+/**/
   // Container object selection
   //-DG-if(m_selectTaus) m_contTaus = get_taus_baseline(xaodTaus(), m_susyObj, 20.*GeV, 2.47,
   //-DG-                                                SUSYTau::TauNone, SUSYTau::TauNone, SUSYTau::TauNone,
@@ -372,6 +396,7 @@ void XaodAnalysis::performOverlapRemoval()
 /*--------------------------------------------------------------------------------*/
 void XaodAnalysis::selectSignalObjects()
 {
+
 //-DG-  if(m_dbg>=5) cout << "selectSignalObjects" << endl;
 //-DG-  uint nVtx = getNumGoodVtx();
 //-DG-  xAOD::JetContainer *jets =  xaodJets();
@@ -1219,5 +1244,19 @@ bool XaodAnalysis::isDataFromSamplename(const TString &sample)
 bool XaodAnalysis::isSimuFromSamplename(const TString &s)
 {
     return !XaodAnalysis::isDataFromSamplename(s);
+}
+//----------------------------------------------------------
+void XaodAnalysis::selectObjects(SusyNtSys sys)
+{
+    selectBaselineObjects(sys);
+//--DG-- todo     selectSignalObjects();
+//--DG-- todo     if(m_selectTruth) selectTruthObjects();
+}
+//----------------------------------------------------------
+XaodAnalysis& XaodAnalysis::deleteShallowCopies()
+{
+    delete m_xaodElectrons;
+    delete m_xaodElectronsAux;
+    return *this;
 }
 //----------------------------------------------------------

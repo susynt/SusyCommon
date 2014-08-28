@@ -28,6 +28,7 @@
 #include "xAODJet/JetContainer.h"
 #include "xAODTruth/TruthParticleContainer.h"
 #include "xAODTruth/TruthEventContainer.h"
+#include "xAODCore/ShallowCopy.h"
 
 
 namespace susy {
@@ -39,12 +40,12 @@ class XaodAnalysis : public TSelector
   public:
     XaodAnalysis();
     virtual ~XaodAnalysis();
-    
+
     virtual Bool_t  Process(Long64_t entry);
     virtual void    Terminate();
     virtual void    Init(TTree *tree); ///< Init is called every time a new TTree is attached
     virtual void    SlaveBegin(TTree *tree);
-    
+
     virtual Bool_t  Notify() { return kTRUE; } /// Called at the first entry of a new file in a chain
     virtual void    SlaveTerminate(){};
     /// Due to ROOT's stupid design, need to specify version >= 2 or the tree will not connect automatically
@@ -94,20 +95,14 @@ class XaodAnalysis : public TSelector
     /// delete the objects created when accessing the aux info with shallow copies
     void clearShallowCopies();
 
-
-    //
-    // Object selection
-    // Selected leptons have kinematic and cleaning cuts (no overlap removal)
-    // Baseline leptons = selected + overlap removed
-    // 
-
-    // Full object selection
-    void selectObjects(SusyNtSys sys = NtSys_NOM){
-      selectBaselineObjects(sys);
-      selectSignalObjects();
-      if(m_selectTruth) selectTruthObjects();
-    }
-    void selectBaselineObjects(SusyNtSys sys = NtSys_NOM);
+    /// fill collections of baseline+signal+truth objects
+    /**
+           Object selection
+           Selected leptons have kinematic and cleaning cuts (no overlap removal)
+           Baseline leptons = selected + overlap removed
+    */
+    void selectObjects(SusyNtSys sys);
+    void selectBaselineObjects(SusyNtSys sys);
     void selectSignalObjects();
     void performOverlapRemoval();
     void selectSignalPhotons();
@@ -173,26 +168,26 @@ class XaodAnalysis : public TSelector
 
     /// Full event weight includes generator, xsec, pileup, and lumi weights.
     /** Default weight uses A-E lumi.
-     You can supply a different integrated luminosity, 
+     You can supply a different integrated luminosity,
      but the the pileup weights will still correspond to A-E.
     */
     float getEventWeight(float lumi = LUMI_A_E);
-    float getXsecWeight(); ///< event weight (xsec*kfac) 
+    float getXsecWeight(); ///< event weight (xsec*kfac)
     float getLumiWeight(); ///< lumi weight (lumi/sumw) normalized to 4.7/fb
     void setLumi(float lumi) { m_lumi = lumi; } ///< luminosity to normalize to (in 1/pb)
     void setSumw(float sumw) { m_sumw = sumw;  } ///< sum of mc weights for sample
     void setXsec(float xsec) { m_xsec = xsec;  } ///< user cross section, overrides susy cross section
-    void setErrXsec(float err) { m_errXsec = err;  } ///< user cross section uncert    
+    void setErrXsec(float err) { m_errXsec = err;  } ///< user cross section uncert
     float getPileupWeight(); ///< pileup weight for full dataset: currently A-L
     float getPileupWeightUp();
-    float getPileupWeightDown();    
+    float getPileupWeightDown();
     float getPDFWeight8TeV(); ///< PDF reweighting of 7TeV -> 8TeV
     float getLepSF(const std::vector<LeptonInfo>& leptons); ///< Lepton efficiency SF
     float getBTagSF(const std::vector<int>& jets); ///< BTag efficiency SF
 
     // Utility methods
     void calcRandomRunLB(); ///< calculate random run/lb numbers for MC
-    int getHFORDecision(); ///< HF overlap removal decision (DG obsolete?)    
+    int getHFORDecision(); ///< HF overlap removal decision (DG obsolete?)
     uint getNumGoodVtx(); ///< Count number of good vertices
     bool matchTruthJet(int iJet); ///< Match a reco jet to a truth jet
 
@@ -204,7 +199,7 @@ class XaodAnalysis : public TSelector
     void setD3PDTag(D3PDTag tag) { m_d3pdTag = tag; } ///< Set SUSY D3PD tag to know which branches are ok
     void setSys(bool sysOn){ m_sys = sysOn; }; ///< Set sys run
     void setSelectPhotons(bool doIt) { m_selectPhotons = doIt; } ///< Toggle photon selection
-    void setSelectTaus(bool doIt) { m_selectTaus = doIt; } ///< Toggle tau selection and overlap removal    
+    void setSelectTaus(bool doIt) { m_selectTaus = doIt; } ///< Toggle tau selection and overlap removal
     void setSelectTruthObjects(bool doIt) { m_selectTruth = doIt; } ///< Set-Get truth selection
     bool getSelectTruthObjects(         ) { return m_selectTruth; }
     void setMetFlavor(std::string metFlav); ///< only STVF and STVF_JVF are available (anything else will raise an error)
@@ -278,7 +273,7 @@ class XaodAnalysis : public TSelector
     std::vector<int>            m_preJets;      // selected jets
     std::vector<int>            m_preTaus;      // selected taus
     std::vector<int>            m_metMuons;     // selected muons with larger eta cut for met calc.
-    
+
     // "baseline" objects pass selection + overlap removal
     std::vector<int>            m_baseElectrons;// baseline electrons
     std::vector<int>            m_baseMuons;    // baseline muons
@@ -303,13 +298,13 @@ class XaodAnalysis : public TSelector
     TLorentzVector              m_truMet;       // Truth MET
 
     long long                   m_evtTrigFlags; // Event trigger flags
-    
+
     // Trigger object matching maps
     // Key: d3pd index, Val: trig bit word
     std::map<int, long long>    m_eleTrigFlags; // electron trigger matching flags
     std::map<int, long long>    m_muoTrigFlags; // muon trigger matching flags
     std::map<int, long long>    m_tauTrigFlags; // tau trigger matching flags
-    
+
     //
     // Event quantities
     //
@@ -322,7 +317,7 @@ class XaodAnalysis : public TSelector
     uint                        m_mcRun;        // Random run number for MC from pileup tool
     uint                        m_mcLB;         // Random lb number for MC from pileup tool
 
-    bool                        m_sys;          // True if you want sys for MC, must be set by user. 
+    bool                        m_sys;          // True if you want sys for MC, must be set by user.
 
     uint                        m_cutFlags;     // Event cleaning cut flags
 
@@ -330,7 +325,6 @@ class XaodAnalysis : public TSelector
     // Tools
     //
 
-    ST::SUSYObjDef_xAOD          m_susyObj;      // SUSY object definitions
     /* Root::TElectronEfficiencyCorrectionTool* m_eleMediumSFTool; */
 
     TString                     m_grlFileName;  // grl file name
@@ -355,7 +349,17 @@ class XaodAnalysis : public TSelector
     bool m_flagsHaveBeenChecked;///< whether the cmd-line have been checked
 
     xAOD::TEvent m_event;
-
+    xAOD::TStore m_store;
+    ST::SUSYObjDef_xAOD m_susyObj;      // SUSY object definitions
+    /// electrons from the xaod
+    /**
+       Note: one can only access collections as const. One can make
+       modifiable shallow copies, but you have to remember to delete
+       them at each event. (see SUSYToolsTester.cxx)
+     */
+    xAOD::ElectronContainer* m_xaodElectrons;
+    xAOD::ShallowAuxContainer* m_xaodElectronsAux; ///< our shallow-copy containers
+    XaodAnalysis& deleteShallowCopies();
 };
 
 } // susy

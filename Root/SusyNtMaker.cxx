@@ -1480,7 +1480,8 @@ bool SusyNtMaker::passEventlevelSelection()
 //----------------------------------------------------------
 bool SusyNtMaker::passObjectlevelSelection()
 {
-    // selectObjects(sys);
+    SusyNtSys sys=NtSys_NOM;
+    selectObjects(sys);
     // buildMet(sys);
     // assignObjectCleaningFlags();
     return true;
