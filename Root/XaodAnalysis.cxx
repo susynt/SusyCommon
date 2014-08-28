@@ -163,11 +163,11 @@ xAOD::MuonContainer* XaodAnalysis::xaodMuons()
 {
     const xAOD::MuonContainer* muo = 0;
     m_event.retrieve(muo, "Muons");
-    std::pair<xAOD::MuonContainer*, xAOD::ShallowAuxContainer*> muons_with_shallow = xAOD::shallowCopyContainer(*muo);
     if(m_dbg){
         if(muo) cout<<"XaodAnalysis::xaodMuons: retrieved "<<muo->size()<<endl;
         else    cout<<"XaodAnalysis::xaodMuons: failed"<<endl;
     }
+    std::pair<xAOD::MuonContainer*, xAOD::ShallowAuxContainer*> muons_with_shallow = xAOD::shallowCopyContainer(*muo);
     m_xaodMuons = muons_with_shallow.first;
     m_xaodMuonsAux = muons_with_shallow.second;
     return m_xaodMuons;
@@ -191,17 +191,17 @@ xAOD::TauJetContainer* XaodAnalysis::xaodTaus()
 {
     const xAOD::TauJetContainer* tau = 0;
     m_event.retrieve(tau, "TauRecContainer");
-    std::pair<xAOD::TauJetContainer*, xAOD::ShallowAuxContainer*> taus_with_shallow = xAOD::shallowCopyContainer(*tau);
     if(m_dbg){
         if(tau) cout<<"XaodAnalysis::xaodTaus: retrieved "<<tau->size()<<endl;
         else    cout<<"XaodAnalysis::xaodTaus: failed"<<endl;
     }
+    std::pair<xAOD::TauJetContainer*, xAOD::ShallowAuxContainer*> taus_with_shallow = xAOD::shallowCopyContainer(*tau);
     m_xaodTaus = taus_with_shallow.first;
     m_xaodTausAux = taus_with_shallow.second;
     return m_xaodTaus;
 }
 //----------------------------------------------------------
-const xAOD::JetContainer* XaodAnalysis::xaodJets()
+xAOD::JetContainer* XaodAnalysis::xaodJets()
 {
     const xAOD::JetContainer* jet = 0;
     m_event.retrieve(jet, "AntiKt4LCTopoJets");
@@ -209,8 +209,10 @@ const xAOD::JetContainer* XaodAnalysis::xaodJets()
         if(jet) cout<<"XaodAnalysis::xaodJets: retrieved "<<jet->size()<<endl;
         else    cout<<"XaodAnalysis::xaodJets: failed"<<endl;
     }
-    //std::pair< xAOD::JetContainer*, xAOD::ShallowAuxContainer* > jets_shallowCopy = xAOD::shallowCopyContainer( *jets );
-    return jet;
+    std::pair<xAOD::JetContainer*, xAOD::ShallowAuxContainer*> jets_with_shallow = xAOD::shallowCopyContainer(*jet);
+    m_xaodJets = jets_with_shallow.first;
+    m_xaodJetsAux = jets_with_shallow.second;
+    return m_xaodJets;
 }
 //----------------------------------------------------------
 const xAOD::PhotonContainer* XaodAnalysis::xaodPhothons()

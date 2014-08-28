@@ -85,7 +85,7 @@ class XaodAnalysis : public TSelector
        By default returns m_event.jet_AntiKt4LCTopo; for its motivation, see XaodAnalysis::xaodMuons().
        \todo In this case there might be some ambiguity to be sorted out when calling SUSYObjDef::GetMET().
      */
-    virtual const xAOD::JetContainer* xaodJets();
+    virtual xAOD::JetContainer* xaodJets();
     /// access the default collection of photons
     virtual const xAOD::PhotonContainer* xaodPhothons();
     /// access the truth event
@@ -363,6 +363,15 @@ class XaodAnalysis : public TSelector
     xAOD::ShallowAuxContainer* m_xaodElectronsAux; ///< electron aux info
     xAOD::TauJetContainer* m_xaodTaus;
     xAOD::ShallowAuxContainer* m_xaodTausAux; ///< tau aux info
+    xAOD::JetContainer* m_xaodJets;
+    xAOD::ShallowAuxContainer* m_xaodJetsAux; ///< jet aux info
+
+    /// cleanup shallow copies and aux containers
+    /**
+       They are created when retrieving the collections with
+       XaodAnalysis::xaodMuons etc; it's the user's responsibility to
+       clean things up.
+    */
     XaodAnalysis& deleteShallowCopies();
 };
 
