@@ -161,14 +161,16 @@ const xAOD::EventInfo* XaodAnalysis::xaodEventInfo()
 //----------------------------------------------------------
 xAOD::MuonContainer* XaodAnalysis::xaodMuons()
 {
-    /*const*/ xAOD::MuonContainer* muo = 0;
+    const xAOD::MuonContainer* muo = 0;
     m_event.retrieve(muo, "Muons");
-    //std::pair< xAOD::MuonContainer*, xAOD::ShallowAuxContainer* > muons_shallowCopy = xAOD::shallowCopyContainer( *muons );
+    std::pair<xAOD::MuonContainer*, xAOD::ShallowAuxContainer*> muons_with_shallow = xAOD::shallowCopyContainer(*muo);
     if(m_dbg){
         if(muo) cout<<"XaodAnalysis::xaodMuons: retrieved "<<muo->size()<<endl;
         else    cout<<"XaodAnalysis::xaodMuons: failed"<<endl;
     }
-    return muo;
+    m_xaodMuons = muons_with_shallow.first;
+    m_xaodMuonsAux = muons_with_shallow.second;
+    return m_xaodMuons;
 }
 //----------------------------------------------------------
 xAOD::ElectronContainer* XaodAnalysis::xaodElectrons()

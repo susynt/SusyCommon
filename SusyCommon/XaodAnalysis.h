@@ -357,8 +357,10 @@ class XaodAnalysis : public TSelector
        modifiable shallow copies, but you have to remember to delete
        them at each event. (see SUSYToolsTester.cxx)
      */
+    xAOD::MuonContainer* m_xaodMuons;
+    xAOD::ShallowAuxContainer* m_xaodMuonsAux; ///< muon aux info
     xAOD::ElectronContainer* m_xaodElectrons;
-    xAOD::ShallowAuxContainer* m_xaodElectronsAux; ///< our shallow-copy containers
+    xAOD::ShallowAuxContainer* m_xaodElectronsAux; ///< electron aux info
     XaodAnalysis& deleteShallowCopies();
 };
 
