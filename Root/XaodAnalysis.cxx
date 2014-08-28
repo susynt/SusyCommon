@@ -55,7 +55,17 @@ XaodAnalysis::XaodAnalysis() :
         m_flagsHaveBeenChecked(false),
         m_event(xAOD::TEvent::kClassAccess),
         m_store(),
-        m_susyObj("SUSYObjDef_xAOD")
+        m_susyObj("SUSYObjDef_xAOD"),
+        m_xaodMuons        (NULL),
+        m_xaodMuonsAux     (NULL),
+        m_xaodElectrons    (NULL),
+        m_xaodElectronsAux (NULL),
+        m_xaodTaus         (NULL),
+        m_xaodTausAux      (NULL),
+        m_xaodJets         (NULL),
+        m_xaodJetsAux      (NULL),
+        m_xaodPhotons      (NULL),
+        m_xaodPhotonsAux   (NULL)
 {
 }
 //----------------------------------------------------------
@@ -109,6 +119,7 @@ Bool_t XaodAnalysis::Process(Long64_t entry)
   SusyNtSys sys = NtSys_NOM;
   selectObjects(sys);
   buildMet();
+  deleteShallowCopies();
   return kTRUE;
 }
 
@@ -301,8 +312,7 @@ SystErr::Syste ntsys2systerr(const SusyNtSys &s)
 void XaodAnalysis::selectBaselineObjects(SusyNtSys sys)
 {
     if(m_dbg>=5) cout << "selectBaselineObjects" << endl;
-    SystErr::Syste susySys = ntsys2systerr(sys);
-    const xAOD::JetContainer *jets = xaodJets();
+    //SystErr::Syste susySys = ntsys2systerr(sys);
 
     xAOD::ElectronContainer* electrons = xaodElectrons();
     xAOD::ElectronContainer::iterator el_itr = electrons->begin();
@@ -359,7 +369,6 @@ void XaodAnalysis::selectBaselineObjects(SusyNtSys sys)
 /*--------------------------------------------------------------------------------*/
 void XaodAnalysis::performOverlapRemoval()
 {
-  const xAOD::JetContainer *jets = xaodJets();
 //-DG-  // e-e overlap removal
 //-DG-  m_baseElectrons = overlap_removal(m_susyObj, xaodElectrons(), m_preElectrons, xaodElectrons(), m_preElectrons,
 //-DG-                                    0.05, true, true);
@@ -665,7 +674,7 @@ void XaodAnalysis::matchElectronTriggers()
 bool XaodAnalysis::matchElectronTrigger(const TLorentzVector &lv, vector<int>* trigBools)
 {
   // matched trigger index - not used
-  static int indexEF = -1;
+  //static int indexEF = -1;
   // Use function defined in egammaAnalysisUtils/egammaTriggerMatching.h
   // return PassedTriggerEF(lv.Eta(), lv.Phi(), trigBools, indexEF, m_event.trig_EF_el.n(),
   //                        m_event.trig_EF_el.eta(), m_event.trig_EF_el.phi());
@@ -871,7 +880,7 @@ bool XaodAnalysis::passTileHotSpot()
 //----------------------------------------------------------
 bool XaodAnalysis::passBadJet()
 {
-  const xAOD::JetContainer *jets =  xaodJets();
+    //const xAOD::JetContainer *jets =  xaodJets();
   return false;
 //  return !IsBadJetEvent(jets, m_baseJets, 20.*GeV, m_susyObj);
 }
@@ -1047,10 +1056,10 @@ void XaodAnalysis::dumpEvent()
 //----------------------------------------------------------
 void XaodAnalysis::dumpBaselineObjects()
 {
-  uint nEle = m_baseElectrons.size();
-  uint nMu  = m_baseMuons.size();
+  //uint nEle = m_baseElectrons.size();
+  //uint nMu  = m_baseMuons.size();
   //uint nTau = m_baseTaus.size();
-  uint nJet = m_baseJets.size();
+  //uint nJet = m_baseJets.size();
 
   #warning dumpBaselineObjects not implemented
   // cout.precision(2);
@@ -1263,8 +1272,16 @@ void XaodAnalysis::selectObjects(SusyNtSys sys)
 //----------------------------------------------------------
 XaodAnalysis& XaodAnalysis::deleteShallowCopies()
 {
-    delete m_xaodElectrons;
-    delete m_xaodElectronsAux;
+    if(m_xaodMuons       ) { delete m_xaodMuons;        m_xaodMuons        = NULL; }
+    if(m_xaodMuonsAux    ) { delete m_xaodMuonsAux;     m_xaodMuonsAux     = NULL; }
+    if(m_xaodElectrons   ) { delete m_xaodElectrons;    m_xaodElectrons    = NULL; }
+    if(m_xaodElectronsAux) { delete m_xaodElectronsAux; m_xaodElectronsAux = NULL; }
+    if(m_xaodTaus        ) { delete m_xaodTaus;         m_xaodTaus         = NULL; }
+    if(m_xaodTausAux     ) { delete m_xaodTausAux;      m_xaodTausAux      = NULL; }
+    if(m_xaodJets        ) { delete m_xaodJets;         m_xaodJets         = NULL; }
+    if(m_xaodJetsAux     ) { delete m_xaodJetsAux;      m_xaodJetsAux      = NULL; }
+    if(m_xaodPhotons     ) { delete m_xaodPhotons;      m_xaodPhotons      = NULL; }
+    if(m_xaodPhotonsAux  ) { delete m_xaodPhotonsAux;   m_xaodPhotonsAux   = NULL; }
     return *this;
 }
 //----------------------------------------------------------

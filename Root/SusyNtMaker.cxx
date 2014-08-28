@@ -162,7 +162,7 @@ Bool_t SusyNtMaker::Process(Long64_t entry)
       abort();
     }
   }
-
+  deleteShallowCopies();
   return kTRUE;
 }
 
