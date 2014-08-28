@@ -322,7 +322,7 @@ void XaodAnalysis::selectBaselineObjects(SusyNtSys sys)
         xAOD::Electron &el = **el_itr;
         if(true) // DG 2014-08-27 used to be mediumPP, don't know what will be for RunII
             m_preElectrons.push_back(iEl);
-        m_susyObj.FillElectron(el, iEl ) ;
+        m_susyObj.FillElectron(el, iEl);
         m_susyObj.IsSignalElectron(el, iEl);
         if(m_dbg) cout<<"El passing"
                       <<" baseline? "<<el.auxdata< int >("baseline")
@@ -332,6 +332,44 @@ void XaodAnalysis::selectBaselineObjects(SusyNtSys sys)
         // if(signal) m_sigElectrons.push_back(iEl);
         iEl++;
     }
+
+    int iMu = 0;
+    xAOD::MuonContainer* muons = xaodMuons();
+    xAOD::MuonContainer::iterator mu_itr = muons->begin();
+    xAOD::MuonContainer::iterator mu_end = muons->end();
+    for(;mu_itr!=mu_end; ++mu_itr){ // todo: use std::transform
+        xAOD::Muon &mu = **mu_itr;
+        m_preMuons.push_back(iMu);
+        m_susyObj.FillMuon(mu);
+        m_susyObj.IsSignalMuon(mu);
+        m_susyObj.IsCosmicMuon(mu);
+        if(m_dbg) cout<<"Mu passing"
+                      <<" baseline? "<<mu.auxdata< int >("baseline")
+                      <<" signal? "<<mu.auxdata< int >("signal")
+                      <<endl;
+        // if(baseline) m_baseMuons.push_back(iMu);
+        // if(signal) m_sigMuons.push_back(iMu);
+    }
+
+    int iJet=0;
+    xAOD::JetContainer* jets = xaodJets();
+    xAOD::JetContainer::iterator jet_itr = jets->begin();
+    xAOD::JetContainer::iterator jet_end = jets->end();
+    for(;jet_itr!=jet_end; ++jet_itr){ // todo: use std::transform
+        xAOD::Jet &jet = **jet_itr;
+        m_preJets.push_back(iJet);
+        m_susyObj.FillJet(jet);
+        m_susyObj.IsGoodJet(jet);
+        m_susyObj.IsBJet(jet);
+        if(m_dbg) cout<<"Jet passing"
+                      <<" baseline? "<<jet.auxdata< int >("baseline")
+                      //<<" signal? "<<jet.auxdata< int >("signal")
+                      <<endl;
+        // if(baseline) m_baseJets.push_back(iJet);
+        // if(signal) m_sigJets.push_back(iJet);
+    }
+    m_susyObj.OverlapRemoval(m_xaodElectrons, m_xaodMuons, m_xaodJets);
+
 /**/
   // Container object selection
   //-DG-if(m_selectTaus) m_contTaus = get_taus_baseline(xaodTaus(), m_susyObj, 20.*GeV, 2.47,
