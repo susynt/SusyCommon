@@ -345,6 +345,7 @@ void XaodAnalysis::selectBaselineObjects(SusyNtSys sys)
         // if(baseline) m_baseMuons.push_back(iMu);
         // if(signal) m_sigMuons.push_back(iMu);
     }
+    if(m_dbg) cout<<"preMuons["<<m_preMuons.size()<<"]"<<endl;
 
     int iJet=0;
     xAOD::JetContainer* jets = xaodJets();

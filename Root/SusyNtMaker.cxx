@@ -413,8 +413,11 @@ void SusyNtMaker::fillElectronVars()
 //----------------------------------------------------------
 void SusyNtMaker::fillMuonVars()
 {
-    // for () storeMuon();
-#warning fillLeptonVars not implemented
+    xAOD::MuonContainer* muons = XaodAnalysis::xaodMuons();
+    for(size_t i=0; i<m_preMuons.size(); ++i){
+        const xAOD::Muon &mu = *(muons->at(m_preMuons[i]));
+        storeMuon(mu);
+    }
   // // loop over preselected leptons and fill the output tree
   // for(uint iLep=0; iLep < m_preLeptons.size(); iLep++){
   //   const LeptonInfo* lep = & m_preLeptons[iLep];
