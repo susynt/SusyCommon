@@ -326,6 +326,7 @@ void XaodAnalysis::selectBaselineObjects(SusyNtSys sys)
         // if(signal) m_sigElectrons.push_back(iEl);
         iEl++;
     }
+    if(m_dbg) cout<<"preElectrons["<<m_preElectrons.size()<<"]"<<endl;
 
     int iMu = 0;
     xAOD::MuonContainer* muons = xaodMuons();

@@ -26,6 +26,7 @@ namespace smc =susy::mc;
 using susy::SusyNtMaker;
 
 #define GeV 1000.
+const double MeV2GeV=1.0e3;
 
 /*--------------------------------------------------------------------------------*/
 // SusyNtMaker Constructor
@@ -323,7 +324,8 @@ bool SusyNtMaker::selectEvent()
 void SusyNtMaker::fillNtVars()
 {
   fillEventVars();
-  fillLeptonVars();
+  fillElectronVars();
+  fillMuonVars();
   fillJetVars();
   fillTauVars();
   fillMetVars();
@@ -399,12 +401,19 @@ void SusyNtMaker::fillEventVars()
   evt->pdfSF            = m_isMC? getPDFWeight8TeV() : 1;
   m_susyNt.evt()->cutFlags[NtSys_NOM] = m_cutFlags;
 }
-
-/*--------------------------------------------------------------------------------*/
-// Fill lepton variables
-/*--------------------------------------------------------------------------------*/
-void SusyNtMaker::fillLeptonVars()
+//----------------------------------------------------------
+void SusyNtMaker::fillElectronVars()
 {
+    xAOD::ElectronContainer* electrons = XaodAnalysis::xaodElectrons();
+    for(size_t i=0; i<m_preElectrons.size(); ++i){
+        const xAOD::Electron &el = *(electrons->at(m_preElectrons[i]));
+        storeElectron(el);
+    }
+}
+//----------------------------------------------------------
+void SusyNtMaker::fillMuonVars()
+{
+    // for () storeMuon();
 #warning fillLeptonVars not implemented
   // // loop over preselected leptons and fill the output tree
   // for(uint iLep=0; iLep < m_preLeptons.size(); iLep++){
@@ -446,115 +455,88 @@ void get_electron_eff_sf(float& sf, float& uncert,
 }
 //----------------------------------------------------------
 /*--------------------------------------------------------------------------------*/
-void SusyNtMaker::fillElectronVars(const LeptonInfo* lepIn)
+void SusyNtMaker::storeElectron(const xAOD::Electron &in)
 {
-#warning fillElectronVars not implemented
-  // if(m_dbg>=5) cout << "fillElectronVars" << endl;
-  // m_susyNt.ele()->push_back( Susy::Electron() );
-  // Susy::Electron* eleOut = & m_susyNt.ele()->back();
-  // const D3PDReader::ElectronD3PDObjectElement* element = lepIn->getElectronElement();
+    Susy::Electron out;
+    double pt(in.pt()*MeV2GeV), eta(in.eta()), phi(in.phi()), m(in.m()*MeV2GeV);
+    out.SetPtEtaPhiM(pt, eta, phi, m);
+    out.pt  = pt;
+    out.eta = eta;
+    out.phi = phi;
+    out.m   = m;
+    out.q   = in.charge();
+    bool all_available=true;
+    all_available &= in.isolationValue(out.etcone20, xAOD::EgammaParameters::etcone20); // DG-2014-08-29 MeV2GeV ?
+    all_available &= in.isolationValue(out.ptcone20, xAOD::EgammaParameters::ptcone20);
+    all_available &= in.isolationValue(out.ptcone30, xAOD::EgammaParameters::ptcone30);
+    if(const xAOD::CaloCluster* c = in.caloCluster()) {
+        out.clusE   = c->e()*MeV2GeV;
+        out.clusEta = c->eta();
+        out.clusPhi = c->phi();
+    } else {
+        all_available = false;
+    }
+    if(const xAOD::TrackParticle* t = in.trackParticle()){
+        out.trackPt = t->pt()*MeV2GeV;
+        // eleOut->d0            = element->trackd0pv();
+        // eleOut->errD0         = element->tracksigd0pv();
+        // eleOut->z0            = element->trackz0pv();
+        // eleOut->errZ0         = element->tracksigz0pv();
+        // eleOut->d0Unbiased    = element->trackIPEstimate_d0_unbiasedpvunbiased();
+        // eleOut->errD0Unbiased = element->trackIPEstimate_sigd0_unbiasedpvunbiased();
+        // eleOut->z0Unbiased    = element->trackIPEstimate_z0_unbiasedpvunbiased();
+        // eleOut->errZ0Unbiased = element->trackIPEstimate_sigz0_unbiasedpvunbiased();
+    } else {
+        all_available = false;
+    }
+    // DG-2014-08-29 mc info not available yet
+    // out.mcType = in.type();
+    // out.mcOrigin      = m_isMC? element->origin() : 0;
+    // // Check for charge flip
+    // eleOut->isChargeFlip          = m_isMC? m_recoTruthMatch.isChargeFlip(*lv, element->charge()) : false;
+    // eleOut->matched2TruthLepton   = m_isMC? m_recoTruthMatch.Matched2TruthLepton(*lv) : false;
+    // eleOut->truthType             = m_isMC? m_recoTruthMatch.fakeType(*lv, element->origin(), element->type()) : -1;
 
-  // // LorentzVector
-  // const TLorentzVector* lv = lepIn->lv();
-  // float pt  = lv->Pt() / GeV;
-  // float eta = lv->Eta();
-  // float phi = lv->Phi();
-  // float m   = lv->M() / GeV;
+    // // IsEM quality flags - no need to recalculate them
+    // eleOut->mediumPP    = element->mediumPP();
+    // eleOut->tightPP     = element->tightPP();
 
-  // eleOut->SetPtEtaPhiM(pt, eta, phi, m);
-  // eleOut->pt            = pt;
-  // eleOut->eta           = eta;
-  // eleOut->phi           = phi;
-  // eleOut->m             = m;
+    // // Trigger flags
+    // eleOut->trigFlags     = m_eleTrigFlags[ lepIn->idx() ];
+    
+    // // Efficiency scale factor.  For now, use tightPP if electrons is tightPP, otherwise mediumPP
+    // //int set               = eleOut->tightPP? 7 : 6;
+    // //eleOut->effSF         = m_isMC? m_susyObj.GetSignalElecSF   ( element->cl_eta(), lepIn->lv()->Pt(), set ) : 1;
+    // //eleOut->errEffSF      = m_isMC? m_susyObj.GetSignalElecSFUnc( element->cl_eta(), lepIn->lv()->Pt(), set ) : 1;
+    
+    // // Tight electron SFs can come directly from SUSYTools
+    // // To get the SF uncert using GetSignalElecSF, we must get the shifted value and take the difference
+    // float nomPt = lepIn->lv()->Pt();
+    // float sfPt = nomPt >= 7.*GeV ? nomPt : 7.*GeV;
+    // if(eleOut->tightPP){
+    //   eleOut->effSF       = // m_isMC? // DG not implemented yet
+    //                         // m_susyObj.GetSignalElecSF(element->cl_eta(), sfPt, true, true, false) :
+    //       1;
+    //   eleOut->errEffSF    = //m_isMC? // DG not implemented yet
+    //                         //m_susyObj.GetSignalElecSF(element->cl_eta(), sfPt, true, true, false,
+    //                         //                          200841, SystErr::EEFFUP) - eleOut->effSF : 
+    //       0;
+    // }
 
-  // // TODO: clean this up, group things together, etc.
-
-  // eleOut->etcone20      = element->topoEtcone20_corrected()/GeV;
-  // eleOut->ptcone20      = element->ptcone20()/GeV;
-  // eleOut->ptcone30      = element->ptcone30()/GeV;
-  // eleOut->q             = element->charge();
-  // eleOut->mcType        = m_isMC? element->type() : 0;
-  // eleOut->mcOrigin      = m_isMC? element->origin() : 0;
-  // eleOut->clusE         = element->cl_E()/GeV;
-  // eleOut->clusEta       = element->cl_eta();
-  // eleOut->clusPhi       = element->cl_phi();
-  // eleOut->trackPt       = element->trackpt()/GeV;
-
-  // // Check for charge flip
-  // eleOut->isChargeFlip          = m_isMC? m_recoTruthMatch.isChargeFlip(*lv, element->charge()) : false;
-  // eleOut->matched2TruthLepton   = m_isMC? m_recoTruthMatch.Matched2TruthLepton(*lv) : false;
-  // eleOut->truthType             = m_isMC? m_recoTruthMatch.fakeType(*lv, element->origin(), element->type()) : -1;
-
-  // // IsEM quality flags - no need to recalculate them
-  // eleOut->mediumPP    = element->mediumPP();
-  // eleOut->tightPP     = element->tightPP();
-
-  // eleOut->d0            = element->trackd0pv();
-  // eleOut->errD0         = element->tracksigd0pv();
-  // eleOut->z0            = element->trackz0pv();
-  // eleOut->errZ0         = element->tracksigz0pv();
-
-  // eleOut->d0Unbiased    = element->trackIPEstimate_d0_unbiasedpvunbiased();
-  // eleOut->errD0Unbiased = element->trackIPEstimate_sigd0_unbiasedpvunbiased();
-  // eleOut->z0Unbiased    = element->trackIPEstimate_z0_unbiasedpvunbiased();
-  // eleOut->errZ0Unbiased = element->trackIPEstimate_sigz0_unbiasedpvunbiased();
-
-  // // Corrected topo iso is available in the susy d3pd, apparently calculated using the cluster E.
-  // // However, the CaloIsoCorrection header says to use the energy after scaling/smearing...
-  // // So, which should we use?
-  // // For now, I will just use the cluster E, which I think people are using anyway
-
-  // // Corrected etcone has Pt and ED corrections
-  // eleOut->etcone30Corr  = CaloIsoCorrection::GetPtEDCorrectedIsolation(element->Etcone40(),
-  //                                                                      element->Etcone40_ED_corrected(),
-  //                                                                      element->cl_E(), element->etas2(),
-  //                                                                      element->etap(), element->cl_eta(), 0.3,
-  //                                                                      m_isMC, element->Etcone30())/GeV;
-
-  // // Corrected topoEtcone has Pt and ED corrections.  Use D3PD branch for now
-  // //float topo            = CaloIsoCorrection::GetPtEDCorrectedTopoIsolation(element->ED_median(), element->cl_E(),
-  // //                                                                         element->etas2(), element->etap(),
-  // //                                                                         element->cl_eta(), 0.3, m_isMC,
-  // //                                                                         element->topoEtcone30())/GeV;
-  // eleOut->topoEtcone30Corr      = element->topoEtcone30_corrected()/GeV;
-
-  // // Trigger flags
-  // eleOut->trigFlags     = m_eleTrigFlags[ lepIn->idx() ];
-
-  // // Efficiency scale factor.  For now, use tightPP if electrons is tightPP, otherwise mediumPP
-  // //int set               = eleOut->tightPP? 7 : 6;
-  // //eleOut->effSF         = m_isMC? m_susyObj.GetSignalElecSF   ( element->cl_eta(), lepIn->lv()->Pt(), set ) : 1;
-  // //eleOut->errEffSF      = m_isMC? m_susyObj.GetSignalElecSFUnc( element->cl_eta(), lepIn->lv()->Pt(), set ) : 1;
-
-  // // Tight electron SFs can come directly from SUSYTools
-  // // To get the SF uncert using GetSignalElecSF, we must get the shifted value and take the difference
-  // float nomPt = lepIn->lv()->Pt();
-  // float sfPt = nomPt >= 7.*GeV ? nomPt : 7.*GeV;
-  // if(eleOut->tightPP){
-  //   eleOut->effSF       = // m_isMC? // DG not implemented yet
-  //                         // m_susyObj.GetSignalElecSF(element->cl_eta(), sfPt, true, true, false) :
-  //       1;
-  //   eleOut->errEffSF    = //m_isMC? // DG not implemented yet
-  //                         //m_susyObj.GetSignalElecSF(element->cl_eta(), sfPt, true, true, false,
-  //                         //                          200841, SystErr::EEFFUP) - eleOut->effSF : 
-  //       0;
-  // }
-
-  // // For the medium SF, need to use our own function
-  // else{
-  //   float sf = 1, uncert = 0;
-  //   bool recoSF(true), idSF(true), triggerSF(false);
-  //   int runNumber=200841; // DG why this dummy value? (copied from MultiLep/ElectronTools.h)
-  //   if (m_isMC) get_electron_eff_sf(sf, uncert, element->cl_eta(), sfPt,
-  //                                   recoSF, idSF, triggerSF, m_isAF2,
-  //                                   m_susyObj.GetElectron_recoSF_Class(), m_eleMediumSFTool, 0,
-  //                                   runNumber);
-  //   eleOut->effSF       = sf;
-  //   eleOut->errEffSF    = uncert;
-  // }
-
-  // // Do we need this??
-  // eleOut->idx           = lepIn->idx();
+    // // For the medium SF, need to use our own function
+    // else{
+    //   float sf = 1, uncert = 0;
+    //   bool recoSF(true), idSF(true), triggerSF(false);
+    //   int runNumber=200841; // DG why this dummy value? (copied from MultiLep/ElectronTools.h)
+    //   if (m_isMC) get_electron_eff_sf(sf, uncert, element->cl_eta(), sfPt,
+    //                                   recoSF, idSF, triggerSF, m_isAF2,
+    //                                   m_susyObj.GetElectron_recoSF_Class(), m_eleMediumSFTool, 0,
+    //                                   runNumber);
+    //   eleOut->effSF       = sf;
+    //   eleOut->errEffSF    = uncert;
+    // }
+    if(m_dbg && !all_available) cout<<"missing some electron variables"<<endl;
+    m_susyNt.ele()->push_back(out);  
 }
 
 //----------------------------------------------------------
@@ -576,7 +558,7 @@ void SusyNtMaker::fillElectronVars(const LeptonInfo* lepIn)
 //     return result;
 // }
 //----------------------------------------------------------
-void SusyNtMaker::fillMuonVars(const LeptonInfo* lepIn)
+void SusyNtMaker::storeMuon(const xAOD::Muon &mu)
 {
 #warning fillMuonVars not implemented
   // if(m_dbg>=5) cout << "fillMuonVars" << endl;

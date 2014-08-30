@@ -71,9 +71,10 @@ class SusyNtMaker : public XaodAnalysis
 
     void fillNtVars();
     void fillEventVars();
-    void fillLeptonVars();
-    void fillElectronVars(const LeptonInfo* lepIn);
-    void fillMuonVars(const LeptonInfo* lepIn);
+    void fillElectronVars();
+    void fillMuonVars();
+    void storeElectron(const xAOD::Electron &in);
+    void storeMuon(const xAOD::Muon &in);
     void fillJetVars();
     void fillJetVar(int jetIdx);
     void fillPhotonVars();
