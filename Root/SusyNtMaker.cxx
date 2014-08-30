@@ -15,6 +15,8 @@
 
 #include "xAODTruth/TruthEvent.h"
 #include "xAODTruth/TruthEventContainer.h"
+#include "xAODPrimitives/IsolationType.h"
+#include "xAODTracking/TrackParticle.h"
 
 #include <algorithm> // max_element
 #include <iomanip> // setw
@@ -156,7 +158,7 @@ Bool_t SusyNtMaker::Process(Long64_t entry)
   }
 
   if(selectEvent() && m_fillNt){
-      fillEventVars();
+      fillNtVars();
       int bytes = m_outTree->Fill();
       if(bytes==-1){
           cout << "SusyNtMaker ERROR filling tree!  Abort!" << endl;
@@ -418,12 +420,6 @@ void SusyNtMaker::fillMuonVars()
         const xAOD::Muon &mu = *(muons->at(m_preMuons[i]));
         storeMuon(mu);
     }
-  // // loop over preselected leptons and fill the output tree
-  // for(uint iLep=0; iLep < m_preLeptons.size(); iLep++){
-  //   const LeptonInfo* lep = & m_preLeptons[iLep];
-  //   if(lep->isElectron()) fillElectronVars(lep);
-  //   else fillMuonVars(lep);
-  // }
 }
 //----------------------------------------------------------
 void get_electron_eff_sf(float& sf, float& uncert,
@@ -561,66 +557,51 @@ void SusyNtMaker::storeElectron(const xAOD::Electron &in)
 //     return result;
 // }
 //----------------------------------------------------------
-void SusyNtMaker::storeMuon(const xAOD::Muon &mu)
+void SusyNtMaker::storeMuon(const xAOD::Muon &in)
 {
-#warning fillMuonVars not implemented
-  // if(m_dbg>=5) cout << "fillMuonVars" << endl;
-  // m_susyNt.muo()->push_back( Susy::Muon() );
-  // Susy::Muon* muOut = & m_susyNt.muo()->back();
-  // const D3PDReader::MuonD3PDObjectElement* element = lepIn->getMuonElement();
+    Susy::Muon out;
+    double pt(in.pt()*MeV2GeV), eta(in.eta()), phi(in.phi()), m(in.m()*MeV2GeV);
+    out.SetPtEtaPhiM(pt, eta, phi, m);
+    out.pt  = pt;
+    out.eta = eta;
+    out.phi = phi;
+    out.m   = m;
+    out.q   = in.charge();
+    out.isCombined = in.muonType()==xAOD::Muon::Combined;
 
-  // // LorentzVector
-  // const TLorentzVector* lv = lepIn->lv();
-  // float pt  = lv->Pt() / GeV;
-  // float eta = lv->Eta();
-  // float phi = lv->Phi();
-  // float m   = lv->M() / GeV;
-  // muOut->SetPtEtaPhiM(pt, eta, phi, m);
-  // muOut->pt  = pt;
-  // muOut->eta = eta;
-  // muOut->phi = phi;
-  // muOut->m   = m;
+    bool all_available=true;
+    all_available &= in.isolation(out.etcone20, xAOD::Iso::etcone20); // DG-2014-08-29 MeV2GeV ?
+    all_available &= in.isolation(out.ptcone20, xAOD::Iso::ptcone20);
+    all_available &= in.isolation(out.etcone30, xAOD::Iso::etcone30);
+    all_available &= in.isolation(out.ptcone30, xAOD::Iso::ptcone30);
 
-  // muOut->q              = element->charge();
-  // muOut->ptcone20       = element->ptcone20()/GeV;
-  // muOut->ptcone30       = element->ptcone30()/GeV;
-  // muOut->etcone20       = element->etcone20()/GeV;
-  // muOut->etcone30       = element->etcone30()/GeV;
-
-  // muOut->ptcone30ElStyle= m_d3pdTag>=D3PD_p1181? element->ptcone30_trkelstyle()/GeV : 0;
-
+    if(const xAOD::TrackParticle* t = in.primaryTrackParticle()){
+        // DG-2014-08-29  todo
   // // ID coordinates
   // muOut->idTrackPt      = element->id_qoverp_exPV() != 0.?
   //                         fabs(sin(element->id_theta_exPV())/element->id_qoverp_exPV())/GeV : 0.;
   // muOut->idTrackEta     = -1.*log(tan(element->id_theta_exPV()/2.));
   // muOut->idTrackPhi     = element->id_phi_exPV();
   // muOut->idTrackQ       = element->id_qoverp_exPV() < 0 ? -1 : 1;
-
   // // MS coordinates
   // muOut->msTrackPt      = element->ms_qoverp() != 0.?
   //                         fabs(sin(element->ms_theta())/element->ms_qoverp())/GeV : 0.;
   // muOut->msTrackEta     = -1.*log(tan(element->ms_theta()/2.));
   // muOut->msTrackPhi     = element->ms_phi();
   // muOut->msTrackQ       = element->ms_qoverp() < 0 ? -1 : 1;
-
   // muOut->d0             = element->d0_exPV();
   // muOut->errD0          = sqrt(element->cov_d0_exPV());
   // muOut->z0             = element->z0_exPV();
   // muOut->errZ0          = sqrt(element->cov_z0_exPV());
-
   // muOut->d0Unbiased     = element->trackIPEstimate_d0_unbiasedpvunbiased();
   // muOut->errD0Unbiased  = element->trackIPEstimate_sigd0_unbiasedpvunbiased();
   // muOut->z0Unbiased     = element->trackIPEstimate_z0_unbiasedpvunbiased();
   // muOut->errZ0Unbiased  = element->trackIPEstimate_sigz0_unbiasedpvunbiased();
-
-  // muOut->isCombined     = element->isCombinedMuon();
-
-  // // theta_exPV. Not sure if necessary.
-  // muOut->thetaPV        = element->theta_exPV();
-
-  // // Cleaning flags
-  // muOut->isBadMuon      = m_susyObj.IsBadMuon(element->qoverp_exPV(), element->cov_qoverp_exPV(), 0.2);
-  // muOut->isCosmic       = m_susyObj.IsCosmicMuon(element->z0_exPV(), element->d0_exPV(), 1., 0.2);
+    } else {
+        all_available = false;
+    }
+    out.isCosmic = in.auxdata< int >("cosmic");
+    // muOut->isBadMuon      = // DG-2014-08-29 still relevant?
 
   // // Truth flags
   // if(m_isMC){
@@ -644,8 +625,8 @@ void SusyNtMaker::storeMuon(const xAOD::Muon &mu)
   // muOut->effSF          = m_isMC? m_susyObj.GetSignalMuonSF(lepIn->idx()) : 1;
   // muOut->errEffSF       = m_isMC? m_susyObj.GetSignalMuonSF(lepIn->idx(), SystErr::MEFFUP) - muOut->effSF : 0;
 
-  // // Do we need this??
-  // muOut->idx            = lepIn->idx();
+    if(m_dbg && !all_available) cout<<"missing some electron variables"<<endl;
+    m_susyNt.muo()->push_back(out);
 }
 
 /*--------------------------------------------------------------------------------*/
