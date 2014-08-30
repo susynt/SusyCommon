@@ -130,7 +130,6 @@ TH1F* SusyNtMaker::getProcCutFlow(int signalProcess)
 /*--------------------------------------------------------------------------------*/
 Bool_t SusyNtMaker::Process(Long64_t entry)
 {
-  // Communicate the entry number to the interface objects
   m_event.getEntry(entry);
 
   const xAOD::EventInfo* eventinfo = 0;
@@ -156,11 +155,12 @@ Bool_t SusyNtMaker::Process(Long64_t entry)
   }
 
   if(selectEvent() && m_fillNt){
-    int bytes = m_outTree->Fill();
-    if(bytes==-1){
-      cout << "SusyNtMaker ERROR filling tree!  Abort!" << endl;
-      abort();
-    }
+      fillEventVars();
+      int bytes = m_outTree->Fill();
+      if(bytes==-1){
+          cout << "SusyNtMaker ERROR filling tree!  Abort!" << endl;
+          abort();
+      }
   }
   deleteShallowCopies();
   return kTRUE;
