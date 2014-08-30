@@ -558,11 +558,8 @@ void XaodAnalysis::selectTruthObjects()
 //-DG-  // ==>> Third and last the truth met
 //-DG-  m_truMet.SetPxPyPzE(m_event.MET_Truth.NonInt_etx(), m_event.MET_Truth.NonInt_ety(), 0, m_event.MET_Truth.NonInt_sumet());
 }
-
-/*--------------------------------------------------------------------------------*/
-// Clear selected objects
-/*--------------------------------------------------------------------------------*/
-void XaodAnalysis::clearObjects()
+//----------------------------------------------------------
+void XaodAnalysis::clearOutputObjects()
 {
   m_preElectrons.clear();
   m_preMuons.clear();

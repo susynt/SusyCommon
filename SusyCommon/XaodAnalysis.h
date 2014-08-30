@@ -112,7 +112,7 @@ class XaodAnalysis : public TSelector
     void buildMet(SusyNtSys sys = NtSys_NOM);
 
     // Clear object selection
-    void clearObjects();
+    void clearOutputObjects();
 
 
     //

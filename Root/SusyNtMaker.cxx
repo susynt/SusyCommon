@@ -192,7 +192,7 @@ bool isSimplifiedModel(const TString &sampleName)
 bool SusyNtMaker::selectEvent()
 {
   if(m_dbg>=5) cout << "selectEvent" << endl;
-  clearObjects();
+  clearOutputObjects();
   m_susyNt.clear();
   return (passEventlevelSelection() &&
           passObjectlevelSelection());
@@ -1098,7 +1098,7 @@ void SusyNtMaker::doSystematic()
   for(int i = 1; i < NtSys_N; i++){
       SusyNtSys sys = static_cast<SusyNtSys>(i);
     if(m_dbg>=5) cout << "Doing sys " << SusyNtSystNames[sys] << endl;    
-    clearObjects();
+    clearOutputObjects();
     selectObjects(sys);
     buildMet(sys);
     assignEventCleaningFlags();
