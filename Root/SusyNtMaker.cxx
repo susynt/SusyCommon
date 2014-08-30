@@ -310,6 +310,27 @@ void SusyNtMaker::fillPhotonVars()
     }
 }
 //----------------------------------------------------------
+bool isMcAtNloTtbar(const int &channel) { return channel==105200; }
+//----------------------------------------------------------
+void SusyNtMaker::fillTruthParticleVars()
+{
+    // DG-2014-08-29 todo
+  // // Retrieve indicies -- should go elsewhere
+  // m_truParticles        = m_recoTruthMatch.LepFromHS_McIdx();
+  // vector<int> truthTaus = m_recoTruthMatch.TauFromHS_McIdx();
+  // m_truParticles.insert( m_truParticles.end(), truthTaus.begin(), truthTaus.end() );
+  // if(m_isMC && isMcAtNloTtbar(m_event.eventinfo.mc_channel_number())){
+  //   vector<int> ttbarPart(WhTruthExtractor::ttbarMcAtNloParticles(m_event.mc.pdgId(),
+  //                                                                 m_event.mc.child_index()));
+  //   m_truParticles.insert(m_truParticles.end(), ttbarPart.begin(), ttbarPart.end());
+  // }
+    const xAOD::TruthParticleContainer* particles = xaodTruthParticles();
+    for(size_t i=0; i<m_truParticles.size(); ++i){
+        const xAOD::TruthParticle &p = *(particles->at(m_truParticles[i]));
+        storeTruthParticle(p);
+    }
+}
+//----------------------------------------------------------
 void get_electron_eff_sf(float& sf, float& uncert,
                          const float &el_cl_eta, const float &pt,
                          bool recoSF, bool idSF, bool triggerSF, bool isAF2,
@@ -777,53 +798,23 @@ void SusyNtMaker::fillMetVars(SusyNtSys sys)
   // //metOut->softJet       = m_susyObj.computeMETComponent(METUtil::SoftJets, metSys).Mod()/GeV;
   // //metOut->refCell       = m_susyObj.computeMETComponent(METUtil::CellOutEflow, metSys).Mod()/GeV;
 }
-
-/*--------------------------------------------------------------------------------*/
-// Fill Truth Particle variables
-/*--------------------------------------------------------------------------------*/
-bool isMcAtNloTtbar(const int &channel) { return channel==105200; }
-/*--------------------------------------------------------------------------------*/
-void SusyNtMaker::fillTruthParticleVars()
+//----------------------------------------------------------
+void SusyNtMaker::storeTruthParticle(const xAOD::TruthParticle &in)
 {
-#warning fillTruthParticleVars not implemented
-  // if(m_dbg>=5) cout << "fillTruthParticleVars" << endl;
-
-  // // Retrieve indicies
-  // m_truParticles        = m_recoTruthMatch.LepFromHS_McIdx();
-  // vector<int> truthTaus = m_recoTruthMatch.TauFromHS_McIdx();
-  // m_truParticles.insert( m_truParticles.end(), truthTaus.begin(), truthTaus.end() );
-  // if(m_isMC && isMcAtNloTtbar(m_event.eventinfo.mc_channel_number())){
-  //   vector<int> ttbarPart(WhTruthExtractor::ttbarMcAtNloParticles(m_event.mc.pdgId(),
-  //                                                                 m_event.mc.child_index()));
-  //   m_truParticles.insert(m_truParticles.end(), ttbarPart.begin(), ttbarPart.end());
-  // }
-
-  // // Loop over selected truth particles
-  // for(uint iTruPar=0; iTruPar<m_truParticles.size(); iTruPar++){
-  //   int truParIdx = m_truParticles[iTruPar];
-
-  //   m_susyNt.tpr()->push_back( Susy::TruthParticle() );
-  //   Susy::TruthParticle* tprOut         = & m_susyNt.tpr()->back();
-
-  //   // Set TLV
-  //   float pt  = m_event.mc.pt() ->at(truParIdx) / GeV;
-  //   float eta = m_event.mc.eta()->at(truParIdx);
-  //   float phi = m_event.mc.phi()->at(truParIdx);
-  //   float m   = m_event.mc.m()  ->at(truParIdx) / GeV;
-
-  //   tprOut->SetPtEtaPhiM(pt, eta, phi, m);
-  //   tprOut->pt          = pt;
-  //   tprOut->eta         = eta;
-  //   tprOut->phi         = phi;
-  //   tprOut->m           = m;
-
-  //   tprOut->charge      = m_event.mc.charge()->at(truParIdx);
-  //   tprOut->pdgId       = m_event.mc.pdgId() ->at(truParIdx);
-  //   tprOut->status      = m_event.mc.status()->at(truParIdx);
+    Susy::TruthParticle out;
+    double pt(in.pt()*MeV2GeV), eta(in.eta()), phi(in.phi()), m(in.m()*MeV2GeV);
+    out.SetPtEtaPhiM(pt, eta, phi, m);
+    out.pt  = pt;
+    out.eta = eta;
+    out.phi = phi;
+    out.m   = m;
+    bool all_available=true;
+    // out.charge = in.charge(); // DG 2014-08-29 discards const ??
+    out.pdgId = in.pdgId();
+    out.status = in.status();
   //   tprOut->motherPdgId = smc::determineParentPdg(m_event.mc.pdgId(),
   //                                                 m_event.mc.parent_index(),
   //                                                 truParIdx);
-  // }
 }
 /*--------------------------------------------------------------------------------*/
 // Fill Truth Jet variables
