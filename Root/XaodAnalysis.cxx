@@ -273,6 +273,21 @@ const xAOD::TruthParticleContainer* XaodAnalysis::xaodTruthParticles()
     return m_xaodTruthParticles;
 }
 //----------------------------------------------------------
+void XaodAnalysis::retrieveXaodMet()
+{
+    // DG-2014-08-29 todo: caching
+    xAOD::MissingETContainer met;
+    m_susyObj.GetMET(met);
+    xAOD::MissingETContainer::const_iterator met_it = met.find("Final");
+    if(met_it==met.end()){
+        cout<<"XaodAnalysis::xaodMet: cannot retrieve met"<<endl;
+    } else {
+        double mpx((*met_it)->mpx()),  mpy((*met_it)->mpy());
+        m_met.SetPxPyPzE(mpx, mpy, 0.0, sqrt(mpx*mpx+mpy*mpy));
+        if(m_dbg) cout<<"XaodAnalysis::xaodMet: retrieved met"<<endl;
+    }
+}
+//----------------------------------------------------------
 SystErr::Syste ntsys2systerr(const SusyNtSys &s)
 {
     SystErr::Syste sys = SystErr::NONE;
@@ -366,6 +381,7 @@ void XaodAnalysis::selectBaselineObjects(SusyNtSys sys)
     }
     m_susyObj.OverlapRemoval(m_xaodElectrons, m_xaodMuons, m_xaodJets);
 
+    // retrieveXaodMet();  DG-2014-08-29 should be here or in retrieveXaodObjects?
 /**/
   // Container object selection
   //-DG-if(m_selectTaus) m_contTaus = get_taus_baseline(xaodTaus(), m_susyObj, 20.*GeV, 2.47,
@@ -1343,5 +1359,6 @@ XaodAnalysis& XaodAnalysis::retrieveCollections()
     xaodPhothons();
     xaodTruthEvent();
     xaodTruthParticles();
+    retrieveXaodMet();
     return *this;
 }

@@ -92,6 +92,8 @@ class XaodAnalysis : public TSelector
     virtual const xAOD::TruthEventContainer* xaodTruthEvent();
     /// access the truth particles
     virtual const xAOD::TruthParticleContainer* xaodTruthParticles();
+    /// retrieve met
+    virtual void retrieveXaodMet();
     /// retrieve all the input collections and cache pointers
     XaodAnalysis& retrieveCollections();
 
