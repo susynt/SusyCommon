@@ -30,9 +30,7 @@ using susy::SusyNtMaker;
 #define GeV 1000.
 const double MeV2GeV=1.0e3;
 
-/*--------------------------------------------------------------------------------*/
-// SusyNtMaker Constructor
-/*--------------------------------------------------------------------------------*/
+//----------------------------------------------------------
 SusyNtMaker::SusyNtMaker() :
     m_outTreeFile(NULL),
     m_outTree(NULL),
@@ -59,14 +57,11 @@ SusyNtMaker::SusyNtMaker() :
   n_sig_tau=0;
   n_sig_jet=0;
 }
-/*--------------------------------------------------------------------------------*/
-// Destructor
-/*--------------------------------------------------------------------------------*/
-
+//----------------------------------------------------------
 SusyNtMaker::~SusyNtMaker()
 {
 }
-/*--------------------------------------------------------------------------------*/
+//----------------------------------------------------------
 void SusyNtMaker::SlaveBegin(TTree* tree)
 {
   XaodAnalysis::SlaveBegin(tree);
@@ -78,7 +73,7 @@ void SusyNtMaker::SlaveBegin(TTree* tree)
   initializeCutflowHistograms();
   m_timer.Start();
 }
-/*--------------------------------------------------------------------------------*/
+//----------------------------------------------------------
 const std::vector< std::string > SusyNtMaker::cutflowLabels()
 {
     vector<string> labels;
@@ -109,7 +104,7 @@ TH1F* SusyNtMaker::makeCutFlow(const char* name, const char* title)
         h->GetXaxis()->SetBinLabel(iCut+1, labels[iCut].c_str());
     return h;
 }
-/*--------------------------------------------------------------------------------*/
+//----------------------------------------------------------
 TH1F* SusyNtMaker::getProcCutFlow(int signalProcess)
 {
   // Look for it on the map
@@ -127,10 +122,7 @@ TH1F* SusyNtMaker::getProcCutFlow(int signalProcess)
     return it->second;
   }
 }
-
-/*--------------------------------------------------------------------------------*/
-// Main process loop function
-/*--------------------------------------------------------------------------------*/
+//----------------------------------------------------------
 Bool_t SusyNtMaker::Process(Long64_t entry)
 {
   m_event.getEntry(entry);
@@ -169,12 +161,7 @@ Bool_t SusyNtMaker::Process(Long64_t entry)
   clearContainerPointers();
   return kTRUE;
 }
-
-/*--------------------------------------------------------------------------------*/
-// The Terminate() function is the last function to be called during
-// a query. It always runs on the client, it can be used to present
-// the results graphically or save the results to file.
-/*--------------------------------------------------------------------------------*/
+//----------------------------------------------------------
 void SusyNtMaker::Terminate()
 {
   XaodAnalysis::Terminate();
@@ -184,10 +171,7 @@ void SusyNtMaker::Terminate()
   cout<<timerSummary()<<endl;
   if(m_fillNt) saveOutputTree();
 }
-
-/*--------------------------------------------------------------------------------*/
-// Select event
-/*--------------------------------------------------------------------------------*/
+//----------------------------------------------------------
 bool isSimplifiedModel(const TString &sampleName)
 {
     return sampleName.Contains("simplifiedModel");
@@ -201,128 +185,7 @@ bool SusyNtMaker::selectEvent()
   return (passEventlevelSelection() &&
           passObjectlevelSelection());
 }
-// bool SusyNtMaker::selectEvent()
-// {
-
-//   //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-//
-//   // Get Nominal Objects
-
-//   selectObjects();
-//   buildMet();
-//   //evtCheck();
-//   assignObjectCleaningFlags();
-
-
-//   // These next cuts are not used to filter the SusyNt because they depend on systematics.
-//   // Instead, they are simply used for the counters, for comparing the cutflow
-
-//   // Tile hot spot
-//   if(m_cutFlags & ECut_HotSpot)
-//   {
-//     fillCutFlow(w);
-//     n_evt_hotSpot++;
-
-//     // Bad jet cut
-//     if(m_cutFlags & ECut_BadJet)
-//     {
-//       fillCutFlow(w);
-//       n_evt_badJet++;
-
-//       // Bad muon veto
-//       if(m_cutFlags & ECut_BadMuon)
-//       {
-// 	fillCutFlow(w);
-//         n_evt_badMu++;
-
-//         // Cosmic muon veto
-//         if(m_cutFlags & ECut_Cosmic)
-//         {
-//           fillCutFlow(w);
-//           n_evt_cosmic++;
-
-//           n_base_ele += m_baseElectrons.size();
-//           n_base_muo += m_baseMuons.size();
-//           n_base_tau += m_baseTaus.size();
-//           n_base_jet += m_baseJets.size();
-//           n_sig_ele += m_sigElectrons.size();
-//           n_sig_muo += m_sigMuons.size();
-//           n_sig_tau += m_sigTaus.size();
-//           n_sig_jet += m_sigJets.size();
-
-//           // Lepton multiplicity
-//           uint nSigLep = m_sigElectrons.size() + m_sigMuons.size();
-//           //cout << "nSigLep " << nSigLep << endl;
-//           if(nSigLep >= 1){
-//             fillCutFlow(w);
-//             n_evt_1Lep++;
-//             if(nSigLep >= 2){
-//               fillCutFlow(w);
-//               n_evt_2Lep++;
-//               if(nSigLep == 3){
-//                 fillCutFlow(w);
-//                 n_evt_3Lep++;
-//                 //cout << "Event " << d3pd.evt.EventNumber() << endl;
-//               }
-//             }
-//           }
-//         }
-//       }
-//     }
-//   }
-
-//   // Match the triggers
-//   // Will this work for systematic leptons?
-//   // I think so.
-//   matchTriggers();
-
-//   // Setup reco truth matching
-//   if(m_isMC){
-//     D3PDReader::TruthParticleD3PDObject  &mc = m_event.mc;
-//     D3PDReader::EventInfoD3PDObject    &info = m_event.eventinfo;
-//     D3PDReader::JetD3PDObject          &jets = m_event.jet_AntiKt4LCTopo;
-//     D3PDReader::ElectronD3PDObject    &elecs = m_event.el;
-//     D3PDReader::TruthMuonD3PDObject &truthMu = m_event.muonTruth;
-//     D3PDReader::TrackParticleD3PDObject &trk = m_event.trk;
-//     m_recoTruthMatch = RecoTauMatch(0.1, info.mc_channel_number(),
-//                                     mc.n(), mc.barcode(), mc.status(), mc.pdgId(),
-//                                     mc.parents(), mc.children(),
-//                                     mc.pt(), mc.eta(), mc.phi(), mc.m(),
-//                                     jets.pt(), jets.eta(), jets.phi(), jets.m(),
-//                                     jets.flavor_truth_label(),
-//                                     elecs.pt(), elecs.eta(), elecs.phi(), elecs.m(),
-//                                     elecs.type(), elecs.origin(),
-//                                     truthMu.pt(), truthMu.eta(), truthMu.phi(), truthMu.m(),
-//                                     truthMu.type(), truthMu.origin(),
-//                                     trk.pt(), trk.eta(), trk.phi_wrtPV(), trk.mc_barcode());
-//    }
-
-//   if(m_fillNt){
-
-//     // This will fill the pre selected
-//     // objects prior to overlap removal
-//     fillNtVars();
-
-//     // If it is mc and option for sys is set
-//     if(m_isMC && m_sys) doSystematic();
-
-//     // For filling the output tree, filter on number of saved light leptons and taus
-//     if(m_filter){
-//       uint nLepSaved = m_susyNt.ele()->size() + m_susyNt.muo()->size();
-//       uint nTauSaved = m_susyNt.tau()->size();
-//       if(nLepSaved < m_nLepFilter) return false;
-//       if((nLepSaved + nTauSaved) < m_nLepTauFilter) return false;
-//     }
-
-//     // Trigger filtering, only save events for which one of our triggers has fired
-//     if(m_filterTrigger && (m_evtTrigFlags == 0)) return false;
-//   }
-
-//   return true;
-// }
-
-/*--------------------------------------------------------------------------------*/
-// Fill SusyNt variables
-/*--------------------------------------------------------------------------------*/
+//----------------------------------------------------------
 void SusyNtMaker::fillNtVars()
 {
   fillEventVars();
@@ -338,10 +201,7 @@ void SusyNtMaker::fillNtVars()
     fillTruthMetVars();
   }
 }
-
-/*--------------------------------------------------------------------------------*/
-// Fill Event variables
-/*--------------------------------------------------------------------------------*/
+//----------------------------------------------------------
 void SusyNtMaker::fillEventVars()
 {
   if(m_dbg>=5) cout << "fillEventVars" << endl;
@@ -422,6 +282,15 @@ void SusyNtMaker::fillMuonVars()
     }
 }
 //----------------------------------------------------------
+void SusyNtMaker::fillJetVars()
+{
+    xAOD::JetContainer* jets = XaodAnalysis::xaodJets();
+    for(size_t i=0; i<m_preJets.size(); ++i){
+        const xAOD::Jet &jet = *(jets->at(m_preJets[i]));
+        storeJet(jet);
+    }
+}
+//----------------------------------------------------------
 void get_electron_eff_sf(float& sf, float& uncert,
                          const float &el_cl_eta, const float &pt,
                          bool recoSF, bool idSF, bool triggerSF, bool isAF2,
@@ -453,7 +322,6 @@ void get_electron_eff_sf(float& sf, float& uncert,
     }
 }
 //----------------------------------------------------------
-/*--------------------------------------------------------------------------------*/
 void SusyNtMaker::storeElectron(const xAOD::Electron &in)
 {
     Susy::Electron out;
@@ -537,7 +405,6 @@ void SusyNtMaker::storeElectron(const xAOD::Electron &in)
     if(m_dbg && !all_available) cout<<"missing some electron variables"<<endl;
     m_susyNt.ele()->push_back(out);  
 }
-
 //----------------------------------------------------------
 // // match muon to muon truth, returns element object if success, else NULL
 // D3PDReader::TruthMuonD3PDObjectElement* getMuonTruth(D3PDReader::MuonD3PDObject* muons, int muIdx, D3PDReader::TruthMuonD3PDObject* truthMuons)
@@ -628,40 +495,19 @@ void SusyNtMaker::storeMuon(const xAOD::Muon &in)
     if(m_dbg && !all_available) cout<<"missing some electron variables"<<endl;
     m_susyNt.muo()->push_back(out);
 }
-
 /*--------------------------------------------------------------------------------*/
-// Fill jet variables
-/*--------------------------------------------------------------------------------*/
-void SusyNtMaker::fillJetVars()
+void SusyNtMaker::storeJet(const xAOD::Jet &in)
 {
-#warning fillJetVars not implemented
-  // if(m_dbg>=5) cout << "fillJetVars" << endl;
-  // // Calculate random run/lb number, necessary for BCH cleaning flag
-  // if(m_isMC) calcRandomRunLB();
-  // // Loop over selected jets and fill output tree
-  // for(uint iJet=0; iJet<m_preJets.size(); iJet++){
-  //   int jetIndex = m_preJets[iJet];
-  //   fillJetVar(jetIndex);
-  // }
-}
-/*--------------------------------------------------------------------------------*/
-void SusyNtMaker::fillJetVar(int jetIdx)
-{
-  // const D3PDReader::JetD3PDObjectElement *element = &m_event.jet_AntiKt4LCTopo[jetIdx];
-  // m_susyNt.jet()->push_back( Susy::Jet() );
-  // Susy::Jet* jetOut = & m_susyNt.jet()->back();
-
-  // const TLorentzVector* lv = & m_susyObj.GetJetTLV(jetIdx);
-  // float pt  = lv->Pt() / GeV;
-  // float eta = lv->Eta();
-  // float phi = lv->Phi();
-  // float m   = lv->M() / GeV;
-  // jetOut->SetPtEtaPhiM(pt, eta, phi, m);
-  // jetOut->pt  = pt;
-  // jetOut->eta = eta;
-  // jetOut->phi = phi;
-  // jetOut->m   = m;
-
+    Susy::Jet out;
+    double pt(in.pt()*MeV2GeV), eta(in.eta()), phi(in.phi()), m(in.m()*MeV2GeV);
+    out.SetPtEtaPhiM(pt, eta, phi, m);
+    out.pt  = pt;
+    out.eta = eta;
+    out.phi = phi;
+    out.m   = m;
+    bool all_available=true;
+    out.isBadVeryLoose = (in.auxdata<int>("bad")==1);
+// DG-2014-08-29 todo
   // jetOut->detEta        = element->constscale_eta();
   // jetOut->emfrac        = element->emfrac();
   // jetOut->idx           = jetIdx;
@@ -714,6 +560,8 @@ void SusyNtMaker::fillJetVar(int jetIdx)
   // bool passSWord = (MissingETTags::DEFAULT == sWord);       // Note assuming default met..
   // jetOut->met_wpx = 0; passSWord ? jetMetEgamma10NoTau.wpx().at(0) : 0;
   // jetOut->met_wpy = 0; passSWord ? jetMetEgamma10NoTau.wpy().at(0) : 0;
+    if(m_dbg && !all_available) cout<<"missing some jet variables"<<endl;
+    m_susyNt.jet()->push_back(out);
 }
 
 /*--------------------------------------------------------------------------------*/
