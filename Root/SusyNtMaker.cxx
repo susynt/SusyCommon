@@ -291,6 +291,16 @@ void SusyNtMaker::fillJetVars()
     }
 }
 //----------------------------------------------------------
+void SusyNtMaker::fillTauVars()
+{
+    xAOD::TauJetContainer* taus =  XaodAnalysis::xaodTaus();
+    vector<int>& saveTaus = m_saveContTaus? m_contTaus : m_preTaus;
+    for(size_t i=0; i<saveTaus.size(); ++i){
+        const xAOD::TauJet &tau = *(taus->at(saveTaus[i]));
+        storeTau(tau);
+    }
+}
+//----------------------------------------------------------
 void get_electron_eff_sf(float& sf, float& uncert,
                          const float &el_cl_eta, const float &pt,
                          bool recoSF, bool idSF, bool triggerSF, bool isAF2,
@@ -607,46 +617,18 @@ void SusyNtMaker::fillPhotonVar(int phIdx)
   // // Miscellaneous
   // phoOut->idx    = phIdx;
 }
-
-/*--------------------------------------------------------------------------------*/
-// Fill Tau variables
-/*--------------------------------------------------------------------------------*/
-void SusyNtMaker::fillTauVars()
+//----------------------------------------------------------
+void SusyNtMaker::storeTau(const xAOD::TauJet &in)
 {
-#warning fillTauVars not implemented
-  // if(m_dbg>=5) cout << "fillTauVars" << endl;
-
-  // // Loop over selected taus
-  // vector<int>& saveTaus = m_saveContTaus? m_contTaus : m_preTaus;
-  // for(uint iTau=0; iTau < saveTaus.size(); iTau++){
-  //   int tauIdx = saveTaus[iTau];
-
-  //   fillTauVar(tauIdx);
-  // }
-}
-/*--------------------------------------------------------------------------------*/
-void SusyNtMaker::fillTauVar(int tauIdx)
-{
-  // if(m_dbg>=5) cout << "fillTauVar" << endl;
-  // m_susyNt.tau()->push_back( Susy::Tau() );
-  // Susy::Tau* tauOut = & m_susyNt.tau()->back();
-  // const D3PDReader::TauD3PDObjectElement* element = & m_event.tau[tauIdx];
-
-  // // Set TLV
-  // //const TLorentzVector* tauLV = & m_tauLVs.at(tauIdx);
-  // const TLorentzVector* tauLV = & m_susyObj.GetTauTLV(tauIdx);
-  // float pt  = tauLV->Pt() / GeV;
-  // float eta = tauLV->Eta();
-  // float phi = tauLV->Phi();
-  // float m   = tauLV->M() / GeV;
-
-  // tauOut->SetPtEtaPhiM(pt, eta, phi, m);
-  // tauOut->pt    = pt;
-  // tauOut->eta   = eta;
-  // tauOut->phi   = phi;
-  // tauOut->m     = m;
-
-  // tauOut->q                     = element->charge();
+    Susy::Tau out;
+    double pt(in.pt()*MeV2GeV), eta(in.eta()), phi(in.phi()), m(in.m()*MeV2GeV);
+    out.SetPtEtaPhiM(pt, eta, phi, m);
+    out.pt  = pt;
+    out.eta = eta;
+    out.phi = phi;
+    out.m   = m;
+    bool all_available=true;
+    out.q = in.charge();
   // tauOut->author                = element->author();
   // tauOut->nTrack                = element->numTrack();
   // tauOut->eleBDT                = element->BDTEleScore();
@@ -712,6 +694,8 @@ void SusyNtMaker::fillTauVar(int tauIdx)
   // tauOut->trigFlags             = m_tauTrigFlags[tauIdx];
 
   // tauOut->idx   = tauIdx;
+    if(m_dbg && !all_available) cout<<"missing some tau variables"<<endl;
+    m_susyNt.tau()->push_back(out);
 }
 
 /*--------------------------------------------------------------------------------*/
