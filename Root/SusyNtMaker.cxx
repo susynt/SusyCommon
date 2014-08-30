@@ -301,6 +301,15 @@ void SusyNtMaker::fillTauVars()
     }
 }
 //----------------------------------------------------------
+void SusyNtMaker::fillPhotonVars()
+{
+    const xAOD::PhotonContainer* photons = XaodAnalysis::xaodPhothons();
+    for(size_t i=0; i<m_sigPhotons.size(); ++i){
+        const xAOD::Photon &ph = *(photons->at(m_sigPhotons[i]));
+        storePhoton(ph);
+    }
+}
+//----------------------------------------------------------
 void get_electron_eff_sf(float& sf, float& uncert,
                          const float &el_cl_eta, const float &pt,
                          bool recoSF, bool idSF, bool triggerSF, bool isAF2,
@@ -573,49 +582,26 @@ void SusyNtMaker::storeJet(const xAOD::Jet &in)
     if(m_dbg && !all_available) cout<<"missing some jet variables"<<endl;
     m_susyNt.jet()->push_back(out);
 }
-
-/*--------------------------------------------------------------------------------*/
-// Fill Photon variables
-/*--------------------------------------------------------------------------------*/
-void SusyNtMaker::fillPhotonVars()
+//----------------------------------------------------------
+void SusyNtMaker::storePhoton(const xAOD::Photon &in)
 {
-#warning fillPhotonVars not implemented
-  // if(m_dbg>=5) cout << "fillPhotonVars" << endl;
-
-  // // Loop over photons
-  // for(uint iPh=0; iPh<m_sigPhotons.size(); iPh++){
-  //   int phIndex = m_sigPhotons[iPh];
-
-  //   fillPhotonVar(phIndex);
-  // }
-}
-/*--------------------------------------------------------------------------------*/
-void SusyNtMaker::fillPhotonVar(int phIdx)
-{
-  // if(m_dbg>=5) cout << "fillPhotonVar" << endl;
-  // m_susyNt.pho()->push_back( Susy::Photon() );
-  // Susy::Photon* phoOut = & m_susyNt.pho()->back();
-  // const D3PDReader::PhotonD3PDObjectElement* element = & m_event.ph[phIdx];
-
-
-  // // Set TLV
-  // const TLorentzVector* phTLV = & m_susyObj.GetPhotonTLV(phIdx);
-  // float pt  = phTLV->Pt() / GeV;
-  // float E   = phTLV->E()  / GeV;
-  // float eta = phTLV->Eta();
-  // float phi = phTLV->Phi();
-
-  // phoOut->SetPtEtaPhiE(pt, eta, phi, E);
-  // phoOut->pt  = pt;
-  // phoOut->eta = eta;
-  // phoOut->phi = phi;
-  // phoOut->m   = 0.;
+    Susy::Photon out;
+    double pt(in.pt()*MeV2GeV), eta(in.eta()), phi(in.phi()), m(in.m()*MeV2GeV);
+    out.SetPtEtaPhiM(pt, eta, phi, m);
+    out.pt  = pt;
+    out.eta = eta;
+    out.phi = phi;
+    out.m   = m;
+    bool all_available=true;
 
   // // Save conversion info
   // phoOut->isConv = element->isConv();
 
   // // Miscellaneous
   // phoOut->idx    = phIdx;
+  // if(m_dbg>=5) cout << "fillPhotonVar" << endl;
+    if(m_dbg && !all_available) cout<<"missing some photon variables"<<endl;
+    m_susyNt.pho()->push_back(out);
 }
 //----------------------------------------------------------
 void SusyNtMaker::storeTau(const xAOD::TauJet &in)

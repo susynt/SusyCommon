@@ -75,12 +75,12 @@ class SusyNtMaker : public XaodAnalysis
     void fillMuonVars();
     void fillJetVars();
     void fillTauVars();
+    void fillPhotonVars();
     void storeElectron(const xAOD::Electron &in);
     void storeMuon(const xAOD::Muon &in);
     void storeJet(const xAOD::Jet &in);
     void storeTau(const xAOD::TauJet &in);
-    void fillPhotonVars();
-    void fillPhotonVar(int phIdx);
+    void storePhoton(const xAOD::Photon &in);
     void fillMetVars(SusyNtSys sys = NtSys_NOM);
     void fillTruthParticleVars();
     void fillTruthJetVars();
