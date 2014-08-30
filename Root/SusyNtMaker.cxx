@@ -131,9 +131,9 @@ TH1F* SusyNtMaker::getProcCutFlow(int signalProcess)
 Bool_t SusyNtMaker::Process(Long64_t entry)
 {
   m_event.getEntry(entry);
-
-  const xAOD::EventInfo* eventinfo = 0;
-  m_event.retrieve(eventinfo, "EventInfo");
+  clearOutputObjects();
+  retrieveCollections();
+  const xAOD::EventInfo* eventinfo = XaodAnalysis::xaodEventInfo();
   cout<<"run "<<eventinfo->eventNumber()<<" event "<<eventinfo->runNumber()<<endl;
 
   if(!m_flagsHaveBeenChecked) {
@@ -163,6 +163,7 @@ Bool_t SusyNtMaker::Process(Long64_t entry)
       }
   }
   deleteShallowCopies();
+  clearContainerPointers();
   return kTRUE;
 }
 
@@ -341,8 +342,7 @@ void SusyNtMaker::fillEventVars()
 {
   if(m_dbg>=5) cout << "fillEventVars" << endl;
   Susy::Event* evt = m_susyNt.evt();
-  const xAOD::EventInfo* eventinfo = 0; // todo: do this once and set the pointer (access through XaodAnalysis::eventinfo())
-  m_event.retrieve(eventinfo, "EventInfo");
+  const xAOD::EventInfo* eventinfo = XaodAnalysis::xaodEventInfo();
 
   evt->run              = eventinfo->runNumber();
   evt->event            = eventinfo->eventNumber();

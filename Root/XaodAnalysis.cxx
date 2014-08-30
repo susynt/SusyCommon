@@ -55,18 +55,9 @@ XaodAnalysis::XaodAnalysis() :
         m_flagsHaveBeenChecked(false),
         m_event(xAOD::TEvent::kClassAccess),
         m_store(),
-        m_susyObj("SUSYObjDef_xAOD"),
-        m_xaodMuons        (NULL),
-        m_xaodMuonsAux     (NULL),
-        m_xaodElectrons    (NULL),
-        m_xaodElectronsAux (NULL),
-        m_xaodTaus         (NULL),
-        m_xaodTausAux      (NULL),
-        m_xaodJets         (NULL),
-        m_xaodJetsAux      (NULL),
-        m_xaodPhotons      (NULL),
-        m_xaodPhotonsAux   (NULL)
+        m_susyObj("SUSYObjDef_xAOD")
 {
+    clearContainerPointers();
 }
 //----------------------------------------------------------
 void XaodAnalysis::Init(TTree *tree)
@@ -106,7 +97,7 @@ void XaodAnalysis::SlaveBegin(TTree *tree)
 Bool_t XaodAnalysis::Process(Long64_t entry)
 {
   m_event.getEntry(entry);
-
+  retrieveCollections();
   static Long64_t chainEntry = -1;
   chainEntry++;
   if(m_dbg || chainEntry%10000==0)
@@ -115,11 +106,12 @@ Bool_t XaodAnalysis::Process(Long64_t entry)
       cout<<"run "<<eventinfo->eventNumber()<<" event "<<eventinfo->runNumber()<<endl;
   }
   // Object selection
-  clearObjects();
-  SusyNtSys sys = NtSys_NOM;
-  selectObjects(sys);
-  buildMet();
+  clearOutputObjects();
+  // SusyNtSys sys = NtSys_NOM;
+  // selectObjects(sys);
+  // buildMet();
   deleteShallowCopies();
+  clearContainerPointers();
   return kTRUE;
 }
 
@@ -161,122 +153,124 @@ XaodAnalysis& XaodAnalysis::initSusyTools()
 //----------------------------------------------------------
 const xAOD::EventInfo* XaodAnalysis::xaodEventInfo()
 {
-    const xAOD::EventInfo* evt = NULL;
-    m_event.retrieve(evt, "EventInfo");
-    if(m_dbg){
-        if(evt) cout<<"XaodAnalysis::xaodEventInfo: retrieved"<<endl;
-        else    cout<<"XaodAnalysis::xaodEventInfo: failed"<<endl;
+    if(m_xaodEventInfo==NULL){
+        const xAOD::EventInfo* evt = NULL;
+        m_event.retrieve(evt, "EventInfo");
+        if(m_dbg){
+            if(evt) cout<<"XaodAnalysis::xaodEventInfo: retrieved"<<endl;
+            else    cout<<"XaodAnalysis::xaodEventInfo: failed"<<endl;
+        }
+        m_xaodEventInfo = evt;
     }
-    return evt;
+    return m_xaodEventInfo;
 }
 //----------------------------------------------------------
 xAOD::MuonContainer* XaodAnalysis::xaodMuons()
 {
-    const xAOD::MuonContainer* muo = 0;
-    m_event.retrieve(muo, "Muons");
-    if(m_dbg){
-        if(muo) cout<<"XaodAnalysis::xaodMuons: retrieved "<<muo->size()<<endl;
-        else    cout<<"XaodAnalysis::xaodMuons: failed"<<endl;
+    if(m_xaodMuons==NULL){
+        const xAOD::MuonContainer* muo = 0;
+        m_event.retrieve(muo, "Muons");
+        if(m_dbg){
+            if(muo) cout<<"XaodAnalysis::xaodMuons: retrieved "<<muo->size()<<endl;
+            else    cout<<"XaodAnalysis::xaodMuons: failed"<<endl;
+        }
+        std::pair<xAOD::MuonContainer*, xAOD::ShallowAuxContainer*> muons_with_shallow = xAOD::shallowCopyContainer(*muo);
+        m_xaodMuons = muons_with_shallow.first;
+        m_xaodMuonsAux = muons_with_shallow.second;
     }
-    std::pair<xAOD::MuonContainer*, xAOD::ShallowAuxContainer*> muons_with_shallow = xAOD::shallowCopyContainer(*muo);
-    m_xaodMuons = muons_with_shallow.first;
-    m_xaodMuonsAux = muons_with_shallow.second;
     return m_xaodMuons;
 }
 //----------------------------------------------------------
 xAOD::ElectronContainer* XaodAnalysis::xaodElectrons()
 {
-    const xAOD::ElectronContainer* ele = 0;
-    m_event.retrieve(ele, "ElectronCollection");
-    if(m_dbg){
-        if(ele) cout<<"XaodAnalysis::xaodElectrons: retrieved "<<ele->size()<<endl;
-        else    cout<<"XaodAnalysis::xaodElectrons: failed"<<endl;
+    if(m_xaodElectrons==NULL){
+        const xAOD::ElectronContainer* ele = 0;
+        m_event.retrieve(ele, "ElectronCollection");
+        if(m_dbg){
+            if(ele) cout<<"XaodAnalysis::xaodElectrons: retrieved "<<ele->size()<<endl;
+            else    cout<<"XaodAnalysis::xaodElectrons: failed"<<endl;
+        }
+        std::pair<xAOD::ElectronContainer*, xAOD::ShallowAuxContainer*> elec_with_shallow = xAOD::shallowCopyContainer(*ele);
+        m_xaodElectrons = elec_with_shallow.first;
+        m_xaodElectronsAux = elec_with_shallow.second;
     }
-    std::pair<xAOD::ElectronContainer*, xAOD::ShallowAuxContainer*> elec_with_shallow = xAOD::shallowCopyContainer(*ele);
-    m_xaodElectrons = elec_with_shallow.first;
-    m_xaodElectronsAux = elec_with_shallow.second;
     return m_xaodElectrons;
 }
 //----------------------------------------------------------
 xAOD::TauJetContainer* XaodAnalysis::xaodTaus()
 {
-    const xAOD::TauJetContainer* tau = 0;
-    m_event.retrieve(tau, "TauRecContainer");
-    if(m_dbg){
-        if(tau) cout<<"XaodAnalysis::xaodTaus: retrieved "<<tau->size()<<endl;
-        else    cout<<"XaodAnalysis::xaodTaus: failed"<<endl;
+    if(m_xaodTaus==NULL){
+        const xAOD::TauJetContainer* tau = 0;
+        m_event.retrieve(tau, "TauRecContainer");
+        if(m_dbg){
+            if(tau) cout<<"XaodAnalysis::xaodTaus: retrieved "<<tau->size()<<endl;
+            else    cout<<"XaodAnalysis::xaodTaus: failed"<<endl;
+        }
+        std::pair<xAOD::TauJetContainer*, xAOD::ShallowAuxContainer*> taus_with_shallow = xAOD::shallowCopyContainer(*tau);
+        m_xaodTaus = taus_with_shallow.first;
+        m_xaodTausAux = taus_with_shallow.second;
     }
-    std::pair<xAOD::TauJetContainer*, xAOD::ShallowAuxContainer*> taus_with_shallow = xAOD::shallowCopyContainer(*tau);
-    m_xaodTaus = taus_with_shallow.first;
-    m_xaodTausAux = taus_with_shallow.second;
     return m_xaodTaus;
 }
 //----------------------------------------------------------
 xAOD::JetContainer* XaodAnalysis::xaodJets()
 {
-    const xAOD::JetContainer* jet = 0;
-    m_event.retrieve(jet, "AntiKt4LCTopoJets");
-    if(m_dbg){
-        if(jet) cout<<"XaodAnalysis::xaodJets: retrieved "<<jet->size()<<endl;
-        else    cout<<"XaodAnalysis::xaodJets: failed"<<endl;
+    if(m_xaodJets==NULL){
+        const xAOD::JetContainer* jet = 0;
+        m_event.retrieve(jet, "AntiKt4LCTopoJets");
+        if(m_dbg){
+            if(jet) cout<<"XaodAnalysis::xaodJets: retrieved "<<jet->size()<<endl;
+            else    cout<<"XaodAnalysis::xaodJets: failed"<<endl;
+        }
+        std::pair<xAOD::JetContainer*, xAOD::ShallowAuxContainer*> jets_with_shallow = xAOD::shallowCopyContainer(*jet);
+        m_xaodJets = jets_with_shallow.first;
+        m_xaodJetsAux = jets_with_shallow.second;
     }
-    std::pair<xAOD::JetContainer*, xAOD::ShallowAuxContainer*> jets_with_shallow = xAOD::shallowCopyContainer(*jet);
-    m_xaodJets = jets_with_shallow.first;
-    m_xaodJetsAux = jets_with_shallow.second;
     return m_xaodJets;
 }
 //----------------------------------------------------------
 const xAOD::PhotonContainer* XaodAnalysis::xaodPhothons()
 {
-    const xAOD::PhotonContainer* photons = 0;
-    m_event.retrieve(photons, "PhotonCollection");
-    if(m_dbg){
-        if(photons) cout<<"XaodAnalysis::xaodPhotons: retrieved "<<photons->size()<<endl;
-        else        cout<<"XaodAnalysis::xaodPhotons: failed"<<endl;
+    if(m_xaodPhotons==NULL){
+        const xAOD::PhotonContainer* photons = 0;
+        m_event.retrieve(photons, "PhotonCollection");
+        if(m_dbg){
+            if(photons) cout<<"XaodAnalysis::xaodPhotons: retrieved "<<photons->size()<<endl;
+            else        cout<<"XaodAnalysis::xaodPhotons: failed"<<endl;
+        }
+        std::pair<xAOD::PhotonContainer*, xAOD::ShallowAuxContainer*> photons_with_shallow = xAOD::shallowCopyContainer(*photons);
+        m_xaodPhotons = photons_with_shallow.first;
+        m_xaodPhotonsAux = photons_with_shallow.second;
     }
-    std::pair<xAOD::PhotonContainer*, xAOD::ShallowAuxContainer*> photons_with_shallow = xAOD::shallowCopyContainer(*photons);
-    m_xaodPhotons = photons_with_shallow.first;
-    m_xaodPhotonsAux = photons_with_shallow.second;
     return m_xaodPhotons;
 }
 //----------------------------------------------------------
 const xAOD::TruthEventContainer* XaodAnalysis::xaodTruthEvent()
 {
-    const xAOD::TruthEventContainer* truth = 0;
-    m_event.retrieve(truth, "TruthEvent");
-    if(m_dbg){
-        if(truth) cout<<"XaodAnalysis::xaodPhotons: retrieved "<<endl;
-        else      cout<<"XaodAnalysis::xaodPhotons: failed"<<endl;
+    if(m_xaodTruthEvent==NULL){
+        const xAOD::TruthEventContainer* truth = 0;
+        m_event.retrieve(truth, "TruthEvent");
+        if(m_dbg){
+            if(truth) cout<<"XaodAnalysis::xaodPhotons: retrieved "<<endl;
+            else      cout<<"XaodAnalysis::xaodPhotons: failed"<<endl;
+        }
+        m_xaodTruthEvent = truth;
     }
-    return truth;
+    return m_xaodTruthEvent;
 }
 //----------------------------------------------------------
 const xAOD::TruthParticleContainer* XaodAnalysis::xaodTruthParticles()
 {
-    const xAOD::TruthParticleContainer* truthP = 0;
-    m_event.retrieve(truthP, "TruthParticle");
-    if(m_dbg){
-        if(truthP) cout<<"XaodAnalysis::xaodTruthParticles: retrieved "<<truthP->size()<<endl;
-        else       cout<<"XaodAnalysis::xaodTruthParticles: failed"<<endl;
+    if(m_xaodTruthParticles==NULL){
+        const xAOD::TruthParticleContainer* truthP = 0;
+        m_event.retrieve(truthP, "TruthParticle");
+        if(m_dbg){
+            if(truthP) cout<<"XaodAnalysis::xaodTruthParticles: retrieved "<<truthP->size()<<endl;
+            else       cout<<"XaodAnalysis::xaodTruthParticles: failed"<<endl;
+        }
+        m_xaodTruthParticles = truthP;
     }
-    return truthP;
-}
-//----------------------------------------------------------
-void XaodAnalysis::clearShallowCopies()
-{
-/// \todo
-/*
-    delete jets_shallowCopy.first;
-    delete jets_shallowCopy.second;
-    delete taus_shallowCopy.first;
-    delete taus_shallowCopy.second;
-    delete muons_shallowCopy.first;
-    delete muons_shallowCopy.second;
-    delete electrons_shallowCopy.first;
-    delete electrons_shallowCopy.second;
-    delete photons_shallowCopy.first;
-    delete photons_shallowCopy.second;
-*/
+    return m_xaodTruthParticles;
 }
 //----------------------------------------------------------
 SystErr::Syste ntsys2systerr(const SusyNtSys &s)
@@ -1084,8 +1078,7 @@ void XaodAnalysis::setMetFlavor(string metFlav)
 //----------------------------------------------------------
 void XaodAnalysis::dumpEvent()
 {
-    const xAOD::EventInfo* eventinfo = 0;
-    m_event.retrieve(eventinfo, "EventInfo");
+    const xAOD::EventInfo* eventinfo = xaodEventInfo();
     cout<<(*eventinfo)<<endl;
 }
 //----------------------------------------------------------
@@ -1307,16 +1300,46 @@ void XaodAnalysis::selectObjects(SusyNtSys sys)
 //----------------------------------------------------------
 XaodAnalysis& XaodAnalysis::deleteShallowCopies()
 {
-    if(m_xaodMuons       ) { delete m_xaodMuons;        m_xaodMuons        = NULL; }
-    if(m_xaodMuonsAux    ) { delete m_xaodMuonsAux;     m_xaodMuonsAux     = NULL; }
-    if(m_xaodElectrons   ) { delete m_xaodElectrons;    m_xaodElectrons    = NULL; }
-    if(m_xaodElectronsAux) { delete m_xaodElectronsAux; m_xaodElectronsAux = NULL; }
-    if(m_xaodTaus        ) { delete m_xaodTaus;         m_xaodTaus         = NULL; }
-    if(m_xaodTausAux     ) { delete m_xaodTausAux;      m_xaodTausAux      = NULL; }
-    if(m_xaodJets        ) { delete m_xaodJets;         m_xaodJets         = NULL; }
-    if(m_xaodJetsAux     ) { delete m_xaodJetsAux;      m_xaodJetsAux      = NULL; }
-    if(m_xaodPhotons     ) { delete m_xaodPhotons;      m_xaodPhotons      = NULL; }
-    if(m_xaodPhotonsAux  ) { delete m_xaodPhotonsAux;   m_xaodPhotonsAux   = NULL; }
+    if(m_xaodMuons       ) delete m_xaodMuons;
+    if(m_xaodMuonsAux    ) delete m_xaodMuonsAux;
+    if(m_xaodElectrons   ) delete m_xaodElectrons;
+    if(m_xaodElectronsAux) delete m_xaodElectronsAux;
+    if(m_xaodTaus        ) delete m_xaodTaus;
+    if(m_xaodTausAux     ) delete m_xaodTausAux;
+    if(m_xaodJets        ) delete m_xaodJets;
+    if(m_xaodJetsAux     ) delete m_xaodJetsAux;
+    if(m_xaodPhotons     ) delete m_xaodPhotons;
+    if(m_xaodPhotonsAux  ) delete m_xaodPhotonsAux;
     return *this;
 }
 //----------------------------------------------------------
+XaodAnalysis& XaodAnalysis::clearContainerPointers()
+{
+    m_xaodEventInfo      = NULL;
+    m_xaodMuons          = NULL;
+    m_xaodMuonsAux       = NULL;
+    m_xaodElectrons      = NULL;
+    m_xaodElectronsAux   = NULL;
+    m_xaodTaus           = NULL;
+    m_xaodTausAux        = NULL;
+    m_xaodJets           = NULL;
+    m_xaodJetsAux        = NULL;
+    m_xaodPhotons        = NULL;
+    m_xaodPhotonsAux     = NULL;
+    m_xaodTruthEvent     = NULL;
+    m_xaodTruthParticles = NULL;
+    return *this;
+}
+//----------------------------------------------------------
+XaodAnalysis& XaodAnalysis::retrieveCollections()
+{
+    xaodEventInfo();
+    xaodMuons();
+    xaodElectrons();
+    xaodTaus();
+    xaodJets();
+    xaodPhothons();
+    xaodTruthEvent();
+    xaodTruthParticles();
+    return *this;
+}

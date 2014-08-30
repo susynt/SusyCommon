@@ -92,8 +92,8 @@ class XaodAnalysis : public TSelector
     virtual const xAOD::TruthEventContainer* xaodTruthEvent();
     /// access the truth particles
     virtual const xAOD::TruthParticleContainer* xaodTruthParticles();
-    /// delete the objects created when accessing the aux info with shallow copies
-    void clearShallowCopies();
+    /// retrieve all the input collections and cache pointers
+    XaodAnalysis& retrieveCollections();
 
     /// fill collections of baseline+signal+truth objects
     /**
@@ -351,6 +351,13 @@ class XaodAnalysis : public TSelector
     xAOD::TEvent m_event;
     xAOD::TStore m_store;
     ST::SUSYObjDef_xAOD m_susyObj;      // SUSY object definitions
+
+    /// internal pointers to the xaod containers
+    /**
+       should proably make these private and force the user to call
+       the @c xaod* functions.
+     */
+    const xAOD::EventInfo* m_xaodEventInfo;
     /// electrons from the xaod
     /**
        Note: one can only access collections as const. One can make
@@ -367,7 +374,8 @@ class XaodAnalysis : public TSelector
     xAOD::ShallowAuxContainer* m_xaodJetsAux; ///< jet aux info
     xAOD::PhotonContainer* m_xaodPhotons;
     xAOD::ShallowAuxContainer* m_xaodPhotonsAux; ///< photon aux info
-
+    const xAOD::TruthEventContainer* m_xaodTruthEvent;
+    const xAOD::TruthParticleContainer* m_xaodTruthParticles;
     /// cleanup shallow copies and aux containers
     /**
        They are created when retrieving the collections with
@@ -375,6 +383,14 @@ class XaodAnalysis : public TSelector
        clean things up.
     */
     XaodAnalysis& deleteShallowCopies();
+    /// clear the internal pointers
+    /**
+       Note that for those containers for which we created shallow
+       copies we need to call delete (see
+       XaodAnalysis::deleteShallowCopies), but for the other ones we
+       just need to reset the chached pointer.
+     */
+    XaodAnalysis& clearContainerPointers();
 };
 
 } // susy
