@@ -135,7 +135,7 @@ void XaodAnalysis::Terminate()
 XaodAnalysis& XaodAnalysis::initSusyTools()
 {
   bool useLeptonTrigger = false;
-  if(true /*m_dbg*/) m_susyObj.msg().setLevel( MSG::DEBUG); // DG-2014-08-15 temporarily toggle dbg always on
+//  if(m_dbg) m_susyObj.msg().setLevel( MSG::DEBUG); // DG-2014-08-15 temporarily toggle dbg always on
   m_susyObj.setProperty("IsData",          static_cast<int>(!m_isMC));
   m_susyObj.setProperty("IsAtlfast",       static_cast<int>(m_isAF2));
   m_susyObj.setProperty("IsMC12b",         static_cast<int>(processingMc12b()));
@@ -374,7 +374,7 @@ void XaodAnalysis::selectBaselineObjects(SusyNtSys sys)
         m_susyObj.IsBJet(jet);
         if(m_dbg) cout<<"Jet passing"
                       <<" baseline? "<<jet.auxdata< int >("baseline")
-                      //<<" signal? "<<jet.auxdata< int >("signal")
+                      <<" signal? "<<jet.auxdata< int >("signal")
                       <<endl;
         // if(baseline) m_baseJets.push_back(iJet);
         // if(signal) m_sigJets.push_back(iJet);

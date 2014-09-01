@@ -266,6 +266,7 @@ void SusyNtMaker::fillEventVars()
 //----------------------------------------------------------
 void SusyNtMaker::fillElectronVars()
 {
+    if(m_dbg>=5) cout<<"fillElectronVars"<<endl;
     xAOD::ElectronContainer* electrons = XaodAnalysis::xaodElectrons();
     for(size_t i=0; i<m_preElectrons.size(); ++i){
         const xAOD::Electron &el = *(electrons->at(m_preElectrons[i]));
@@ -275,6 +276,7 @@ void SusyNtMaker::fillElectronVars()
 //----------------------------------------------------------
 void SusyNtMaker::fillMuonVars()
 {
+    if(m_dbg>=5) cout<<"fillMuonVars"<<endl;
     xAOD::MuonContainer* muons = XaodAnalysis::xaodMuons();
     for(size_t i=0; i<m_preMuons.size(); ++i){
         const xAOD::Muon &mu = *(muons->at(m_preMuons[i]));
@@ -284,6 +286,7 @@ void SusyNtMaker::fillMuonVars()
 //----------------------------------------------------------
 void SusyNtMaker::fillJetVars()
 {
+    if(m_dbg>=5) cout<<"fillJetVars"<<endl;
     xAOD::JetContainer* jets = XaodAnalysis::xaodJets();
     for(size_t i=0; i<m_preJets.size(); ++i){
         const xAOD::Jet &jet = *(jets->at(m_preJets[i]));
@@ -293,6 +296,7 @@ void SusyNtMaker::fillJetVars()
 //----------------------------------------------------------
 void SusyNtMaker::fillTauVars()
 {
+    if(m_dbg>=5) cout<<"fillTauVars"<<endl;
     xAOD::TauJetContainer* taus =  XaodAnalysis::xaodTaus();
     vector<int>& saveTaus = m_saveContTaus? m_contTaus : m_preTaus;
     for(size_t i=0; i<saveTaus.size(); ++i){
@@ -303,6 +307,7 @@ void SusyNtMaker::fillTauVars()
 //----------------------------------------------------------
 void SusyNtMaker::fillPhotonVars()
 {
+    if(m_dbg>=5) cout<<"fillPhotonVars"<<endl;
     const xAOD::PhotonContainer* photons = XaodAnalysis::xaodPhothons();
     for(size_t i=0; i<m_sigPhotons.size(); ++i){
         const xAOD::Photon &ph = *(photons->at(m_sigPhotons[i]));
@@ -314,6 +319,7 @@ bool isMcAtNloTtbar(const int &channel) { return channel==105200; }
 //----------------------------------------------------------
 void SusyNtMaker::fillTruthParticleVars()
 {
+    if(m_dbg>=5) cout<<"fillTruthParticleVars"<<endl;
     // DG-2014-08-29 todo
   // // Retrieve indicies -- should go elsewhere
   // m_truParticles        = m_recoTruthMatch.LepFromHS_McIdx();
@@ -546,7 +552,7 @@ void SusyNtMaker::storeJet(const xAOD::Jet &in)
     out.phi = phi;
     out.m   = m;
     bool all_available=true;
-    out.isBadVeryLoose = (in.auxdata<int>("bad")==1);
+    // out.isBadVeryLoose = (in.auxdata<int>("bad")==1); // not available yet?
 // DG-2014-08-29 todo
   // jetOut->detEta        = element->constscale_eta();
   // jetOut->emfrac        = element->emfrac();
