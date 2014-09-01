@@ -268,9 +268,8 @@ void SusyNtMaker::fillElectronVars()
 {
     if(m_dbg>=5) cout<<"fillElectronVars"<<endl;
     xAOD::ElectronContainer* electrons = XaodAnalysis::xaodElectrons();
-    for(size_t i=0; i<m_preElectrons.size(); ++i){
-        const xAOD::Electron &el = *(electrons->at(m_preElectrons[i]));
-        storeElectron(el);
+    for(auto &i : m_preElectrons){
+        storeElectron(*(electrons->at(i)));
     }
 }
 //----------------------------------------------------------
@@ -278,9 +277,8 @@ void SusyNtMaker::fillMuonVars()
 {
     if(m_dbg>=5) cout<<"fillMuonVars"<<endl;
     xAOD::MuonContainer* muons = XaodAnalysis::xaodMuons();
-    for(size_t i=0; i<m_preMuons.size(); ++i){
-        const xAOD::Muon &mu = *(muons->at(m_preMuons[i]));
-        storeMuon(mu);
+    for(auto &i : m_preMuons){
+        storeMuon(*(muons->at(i)));
     }
 }
 //----------------------------------------------------------
@@ -288,9 +286,8 @@ void SusyNtMaker::fillJetVars()
 {
     if(m_dbg>=5) cout<<"fillJetVars"<<endl;
     xAOD::JetContainer* jets = XaodAnalysis::xaodJets();
-    for(size_t i=0; i<m_preJets.size(); ++i){
-        const xAOD::Jet &jet = *(jets->at(m_preJets[i]));
-        storeJet(jet);
+    for(auto &i : m_preJets){
+        storeJet(*(jets->at(i)));
     }
 }
 //----------------------------------------------------------
@@ -299,9 +296,8 @@ void SusyNtMaker::fillTauVars()
     if(m_dbg>=5) cout<<"fillTauVars"<<endl;
     xAOD::TauJetContainer* taus =  XaodAnalysis::xaodTaus();
     vector<int>& saveTaus = m_saveContTaus? m_contTaus : m_preTaus;
-    for(size_t i=0; i<saveTaus.size(); ++i){
-        const xAOD::TauJet &tau = *(taus->at(saveTaus[i]));
-        storeTau(tau);
+    for(auto &i : saveTaus){
+        storeTau(*(taus->at(i)));
     }
 }
 //----------------------------------------------------------
@@ -309,9 +305,8 @@ void SusyNtMaker::fillPhotonVars()
 {
     if(m_dbg>=5) cout<<"fillPhotonVars"<<endl;
     const xAOD::PhotonContainer* photons = XaodAnalysis::xaodPhothons();
-    for(size_t i=0; i<m_sigPhotons.size(); ++i){
-        const xAOD::Photon &ph = *(photons->at(m_sigPhotons[i]));
-        storePhoton(ph);
+    for(auto &i : m_sigPhotons){
+        storePhoton(*(photons->at(i)));
     }
 }
 //----------------------------------------------------------
@@ -331,9 +326,8 @@ void SusyNtMaker::fillTruthParticleVars()
   //   m_truParticles.insert(m_truParticles.end(), ttbarPart.begin(), ttbarPart.end());
   // }
     const xAOD::TruthParticleContainer* particles = xaodTruthParticles();
-    for(size_t i=0; i<m_truParticles.size(); ++i){
-        const xAOD::TruthParticle &p = *(particles->at(m_truParticles[i]));
-        storeTruthParticle(p);
+    for(auto &i : m_truParticles){
+        storeTruthParticle(*(particles->at(i)));
     }
 }
 //----------------------------------------------------------
