@@ -320,34 +320,26 @@ const xAOD::TruthParticleContainer* XaodAnalysis::xaodTruthParticles()
 //----------------------------------------------------------
 void XaodAnalysis::retrieveXaodMet()
 {
-    // // DG-2014-08-29 todo: caching
-    // xAOD::MissingETContainer met;
-    // m_susyObj.GetMET(met);
-    // xAOD::MissingETContainer::const_iterator met_it = met.find("Final");
-    // if(met_it==met.end()){
-    //     cout<<"XaodAnalysis::xaodMet: cannot retrieve met"<<endl;
-    // } else {
-    //     double mpx((*met_it)->mpx()),  mpy((*met_it)->mpy());
-    //     m_met.SetPxPyPzE(mpx, mpy, 0.0, sqrt(mpx*mpx+mpy*mpy));
-    //     if(m_dbg) cout<<"XaodAnalysis::xaodMet: retrieved met"<<endl;
-    // }
-
-     const xAOD::MissingETContainer* met = NULL;
-     if(m_store.retrieve(met, "MET_RefFinal").isFailure()) {
-         cout<<"MET_RefFinal container could not be retrieved"<<endl;
-     }
-     if (!met) {
-         cout<<"Cannot retrieve MET_RefFinal container"<<endl;
-     } else {
-         xAOD::MissingETContainer::const_iterator met_it = met->find("Final");
-         if(met_it==met->end()){
-             cout<<"XaodAnalysis::xaodMet: cannot retrieve met"<<endl;
-         } else {
-             double mpx((*met_it)->mpx()),  mpy((*met_it)->mpy());
-             m_met.SetPxPyPzE(mpx, mpy, 0.0, sqrt(mpx*mpx+mpy*mpy));
-             if(m_dbg) cout<<"XaodAnalysis::xaodMet: retrieved met"<<endl;
-         }
-     }
+    if(m_metContainer==NULL){
+        // DG 2014-09-01 : todo: define 'MySelJets' collection and use it to rebuild 'MET_MyRefFinal'.
+        // These placeholder labels are currently hardcoded in SUSYObjDef_xAOD::GetMET()
+        // Also, do we need to define&record them with an ouput file? it looks like we don't have access to evtStore()...
+        //-- m_metContainer = new xAOD::MissingETContainer();
+        //-- m_metAuxContainer = new xAOD::MissingETAuxContainer();
+        //-- m_metContainer->setStore(m_metAuxContainer);
+        //-- m_store.record(m_metContainer, "MET_MyRefFinal"); // not clear whether this is needed
+    }
+    // DG-2014-08-29 todo: caching
+    xAOD::MissingETContainer met;
+    m_susyObj.GetMET(met);
+    xAOD::MissingETContainer::const_iterator met_it = met.find("Final");
+    if(met_it==met.end()){
+        cout<<"XaodAnalysis::xaodMet: cannot retrieve met"<<endl;
+    } else {
+        double mpx((*met_it)->mpx()),  mpy((*met_it)->mpy());
+        m_met.SetPxPyPzE(mpx, mpy, 0.0, sqrt(mpx*mpx+mpy*mpy));
+        if(m_dbg) cout<<"XaodAnalysis::xaodMet: retrieved met"<<endl;
+    }
 }
 //----------------------------------------------------------
 SystErr::Syste ntsys2systerr(const SusyNtSys &s)
