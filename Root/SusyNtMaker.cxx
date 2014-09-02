@@ -129,7 +129,6 @@ Bool_t SusyNtMaker::Process(Long64_t entry)
   clearOutputObjects();
   retrieveCollections();
   const xAOD::EventInfo* eventinfo = XaodAnalysis::xaodEventInfo();
-  cout<<"run "<<eventinfo->eventNumber()<<" event "<<eventinfo->runNumber()<<endl;
 
   if(!m_flagsHaveBeenChecked) {
       m_flagsAreConsistent = runningOptionsAreValid();
@@ -248,7 +247,7 @@ void SusyNtMaker::fillEventVars()
   evt->errXsec          = m_isMC? m_errXsec : 1;
   evt->sumw             = m_isMC? m_sumw : 1;
 
-	  
+
   const xAOD::TruthEventContainer* truthEvent = 0;
   m_event.retrieve(truthEvent, "TruthEvent");
   xAOD::TruthEventContainer::const_iterator truthE_itr = truthEvent->begin();
@@ -410,12 +409,12 @@ void SusyNtMaker::storeElectron(const xAOD::Electron &in)
 
     // // Trigger flags
     // eleOut->trigFlags     = m_eleTrigFlags[ lepIn->idx() ];
-    
+
     // // Efficiency scale factor.  For now, use tightPP if electrons is tightPP, otherwise mediumPP
     // //int set               = eleOut->tightPP? 7 : 6;
     // //eleOut->effSF         = m_isMC? m_susyObj.GetSignalElecSF   ( element->cl_eta(), lepIn->lv()->Pt(), set ) : 1;
     // //eleOut->errEffSF      = m_isMC? m_susyObj.GetSignalElecSFUnc( element->cl_eta(), lepIn->lv()->Pt(), set ) : 1;
-    
+
     // // Tight electron SFs can come directly from SUSYTools
     // // To get the SF uncert using GetSignalElecSF, we must get the shifted value and take the difference
     // float nomPt = lepIn->lv()->Pt();
@@ -426,7 +425,7 @@ void SusyNtMaker::storeElectron(const xAOD::Electron &in)
     //       1;
     //   eleOut->errEffSF    = //m_isMC? // DG not implemented yet
     //                         //m_susyObj.GetSignalElecSF(element->cl_eta(), sfPt, true, true, false,
-    //                         //                          200841, SystErr::EEFFUP) - eleOut->effSF : 
+    //                         //                          200841, SystErr::EEFFUP) - eleOut->effSF :
     //       0;
     // }
 
@@ -443,7 +442,7 @@ void SusyNtMaker::storeElectron(const xAOD::Electron &in)
     //   eleOut->errEffSF    = uncert;
     // }
     if(m_dbg && !all_available) cout<<"missing some electron variables"<<endl;
-    m_susyNt.ele()->push_back(out);  
+    m_susyNt.ele()->push_back(out);
 }
 //----------------------------------------------------------
 // // match muon to muon truth, returns element object if success, else NULL
@@ -872,7 +871,7 @@ void SusyNtMaker::doSystematic()
   // Loop over the systematics: start at 1, nominal saved
   for(int i = 1; i < NtSys_N; i++){
       SusyNtSys sys = static_cast<SusyNtSys>(i);
-    if(m_dbg>=5) cout << "Doing sys " << SusyNtSystNames[sys] << endl;    
+    if(m_dbg>=5) cout << "Doing sys " << SusyNtSystNames[sys] << endl;
     clearOutputObjects();
     selectObjects(sys);
     buildMet(sys);
@@ -1205,33 +1204,34 @@ std::string SusyNtMaker::counterSummary() const
   return oss.str();
 }
 //----------------------------------------------------------
+struct FillCutFlow { ///< local function object to fill the cutflow histograms
+    TH1 *raw, *gen, *perProcess; ///< ptr to histos with counters
+    int iCut; ///< index of the sequential cut (must match bin labels, see SusyNtMaker::makeCutFlow())
+    bool passAll; ///< whether we've survived all cuts so far
+    bool includeThisCut_; ///< whether this cut should be used when computing passAll
+    vector< size_t > *counters;
+    FillCutFlow(TH1 *r, TH1* g, TH1* p, vector< size_t > *cs) :
+        raw(r), gen(g), perProcess(p), iCut(0), passAll(true), includeThisCut_(true), counters(cs) {}
+    void operator()(bool thisEventDoesPassThisCut, float weight) {
+        if(thisEventDoesPassThisCut && passAll) {
+            if(raw       ) raw       ->Fill(iCut);
+            if(gen       ) gen       ->Fill(iCut, weight);
+            if(perProcess) perProcess->Fill(iCut, weight);
+            counters->at(iCut) += 1;
+        } else {
+            if(includeThisCut_) passAll = false;
+        }
+        iCut++;
+    }
+    FillCutFlow& includeThisCut(bool v) { includeThisCut_ = v; return *this; }
+};
+//----------------------------------------------------------
 bool SusyNtMaker::passEventlevelSelection()
 {
     TH1F* h_procCutFlow = getProcCutFlow(m_susyFinalState);
-    float w = 1.0; // DG-2014-08-16, not available yet in xAOD??? \todo m_isMC? d3pd.truth.event_weight() : 1;
+    float w = m_susyNt.evt()->w;
 
-    struct FillCutFlow { ///< local function object to fill the cutflow histograms
-        TH1 *raw, *gen, *perProcess; ///< ptr to histos with counters
-        int iCut; ///< index of the sequential cut (must match bin labels, see SusyNtMaker::makeCutFlow())
-        bool passAll; ///< whether we've survived all cuts so far
-        bool includeThisCut_; ///< whether this cut should be used when computing passAll
-        vector< size_t > *counters;
-        FillCutFlow(TH1 *r, TH1* g, TH1* p, vector< size_t > *cs) :
-            raw(r), gen(g), perProcess(p), iCut(0), passAll(true), includeThisCut_(true), counters(cs) {}
-        void operator()(bool thisEventDoesPassThisCut, float weight) {
-            if(thisEventDoesPassThisCut && passAll) {
-                if(raw       ) raw       ->Fill(iCut);
-                if(gen       ) gen       ->Fill(iCut, weight);
-                if(perProcess) perProcess->Fill(iCut, weight);
-                counters->at(iCut) += 1;
-            } else {
-                if(includeThisCut_) passAll = false;
-            }
-            iCut++;
-        }
-        FillCutFlow& includeThisCut(bool v) { includeThisCut_ = v; return *this; }
-    }
-    fillCutFlow(h_rawCutFlow, h_genCutFlow, h_procCutFlow, &m_cutstageCounters);
+    FillCutFlow fillCutFlow(h_rawCutFlow, h_genCutFlow, h_procCutFlow, &m_cutstageCounters);
 
     assignEventCleaningFlags();
     bool keep_all_events(!m_filter);
@@ -1259,7 +1259,32 @@ bool SusyNtMaker::passObjectlevelSelection()
     selectObjects(sys);
     // buildMet(sys);
     // assignObjectCleaningFlags();
-    return true;
+
+    n_base_ele += m_baseElectrons.size();
+    n_base_muo += m_baseMuons.size();
+    n_base_tau += m_baseTaus.size();
+    n_base_jet += m_baseJets.size();
+    n_sig_ele += m_sigElectrons.size();
+    n_sig_muo += m_sigMuons.size();
+    n_sig_tau += m_sigTaus.size();
+    n_sig_jet += m_sigJets.size();
+    TH1F* h_procCutFlow = getProcCutFlow(m_susyFinalState);
+    FillCutFlow fillCutFlow(h_rawCutFlow, h_genCutFlow, h_procCutFlow, &m_cutstageCounters);
+    fillCutFlow.iCut = 8; // we've filled up to 'Buggy WWSherpa' in passEventlevelSelection
+    bool pass_hotspot(true), pass_basdjet(true), pass_badmuon(true), pass_cosmic(true); // dummy values, todo
+    bool pass_ge1l(1<=(m_sigElectrons.size()+m_sigMuons.size()));
+    bool pass_ge2l(2<=(m_sigElectrons.size()+m_sigMuons.size()));
+    bool pass_eq3l(3==(m_sigElectrons.size()+m_sigMuons.size()));
+    float w = m_susyNt.evt()->w;
+    fillCutFlow(pass_hotspot, w);
+    fillCutFlow(pass_basdjet, w);
+    fillCutFlow(pass_badmuon, w);
+    fillCutFlow(pass_cosmic, w);
+    fillCutFlow(pass_ge1l, w);
+    fillCutFlow(pass_ge2l, w);
+    fillCutFlow(pass_eq3l, w);
+    bool has_at_least_one_lepton = pass_ge1l;
+    return has_at_least_one_lepton;
 }
 //----------------------------------------------------------
 #undef GeV
