@@ -330,15 +330,6 @@ void XaodAnalysis::retrieveXaodMet()
         //-- m_store.record(m_metContainer, "MET_MyRefFinal"); // not clear whether this is needed
     }
 
-    xAOD::JetContainer* goodJets = new xAOD::JetContainer(SG::VIEW_ELEMENTS);
-    m_store.record(goodJets, "MySelJets");
-    xAOD::MissingETContainer* rebuiltmetcontainer = new xAOD::MissingETContainer();
-    xAOD::MissingETAuxContainer* rebuiltmetcontainerAux = new xAOD::MissingETAuxContainer();
-    rebuiltmetcontainer->setStore( rebuiltmetcontainerAux );
-    m_store.record(rebuiltmetcontainer, "MET_MyRefFinal");
-    const xAOD::JetContainer* jets = 0;
-    m_event.retrieve( jets, "AntiKt4LCTopoJets" );
-    std::pair< xAOD::JetContainer*, xAOD::ShallowAuxContainer* > jets_shallowCopy = xAOD::shallowCopyContainer( *jets );
     xAOD::MissingETContainer met;
     m_susyObj.GetMET(met);
     xAOD::MissingETContainer::const_iterator met_it = met.find("Final");
@@ -1483,6 +1474,16 @@ XaodAnalysis& XaodAnalysis::clearContainerPointers()
 //----------------------------------------------------------
 XaodAnalysis& XaodAnalysis::retrieveCollections()
 {
+    xAOD::JetContainer* goodJets = new xAOD::JetContainer(SG::VIEW_ELEMENTS);
+    m_store.record(goodJets, "MySelJets");
+    xAOD::MissingETContainer* rebuiltmetcontainer = new xAOD::MissingETContainer();
+    xAOD::MissingETAuxContainer* rebuiltmetcontainerAux = new xAOD::MissingETAuxContainer();
+    rebuiltmetcontainer->setStore( rebuiltmetcontainerAux );
+    m_store.record(rebuiltmetcontainer, "MET_MyRefFinal");
+    const xAOD::JetContainer* jets = 0;
+    m_event.retrieve( jets, "AntiKt4LCTopoJets" );
+    std::pair< xAOD::JetContainer*, xAOD::ShallowAuxContainer* > jets_shallowCopy = xAOD::shallowCopyContainer( *jets );
+
     xaodEventInfo();
     xaodMuons();
     xaodElectrons();
