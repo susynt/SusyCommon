@@ -135,7 +135,7 @@ void XaodAnalysis::Terminate()
 XaodAnalysis& XaodAnalysis::initSusyTools()
 {
   bool useLeptonTrigger = false;
-//  if(m_dbg) m_susyObj.msg().setLevel( MSG::DEBUG); // DG-2014-08-15 temporarily toggle dbg always on
+  m_susyObj.msg().setLevel( m_dbg ? MSG::DEBUG : MSG::WARNING);
   m_susyObj.setProperty("IsData",          static_cast<int>(!m_isMC));
   m_susyObj.setProperty("IsAtlfast",       static_cast<int>(m_isAF2));
   m_susyObj.setProperty("IsMC12b",         static_cast<int>(processingMc12b()));
@@ -1482,6 +1482,6 @@ XaodAnalysis& XaodAnalysis::retrieveCollections()
     xaodPhothons();
     xaodTruthEvent();
     xaodTruthParticles();
-    retrieveXaodMet();
+    // retrieveXaodMet(); // DG 2014-09-01 this has to be fixed asap; see answ from Kerim&Ximo
     return *this;
 }
