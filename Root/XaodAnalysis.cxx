@@ -391,8 +391,7 @@ void XaodAnalysis::selectBaselineObjects(SusyNtSys sys)
                       <<" baseline? "<<el.auxdata< int >("baseline")
                       <<" signal? "<<el.auxdata< int >("signal")
                       <<endl;
-        // if(baseline) m_baseElectrons.push_back(iEl);
-        // if(signal) m_sigElectrons.push_back(iEl);
+        if(el.auxdata< int >("baseline")) m_baseElectrons.push_back(iEl);
         iEl++;
     }
     if(m_dbg) cout<<"preElectrons["<<m_preElectrons.size()<<"]"<<endl;
@@ -411,8 +410,9 @@ void XaodAnalysis::selectBaselineObjects(SusyNtSys sys)
                       <<" baseline? "<<mu.auxdata< int >("baseline")
                       <<" signal? "<<mu.auxdata< int >("signal")
                       <<endl;
-        // if(baseline) m_baseMuons.push_back(iMu);
+        if(mu.auxdata< int >("baseline")) m_baseMuons.push_back(iMu);
         // if(signal) m_sigMuons.push_back(iMu);
+        iMu++;
     }
     if(m_dbg) cout<<"preMuons["<<m_preMuons.size()<<"]"<<endl;
 
@@ -430,12 +430,31 @@ void XaodAnalysis::selectBaselineObjects(SusyNtSys sys)
                       <<" baseline? "<<jet.auxdata< int >("baseline")
                       <<" signal? "<<jet.auxdata< int >("signal")
                       <<endl;
-        // if(baseline) m_baseJets.push_back(iJet);
+        if(jet.auxdata< int >("baseline")) m_baseJets.push_back(iJet);
         // if(signal) m_sigJets.push_back(iJet);
+        iJet++;
     }
+
+    // overlap removal and met (need to build 'MyJet' coll?)
     m_susyObj.OverlapRemoval(m_xaodElectrons, m_xaodMuons, m_xaodJets);
 
     // retrieveXaodMet();  DG-2014-08-29 should be here or in retrieveXaodObjects?
+
+    int iTau=0;
+    xAOD::TauJetContainer* taus = xaodTaus();
+    for(auto it=taus->begin(), end=taus->end(); it!=end; ++it){
+        xAOD::TauJet &tau = **it;
+        m_susyObj.FillTau(tau);
+        m_susyObj.IsSignalTau(tau);
+        if(tau.auxdata<int>("baseline"))
+            m_preTaus.push_back(iTau);
+        //tau.pt()>20*GeV && abs(tau.eta())<2.47
+        iTau++;
+    }
+    if(m_dbg) cout<<"m_preTaus["<<m_preTaus.size()<<"]"<<endl;
+
+
+
 /**/
   // Container object selection
   //-DG-if(m_selectTaus) m_contTaus = get_taus_baseline(xaodTaus(), m_susyObj, 20.*GeV, 2.47,
@@ -517,22 +536,68 @@ void XaodAnalysis::performOverlapRemoval()
 /*--------------------------------------------------------------------------------*/
 void XaodAnalysis::selectSignalObjects()
 {
+    // todo: loop over baseline (insure signal is subset of baseline, save time)
+    // todo: refactor
+    int iEl = 0;
+    xAOD::ElectronContainer* electrons = xaodElectrons();
+    for(auto it=electrons->begin(), end=electrons->end(); it!=end; ++it){
+        const xAOD::Electron &el = **it;
+        if(el.pt()>10*GeV &&
+           el.auxdata<int>("signal") &&
+           el.auxdata< int >("passOR") )
+            m_sigElectrons.push_back(iEl);
+        iEl++;
+    }
+    if(m_dbg) cout<<"m_sigElectrons["<<m_sigElectrons.size()<<"]"<<endl;
 
-//-DG-  if(m_dbg>=5) cout << "selectSignalObjects" << endl;
-//-DG-  uint nVtx = getNumGoodVtx();
-//-DG-  xAOD::JetContainer *jets =  xaodJets();
-//-DG-  m_sigElectrons = get_electrons_signal(xaodElectrons(), m_baseElectrons, xaodMuons(), m_baseMuons,
-//-DG-                                        nVtx, !m_isMC, m_susyObj, 10.*GeV, 0.16, 0.18, 5., 0.4);
-//-DG-  m_sigMuons     = get_muons_signal(xaodMuons(), m_baseMuons, xaodElectrons(), m_baseElectrons,
-//-DG-                                    nVtx, !m_isMC, m_susyObj, 10.*GeV, .12, 3., 1.);
-//-DG-  m_sigJets      = get_jet_signal(jets, m_susyObj, m_baseJets, 20.*GeV, 2.5, 0.75);
-//-DG-  m_sigTaus      = get_taus_signal(xaodTaus(), m_baseTaus, m_susyObj);
-//-DG-
-//-DG-  // combine light leptons
-//-DG-  m_sigLeptons   = buildLeptonInfos(xaodElectrons(), m_sigElectrons, xaodMuons(), m_sigMuons, m_susyObj);
-//-DG-
-//-DG-  // photon selection done in separate method, why?
-//-DG-  if(m_selectPhotons) selectSignalPhotons();
+    int iMu = 0;
+    xAOD::MuonContainer* muons = xaodMuons();
+    for(auto it=muons->begin(), end=muons->end(); it!=end; ++it){
+        const xAOD::Muon &mu = **it;
+        if(mu.pt()>10.0*GeV &&
+           mu.auxdata< int >("signal") &&
+           mu.auxdata< int >("passOR") &&
+           !mu.auxdata< int >("cosmic"))
+            m_sigMuons.push_back(iMu);
+    }
+    if(m_dbg) cout<<"m_sigMuons["<<m_sigMuons.size()<<"]"<<endl;
+
+    int iJet=0;
+    xAOD::JetContainer* jets = xaodJets();
+    for(auto it=jets->begin(), end=jets->end(); it!=end; ++it){
+        const xAOD::Jet &jet = **it;
+        if(jet.pt()>20.0*GeV &&
+           //jet.auxdata< int >("signal") &&  // no 'signal' def in SUSYObjDef_xAOD for now
+           jet.auxdata< int >("passOR") &&
+           !jet.auxdata< int >("bad"))
+            m_sigJets.push_back(iJet);
+        iJet++;
+    }
+    if(m_dbg) cout<<"m_sigJets["<<m_sigJets.size()<<"]"<<endl;
+
+    int iTau=0;
+    xAOD::TauJetContainer* taus = xaodTaus();
+    for(auto it=taus->begin(), end=taus->end(); it!=end; ++it){
+        const xAOD::TauJet &tau = **it;
+        if(tau.pt()>20.0*GeV &&
+           tau.auxdata< int >("signal"))
+            // tau.auxdata< int >("passOR") && // tau not involved in OR?
+            m_sigTaus.push_back(iTau);
+        iTau++;
+    }
+    if(m_dbg) cout<<"m_sigTaus["<<m_sigTaus.size()<<"]"<<endl;
+
+    // int iPh=0;
+    // const xAOD::PhotonContainer* photons = xaodPhothons();
+    // for(auto it=photons->begin(), end=photons->end(); it!=end; ++it){
+    //     const xAOD::Photon &ph = **it;
+    //     if(ph.pt()>20.0*GeV &&
+    //        abs(ph.eta())<2.47 &&
+    //        ph.auxdata< int >("signal"))
+    //         m_sigPhotons.push_back(iPh);
+    //     iPh++;
+    // }
+    // if(m_dbg) cout<<"m_sigPhotons["<<m_sigPhotons.size()<<"]"<<endl;
 }
 
 /*--------------------------------------------------------------------------------*/
@@ -1366,7 +1431,7 @@ bool XaodAnalysis::isSimuFromSamplename(const TString &s)
 void XaodAnalysis::selectObjects(SusyNtSys sys)
 {
     selectBaselineObjects(sys);
-//--DG-- todo     selectSignalObjects();
+    selectSignalObjects();
 //--DG-- todo     if(m_selectTruth) selectTruthObjects();
 }
 //----------------------------------------------------------
