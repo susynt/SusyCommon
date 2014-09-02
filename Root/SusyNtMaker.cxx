@@ -251,8 +251,8 @@ void SusyNtMaker::fillEventVars()
   const xAOD::TruthEventContainer* truthEvent = 0;
   m_event.retrieve(truthEvent, "TruthEvent");
   xAOD::TruthEventContainer::const_iterator truthE_itr = truthEvent->begin();
-  ( *truthE_itr )->pdfInfoParameter(evt->pdf_id1  , xAOD::TruthEvent::id1);
-  ( *truthE_itr )->pdfInfoParameter(evt->pdf_id2  , xAOD::TruthEvent::id2);
+  //--DG--( *truthE_itr )->pdfInfoParameter(evt->pdf_id1  , xAOD::TruthEvent::id1); // not available for some samples
+  //--DG--( *truthE_itr )->pdfInfoParameter(evt->pdf_id2  , xAOD::TruthEvent::id2);
   // ( *truthE_itr )->pdfInfoParameter(evt->pdf_x1    , xAOD::TruthEvent::pdf1);
   // ( *truthE_itr )->pdfInfoParameter(evt->pdf_x2    , xAOD::TruthEvent::pdf2);
   // DG not working? ( *truthE_itr )->pdfInfoParameter(float(evt->pdf_scale), xAOD::TruthEvent::scalePDF);
