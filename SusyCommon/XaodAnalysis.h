@@ -273,7 +273,7 @@ class XaodAnalysis : public TSelector
     bool                        m_selectTaus;   // Toggle tau selection and overlap removal
     bool                        m_selectTruth;  // Toggle truth selection
 
-    SUSYMet::met_definition     m_metFlavor;    // MET flavor enum (e.g. STVF, STVF_JVF)
+    /* SUSYMet::met_definition     m_metFlavor;    // MET flavor enum (e.g. STVF, STVF_JVF) */
     bool                        m_doMetMuCorr;  // Control MET muon Eloss correction in SUSYTools
     bool                        m_doMetFix;     // Control MET Egamma-jet overlap fix in SUSYTools
     //bool                      m_useMetMuons;  // Use appropriate muons for met

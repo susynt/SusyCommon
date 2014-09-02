@@ -15,7 +15,6 @@
 
 #include "D3PDReader/ElectronD3PDObject.h"
 #include "D3PDReader/MuonD3PDObject.h"
-#include "SUSYTools/SUSYObjDef.h"
 
 
 

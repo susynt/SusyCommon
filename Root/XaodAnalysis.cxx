@@ -30,7 +30,7 @@ XaodAnalysis::XaodAnalysis() :
         m_selectPhotons(false),
         m_selectTaus(false),
         m_selectTruth(false),
-        m_metFlavor(SUSYMet::Default),
+        // m_metFlavor(SUSYMet::Default),
         m_doMetMuCorr(false),
         m_doMetFix(false),
         m_lumi(LUMI_A_E),
@@ -1000,9 +1000,7 @@ bool XaodAnalysis::passTTCVeto()
 bool XaodAnalysis::passTileErr(const xAOD::EventInfo* eventinfo)
 {
 	bool eventPassesTileTrip = (m_isMC ||
-                                m_susyObj.m_SUSYObjDef->IsTileTrip(eventinfo->runNumber(),
-                                                                   eventinfo->lumiBlock(),
-                                                                   eventinfo->eventNumber()));
+                                true); // SUSYToolsTester: move to xAOD tool
     return eventPassesTileTrip;
 }
 //----------------------------------------------------------
@@ -1206,14 +1204,14 @@ int XaodAnalysis::getHFORDecision()
 //----------------------------------------------------------
 void XaodAnalysis::setMetFlavor(string metFlav)
 {
-  if(metFlav=="STVF") m_metFlavor = SUSYMet::STVF;
-  else if(metFlav=="STVF_JVF") m_metFlavor = SUSYMet::STVF_JVF;
-  else if(metFlav=="Default") m_metFlavor = SUSYMet::Default;
-  else{
-    cout << "XaodAnalysis::setMetFlavor : ERROR : MET flavor " << metFlav
-         << " is not supported!" << endl;
-    abort();
-  }
+  // if(metFlav=="STVF") m_metFlavor = SUSYMet::STVF;
+  // else if(metFlav=="STVF_JVF") m_metFlavor = SUSYMet::STVF_JVF;
+  // else if(metFlav=="Default") m_metFlavor = SUSYMet::Default;
+  // else{
+  //   cout << "XaodAnalysis::setMetFlavor : ERROR : MET flavor " << metFlav
+  //        << " is not supported!" << endl;
+  //   abort();
+  // }
 }
 //----------------------------------------------------------
 void XaodAnalysis::dumpEvent()
