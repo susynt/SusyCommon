@@ -323,31 +323,25 @@ void XaodAnalysis::retrieveXaodMet()
     if(m_metContainer==NULL){
         // DG 2014-09-01 : todo: define 'MySelJets' collection and use it to rebuild 'MET_MyRefFinal'.
         // These placeholder labels are currently hardcoded in SUSYObjDef_xAOD::GetMET()
-        // Also, do we need to define&record them with an ouput file? it looks like we don't have access to evtStore()...
-        //-- m_metContainer = new xAOD::MissingETContainer();
-        //-- m_metAuxContainer = new xAOD::MissingETAuxContainer();
-        //-- m_metContainer->setStore(m_metAuxContainer);
-        //-- m_store.record(m_metContainer, "MET_MyRefFinal"); // not clear whether this is needed
-    }
-
-    xAOD::JetContainer* goodJets = new xAOD::JetContainer(SG::VIEW_ELEMENTS);
-    m_store.record(goodJets, "MySelJets");
-    xAOD::MissingETContainer* rebuiltmetcontainer = new xAOD::MissingETContainer();
-    xAOD::MissingETAuxContainer* rebuiltmetcontainerAux = new xAOD::MissingETAuxContainer();
-    rebuiltmetcontainer->setStore( rebuiltmetcontainerAux );
-    m_store.record(rebuiltmetcontainer, "MET_MyRefFinal");
-    const xAOD::JetContainer* jets = 0;
-    m_event.retrieve( jets, "AntiKt4LCTopoJets" );
-    std::pair< xAOD::JetContainer*, xAOD::ShallowAuxContainer* > jets_shallowCopy = xAOD::shallowCopyContainer( *jets );
-    xAOD::MissingETContainer met;
-    m_susyObj.GetMET(met);
-    xAOD::MissingETContainer::const_iterator met_it = met.find("Final");
-    if (met_it == met.end()) {
-        cout<<"No RefFinal inside MET container"<<endl;
-    } else {
-        double mpx((*met_it)->mpx()),  mpy((*met_it)->mpy());
-        m_met.SetPxPyPzE(mpx, mpy, 0.0, sqrt(mpx*mpx+mpy*mpy));
-        if(m_dbg) cout<<"XaodAnalysis::xaodMet: retrieved met"<<endl;
+        // std::pair< xAOD::JetContainer*, xAOD::ShallowAuxContainer* > jets_shallowCopy = xAOD::shallowCopyContainer( *jets );
+        xAOD::JetContainer* goodJets = new xAOD::JetContainer(SG::VIEW_ELEMENTS); // these are the jets used to compute met
+        m_store.record(goodJets, "MySelJets");
+        m_metContainer = new xAOD::MissingETContainer();
+        m_metAuxContainer = new xAOD::MissingETAuxContainer();
+        m_metContainer->setStore( m_metAuxContainer );
+        m_store.record(m_metContainer, "MET_MyRefFinal");
+        const xAOD::JetContainer* jets = 0;
+        m_event.retrieve( jets, "AntiKt4LCTopoJets" );
+        xAOD::MissingETContainer met;
+        m_susyObj.GetMET(met);
+        xAOD::MissingETContainer::const_iterator met_it = met.find("Final");
+        if (met_it == met.end()) {
+            cout<<"No RefFinal inside MET container"<<endl;
+        } else {
+            double mpx((*met_it)->mpx()),  mpy((*met_it)->mpy());
+            m_met.SetPxPyPzE(mpx, mpy, 0.0, sqrt(mpx*mpx+mpy*mpy));
+            if(m_dbg) cout<<"XaodAnalysis::xaodMet: retrieved met"<<endl;
+        }
     }
 }
 //----------------------------------------------------------
@@ -1456,8 +1450,7 @@ XaodAnalysis& XaodAnalysis::deleteShallowCopies()
     if(m_xaodJetsAux     ) delete m_xaodJetsAux;
     if(m_xaodPhotons     ) delete m_xaodPhotons;
     if(m_xaodPhotonsAux  ) delete m_xaodPhotonsAux;
-    if(m_metContainer    ) delete m_metContainer;
-    if(m_metAuxContainer ) delete m_metAuxContainer;
+    m_store.clear(); // this clears m_metContainer and the objs recorded with TStore
     return *this;
 }
 //----------------------------------------------------------
