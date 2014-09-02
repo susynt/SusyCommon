@@ -345,36 +345,6 @@ void XaodAnalysis::retrieveXaodMet()
     }
 }
 //----------------------------------------------------------
-SystErr::Syste ntsys2systerr(const SusyNtSys &s)
-{
-    SystErr::Syste sys = SystErr::NONE;
-    switch(s){
-    case NtSys_NOM :                                     break; // No need to check needlessly
-        //case NtSys_EES_UP : sys = SystErr::EESUP;        break; // E scale up
-        //case NtSys_EES_DN : sys = SystErr::EESDOWN;      break; // E scale down
-    case NtSys_EES_Z_UP   : sys = SystErr::EGZEEUP;    break; // E scale Zee up
-    case NtSys_EES_Z_DN   : sys = SystErr::EGZEEDOWN;  break; // E scale Zee dn
-    case NtSys_EES_MAT_UP : sys = SystErr::EGMATUP;    break; // E scale material up
-    case NtSys_EES_MAT_DN : sys = SystErr::EGMATDOWN;  break; // E scale material down
-    case NtSys_EES_PS_UP  : sys = SystErr::EGPSUP;     break; // E scale presampler up
-    case NtSys_EES_PS_DN  : sys = SystErr::EGPSDOWN;   break; // E scale presampler down
-    case NtSys_EES_LOW_UP : sys = SystErr::EGLOWUP;    break; // E low pt up
-    case NtSys_EES_LOW_DN : sys = SystErr::EGLOWDOWN;  break; // E low pt down
-    case NtSys_EER_UP     : sys = SystErr::EGRESUP;    break; // E smear up
-    case NtSys_EER_DN     : sys = SystErr::EGRESDOWN;  break; // E smear down
-    case NtSys_MS_UP      : sys = SystErr::MMSUP;      break; // MS scale up
-    case NtSys_MS_DN      : sys = SystErr::MMSLOW;     break; // MS scale down
-    case NtSys_ID_UP      : sys = SystErr::MIDUP;      break; // ID scale up
-    case NtSys_ID_DN      : sys = SystErr::MIDLOW;     break; // ID scale down
-    case NtSys_JES_UP     : sys = SystErr::JESUP;      break; // JES up
-    case NtSys_JES_DN     : sys = SystErr::JESDOWN;    break; // JES down
-    case NtSys_JER        : sys = SystErr::JER;        break; // JER (gaussian)
-    case NtSys_TES_UP     : sys = SystErr::TESUP;      break; // TES up
-    case NtSys_TES_DN     : sys = SystErr::TESDOWN;    break; // TES down
-    }
-    return sys;
-}
-//----------------------------------------------------------
 void XaodAnalysis::selectBaselineObjects(SusyNtSys sys)
 {
     if(m_dbg>=5) cout << "selectBaselineObjects" << endl;
