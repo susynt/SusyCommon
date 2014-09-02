@@ -87,29 +87,29 @@ void LeptonInfo::print() const
 //------------------------------------------------------------------------------------------------
 // Build LeptonInfo vector (and sort it)
 //------------------------------------------------------------------------------------------------
-vector<LeptonInfo> buildLeptonInfos(D3PDReader::ElectronD3PDObject* electrons, vector<int> & elecIndices,
-                                    D3PDReader::MuonD3PDObject* muons, vector<int> & muonIndices, SUSYObjDef & susyObj)
-{
-    vector<LeptonInfo> lepInfos;
+// vector<LeptonInfo> buildLeptonInfos(D3PDReader::ElectronD3PDObject* electrons, vector<int> & elecIndices,
+//                                     D3PDReader::MuonD3PDObject* muons, vector<int> & muonIndices, SUSYObjDef & susyObj)
+// {
+//     vector<LeptonInfo> lepInfos;
 
-    // add the electrons
-    for(unsigned int iEle = 0; iEle < elecIndices.size(); iEle++){
-        int idx = elecIndices[iEle];
-        //D3PDReader::ElectronD3PDObjectElement* element = & (*electrons)[idx];
-        //cout << element << endl;
-        //element->Print();
-        lepInfos.push_back( LeptonInfo(true, idx, &susyObj.GetElecTLV(idx), electrons) );
-    }
-    // add the muons
-    for(unsigned int iMu = 0; iMu < muonIndices.size(); iMu++){
-        int idx = muonIndices[iMu];
-        //D3PDReader::MuonD3PDObjectElement* element = & (*muons)[idx];
-        //element->Print();
-        lepInfos.push_back( LeptonInfo(false, idx, &susyObj.GetMuonTLV(idx), muons) );
-    }
+//     // add the electrons
+//     for(unsigned int iEle = 0; iEle < elecIndices.size(); iEle++){
+//         int idx = elecIndices[iEle];
+//         //D3PDReader::ElectronD3PDObjectElement* element = & (*electrons)[idx];
+//         //cout << element << endl;
+//         //element->Print();
+//         lepInfos.push_back( LeptonInfo(true, idx, &susyObj.GetElecTLV(idx), electrons) );
+//     }
+//     // add the muons
+//     for(unsigned int iMu = 0; iMu < muonIndices.size(); iMu++){
+//         int idx = muonIndices[iMu];
+//         //D3PDReader::MuonD3PDObjectElement* element = & (*muons)[idx];
+//         //element->Print();
+//         lepInfos.push_back( LeptonInfo(false, idx, &susyObj.GetMuonTLV(idx), muons) );
+//     }
 
-    // sort the leptons by pt
-    std::sort(lepInfos.begin(), lepInfos.end(), std::greater<LeptonInfo>());
-    return lepInfos;
-}
+//     // sort the leptons by pt
+//     std::sort(lepInfos.begin(), lepInfos.end(), std::greater<LeptonInfo>());
+//     return lepInfos;
+// }
 

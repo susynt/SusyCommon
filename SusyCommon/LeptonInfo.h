@@ -109,9 +109,9 @@ class LeptonInfo
 };
 
 
-// Helper function for building a sorted collection of LeptonInfo
-std::vector<LeptonInfo> buildLeptonInfos(D3PDReader::ElectronD3PDObject* electrons, std::vector<int> & elecIndices, 
-                                         D3PDReader::MuonD3PDObject* muons, std::vector<int> & muonIndices, SUSYObjDef & susyObj);
+/* // Helper function for building a sorted collection of LeptonInfo */
+/* std::vector<LeptonInfo> buildLeptonInfos(D3PDReader::ElectronD3PDObject* electrons, std::vector<int> & elecIndices,  */
+/*                                          D3PDReader::MuonD3PDObject* muons, std::vector<int> & muonIndices, SUSYObjDef & susyObj); */
 
 
 
