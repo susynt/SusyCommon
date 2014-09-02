@@ -320,17 +320,34 @@ const xAOD::TruthParticleContainer* XaodAnalysis::xaodTruthParticles()
 //----------------------------------------------------------
 void XaodAnalysis::retrieveXaodMet()
 {
-    // DG-2014-08-29 todo: caching
-    xAOD::MissingETContainer met;
-    m_susyObj.GetMET(met);
-    xAOD::MissingETContainer::const_iterator met_it = met.find("Final");
-    if(met_it==met.end()){
-        cout<<"XaodAnalysis::xaodMet: cannot retrieve met"<<endl;
-    } else {
-        double mpx((*met_it)->mpx()),  mpy((*met_it)->mpy());
-        m_met.SetPxPyPzE(mpx, mpy, 0.0, sqrt(mpx*mpx+mpy*mpy));
-        if(m_dbg) cout<<"XaodAnalysis::xaodMet: retrieved met"<<endl;
-    }
+    // // DG-2014-08-29 todo: caching
+    // xAOD::MissingETContainer met;
+    // m_susyObj.GetMET(met);
+    // xAOD::MissingETContainer::const_iterator met_it = met.find("Final");
+    // if(met_it==met.end()){
+    //     cout<<"XaodAnalysis::xaodMet: cannot retrieve met"<<endl;
+    // } else {
+    //     double mpx((*met_it)->mpx()),  mpy((*met_it)->mpy());
+    //     m_met.SetPxPyPzE(mpx, mpy, 0.0, sqrt(mpx*mpx+mpy*mpy));
+    //     if(m_dbg) cout<<"XaodAnalysis::xaodMet: retrieved met"<<endl;
+    // }
+
+     const xAOD::MissingETContainer* met = NULL;
+     if(m_store.retrieve(met, "MET_RefFinal").isFailure()) {
+         cout<<"MET_RefFinal container could not be retrieved"<<endl;
+     }
+     if (!met) {
+         cout<<"Cannot retrieve MET_RefFinal container"<<endl;
+     } else {
+         xAOD::MissingETContainer::const_iterator met_it = met->find("Final");
+         if(met_it==met->end()){
+             cout<<"XaodAnalysis::xaodMet: cannot retrieve met"<<endl;
+         } else {
+             double mpx((*met_it)->mpx()),  mpy((*met_it)->mpy());
+             m_met.SetPxPyPzE(mpx, mpy, 0.0, sqrt(mpx*mpx+mpy*mpy));
+             if(m_dbg) cout<<"XaodAnalysis::xaodMet: retrieved met"<<endl;
+         }
+     }
 }
 //----------------------------------------------------------
 SystErr::Syste ntsys2systerr(const SusyNtSys &s)
