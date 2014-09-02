@@ -329,12 +329,21 @@ void XaodAnalysis::retrieveXaodMet()
         //-- m_metContainer->setStore(m_metAuxContainer);
         //-- m_store.record(m_metContainer, "MET_MyRefFinal"); // not clear whether this is needed
     }
-    // DG-2014-08-29 todo: caching
+
+    xAOD::JetContainer* goodJets = new xAOD::JetContainer(SG::VIEW_ELEMENTS);
+    m_store.record(goodJets, "MySelJets");
+    xAOD::MissingETContainer* rebuiltmetcontainer = new xAOD::MissingETContainer();
+    xAOD::MissingETAuxContainer* rebuiltmetcontainerAux = new xAOD::MissingETAuxContainer();
+    rebuiltmetcontainer->setStore( rebuiltmetcontainerAux );
+    m_store.record(rebuiltmetcontainer, "MET_MyRefFinal");
+    const xAOD::JetContainer* jets = 0;
+    m_event.retrieve( jets, "AntiKt4LCTopoJets" );
+    std::pair< xAOD::JetContainer*, xAOD::ShallowAuxContainer* > jets_shallowCopy = xAOD::shallowCopyContainer( *jets );
     xAOD::MissingETContainer met;
     m_susyObj.GetMET(met);
     xAOD::MissingETContainer::const_iterator met_it = met.find("Final");
-    if(met_it==met.end()){
-        cout<<"XaodAnalysis::xaodMet: cannot retrieve met"<<endl;
+    if (met_it == met.end()) {
+        cout<<"No RefFinal inside MET container"<<endl;
     } else {
         double mpx((*met_it)->mpx()),  mpy((*met_it)->mpy());
         m_met.SetPxPyPzE(mpx, mpy, 0.0, sqrt(mpx*mpx+mpy*mpy));
@@ -1482,6 +1491,6 @@ XaodAnalysis& XaodAnalysis::retrieveCollections()
     xaodPhothons();
     xaodTruthEvent();
     xaodTruthParticles();
-    // retrieveXaodMet(); // DG 2014-09-01 this has to be fixed asap; see answ from Kerim&Ximo
+    retrieveXaodMet(); // DG 2014-09-01 this has to be fixed asap; see answ from Kerim&Ximo
     return *this;
 }
