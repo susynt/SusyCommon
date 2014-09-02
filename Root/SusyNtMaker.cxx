@@ -370,6 +370,8 @@ void SusyNtMaker::storeElectron(const xAOD::Electron &in)
     out.eta = eta;
     out.phi = phi;
     out.m   = m;
+    out.isBaseline = in.auxdata<int>("baseline");
+    out.isSignal = in.auxdata<int>("signal");
     out.q   = in.charge();
     bool all_available=true;
     all_available &= in.isolationValue(out.etcone20, xAOD::EgammaParameters::etcone20); // DG-2014-08-29 MeV2GeV ?
@@ -473,6 +475,8 @@ void SusyNtMaker::storeMuon(const xAOD::Muon &in)
     out.phi = phi;
     out.m   = m;
     out.q   = in.charge();
+    out.isBaseline = in.auxdata<int>("baseline");
+    out.isSignal = in.auxdata<int>("signal");
     out.isCombined = in.muonType()==xAOD::Muon::Combined;
 
     bool all_available=true;
