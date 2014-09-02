@@ -1373,6 +1373,8 @@ XaodAnalysis& XaodAnalysis::deleteShallowCopies()
     if(m_xaodJetsAux     ) delete m_xaodJetsAux;
     if(m_xaodPhotons     ) delete m_xaodPhotons;
     if(m_xaodPhotonsAux  ) delete m_xaodPhotonsAux;
+    if(m_metContainer    ) delete m_metContainer;
+    if(m_metAuxContainer ) delete m_metAuxContainer;
     return *this;
 }
 //----------------------------------------------------------
@@ -1391,6 +1393,8 @@ XaodAnalysis& XaodAnalysis::clearContainerPointers()
     m_xaodPhotonsAux     = NULL;
     m_xaodTruthEvent     = NULL;
     m_xaodTruthParticles = NULL;
+    m_metContainer       = NULL;
+    m_metAuxContainer    = NULL;
     return *this;
 }
 //----------------------------------------------------------

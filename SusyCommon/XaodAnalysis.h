@@ -395,6 +395,14 @@ class XaodAnalysis : public TSelector
     xAOD::ShallowAuxContainer* m_xaodPhotonsAux; ///< photon aux info
     const xAOD::TruthEventContainer* m_xaodTruthEvent;
     const xAOD::TruthParticleContainer* m_xaodTruthParticles;
+    /// met container
+    /**
+       DG, note to self: not clear whether this is needed also when we
+       don't want to write it out (just to recompute the met).
+     */
+    xAOD::MissingETContainer* m_metContainer;
+    xAOD::MissingETAuxContainer* m_metAuxContainer;
+
     /// cleanup shallow copies and aux containers
     /**
        They are created when retrieving the collections with
