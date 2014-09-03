@@ -257,6 +257,33 @@ xAOD::JetContainer* XaodAnalysis::xaodJets()
         JetsWithAux_t jwa = retrieveJetsWithAux(m_event, m_dbg);
         m_xaodJets = jwa.first;
         m_xaodJetsAux = jwa.second;
+
+        // also create shallow copy for MET rebuilding
+        const xAOD::JetContainer* jets = 0;
+        m_event.retrieve( jets, "AntiKt4LCTopoJets");
+        JetsWithAux_t metjets = xAOD::shallowCopyContainer( *jets );
+        // std::pair< xAOD::JetContainer*, xAOD::ShallowAuxContainer* > metjets = xAOD::shallowCopyContainer(*jwa.first);
+        m_metJets = metjets.first;
+        m_metJetsAux = metjets.second; // will be deleted by TStore::clear
+        m_store.record(m_metJets, "CalibratedAntiKt4LCTopoJets");
+        // black magic for object link
+        typedef xAOD::JetContainer::iterator Jci_t;
+        typedef xAOD::IParticleContainer Ipc_t;
+        typedef ElementLink< Ipc_t > El_t;
+        static const char* linkName = "originalObjectLink";
+        Jci_t it = metjets.first->begin(), end = metjets.first->end();
+        for(; it!=end; ++it){
+            if(const Ipc_t *container = dynamic_cast<const Ipc_t*>((*it)->container())){
+                const El_t link(*jets, (*it)->index());
+                El_t &auxLink = (*it)->auxdata< El_t >( linkName );
+                auxLink = link;
+                auxLink.toPersistent();
+            } else {
+                cout<<"Input object not part of a container, '"<<linkName<<"' not established "
+                    <<"("<<container<<")" // just to avoid nused variable 'container'
+                    <<endl;
+            }
+        }
     }
     return m_xaodJets;
 }
@@ -1442,6 +1469,8 @@ XaodAnalysis& XaodAnalysis::clearContainerPointers()
     m_xaodTruthParticles = NULL;
     m_metContainer       = NULL;
     m_metAuxContainer    = NULL;
+    m_metJets            = NULL;
+    m_metJetsAux         = NULL;
     return *this;
 }
 //----------------------------------------------------------
@@ -1455,6 +1484,6 @@ XaodAnalysis& XaodAnalysis::retrieveCollections()
     xaodPhothons();
     xaodTruthEvent();
     xaodTruthParticles();
-    retrieveXaodMet(); // DG 2014-09-01 this has to be fixed asap; see answ from Kerim&Ximo
+    retrieveXaodMet();
     return *this;
 }

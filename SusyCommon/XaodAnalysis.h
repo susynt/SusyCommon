@@ -391,6 +391,8 @@ class XaodAnalysis : public TSelector
     xAOD::ShallowAuxContainer* m_xaodTausAux; ///< tau aux info
     xAOD::JetContainer* m_xaodJets;
     xAOD::ShallowAuxContainer* m_xaodJetsAux; ///< jet aux info
+    xAOD::JetContainer* m_metJets; ///< calibrated jets used for met rebuilding
+    xAOD::ShallowAuxContainer* m_metJetsAux;
     xAOD::PhotonContainer* m_xaodPhotons;
     xAOD::ShallowAuxContainer* m_xaodPhotonsAux; ///< photon aux info
     const xAOD::TruthEventContainer* m_xaodTruthEvent;
