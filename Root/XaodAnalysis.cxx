@@ -358,8 +358,8 @@ void XaodAnalysis::selectBaselineObjects(SusyNtSys sys)
         xAOD::Electron &el = **el_itr;
         if(true) // DG 2014-08-27 used to be mediumPP, don't know what will be for RunII
             m_preElectrons.push_back(iEl);
-        m_susyObj.FillElectron(el, iEl);
-        m_susyObj.IsSignalElectron(el, iEl);
+        m_susyObj.FillElectron(el);
+        m_susyObj.IsSignalElectron(el);
         if(m_dbg) cout<<"El passing"
                       <<" baseline? "<<el.auxdata< int >("baseline")
                       <<" signal? "<<el.auxdata< int >("signal")
