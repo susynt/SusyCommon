@@ -135,7 +135,7 @@ void XaodAnalysis::Terminate()
 XaodAnalysis& XaodAnalysis::initSusyTools()
 {
   bool useLeptonTrigger = false;
-  m_susyObj.msg().setLevel( m_dbg ? MSG::DEBUG : MSG::WARNING);
+  m_susyObj.msg().setLevel(m_dbg ? MSG::DEBUG : MSG::WARNING);
   m_susyObj.setProperty("IsData",          static_cast<int>(!m_isMC));
   m_susyObj.setProperty("IsAtlfast",       static_cast<int>(m_isAF2));
   m_susyObj.setProperty("IsMC12b",         static_cast<int>(processingMc12b()));
@@ -145,8 +145,11 @@ XaodAnalysis& XaodAnalysis::initSusyTools()
           <<"Exiting... "<<endl
           <<endl;
       exit(-1);
-  }else if(m_dbg){
-      cout<<"XaodAnalysis::initSusyTools: SUSYObjDef_xAOD initialized... "<<endl;
+  }else {
+      if(m_dbg)
+          cout<<"XaodAnalysis::initSusyTools: SUSYObjDef_xAOD initialized... "<<endl;
+      // DG-2014-09-02 : tmp fix propagate dbg to met tool
+      m_susyObj.m_METRebuilder->msg().setLevel(m_dbg ? MSG::DEBUG : MSG::WARNING);
   }
   return *this;
 }
