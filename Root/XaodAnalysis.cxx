@@ -296,7 +296,7 @@ const xAOD::TruthEventContainer* XaodAnalysis::retrieveTruthEvent(xAOD::TEvent &
 //----------------------------------------------------------
 const xAOD::TruthEventContainer* XaodAnalysis::xaodTruthEvent()
 {
-    if(m_xaodTruthEvent==NULL){
+    if(m_xaodTruthEvent==NULL && m_isMC){
         m_xaodTruthEvent = retrieveTruthEvent(m_event, m_dbg);
     }
     return m_xaodTruthEvent;
@@ -315,7 +315,7 @@ const xAOD::TruthParticleContainer* XaodAnalysis::retrieveTruthParticles(xAOD::T
 //----------------------------------------------------------
 const xAOD::TruthParticleContainer* XaodAnalysis::xaodTruthParticles()
 {
-    if(m_xaodTruthParticles==NULL){
+    if(m_xaodTruthParticles==NULL && m_isMC){
         m_xaodTruthParticles = retrieveTruthParticles(m_event, m_dbg);
     }
     return m_xaodTruthParticles;
