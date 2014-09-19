@@ -33,7 +33,7 @@ XaodAnalysis::XaodAnalysis() :
         m_selectPhotons(false),
         m_selectTaus(false),
         m_selectTruth(false),
-        m_metFlavor(SUSYMet::Default),
+        // m_metFlavor(SUSYMet::Default),
         m_doMetMuCorr(false),
         m_doMetFix(false),
         m_lumi(LUMI_A_E),
@@ -138,7 +138,7 @@ void XaodAnalysis::Terminate()
 XaodAnalysis& XaodAnalysis::initSusyTools()
 {
   bool useLeptonTrigger = false;
-  m_susyObj.msg().setLevel( m_dbg ? MSG::DEBUG : MSG::WARNING);
+  m_susyObj.msg().setLevel(m_dbg ? MSG::DEBUG : MSG::WARNING);
   m_susyObj.setProperty("IsData",          static_cast<int>(!m_isMC));
   m_susyObj.setProperty("IsAtlfast",       static_cast<int>(m_isAF2));
   m_susyObj.setProperty("IsMC12b",         static_cast<int>(processingMc12b()));
@@ -148,8 +148,11 @@ XaodAnalysis& XaodAnalysis::initSusyTools()
           <<"Exiting... "<<endl
           <<endl;
       exit(-1);
-  }else if(m_dbg){
-      cout<<"XaodAnalysis::initSusyTools: SUSYObjDef_xAOD initialized... "<<endl;
+  }else {
+      if(m_dbg)
+          cout<<"XaodAnalysis::initSusyTools: SUSYObjDef_xAOD initialized... "<<endl;
+      // DG-2014-09-02 : tmp fix propagate dbg to met tool
+      m_susyObj.m_METRebuilder->msg().setLevel(m_dbg ? MSG::DEBUG : MSG::WARNING);
   }
   return *this;
 }
@@ -257,6 +260,33 @@ xAOD::JetContainer* XaodAnalysis::xaodJets()
         JetsWithAux_t jwa = retrieveJetsWithAux(m_event, m_dbg);
         m_xaodJets = jwa.first;
         m_xaodJetsAux = jwa.second;
+
+        // also create shallow copy for MET rebuilding
+        const xAOD::JetContainer* jets = 0;
+        m_event.retrieve( jets, "AntiKt4LCTopoJets");
+        JetsWithAux_t metjets = xAOD::shallowCopyContainer( *jets );
+        // std::pair< xAOD::JetContainer*, xAOD::ShallowAuxContainer* > metjets = xAOD::shallowCopyContainer(*jwa.first);
+        m_metJets = metjets.first;
+        m_metJetsAux = metjets.second; // will be deleted by TStore::clear
+        m_store.record(m_metJets, "CalibratedAntiKt4LCTopoJets");
+        // black magic for object link
+        typedef xAOD::JetContainer::iterator Jci_t;
+        typedef xAOD::IParticleContainer Ipc_t;
+        typedef ElementLink< Ipc_t > El_t;
+        static const char* linkName = "originalObjectLink";
+        Jci_t it = metjets.first->begin(), end = metjets.first->end();
+        for(; it!=end; ++it){
+            if(const Ipc_t *container = dynamic_cast<const Ipc_t*>((*it)->container())){
+                const El_t link(*jets, (*it)->index());
+                El_t &auxLink = (*it)->auxdata< El_t >( linkName );
+                auxLink = link;
+                auxLink.toPersistent();
+            } else {
+                cout<<"Input object not part of a container, '"<<linkName<<"' not established "
+                    <<"("<<container<<")" // just to avoid nused variable 'container'
+                    <<endl;
+            }
+        }
     }
     return m_xaodJets;
 }
@@ -348,36 +378,6 @@ void XaodAnalysis::retrieveXaodMet()
     }
 }
 //----------------------------------------------------------
-SystErr::Syste ntsys2systerr(const SusyNtSys &s)
-{
-    SystErr::Syste sys = SystErr::NONE;
-    switch(s){
-    case NtSys_NOM :                                     break; // No need to check needlessly
-        //case NtSys_EES_UP : sys = SystErr::EESUP;        break; // E scale up
-        //case NtSys_EES_DN : sys = SystErr::EESDOWN;      break; // E scale down
-    case NtSys_EES_Z_UP   : sys = SystErr::EGZEEUP;    break; // E scale Zee up
-    case NtSys_EES_Z_DN   : sys = SystErr::EGZEEDOWN;  break; // E scale Zee dn
-    case NtSys_EES_MAT_UP : sys = SystErr::EGMATUP;    break; // E scale material up
-    case NtSys_EES_MAT_DN : sys = SystErr::EGMATDOWN;  break; // E scale material down
-    case NtSys_EES_PS_UP  : sys = SystErr::EGPSUP;     break; // E scale presampler up
-    case NtSys_EES_PS_DN  : sys = SystErr::EGPSDOWN;   break; // E scale presampler down
-    case NtSys_EES_LOW_UP : sys = SystErr::EGLOWUP;    break; // E low pt up
-    case NtSys_EES_LOW_DN : sys = SystErr::EGLOWDOWN;  break; // E low pt down
-    case NtSys_EER_UP     : sys = SystErr::EGRESUP;    break; // E smear up
-    case NtSys_EER_DN     : sys = SystErr::EGRESDOWN;  break; // E smear down
-    case NtSys_MS_UP      : sys = SystErr::MMSUP;      break; // MS scale up
-    case NtSys_MS_DN      : sys = SystErr::MMSLOW;     break; // MS scale down
-    case NtSys_ID_UP      : sys = SystErr::MIDUP;      break; // ID scale up
-    case NtSys_ID_DN      : sys = SystErr::MIDLOW;     break; // ID scale down
-    case NtSys_JES_UP     : sys = SystErr::JESUP;      break; // JES up
-    case NtSys_JES_DN     : sys = SystErr::JESDOWN;    break; // JES down
-    case NtSys_JER        : sys = SystErr::JER;        break; // JER (gaussian)
-    case NtSys_TES_UP     : sys = SystErr::TESUP;      break; // TES up
-    case NtSys_TES_DN     : sys = SystErr::TESDOWN;    break; // TES down
-    }
-    return sys;
-}
-//----------------------------------------------------------
 void XaodAnalysis::selectBaselineObjects(SusyNtSys sys)
 {
     if(m_dbg>=5) cout << "selectBaselineObjects" << endl;
@@ -391,8 +391,8 @@ void XaodAnalysis::selectBaselineObjects(SusyNtSys sys)
         xAOD::Electron &el = **el_itr;
         if(true) // DG 2014-08-27 used to be mediumPP, don't know what will be for RunII
             m_preElectrons.push_back(iEl);
-        m_susyObj.FillElectron(el, iEl);
-        m_susyObj.IsSignalElectron(el, iEl);
+        m_susyObj.FillElectron(el);
+        m_susyObj.IsSignalElectron(el);
         if(m_dbg) cout<<"El passing"
                       <<" baseline? "<<el.auxdata< int >("baseline")
                       <<" signal? "<<el.auxdata< int >("signal")
@@ -1003,9 +1003,7 @@ bool XaodAnalysis::passTTCVeto()
 bool XaodAnalysis::passTileErr(const xAOD::EventInfo* eventinfo)
 {
 	bool eventPassesTileTrip = (m_isMC ||
-                                m_susyObj.m_SUSYObjDef->IsTileTrip(eventinfo->runNumber(),
-                                                                   eventinfo->lumiBlock(),
-                                                                   eventinfo->eventNumber()));
+                                true); // SUSYToolsTester: move to xAOD tool
     return eventPassesTileTrip;
 }
 //----------------------------------------------------------
@@ -1209,14 +1207,14 @@ int XaodAnalysis::getHFORDecision()
 //----------------------------------------------------------
 void XaodAnalysis::setMetFlavor(string metFlav)
 {
-  if(metFlav=="STVF") m_metFlavor = SUSYMet::STVF;
-  else if(metFlav=="STVF_JVF") m_metFlavor = SUSYMet::STVF_JVF;
-  else if(metFlav=="Default") m_metFlavor = SUSYMet::Default;
-  else{
-    cout << "XaodAnalysis::setMetFlavor : ERROR : MET flavor " << metFlav
-         << " is not supported!" << endl;
-    abort();
-  }
+  // if(metFlav=="STVF") m_metFlavor = SUSYMet::STVF;
+  // else if(metFlav=="STVF_JVF") m_metFlavor = SUSYMet::STVF_JVF;
+  // else if(metFlav=="Default") m_metFlavor = SUSYMet::Default;
+  // else{
+  //   cout << "XaodAnalysis::setMetFlavor : ERROR : MET flavor " << metFlav
+  //        << " is not supported!" << endl;
+  //   abort();
+  // }
 }
 //----------------------------------------------------------
 void XaodAnalysis::dumpEvent()
@@ -1479,6 +1477,8 @@ XaodAnalysis& XaodAnalysis::clearContainerPointers()
     m_xaodTruthParticles = NULL;
     m_metContainer       = NULL;
     m_metAuxContainer    = NULL;
+    m_metJets            = NULL;
+    m_metJetsAux         = NULL;
     return *this;
 }
 //----------------------------------------------------------
@@ -1492,6 +1492,6 @@ XaodAnalysis& XaodAnalysis::retrieveCollections()
     xaodPhothons();
     xaodTruthEvent();
     xaodTruthParticles();
-    retrieveXaodMet(); // DG 2014-09-01 this has to be fixed asap; see answ from Kerim&Ximo
+    retrieveXaodMet();
     return *this;
 }
