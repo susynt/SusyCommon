@@ -125,7 +125,9 @@ TH1F* SusyNtMaker::getProcCutFlow(int signalProcess)
 //----------------------------------------------------------
 Bool_t SusyNtMaker::Process(Long64_t entry)
 {
-  m_event.getEntry(entry);
+  static Long64_t chainEntry = -1;
+  chainEntry++;
+  m_event.getEntry(chainEntry); // DG 2014-09-19 TEvent wants the chain entry, not the tree entry (?)
   clearOutputObjects();
   retrieveCollections();
   const xAOD::EventInfo* eventinfo = XaodAnalysis::xaodEventInfo();
@@ -139,8 +141,6 @@ Bool_t SusyNtMaker::Process(Long64_t entry)
       }
   }
 
-  static Long64_t chainEntry = -1;
-  chainEntry++;
   if(m_dbg || chainEntry%5000==0)
   {
     cout << "**** Processing entry " << setw(6) << chainEntry

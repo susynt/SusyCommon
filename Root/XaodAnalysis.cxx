@@ -66,7 +66,7 @@ XaodAnalysis::XaodAnalysis() :
 void XaodAnalysis::Init(TTree *tree)
 {
     cout<<"calling xAOD::Init"<<endl;
-    xAOD::Init("susy::XaodAnalysis");
+    xAOD::Init("susy::XaodAnalysis").ignore();
     m_event.readFrom(tree);
     m_isMC = XaodAnalysis::isSimuFromSamplename(m_sample);
     bool isData = XaodAnalysis::isDataFromSamplename(m_sample);
@@ -99,10 +99,10 @@ void XaodAnalysis::SlaveBegin(TTree *tree)
 /*--------------------------------------------------------------------------------*/
 Bool_t XaodAnalysis::Process(Long64_t entry)
 {
-  m_event.getEntry(entry);
-  retrieveCollections();
   static Long64_t chainEntry = -1;
   chainEntry++;
+  m_event.getEntry(entry);
+  retrieveCollections();
   if(m_dbg || chainEntry%10000==0)
   {
       const xAOD::EventInfo* eventinfo = xaodEventInfo();
