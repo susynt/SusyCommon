@@ -1,4 +1,3 @@
-#include <limits>
 
 #include "TSystem.h"
 
@@ -14,6 +13,10 @@
 
 // #include "egammaAnalysisUtils/egammaTriggerMatching.h"
 // #include "D3PDReader/JetD3PDObject.h"
+
+#include <limits>
+#include <algorithm> // transform
+#include <numeric> // accumulate
 
 using namespace std;
 using susy::XaodAnalysis;
@@ -63,12 +66,12 @@ XaodAnalysis::XaodAnalysis() :
 void XaodAnalysis::Init(TTree *tree)
 {
     cout<<"calling xAOD::Init"<<endl;
-   xAOD::Init("susy::XaodAnalysis");
-   m_event.readFrom(tree);
-   m_isMC = XaodAnalysis::isSimuFromSamplename(m_sample);
-   bool isData = XaodAnalysis::isDataFromSamplename(m_sample);
-   m_stream = XaodAnalysis::streamFromSamplename(m_sample, isData);
-   initSusyTools();
+    xAOD::Init("susy::XaodAnalysis");
+    m_event.readFrom(tree);
+    m_isMC = XaodAnalysis::isSimuFromSamplename(m_sample);
+    bool isData = XaodAnalysis::isDataFromSamplename(m_sample);
+    m_stream = XaodAnalysis::streamFromSamplename(m_sample, isData);
+    initSusyTools();
 }
 //----------------------------------------------------------
 XaodAnalysis::~XaodAnalysis()
@@ -1347,44 +1350,48 @@ bool XaodAnalysis::runningOptionsAreValid()
                 <<" You should call XaodAnalysis::setMCProduction()"
                 <<endl;
     }
-    return valid;
-#warning runningOptionsAreValid not complete
-    // bool isSimulation = m_event.eventinfo.isSimulation();
-    // bool isData = !isSimulation;
-    // bool isStreamEgamma = m_event.eventinfo.streamDecision_Egamma();
-    // bool isStreamJetEt  = m_event.eventinfo.streamDecision_JetTauEtmiss();
-    // bool isStreamMuons  = m_event.eventinfo.streamDecision_Muons();
-    // if(m_isMC != isSimulation) {
-    //     valid=false;
-    //     if(m_dbg)
-    //         cout<<"XaodAnalysis::runningOptionsAreValid invalid isMc:"
-    //             <<" (m_isMC:"<<m_isMC<<" != isSimulation:"<<isSimulation<<")"
-    //             <<endl;
-    // }
-    // if(isData) {
-    //     bool consistentStream = (isStreamMuons  ? m_stream==Stream_Muons :
-    //                              isStreamEgamma ? m_stream==Stream_Egamma :
-    //                              isStreamJetEt  ? m_stream==Stream_JetTauEtmiss :
-    //                              false);
-    //     if(!consistentStream) {
-    //         valid=false;
-    //         if(m_dbg)
-    //             cout<<"XaodAnalysis::runningOptionsAreValid: inconsistent stream"
-    //                 <<" m_stream: "<<(m_stream==Stream_Muons        ? "Stream_Muons":
-    //                                   m_stream==Stream_Egamma       ? "Stream_Egamma":
-    //                                   m_stream==Stream_JetTauEtmiss ? "Stream_JetTauEtmiss":
-    //                                   "unknown")
-    //                 <<" eventinfo: "<<(isStreamMuons ? "Muons":
-    //                                    isStreamEgamma ? "Egamma":
-    //                                    isStreamJetEt ? "JetTauEtmiss":
-    //                                    "unknown")
-    //                 <<endl;
+    bool isSimulation = xaodEventInfo()->eventType( xAOD::EventInfo::IS_SIMULATION );
+    bool isData = !isSimulation;
+    if(m_isMC != isSimulation) {
+        valid=false;
+        if(m_dbg)
+            cout<<"XaodAnalysis::runningOptionsAreValid invalid isMc:"
+                <<" (m_isMC:"<<m_isMC<<" != isSimulation:"<<isSimulation<<")"
+                <<endl;
+    }
+    if(isData) { // check stream
+        const std::vector< xAOD::EventInfo::StreamTag > &streams= xaodEventInfo()->streamTags();
+        vector<string> streamnames(streams.size());
+        std::transform(streams.begin(), streams.end(), streamnames.begin(),
+                       [](const xAOD::EventInfo::StreamTag &s) { return s.name(); });
+        bool isEgamma = (find(streamnames.begin(), streamnames.end(), "Egamma") != streamnames.end());
+        bool isJetEt  = (find(streamnames.begin(), streamnames.end(), "JetTauEtmiss") != streamnames.end());
+        bool isMuons  = (find(streamnames.begin(), streamnames.end(), "Muons") != streamnames.end());
+        bool consistentStream = (isMuons  ? m_stream==Stream_Muons :
+                                 isEgamma ? m_stream==Stream_Egamma :
+                                 isJetEt  ? m_stream==Stream_JetTauEtmiss :
+                                 false);
+        if(!consistentStream) {
+            valid=false;
+            if(m_dbg)
+                cout<<"XaodAnalysis::runningOptionsAreValid: inconsistent stream"
+                    <<" m_stream: "
+                    <<(m_stream==Stream_Muons        ? "Stream_Muons":
+                       m_stream==Stream_Egamma       ? "Stream_Egamma":
+                       m_stream==Stream_JetTauEtmiss ? "Stream_JetTauEtmiss":
+                       "unknown")
+                    <<" eventinfo: "
+                    <<accumulate(streamnames.begin(), streamnames.end(), std::string(),
+                                 [](const std::string& a, const std::string& b) -> std::string {
+                                     return a + (a.length() > 0 ? "," : "") + b;
+                                 })
+                    <<endl;
 
-    //     }
-    // }
-    // if(m_dbg)
-    //     cout<<"XaodAnalysis::runningOptionsAreValid(): "<<(valid?"true":"false")<<endl;
-    // return valid;
+        }
+    } // isData
+    if(m_dbg)
+        cout<<"XaodAnalysis::runningOptionsAreValid(): "<<(valid?"true":"false")<<endl;
+    return valid;
 }
 //----------------------------------------------------------
 std::string XaodAnalysis::defauldGrlFile()
@@ -1428,6 +1435,7 @@ bool XaodAnalysis::isDataFromSamplename(const TString &sample)
 //----------------------------------------------------------
 bool XaodAnalysis::isSimuFromSamplename(const TString &s)
 {
+    cout<<"isSimu: ("<<s<<") "<<(!XaodAnalysis::isDataFromSamplename(s))<<endl;
     return !XaodAnalysis::isDataFromSamplename(s);
 }
 //----------------------------------------------------------
