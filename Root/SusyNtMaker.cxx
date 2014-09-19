@@ -215,8 +215,6 @@ void SusyNtMaker::fillEventVars()
   evt->isMC             = m_isMC;
   evt->mcChannel        = m_isMC? eventinfo->mcChannelNumber() : 0;
   evt->w                = m_isMC? eventinfo->mcEventWeight()   : 1; // \todo DG this now has an arg, is 0 the right one?
-  //evt->larError         = m_event.eventinfo.larError();  // \todo DG still relevant?
-
   evt->nVtx             = getNumGoodVtx();
   evt->avgMu            = eventinfo->averageInteractionsPerCrossing();
 
@@ -247,18 +245,17 @@ void SusyNtMaker::fillEventVars()
   evt->errXsec          = m_isMC? m_errXsec : 1;
   evt->sumw             = m_isMC? m_sumw : 1;
 
-
-  const xAOD::TruthEventContainer* truthEvent = 0;
-  m_event.retrieve(truthEvent, "TruthEvent");
-  xAOD::TruthEventContainer::const_iterator truthE_itr = truthEvent->begin();
-  //--DG--( *truthE_itr )->pdfInfoParameter(evt->pdf_id1  , xAOD::TruthEvent::id1); // not available for some samples
-  //--DG--( *truthE_itr )->pdfInfoParameter(evt->pdf_id2  , xAOD::TruthEvent::id2);
-  // ( *truthE_itr )->pdfInfoParameter(evt->pdf_x1    , xAOD::TruthEvent::pdf1);
-  // ( *truthE_itr )->pdfInfoParameter(evt->pdf_x2    , xAOD::TruthEvent::pdf2);
-  // DG not working? ( *truthE_itr )->pdfInfoParameter(float(evt->pdf_scale), xAOD::TruthEvent::scalePDF);
-  // DG what are these two?
-  // ( *truthE_itr )->pdfInfoParameter(evt->pdf_x1   , xAOD::TruthEvent::x1);
-  // ( *truthE_itr )->pdfInfoParameter(evt->pdf_x2   , xAOD::TruthEvent::x2);
+  if(m_isMC){
+      xAOD::TruthEventContainer::const_iterator truthE_itr = xaodTruthEvent()->begin();
+      //--DG--( *truthE_itr )->pdfInfoParameter(evt->pdf_id1  , xAOD::TruthEvent::id1); // not available for some samples
+      //--DG--( *truthE_itr )->pdfInfoParameter(evt->pdf_id2  , xAOD::TruthEvent::id2);
+      // ( *truthE_itr )->pdfInfoParameter(evt->pdf_x1    , xAOD::TruthEvent::pdf1);
+      // ( *truthE_itr )->pdfInfoParameter(evt->pdf_x2    , xAOD::TruthEvent::pdf2);
+      // DG not working? ( *truthE_itr )->pdfInfoParameter(float(evt->pdf_scale), xAOD::TruthEvent::scalePDF);
+      // DG what are these two?
+      // ( *truthE_itr )->pdfInfoParameter(evt->pdf_x1   , xAOD::TruthEvent::x1);
+      // ( *truthE_itr )->pdfInfoParameter(evt->pdf_x2   , xAOD::TruthEvent::x2);
+  }
   evt->pdfSF            = m_isMC? getPDFWeight8TeV() : 1;
   m_susyNt.evt()->cutFlags[NtSys_NOM] = m_cutFlags;
 }
