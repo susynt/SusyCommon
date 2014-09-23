@@ -1081,6 +1081,7 @@ void SusyNtMaker::fillMetVars(SusyNtSys sys)
 // Fill Truth Particle variables
 /*--------------------------------------------------------------------------------*/
 bool isMcAtNloTtbar(const int &channel) { return channel==105200; }
+bool isPowHegPythiaTtbar(const int &channel)  { return (channel==105861 || channel==117050); }
 /*--------------------------------------------------------------------------------*/
 void SusyNtMaker::fillTruthParticleVars()
 {
@@ -1090,7 +1091,8 @@ void SusyNtMaker::fillTruthParticleVars()
   m_truParticles        = m_recoTruthMatch.LepFromHS_McIdx();
   vector<int> truthTaus = m_recoTruthMatch.TauFromHS_McIdx();
   m_truParticles.insert( m_truParticles.end(), truthTaus.begin(), truthTaus.end() );
-  if(m_isMC && isMcAtNloTtbar(d3pd.truth.channel_number())){
+  if( m_isMC && (isMcAtNloTtbar(d3pd.truth.channel_number()) || 
+                 isPowHegPythiaTtbar(d3pd.truth.channel_number())) ){
     vector<int> ttbarPart(WhTruthExtractor::ttbarMcAtNloParticles(d3pd.truth.pdgId(),
                                                                   d3pd.truth.child_index()));
     m_truParticles.insert(m_truParticles.end(), ttbarPart.begin(), ttbarPart.end());
@@ -1122,6 +1124,12 @@ void SusyNtMaker::fillTruthParticleVars()
                                                   d3pd.truth.parent_index(),
                                                   truParIdx);
   }
+ /* 
+  For viewing the truth tables
+  WhTruthExtractor::printEvent(*d3pd.truth.pdgId(), *d3pd.truth.child_index(), 
+                               *d3pd.truth.parent_index());
+
+ */
 }
 /*--------------------------------------------------------------------------------*/
 // Fill Truth Jet variables
