@@ -20,8 +20,8 @@ using namespace std;
 
 #include "TObject.h"
 
-#include "D3PDReader/EventInfoD3PDObject.h"
-#include "D3PDReader/TruthParticleD3PDObject.h"
+// DROP #include "D3PDReader/EventInfoD3PDObject.h"
+// DROP #include "D3PDReader/TruthParticleD3PDObject.h"
 
 // Function written by Cristophe and Mike for filtering the low mass alpgen DY
 // in order to combine it with the Sherpa Z sample, which only has Mll>40 GeV.
@@ -34,8 +34,8 @@ Bool_t PassMllForAlpgen(Int_t mc_channel_numbers, Int_t mc_n,
                         vector<vector<int> >* mc_parents, vector<vector<int> >* mc_children,
                         Bool_t DEBUG_PASSMLL_ALPGEN=false);
 
-// Alternative function for MultiLep classes
-Bool_t PassMllForAlpgen(D3PDReader::TruthParticleD3PDObject* truthParticles, Bool_t DEBUG_PASSMLL_ALPGEN=false);
+// DROP // Alternative function for MultiLep classes
+// DROP Bool_t PassMllForAlpgen(D3PDReader::TruthParticleD3PDObject* truthParticles, Bool_t DEBUG_PASSMLL_ALPGEN=false);
 
 //! mass of the Z boson from the Alpgen truth; -1.0 if there is no Z in the MC truth record
 float MllForAlpgen(Int_t mc_n,
@@ -50,9 +50,9 @@ float MllForAlpgen(Int_t mc_n,
 				   vector<vector<int> >* mc_children,
 				   Bool_t DEBUG_PASSMLL_ALPGEN=false);
 
-//! Just a wrapper of the above for D3PDReader classes
-float MllForAlpgen(D3PDReader::TruthParticleD3PDObject* truthParticles,
-				   Bool_t DEBUG_PASSMLL_ALPGEN=false);
+// DROP //! Just a wrapper of the above for D3PDReader classes
+// DROP float MllForAlpgen(D3PDReader::TruthParticleD3PDObject* truthParticles,
+// DROP 				   Bool_t DEBUG_PASSMLL_ALPGEN=false);
 //! mass of the Z boson from the Sherpa truth; -1.0 if there is no Z in the MC truth record
 float MllForSherpa(vector<float>* mc_pt,
 				   vector<float>* mc_eta,
@@ -130,6 +130,6 @@ void printEvent(const vector<int>* pdg,
 				const vector<vector<int> >* parents);
 // <end>
 //! Just a wrapper of the above for MultiLep classes
-float MllForSherpa(D3PDReader::TruthParticleD3PDObject* truthParticles, Bool_t verbose=false);
-
+// DROP float MllForSherpa(D3PDReader::TruthParticleD3PDObject* truthParticles, Bool_t verbose=false);
+// DROP 
 #endif

@@ -13,8 +13,8 @@
 
 #include "TLorentzVector.h"
 
-#include "D3PDReader/ElectronD3PDObject.h"
-#include "D3PDReader/MuonD3PDObject.h"
+// TODO#include "D3PDReader/ElectronD3PDObject.h"
+// TODO#include "D3PDReader/MuonD3PDObject.h"
 
 
 
@@ -58,11 +58,11 @@ class LeptonInfo
     // For convenience, a method to access charge that works for both electrons and muons
     virtual float charge() const;
 
-    // Access the d3pd variables for this lepton
-    // Obviously only one of these will return a non-NULL pointer for a given lepton
-    // If you try to grab the wrong one, it will print a warning.
-    D3PDReader::ElectronD3PDObjectElement* getElectronElement() const;
-    D3PDReader::MuonD3PDObjectElement*     getMuonElement() const;
+// TODO    // Access the d3pd variables for this lepton
+// TODO    // Obviously only one of these will return a non-NULL pointer for a given lepton
+// TODO    // If you try to grab the wrong one, it will print a warning.
+// TODO    D3PDReader::ElectronD3PDObjectElement* getElectronElement() const;
+// TODO    D3PDReader::MuonD3PDObjectElement*     getMuonElement() const;
 
     // Print info
     virtual void print() const;

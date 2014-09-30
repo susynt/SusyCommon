@@ -39,38 +39,39 @@ LeptonInfo::~LeptonInfo()
 //------------------------------------------------------------------------------------------------
 float LeptonInfo::charge() const
 {
-    if(m_isEle) return getElectronElement()->charge();
-    else return getMuonElement()->charge();
+    // if(m_isEle) return getElectronElement()->charge();
+    // else return getMuonElement()->charge();
+    return 0.0;
 }
 
 //------------------------------------------------------------------------------------------------
 // Access D3PD object element
 //------------------------------------------------------------------------------------------------
-D3PDReader::ElectronD3PDObjectElement* LeptonInfo::getElectronElement() const
-{
-    //cout << "getElectronElement" << endl;
-    //cout << m_obj << endl;
-    //m_obj->Print();
-    if(!m_isEle) cout << "LeptonInfo: Warning, requesting electron variables for a muon!" << endl;
-    //return (D3PDReader::ElectronD3PDObjectElement*) m_obj;
-    //return dynamic_cast<D3PDReader::ElectronD3PDObjectElement*>(m_obj);
-    D3PDReader::ElectronD3PDObject* obj = dynamic_cast<D3PDReader::ElectronD3PDObject*>(m_obj);
-    if(obj) return & (*obj)[m_idx];
-    else return NULL;
-}
+// DROP D3PDReader::ElectronD3PDObjectElement* LeptonInfo::getElectronElement() const
+// DROP {
+// DROP     //cout << "getElectronElement" << endl;
+// DROP     //cout << m_obj << endl;
+// DROP     //m_obj->Print();
+// DROP     if(!m_isEle) cout << "LeptonInfo: Warning, requesting electron variables for a muon!" << endl;
+// DROP     //return (D3PDReader::ElectronD3PDObjectElement*) m_obj;
+// DROP     //return dynamic_cast<D3PDReader::ElectronD3PDObjectElement*>(m_obj);
+// DROP     D3PDReader::ElectronD3PDObject* obj = dynamic_cast<D3PDReader::ElectronD3PDObject*>(m_obj);
+// DROP     if(obj) return & (*obj)[m_idx];
+// DROP     else return NULL;
+// DROP }
 
 //------------------------------------------------------------------------------------------------
 // Access D3PD object element
 //------------------------------------------------------------------------------------------------
-D3PDReader::MuonD3PDObjectElement* LeptonInfo::getMuonElement() const
-{
-    if(m_isEle) cout << "LeptonInfo: Warning, requesting muon variables for an electron!" << endl;
-    //return (D3PDReader::MuonD3PDObjectElement*) m_obj;
-    //return dynamic_cast<D3PDReader::MuonD3PDObjectElement*>(m_obj);
-    D3PDReader::MuonD3PDObject* obj = dynamic_cast<D3PDReader::MuonD3PDObject*>(m_obj);
-    if(obj) return & (*obj)[m_idx];
-    else return NULL;
-}
+// DROP D3PDReader::MuonD3PDObjectElement* LeptonInfo::getMuonElement() const
+// DROP {
+// DROP     if(m_isEle) cout << "LeptonInfo: Warning, requesting muon variables for an electron!" << endl;
+// DROP     //return (D3PDReader::MuonD3PDObjectElement*) m_obj;
+// DROP     //return dynamic_cast<D3PDReader::MuonD3PDObjectElement*>(m_obj);
+// DROP     D3PDReader::MuonD3PDObject* obj = dynamic_cast<D3PDReader::MuonD3PDObject*>(m_obj);
+// DROP     if(obj) return & (*obj)[m_idx];
+// DROP     else return NULL;
+// DROP }
 
 //------------------------------------------------------------------------------------------------
 // Print lepton variables
