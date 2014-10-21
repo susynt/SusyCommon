@@ -22,12 +22,12 @@ namespace smc =susy::mc;
 // SusyNtMaker Constructor
 /*--------------------------------------------------------------------------------*/
 SusyNtMaker::SusyNtMaker() : m_fillNt(true),
-			     m_filter(true),
+                             m_filter(true),
                              m_nLepFilter(0),
                              m_nLepTauFilter(2),
                              m_filterTrigger(false),
                              m_saveContTaus(false),
-                             m_isWhSample(false),
+                             m_isHsignalSample(false),
                              m_hDecay(0),
                              m_hasSusyProp(false)
 {
@@ -92,13 +92,12 @@ void SusyNtMaker::Begin(TTree* /*tree*/)
   }
 
   // Susy sample determination is now done dynamically
-  //m_isSusySample = m_sample.Contains("DGemt") || m_sample.Contains("DGstau") || 
-  //                 m_sample.Contains("RPV") || m_sample.Contains("simplifiedModel") || 
+  //m_isSusySample = m_sample.Contains("DGemt") || m_sample.Contains("DGstau") ||
+  //                 m_sample.Contains("RPV") || m_sample.Contains("simplifiedModel") ||
   //                 m_sample.Contains("pMSSM") || m_sample.Contains("DG_MeadePoint");
 
   // Still hardcoded. Currently no other known solution
-  m_isWhSample = m_sample.Contains("simplifiedModel_wA_noslep_WH") ||
-                 m_sample.Contains("Herwigpp_sM_wA_noslep_notauhad_WH");
+  m_isHsignalSample = SusyNtMaker::isHiggsSignalSample(m_sample.Data());
 
   // create histograms for cutflow
   // Raw event weights
@@ -141,7 +140,7 @@ TH1F* SusyNtMaker::getProcCutFlow(int signalProcess)
     stringstream stream;
     stream << signalProcess;
     string name = "procCutFlow" + stream.str();
-    return m_procCutFlows[signalProcess] = makeCutFlow(name.c_str(), 
+    return m_procCutFlows[signalProcess] = makeCutFlow(name.c_str(),
                                                        (name+";Cuts;Events").c_str());
   }
   // Already saved process
@@ -168,7 +167,7 @@ Bool_t SusyNtMaker::Process(Long64_t entry)
   }
 
   if(selectEvent() && m_fillNt){
-    int bytes = m_outTree->Fill(); 
+    int bytes = m_outTree->Fill();
     if(bytes==-1){
       cout << "SusyNtMaker ERROR filling tree!  Abort!" << endl;
       abort();
@@ -270,14 +269,15 @@ bool SusyNtMaker::selectEvent()
                       d3pd.evt.SUSY_Spart2_pdgId() != 0;
 
   // Susy final state - NOTE: DEFAULT VALUE CHANGED FROM -1 TO 0
-  m_susyFinalState = isSusySample ? m_susyObj.finalState(d3pd.evt.SUSY_Spart1_pdgId(), 
+  m_susyFinalState = isSusySample ? m_susyObj.finalState(d3pd.evt.SUSY_Spart1_pdgId(),
                                                            d3pd.evt.SUSY_Spart2_pdgId()) : 0;
   m_hDecay = smc::kUnknown;
-  if(m_isWhSample) m_hDecay = WhTruthExtractor().update(d3pd.truth.pdgId(), 
-                                                        d3pd.truth.child_index(), 
-                                                        d3pd.truth.parent_index());
-
-  // This assumes that sparticle branches are present for any 
+  if(m_isHsignalSample){ m_hDecay = WhTruthExtractor().update(d3pd.truth.pdgId(),
+                                                             d3pd.truth.child_index(),
+                                                             d3pd.truth.parent_index());
+      cout<<"m_hDecay: "<<m_hDecay<<endl;
+  }
+  // This assumes that sparticle branches are present for any
   // sample that might have the SUSY propagators problem
   m_hasSusyProp = (isSusySample ?
                    SusyNtTools::eventHasSusyPropagators(*d3pd.truth.pdgId(), *d3pd.truth.parent_index()) :
@@ -303,7 +303,7 @@ bool SusyNtMaker::selectEvent()
 
   n_evt_initial++;
   FillCutFlow();
- 
+
   //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-//
   // Obj Independent checks
 
@@ -339,7 +339,7 @@ bool SusyNtMaker::selectEvent()
   n_evt_goodVtx++;
 
   // Sherpa WW fix, remove radiative b-quark processes that overlap with single top
-  //if(m_filter && m_isMC && isBuggyWWSherpaSample(d3pd.truth.channel_number()) && 
+  //if(m_filter && m_isMC && isBuggyWWSherpaSample(d3pd.truth.channel_number()) &&
      //hasRadiativeBQuark(d3pd.truth.pdgId(), d3pd.truth.status())) return false;
   if(m_filter && m_isMC && m_susyObj.Sherpa_WW_veto(d3pd.truth.n(),
                                                     d3pd.truth.channel_number(),
@@ -354,9 +354,9 @@ bool SusyNtMaker::selectEvent()
   FillCutFlow();
   n_evt_tileTrip++;
 
-  //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-//  
+  //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-//
   // Get Nominal Objects
-  
+
   selectObjects();
   buildMet();
   //evtCheck();
@@ -389,7 +389,7 @@ bool SusyNtMaker::selectEvent()
         {
           FillCutFlow();
           n_evt_cosmic++;
-  
+
           n_base_ele += m_baseElectrons.size();
           n_base_muo += m_baseMuons.size();
           n_base_tau += m_baseTaus.size();
@@ -437,7 +437,7 @@ bool SusyNtMaker::selectEvent()
                                     d3pd.ele.type(), d3pd.ele.origin(),
                                     d3pd.truthMu.pt(), d3pd.truthMu.eta(), d3pd.truthMu.phi(), d3pd.truthMu.m(),
                                     d3pd.truthMu.type(), d3pd.truthMu.origin(),
-                                    d3pd.trk.pt(), d3pd.trk.eta(), d3pd.trk.phi_wrtPV(), d3pd.trk.mc_barcode());                    
+                                    d3pd.trk.pt(), d3pd.trk.eta(), d3pd.trk.phi_wrtPV(), d3pd.trk.mc_barcode());
   }
 
   if(m_fillNt){
@@ -447,10 +447,10 @@ bool SusyNtMaker::selectEvent()
     fillNtVars();
 
     // If it is mc and option for sys is set
-    if(m_isMC && m_sys) doSystematic(); 
+    if(m_isMC && m_sys) doSystematic();
 
     // For filling the output tree, filter on number of saved light leptons and taus
-    if(m_filter){ 
+    if(m_filter){
       uint nLepSaved = m_susyNt.ele()->size() + m_susyNt.muo()->size();
       uint nTauSaved = m_susyNt.tau()->size();
       if(nLepSaved < m_nLepFilter) return false;
@@ -460,7 +460,7 @@ bool SusyNtMaker::selectEvent()
     // Trigger filtering, only save events for which one of our triggers has fired
     if(m_filterTrigger && (m_evtTrigFlags == 0)) return false;
   }
-  
+
   return true;
 }
 
@@ -617,19 +617,19 @@ void SusyNtMaker::fillElectronVars(const LeptonInfo* lepIn)
   // For now, I will just use the cluster E, which I think people are using anyway
 
   // Corrected etcone has Pt and ED corrections
-  eleOut->etcone30Corr  = CaloIsoCorrection::GetPtEDCorrectedIsolation(element->Etcone40(), 
-                                                                       element->Etcone40_ED_corrected(), 
-                                                                       element->cl_E(), element->etas2(), 
-                                                                       element->etap(), element->cl_eta(), 0.3, 
+  eleOut->etcone30Corr  = CaloIsoCorrection::GetPtEDCorrectedIsolation(element->Etcone40(),
+                                                                       element->Etcone40_ED_corrected(),
+                                                                       element->cl_E(), element->etas2(),
+                                                                       element->etap(), element->cl_eta(), 0.3,
                                                                        m_isMC, element->Etcone30())/GeV;
 
   // Corrected topoEtcone has Pt and ED corrections.  Use D3PD branch for now
-  //float topo            = CaloIsoCorrection::GetPtEDCorrectedTopoIsolation(element->ED_median(), element->cl_E(), 
-  //                                                                         element->etas2(), element->etap(), 
-  //                                                                         element->cl_eta(), 0.3, m_isMC, 
+  //float topo            = CaloIsoCorrection::GetPtEDCorrectedTopoIsolation(element->ED_median(), element->cl_E(),
+  //                                                                         element->etas2(), element->etap(),
+  //                                                                         element->cl_eta(), 0.3, m_isMC,
   //                                                                         element->topoEtcone30())/GeV;
   eleOut->topoEtcone30Corr      = element->topoEtcone30_corrected()/GeV;
-  
+
   // Trigger flags
   eleOut->trigFlags     = m_eleTrigFlags[ lepIn->idx() ];
 
@@ -643,10 +643,10 @@ void SusyNtMaker::fillElectronVars(const LeptonInfo* lepIn)
   float nomPt = lepIn->lv()->Pt();
   float sfPt = nomPt >= 7.*GeV ? nomPt : 7.*GeV;
   if(eleOut->tightPP){
-    eleOut->effSF       = m_isMC? 
+    eleOut->effSF       = m_isMC?
                           m_susyObj.GetSignalElecSF(element->cl_eta(), sfPt, true, true, false) : 1;
     eleOut->errEffSF    = m_isMC?
-                          m_susyObj.GetSignalElecSF(element->cl_eta(), sfPt, true, true, false, 
+                          m_susyObj.GetSignalElecSF(element->cl_eta(), sfPt, true, true, false,
                                                     200841, SystErr::EEFFUP) - eleOut->effSF : 0;
   }
 
@@ -692,14 +692,14 @@ void SusyNtMaker::fillMuonVars(const LeptonInfo* lepIn)
   muOut->ptcone30ElStyle= m_d3pdTag>=D3PD_p1181? element->ptcone30_trkelstyle()/GeV : 0;
 
   // ID coordinates
-  muOut->idTrackPt      = element->id_qoverp_exPV() != 0.? 
+  muOut->idTrackPt      = element->id_qoverp_exPV() != 0.?
                           fabs(sin(element->id_theta_exPV())/element->id_qoverp_exPV())/GeV : 0.;
   muOut->idTrackEta     = -1.*log(tan(element->id_theta_exPV()/2.));
   muOut->idTrackPhi     = element->id_phi_exPV();
   muOut->idTrackQ       = element->id_qoverp_exPV() < 0 ? -1 : 1;
 
   // MS coordinates
-  muOut->msTrackPt      = element->ms_qoverp() != 0.? 
+  muOut->msTrackPt      = element->ms_qoverp() != 0.?
                           fabs(sin(element->ms_theta())/element->ms_qoverp())/GeV : 0.;
   muOut->msTrackEta     = -1.*log(tan(element->ms_theta()/2.));
   muOut->msTrackPhi     = element->ms_phi();
@@ -716,7 +716,7 @@ void SusyNtMaker::fillMuonVars(const LeptonInfo* lepIn)
   muOut->errZ0Unbiased  = element->trackIPEstimate_sigz0_unbiasedpvunbiased();
 
   muOut->isCombined     = element->isCombinedMuon();
-  
+
   // theta_exPV. Not sure if necessary.
   muOut->thetaPV        = element->theta_exPV();
 
@@ -760,7 +760,7 @@ void SusyNtMaker::fillJetVars()
   if(m_isMC) calcRandomRunLB();
   // Loop over selected jets and fill output tree
   for(uint iJet=0; iJet<m_preJets.size(); iJet++){
-    int jetIndex = m_preJets[iJet];  
+    int jetIndex = m_preJets[iJet];
     fillJetVar(jetIndex);
   }
 }
@@ -770,7 +770,7 @@ void SusyNtMaker::fillJetVar(int jetIdx)
   const JetElement* element = & d3pd.jet[jetIdx];
   m_susyNt.jet()->push_back( Susy::Jet() );
   Susy::Jet* jetOut = & m_susyNt.jet()->back();
-  
+
   const TLorentzVector* lv = & m_susyObj.GetJetTLV(jetIdx);
   float pt  = lv->Pt() / GeV;
   float eta = lv->Eta();
@@ -802,17 +802,17 @@ void SusyNtMaker::fillJetVar(int jetIdx)
   jetOut->bch_corr_jet  = element->BCH_CORR_JET();
   jetOut->bch_corr_cell = element->BCH_CORR_CELL();
   jetOut->isBadVeryLoose= JetID::isBadJet(JetID::VeryLooseBad,
-                                          element->emfrac(), 
-                                          element->hecf(), 
-                                          element->LArQuality(), 
+                                          element->emfrac(),
+                                          element->hecf(),
+                                          element->LArQuality(),
                                           element->HECQuality(),
-                                          element->Timing(), 
-                                          element->sumPtTrk_pv0_500MeV()/GeV, 
+                                          element->Timing(),
+                                          element->sumPtTrk_pv0_500MeV()/GeV,
                                           element->emscale_eta(), pt,
-                                          element->fracSamplingMax(), 
-                                          element->NegativeE(), 
+                                          element->fracSamplingMax(),
+                                          element->NegativeE(),
                                           element->AverageLArQF());
-  jetOut->isHotTile     = m_susyObj.isHotTile(d3pd.evt.RunNumber(), element->fracSamplingMax(), 
+  jetOut->isHotTile     = m_susyObj.isHotTile(d3pd.evt.RunNumber(), element->fracSamplingMax(),
                                               element->SamplingMax(), eta, phi);
 
   // BCH cleaning flags
@@ -824,13 +824,13 @@ void SusyNtMaker::fillJetVar(int jetIdx)
   jetOut->isBadMediumBCH_dn = !m_susyObj.passBCHCleaningMedium(BCH_ARGS, -1);
   jetOut->isBadTightBCH = !m_susyObj.passBCHCleaningTight(BCH_ARGS);
   #undef BCH_ARGS
-                                                             
+
   // Save the met weights for the jets
   // by checking status word similar to
   // what is done in met utility
   int sWord = element->MET_Egamma10NoTau_statusWord().at(0);
   bool passSWord = (MissingETTags::DEFAULT == sWord);       // Note assuming default met..
-  
+
   // 0th element is what we care about
   jetOut->met_wpx = passSWord ? element->MET_Egamma10NoTau_wpx().at(0) : 0;
   jetOut->met_wpy = passSWord ? element->MET_Egamma10NoTau_wpy().at(0) : 0;
@@ -845,7 +845,7 @@ void SusyNtMaker::fillPhotonVars()
 
   // Loop over photons
   for(uint iPh=0; iPh<m_sigPhotons.size(); iPh++){
-    int phIndex = m_sigPhotons[iPh];  
+    int phIndex = m_sigPhotons[iPh];
 
     fillPhotonVar(phIndex);
   }
@@ -865,17 +865,17 @@ void SusyNtMaker::fillPhotonVar(int phIdx)
   float E   = phTLV->E()  / GeV;
   float eta = phTLV->Eta();
   float phi = phTLV->Phi();
-  
+
   phoOut->SetPtEtaPhiE(pt, eta, phi, E);
   phoOut->pt  = pt;
   phoOut->eta = eta;
   phoOut->phi = phi;
   phoOut->m   = 0.;
-  
+
   // Save conversion info
   phoOut->isConv = element->isConv();
 
-  // Miscellaneous 
+  // Miscellaneous
   phoOut->idx    = phIdx;
 }
 
@@ -889,7 +889,7 @@ void SusyNtMaker::fillTauVars()
   // Loop over selected taus
   vector<int>& saveTaus = m_saveContTaus? m_contTaus : m_preTaus;
   for(uint iTau=0; iTau < saveTaus.size(); iTau++){
-    int tauIdx = saveTaus[iTau];  
+    int tauIdx = saveTaus[iTau];
 
     fillTauVar(tauIdx);
   }
@@ -909,7 +909,7 @@ void SusyNtMaker::fillTauVar(int tauIdx)
   float eta = tauLV->Eta();
   float phi = tauLV->Phi();
   float m   = tauLV->M() / GeV;
-  
+
   tauOut->SetPtEtaPhiM(pt, eta, phi, m);
   tauOut->pt    = pt;
   tauOut->eta   = eta;
@@ -926,18 +926,18 @@ void SusyNtMaker::fillTauVar(int tauIdx)
   tauOut->jetBDTSigMedium       = element->JetBDTSigMedium();
   tauOut->jetBDTSigTight        = element->JetBDTSigTight();
 
-  // New ele BDT corrections 
+  // New ele BDT corrections
   //tauOut->eleBDTLoose           = element->EleBDTLoose();
   //tauOut->eleBDTMedium          = element->EleBDTMedium();
   //tauOut->eleBDTTight           = element->EleBDTTight();
-  tauOut->eleBDTLoose           = m_susyObj.GetCorrectedEleBDTFlag(SUSYTau::TauLoose, element->EleBDTLoose(), 
-                                                                   element->BDTEleScore(), element->numTrack(), 
+  tauOut->eleBDTLoose           = m_susyObj.GetCorrectedEleBDTFlag(SUSYTau::TauLoose, element->EleBDTLoose(),
+                                                                   element->BDTEleScore(), element->numTrack(),
                                                                    tauLV->Pt(), element->leadTrack_eta());
-  tauOut->eleBDTMedium          = m_susyObj.GetCorrectedEleBDTFlag(SUSYTau::TauMedium, element->EleBDTMedium(), 
-                                                                   element->BDTEleScore(), element->numTrack(), 
+  tauOut->eleBDTMedium          = m_susyObj.GetCorrectedEleBDTFlag(SUSYTau::TauMedium, element->EleBDTMedium(),
+                                                                   element->BDTEleScore(), element->numTrack(),
                                                                    tauLV->Pt(), element->leadTrack_eta());
-  tauOut->eleBDTTight           = m_susyObj.GetCorrectedEleBDTFlag(SUSYTau::TauTight, element->EleBDTTight(), 
-                                                                   element->BDTEleScore(), element->numTrack(), 
+  tauOut->eleBDTTight           = m_susyObj.GetCorrectedEleBDTFlag(SUSYTau::TauTight, element->EleBDTTight(),
+                                                                   element->BDTEleScore(), element->numTrack(),
                                                                    tauLV->Pt(), element->leadTrack_eta());
 
   tauOut->muonVeto              = element->muonVeto();
@@ -980,7 +980,7 @@ void SusyNtMaker::fillTauVar(int tauIdx)
   }
 
   tauOut->trigFlags             = m_tauTrigFlags[tauIdx];
-  
+
   tauOut->idx   = tauIdx;
 }
 
@@ -993,14 +993,14 @@ void SusyNtMaker::fillMetVars(SusyNtSys sys)
 
   // Just fill the lv for now
   double Et  = m_met.Et()/GeV;
-  double phi = m_met.Phi(); 
+  double phi = m_met.Phi();
 
   //double px = m_met.Px()/GeV;
   //double py = m_met.Py()/GeV;
   //double pz = m_met.Pz()/GeV;
   //double E  = m_met.E()/GeV;
-  
-  // Need to get the metUtility in order to 
+
+  // Need to get the metUtility in order to
   // get all the sumet terms.  In the future,
   // we could use the metUtility to get all the
   // comonents instead of the SUSYTools method
@@ -1012,10 +1012,10 @@ void SusyNtMaker::fillMetVars(SusyNtSys sys)
   Susy::Met* metOut = & m_susyNt.met()->back();
   metOut->Et    = Et;
   metOut->phi   = phi;
-  metOut->sys   = sys;  
+  metOut->sys   = sys;
   metOut->sumet = metUtil->getMissingET(METUtil::RefFinal, METUtil::None).sumet()/GeV;
 
-  // MET comp terms 
+  // MET comp terms
   // Need to save these for the MET systematics as well.
   // Use the sys enum to determine which argument to pass to SUSYTools
   METUtil::Systematics metSys = METUtil::None;
@@ -1098,7 +1098,7 @@ void SusyNtMaker::fillTruthParticleVars()
 
   // Loop over selected truth particles
   for(uint iTruPar=0; iTruPar<m_truParticles.size(); iTruPar++){
-    int truParIdx = m_truParticles[iTruPar];  
+    int truParIdx = m_truParticles[iTruPar];
 
     m_susyNt.tpr()->push_back( Susy::TruthParticle() );
     Susy::TruthParticle* tprOut         = & m_susyNt.tpr()->back();
@@ -1108,7 +1108,7 @@ void SusyNtMaker::fillTruthParticleVars()
     float eta = d3pd.truth.eta()->at(truParIdx);
     float phi = d3pd.truth.phi()->at(truParIdx);
     float m   = d3pd.truth.m()  ->at(truParIdx) / GeV;
- 
+
     tprOut->SetPtEtaPhiM(pt, eta, phi, m);
     tprOut->pt          = pt;
     tprOut->eta         = eta;
@@ -1131,8 +1131,8 @@ void SusyNtMaker::fillTruthJetVars()
   if(m_dbg>=5) cout << "fillTruthJetVars" << endl;
 
   for(uint iTruJet=0; iTruJet<m_truJets.size(); iTruJet++){
-    int truJetIdx = m_truJets[iTruJet];  
-  
+    int truJetIdx = m_truJets[iTruJet];
+
     m_susyNt.tjt()->push_back( Susy::TruthJet() );
     Susy::TruthJet* truJetOut = & m_susyNt.tjt()->back();
     const TruthJetElement* element = & d3pd.truthJet[truJetIdx];
@@ -1142,7 +1142,7 @@ void SusyNtMaker::fillTruthJetVars()
     float eta = element->eta();
     float phi = element->phi();
     float m   = element->m()  / GeV;
-  
+
     truJetOut->SetPtEtaPhiM(pt, eta, phi, m);
     truJetOut->pt     = pt;
     truJetOut->eta    = eta;
@@ -1161,7 +1161,7 @@ void SusyNtMaker::fillTruthMetVars()
 
   // Just fill the lv for now
   double Et  = m_truMet.Et()/GeV;
-  double phi = m_truMet.Phi(); 
+  double phi = m_truMet.Phi();
 
   m_susyNt.tmt()->push_back( Susy::TruthMet() );
   Susy::TruthMet* truMetOut = & m_susyNt.tmt()->back();
@@ -1170,7 +1170,7 @@ void SusyNtMaker::fillTruthMetVars()
 }
 
 /*--------------------------------------------------------------------------------*/
-// Handle Systematic 
+// Handle Systematic
 /*--------------------------------------------------------------------------------*/
 void SusyNtMaker::doSystematic()
 {
@@ -1181,17 +1181,17 @@ void SusyNtMaker::doSystematic()
     SusyNtSys sys = (SusyNtSys) i;
     if(m_dbg>=5) cout << "Doing sys " << SusyNtSystNames[sys] << endl;
 
-    // Reset Objects 
+    // Reset Objects
     m_susyObj.Reset();
     clearObjects();
 
     selectObjects(sys);
-    buildMet(sys);                   
+    buildMet(sys);
 
     checkEventCleaning();
     checkObjectCleaning();
 
-    // Lepton Specific sys    
+    // Lepton Specific sys
     if( isElecSys(sys) )
       saveElectronSF(sys);
     else if( isMuonSys(sys) )
@@ -1221,7 +1221,7 @@ void SusyNtMaker::saveElectronSF(SusyNtSys sys)
 
     // Systematic shifted energy
     float E_sys = lep->lv()->E() / GeV;
-    
+
     // Try to find this electron in the list of SusyNt electrons
     Susy::Electron* eleOut = 0;
     for(uint iEl=0; iEl<m_susyNt.ele()->size(); iEl++){
@@ -1258,7 +1258,7 @@ void SusyNtMaker::saveElectronSF(SusyNtSys sys)
       Susy::Electron* ele = & m_susyNt.ele()->at(iE);
       if( ele->idx == lep->idx() ){
 	match = true;
-	
+
 	float sf = lep->lv()->E() / GeV / ele->E();
 	//if(sys == NtSys_EES_UP)      ele->ees_up = sf;
 	//else if(sys == NtSys_EES_DN) ele->ees_dn = sf;
@@ -1272,10 +1272,10 @@ void SusyNtMaker::saveElectronSF(SusyNtSys sys)
 	else if(sys == NtSys_EES_LOW_DN) ele->ees_low_dn = sf;
 	else if(sys == NtSys_EER_UP)     ele->eer_up = sf;
 	else if(sys == NtSys_EER_DN)     ele->eer_dn = sf;
-	
+
       } // end if electron matches
     } // end loop over electrons in susyNt
-    
+
     // The dreaded case...
     if(!match) addMissingElectron(lep, sys);
     */
@@ -1336,7 +1336,7 @@ void SusyNtMaker::saveMuonSF(SusyNtSys sys)
     */
 
   } // end loop over leptons
-      
+
 }
 
 /*--------------------------------------------------------------------------------*/
@@ -1364,7 +1364,7 @@ void SusyNtMaker::saveJetSF(SusyNtSys sys)
       addMissingJet(jetIdx, sys);
       jetOut = & m_susyNt.jet()->back();
     }
-    
+
     // Calculate systematic scale factor
     float sf = E_sys / jetOut->E();
     if(sys == NtSys_JES_UP)      jetOut->jes_up = sf;
@@ -1383,12 +1383,12 @@ void SusyNtMaker::saveJetSF(SusyNtSys sys)
 	if(sys == NtSys_JES_UP)      jet->jes_up = sf;
 	else if(sys == NtSys_JES_DN) jet->jes_dn = sf;
 	else if(sys == NtSys_JER)    jet->jer = sf;
-      } // end if the leptons match	
+      } // end if the leptons match
     } // end loop over what we have saved
     // The dreaded case...
     if(!match) addMissingJet(jetIdx, sys);
     */
-    
+
   } // end loop over jets in pre-jets
 
 }
@@ -1430,21 +1430,21 @@ void SusyNtMaker::addMissingElectron(const LeptonInfo* lep, SusyNtSys sys)
 {
   // This electron did not pass nominal cuts, and therefore
   // needs to be added, but with the correct TLV
-  
+
   // Get the systematic shifted E, used to calculate a shift factor
   //float E_sys = m_susyObj.GetElecTLV(lep->idx()).E();
 
 
   // Reset the Nominal TLV
-  // NOTE: this overwrites the TLV in SUSYObjDef with the nominal variables, 
+  // NOTE: this overwrites the TLV in SUSYObjDef with the nominal variables,
   // regardless of our current systematic.
   const ElectronElement* element = lep->getElectronElement();
-  m_susyObj.SetElecTLV(lep->idx(), element->eta(), element->phi(), element->cl_eta(), element->cl_phi(), element->cl_E(), 
+  m_susyObj.SetElecTLV(lep->idx(), element->eta(), element->phi(), element->cl_eta(), element->cl_phi(), element->cl_E(),
                        element->tracketa(), element->trackphi(), element->nPixHits(), element->nSCTHits(), SystErr::NONE);
 
   // Now push it back onto to susyNt
   fillElectronVars(lep);
-  
+
   // Set the sf
   // This should only be done in saveElectronSF
   /*
@@ -1468,7 +1468,7 @@ void SusyNtMaker::addMissingMuon(const LeptonInfo* lep, SusyNtSys sys)
 {
   // This muon did not pass nominal cuts, and therefore
   // needs to be added, but with the correct TLV
-  
+
   //TLorentzVector tlv_sys = m_susyObj.GetMuonTLV(lep->idx());
   //float E_sys = m_susyObj.GetMuonTLV(lep->idx()).E();
 
@@ -1486,19 +1486,19 @@ void SusyNtMaker::addMissingMuon(const LeptonInfo* lep, SusyNtSys sys)
   //int isSegTag            = m->isSegmentTaggedMuon()->at(index);
 
   // Reset the Nominal TLV
-  // NOTE: this overwrites the TLV in SUSYObjDef with the nominal variables, 
+  // NOTE: this overwrites the TLV in SUSYObjDef with the nominal variables,
   // regardless of our current systematic.
   const MuonElement* element = lep->getMuonElement();
-  m_susyObj.SetMuonTLV(lep->idx(), element->pt(), element->eta(), element->phi(), 
-                       element->me_qoverp_exPV(), element->id_qoverp_exPV(), element->me_theta_exPV(), 
-                       element->id_theta_exPV(), element->charge(), element->isCombinedMuon(), 
+  m_susyObj.SetMuonTLV(lep->idx(), element->pt(), element->eta(), element->phi(),
+                       element->me_qoverp_exPV(), element->id_qoverp_exPV(), element->me_theta_exPV(),
+                       element->id_theta_exPV(), element->charge(), element->isCombinedMuon(),
                        element->isSegmentTaggedMuon(), SystErr::NONE);
-  //m_susyObj.SetMuonTLV(index, pt, eta, phi, me_qoverp_exPV, id_qoverp_exPV, me_theta_exPV, 
+  //m_susyObj.SetMuonTLV(index, pt, eta, phi, me_qoverp_exPV, id_qoverp_exPV, me_theta_exPV,
                        //id_theta_exPV, charge, isCombined, isSegTag, SystErr::NONE);
-  
+
   // Now push it back onto to susyNt
   fillMuonVars(lep);
-  
+
   // Set the sf
   // This should only be done in saveMuonSF
   /*
@@ -1520,7 +1520,7 @@ void SusyNtMaker::addMissingJet(int index, SusyNtSys sys)
   //float E_sys = m_susyObj.GetJetTLV(index).E();
 
   // Reset the Nominal TLV
-  // NOTE: this overwrites the TLV in SUSYObjDef with the nominal variables, 
+  // NOTE: this overwrites the TLV in SUSYObjDef with the nominal variables,
   // regardless of our current systematic.
   const D3PDReader::JetD3PDObjectElement* jet = & d3pd.jet[index];
   m_susyObj.FillJet(index, jet->pt(), jet->eta(), jet->phi(), jet->E(),
@@ -1532,7 +1532,7 @@ void SusyNtMaker::addMissingJet(int index, SusyNtSys sys)
 
   // Need to save the calibrated TLV
   //TLorentzVector tlv_nom;
-  //m_susyObj.RecalibrateJet(&tlv_nom, 
+  //m_susyObj.RecalibrateJet(&tlv_nom,
   //                         d3pd.jet.constscale_E()->at(index),
   //                         d3pd.jet.constscale_eta()->at(index),
   //                         d3pd.jet.constscale_phi()->at(index),
@@ -1544,16 +1544,16 @@ void SusyNtMaker::addMissingJet(int index, SusyNtSys sys)
   //                         d3pd.evt.Eventshape_rhoKt4LC(),
   //                         d3pd.evt.averageIntPerXing(),
   //                         d3pd.vtx.nTracks());
-  
+
   //D3PDReader::JetD3PDObject* jets = & d3pd.jet;
 
   //float pt  = tlv_nom.Pt() / GeV;  //jets->pt()->at(index);
   //float eta = tlv_nom.Eta();       //jets->eta()->at(index);
   //float phi = tlv_nom.Phi();       //jets->phi()->at(index);
   //float E   = tlv_nom.E() / GeV;   //jets->E()->at(index);
-  
+
   // Reset the Nominal TLV
-  // NOTE: this overwrites the TLV in SUSYObjDef with the nominal variables, 
+  // NOTE: this overwrites the TLV in SUSYObjDef with the nominal variables,
   // regardless of our current systematic.
   //m_susyObj.SetJetTLV(index, pt, eta, phi, E);
 
@@ -1586,9 +1586,9 @@ void SusyNtMaker::addMissingTau(int index, SusyNtSys sys)
   const TauElement* element = & d3pd.tau[index];
 
   // Reset the Nominal TLV
-  // NOTE: this overwrites the TLV in SUSYObjDef with the nominal variables, 
+  // NOTE: this overwrites the TLV in SUSYObjDef with the nominal variables,
   // regardless of our current systematic.
-  m_susyObj.SetTauTLV(index, element->pt(), element->eta(), element->phi(), element->Et(), element->numTrack(), 
+  m_susyObj.SetTauTLV(index, element->pt(), element->eta(), element->phi(), element->Et(), element->numTrack(),
                       element->leadTrack_eta(), SUSYTau::TauMedium, SystErr::NONE, true);
 
   // Fill the tau vars for this guy
@@ -1612,9 +1612,20 @@ void SusyNtMaker::addMissingTau(int index, SusyNtSys sys)
 //  if(!pdg || !status || pdg->size()!=status->size()) return false;
 //  const vint_t &p = *pdg;
 //  const vint_t &s = *status;
-//  const int pdgB(5), statRad(3); 
+//  const int pdgB(5), statRad(3);
 //  for(size_t i=0; i<p.size(); ++i) if(abs(p[i])==pdgB && s[i]==statRad) return true;
 //  return false;
 //}
+//--------------------------------------------------------------------
+bool SusyNtMaker::isHiggsSignalSample(const std::string &samplename)
+{
+    TString sample(samplename.c_str());
+    bool is_wh_signal_sample = (sample.Contains("simplifiedModel_wA_noslep_WH") ||
+                                sample.Contains("Herwigpp_sM_wA_noslep_notauhad_WH"));
+    bool is_hlfv_signal_sample = (sample.Contains("H125_taumu") ||
+                                  sample.Contains("H125_taue"));
+    return (is_wh_signal_sample || is_hlfv_signal_sample);
+}
+//--------------------------------------------------------------------
 
 #undef GeV
