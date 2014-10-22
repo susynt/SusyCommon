@@ -12,6 +12,7 @@
 #include "SusyNtuple/SusyNtTools.h"
 #include "SusyNtuple/WhTruthExtractor.h"
 #include "SusyNtuple/mc_truth_utils.h"
+#include "SusyNtuple/vec_utils.h"
 
 using namespace std;
 namespace smc =susy::mc;
@@ -275,7 +276,6 @@ bool SusyNtMaker::selectEvent()
   if(m_isHsignalSample){ m_hDecay = WhTruthExtractor().update(d3pd.truth.pdgId(),
                                                              d3pd.truth.child_index(),
                                                              d3pd.truth.parent_index());
-      cout<<"m_hDecay: "<<m_hDecay<<endl;
   }
   // This assumes that sparticle branches are present for any
   // sample that might have the SUSY propagators problem
@@ -1090,10 +1090,20 @@ void SusyNtMaker::fillTruthParticleVars()
   m_truParticles        = m_recoTruthMatch.LepFromHS_McIdx();
   vector<int> truthTaus = m_recoTruthMatch.TauFromHS_McIdx();
   m_truParticles.insert( m_truParticles.end(), truthTaus.begin(), truthTaus.end() );
-  if(m_isMC && isMcAtNloTtbar(d3pd.truth.channel_number())){
-    vector<int> ttbarPart(WhTruthExtractor::ttbarMcAtNloParticles(d3pd.truth.pdgId(),
-                                                                  d3pd.truth.child_index()));
-    m_truParticles.insert(m_truParticles.end(), ttbarPart.begin(), ttbarPart.end());
+  if(m_isMC){
+      if(isMcAtNloTtbar(d3pd.truth.channel_number())){
+          vector<int> ttbarPart(WhTruthExtractor::ttbarMcAtNloParticles(d3pd.truth.pdgId(),
+                                                                        d3pd.truth.child_index()));
+          m_truParticles.insert(m_truParticles.end(), ttbarPart.begin(), ttbarPart.end());
+      }
+      if(m_isHsignalSample){
+          WhTruthExtractor th;
+          vector<int> indices = th.higgsEventParticleIndices(d3pd.truth.pdgId(),
+                                                             d3pd.truth.child_index(),
+                                                             d3pd.truth.parent_index());
+          m_truParticles.insert(m_truParticles.end(), indices.begin(), indices.end());
+      }
+      susy::utils::removeDuplicates(m_truParticles);
   }
 
   // Loop over selected truth particles
