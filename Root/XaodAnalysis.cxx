@@ -7,9 +7,6 @@
 // #include "xAODTruth/TruthParticleContainer.h"
 // #include "xAODTruth/TruthEventContainer.h"
 // #include "xAODTruth/TruthEvent.h"
-// #include "xAODCore/ShallowCopy.h"
-// #include "xAODMissingET/MissingETContainer.h"
-// #include "xAODMissingET/MissingETAuxContainer.h"
 
 // #include "egammaAnalysisUtils/egammaTriggerMatching.h"
 // #include "D3PDReader/JetD3PDObject.h"
@@ -143,7 +140,7 @@ XaodAnalysis& XaodAnalysis::initSusyTools()
   m_susyObj.setProperty("IsAtlfast",       static_cast<int>(m_isAF2));
   m_susyObj.setProperty("IsMC12b",         static_cast<int>(processingMc12b()));
   m_susyObj.setProperty("UseLeptonTrigger",static_cast<int>(useLeptonTrigger));
-  if(m_susyObj.initialize() != StatusCode::SUCCESS){
+  if(m_susyObj.SUSYToolsInit() != StatusCode::SUCCESS){
       cout<<"XaodAnalysis::initSusyTools: cannot intialize SUSYObjDef_xAOD..."<<endl
           <<"Exiting... "<<endl
           <<endl;
@@ -152,7 +149,8 @@ XaodAnalysis& XaodAnalysis::initSusyTools()
       if(m_dbg)
           cout<<"XaodAnalysis::initSusyTools: SUSYObjDef_xAOD initialized... "<<endl;
       // DG-2014-09-02 : tmp fix propagate dbg to met tool
-      m_susyObj.m_METRebuilder->msg().setLevel(m_dbg ? MSG::DEBUG : MSG::WARNING);
+      //AT commented Base,2.0.14. Tool is protected
+      //m_susyObj.m_METRebuilder->msg().setLevel(m_dbg ? MSG::DEBUG : MSG::WARNING);
   }
   return *this;
 }
@@ -353,29 +351,40 @@ const xAOD::TruthParticleContainer* XaodAnalysis::xaodTruthParticles()
 //----------------------------------------------------------
 void XaodAnalysis::retrieveXaodMet()
 {
-    if(m_metContainer==NULL){
-        // DG 2014-09-01 : todo: define 'MySelJets' collection and use it to rebuild 'MET_MyRefFinal'.
-        // These placeholder labels are currently hardcoded in SUSYObjDef_xAOD::GetMET()
-        // std::pair< xAOD::JetContainer*, xAOD::ShallowAuxContainer* > jets_shallowCopy = xAOD::shallowCopyContainer( *jets );
-        xAOD::JetContainer* goodJets = new xAOD::JetContainer(SG::VIEW_ELEMENTS); // these are the jets used to compute met
-        m_store.record(goodJets, "MySelJets");
-        m_metContainer = new xAOD::MissingETContainer();
-        m_metAuxContainer = new xAOD::MissingETAuxContainer();
-        m_metContainer->setStore( m_metAuxContainer );
-        m_store.record(m_metContainer, "MET_MyRefFinal");
-        const xAOD::JetContainer* jets = 0;
-        m_event.retrieve( jets, "AntiKt4LCTopoJets" );
-        xAOD::MissingETContainer met;
-        m_susyObj.GetMET(met);
-        xAOD::MissingETContainer::const_iterator met_it = met.find("Final");
-        if (met_it == met.end()) {
-            cout<<"No RefFinal inside MET container"<<endl;
-        } else {
-            double mpx((*met_it)->mpx()),  mpy((*met_it)->mpy());
-            m_met.SetPxPyPzE(mpx, mpy, 0.0, sqrt(mpx*mpx+mpy*mpy));
-            if(m_dbg) cout<<"XaodAnalysis::xaodMet: retrieved met"<<endl;
-        }
-    }
+  if(m_metContainer==NULL){
+    // DG 2014-09-01 : todo: define 'MySelJets' collection and use it to rebuild 'MET_MyRefFinal'.
+    // These placeholder labels are currently hardcoded in SUSYObjDef_xAOD::GetMET()
+    // std::pair< xAOD::JetContainer*, xAOD::ShallowAuxContainer* > jets_shallowCopy = xAOD::shallowCopyContainer( *jets );
+    
+    m_metContainer = new xAOD::MissingETContainer();
+    m_metAuxContainer = new xAOD::MissingETAuxContainer();
+    m_metContainer->setStore( m_metAuxContainer );
+    m_store.record(m_metContainer, "MET_MyRefFinal");
+    m_store.record(m_metAuxContainer, "MET_MyRefFinalAux.");
+    
+    m_susyObj.GetMET(*m_metContainer,
+		     m_xaodElectrons,
+		     m_xaodPhotons,
+		     m_xaodTaus,
+		     m_xaodMuons,
+		     m_xaodJets
+		     );
+    
+    /* //AT done in SusyNtMaker::fillMetVars
+      xAOD::MissingETContainer::const_iterator met_it = m_metContainer->find("Final");
+      
+      if (met_it == m_metContainer->end()) {
+      cout<<"No RefFinal inside MET container"<<endl;
+      } else {
+      //AT: Why are we doing this here & not in SusyNtMaker
+      double mpx((*met_it)->mpx()),  mpy((*met_it)->mpy());
+      m_met.SetPxPyPzE(mpx, mpy, 0.0, sqrt(mpx*mpx+mpy*mpy));
+      cout << " AT: Met " << mpx << " " << mpy << " " << m_met.Pt() << endl;
+      if(m_dbg) cout<<"XaodAnalysis::xaodMet: retrieved met"<<endl;
+      }
+    */
+    
+  }
 }
 //----------------------------------------------------------
 void XaodAnalysis::selectBaselineObjects(SusyNtSys sys)
@@ -394,10 +403,10 @@ void XaodAnalysis::selectBaselineObjects(SusyNtSys sys)
         m_susyObj.FillElectron(el);
         m_susyObj.IsSignalElectron(el);
         if(m_dbg) cout<<"El passing"
-                      <<" baseline? "<<el.auxdata< int >("baseline")
-                      <<" signal? "<<el.auxdata< int >("signal")
+                      <<" baseline? "<<el.auxdata< char >("baseline")
+                      <<" signal? "<<el.auxdata< char >("signal")
                       <<endl;
-        if(el.auxdata< int >("baseline")) m_baseElectrons.push_back(iEl);
+        if(el.auxdata< char >("baseline")) m_baseElectrons.push_back(iEl);
         iEl++;
     }
     if(m_dbg) cout<<"preElectrons["<<m_preElectrons.size()<<"]"<<endl;
@@ -413,10 +422,10 @@ void XaodAnalysis::selectBaselineObjects(SusyNtSys sys)
         m_susyObj.IsSignalMuon(mu);
         m_susyObj.IsCosmicMuon(mu);
         if(m_dbg) cout<<"Mu passing"
-                      <<" baseline? "<<mu.auxdata< int >("baseline")
-                      <<" signal? "<<mu.auxdata< int >("signal")
+                      <<" baseline? "<<mu.auxdata< char >("baseline")
+                      <<" signal? "<<mu.auxdata< char >("signal")
                       <<endl;
-        if(mu.auxdata< int >("baseline")) m_baseMuons.push_back(iMu);
+        if(mu.auxdata< char >("baseline")) m_baseMuons.push_back(iMu);
         // if(signal) m_sigMuons.push_back(iMu);
         iMu++;
     }
@@ -433,10 +442,10 @@ void XaodAnalysis::selectBaselineObjects(SusyNtSys sys)
         m_susyObj.IsGoodJet(jet);
         m_susyObj.IsBJet(jet);
         if(m_dbg) cout<<"Jet passing"
-                      <<" baseline? "<<jet.auxdata< int >("baseline")
-                      <<" signal? "<<jet.auxdata< int >("signal")
+                      <<" baseline? "<<jet.auxdata< char >("baseline")
+                      <<" signal? "<<jet.auxdata< char >("signal")
                       <<endl;
-        if(jet.auxdata< int >("baseline")) m_baseJets.push_back(iJet);
+        if(jet.auxdata< char >("baseline")) m_baseJets.push_back(iJet);
         // if(signal) m_sigJets.push_back(iJet);
         iJet++;
     }
@@ -452,7 +461,7 @@ void XaodAnalysis::selectBaselineObjects(SusyNtSys sys)
         xAOD::TauJet &tau = **it;
         m_susyObj.FillTau(tau);
         m_susyObj.IsSignalTau(tau);
-        if(tau.auxdata<int>("baseline"))
+        if(tau.auxdata< char >("baseline"))
             m_preTaus.push_back(iTau);
         //tau.pt()>20*GeV && abs(tau.eta())<2.47
         iTau++;
@@ -549,8 +558,8 @@ void XaodAnalysis::selectSignalObjects()
     for(auto it=electrons->begin(), end=electrons->end(); it!=end; ++it){
         const xAOD::Electron &el = **it;
         if(el.pt()>10*GeV &&
-           el.auxdata<int>("signal") &&
-           el.auxdata< int >("passOR") )
+           el.auxdata< char >("signal") &&
+           el.auxdata< char >("passOR") )
             m_sigElectrons.push_back(iEl);
         iEl++;
     }
@@ -561,9 +570,9 @@ void XaodAnalysis::selectSignalObjects()
     for(auto it=muons->begin(), end=muons->end(); it!=end; ++it){
         const xAOD::Muon &mu = **it;
         if(mu.pt()>10.0*GeV &&
-           mu.auxdata< int >("signal") &&
-           mu.auxdata< int >("passOR") &&
-           !mu.auxdata< int >("cosmic"))
+           mu.auxdata< char >("signal") &&
+           mu.auxdata< char >("passOR") &&
+           !mu.auxdata< char >("cosmic"))
             m_sigMuons.push_back(iMu);
     }
     if(m_dbg) cout<<"m_sigMuons["<<m_sigMuons.size()<<"]"<<endl;
@@ -574,8 +583,8 @@ void XaodAnalysis::selectSignalObjects()
         const xAOD::Jet &jet = **it;
         if(jet.pt()>20.0*GeV &&
            //jet.auxdata< int >("signal") &&  // no 'signal' def in SUSYObjDef_xAOD for now
-           jet.auxdata< int >("passOR") &&
-           !jet.auxdata< int >("bad"))
+           jet.auxdata< char >("passOR") &&
+           !jet.auxdata< char >("bad"))
             m_sigJets.push_back(iJet);
         iJet++;
     }
@@ -586,7 +595,7 @@ void XaodAnalysis::selectSignalObjects()
     for(auto it=taus->begin(), end=taus->end(); it!=end; ++it){
         const xAOD::TauJet &tau = **it;
         if(tau.pt()>20.0*GeV &&
-           tau.auxdata< int >("signal"))
+           tau.auxdata< char >("signal"))
             // tau.auxdata< int >("passOR") && // tau not involved in OR?
             m_sigTaus.push_back(iTau);
         iTau++;

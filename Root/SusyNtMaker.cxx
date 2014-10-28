@@ -28,7 +28,7 @@ namespace smc =susy::mc;
 using susy::SusyNtMaker;
 
 #define GeV 1000.
-const double MeV2GeV=1.0e3;
+const double MeV2GeV=1.0e-3;
 
 //----------------------------------------------------------
 SusyNtMaker::SusyNtMaker() :
@@ -367,13 +367,13 @@ void SusyNtMaker::storeElectron(const xAOD::Electron &in)
     out.eta = eta;
     out.phi = phi;
     out.m   = m;
-    out.isBaseline = in.auxdata<int>("baseline");
-    out.isSignal = in.auxdata<int>("signal");
+    out.isBaseline = in.auxdata< char >("baseline");
+    out.isSignal = in.auxdata< char >("signal");
     out.q   = in.charge();
     bool all_available=true;
-    all_available &= in.isolationValue(out.etcone20, xAOD::EgammaParameters::etcone20); // DG-2014-08-29 MeV2GeV ?
-    all_available &= in.isolationValue(out.ptcone20, xAOD::EgammaParameters::ptcone20);
-    all_available &= in.isolationValue(out.ptcone30, xAOD::EgammaParameters::ptcone30);
+    all_available &= in.isolationValue(out.etcone20, xAOD::Iso::etcone20); // DG-2014-08-29 MeV2GeV ?
+    all_available &= in.isolationValue(out.ptcone20, xAOD::Iso::ptcone20);
+    all_available &= in.isolationValue(out.ptcone30, xAOD::Iso::ptcone30);
     if(const xAOD::CaloCluster* c = in.caloCluster()) {
         out.clusE   = c->e()*MeV2GeV;
         out.clusEta = c->eta();
@@ -472,8 +472,8 @@ void SusyNtMaker::storeMuon(const xAOD::Muon &in)
     out.phi = phi;
     out.m   = m;
     out.q   = in.charge();
-    out.isBaseline = in.auxdata<int>("baseline");
-    out.isSignal = in.auxdata<int>("signal");
+    out.isBaseline = in.auxdata< char >("baseline");
+    out.isSignal = in.auxdata< char >("signal");
     out.isCombined = in.muonType()==xAOD::Muon::Combined;
 
     bool all_available=true;
@@ -507,7 +507,7 @@ void SusyNtMaker::storeMuon(const xAOD::Muon &in)
     } else {
         all_available = false;
     }
-    out.isCosmic = in.auxdata< int >("cosmic");
+    out.isCosmic = in.auxdata< char >("cosmic");
     // muOut->isBadMuon      = // DG-2014-08-29 still relevant?
 
   // // Truth flags
@@ -710,6 +710,26 @@ void SusyNtMaker::storeTau(const xAOD::TauJet &in)
 /*--------------------------------------------------------------------------------*/
 void SusyNtMaker::fillMetVars(SusyNtSys sys)
 {
+
+  xAOD::MissingETContainer::const_iterator met_it = m_metContainer->find("Final");
+  
+  if (met_it == m_metContainer->end()) {
+    cout<<"No RefFinal inside MET container"<<endl;
+    return;
+  }
+  
+  double mpx((*met_it)->mpx()*MeV2GeV),  mpy((*met_it)->mpy()*MeV2GeV);
+  m_met.SetPxPyPzE(mpx, mpy, 0.0, sqrt(mpx*mpx+mpy*mpy));
+
+  m_susyNt.met()->push_back( Susy::Met() );
+  Susy::Met* metOut = & m_susyNt.met()->back();
+  metOut->Et    = m_met.Et();
+  metOut->phi   = m_met.Phi();
+
+  cout << " AT:fillMetVars " << metOut->Et << " " << metOut->phi << " " << metOut->lv().Pt() << endl;
+  
+  
+
 #warning fillMetVars not implemented
   // if(m_dbg>=5) cout << "fillMetVars: sys " << sys << endl;
 

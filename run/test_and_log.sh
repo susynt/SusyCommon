@@ -1,3 +1,6 @@
+
+
+
 #!/usr/bin/env bash
 
 
@@ -9,7 +12,8 @@
 function prepare_filelist {
     local dest_file="xaod_filelist.txt"
     local input_files=""
-    input_files+=" root://eosatlas//eos/atlas/user/j/jpoveda/r5625_test/AOD.01507244._011801.pool.root.1"
+    #input_files+=" root://eosatlas//eos/atlas/user/j/jpoveda/r5625_test/AOD.01507244._011801.pool.root.1"
+    input_files+="/scratch/gerbaudo/xaod_example_input/AOD.01507244._011801.pool.root.1"
     if [ ! -f ${dest_file} ]
     then
         touch ${dest_file}
@@ -32,23 +36,32 @@ function main {
     local stamp=$(date +%F)
     local input_file=$(prepare_filelist)
     local tmp_log="${stamp}_${tag}.log"
-    local dest_dir="/afs/cern.ch/user/g/gerbaudo/tmp/susynt_xaod_timing/"
+    local tmp_detailed_log="${stamp}_${tag}_detailed.log"
+    local dest_dir="${WORKAREA}/susynt_xaod_timing/"
     # show only first and last few lines, see http://unix.stackexchange.com/questions/48777/command-to-display-first-few-and-last-few-lines-of-a-file
     local nlines_head=30
     local nlines_tail=60
-    if [[ "${tag}" == *dirty* ]]
-    then
-        echo "dirty status, commit"
-        exit 1
-    else
+    #if [[ "${tag}" == *dirty* ]]
+    #then
+    #    echo "dirty status, commit"
+        #exit 1
+    #else
         echo "running"
+#        NtMaker -f ${input_file} -p mc12a --saveContTau --nLepFilter 1 --nLepTauFilter 2 --filterTrig --sys -d 10 \
+#            2>&1 | \
+#            tee >(tail -n ${nlines_tail}) >(head -n ${nlines_head}; cat >/dev/null) >/dev/null | \
+#            tee ${tmp_log}
+
         NtMaker -f ${input_file} -p mc12a --saveContTau --nLepFilter 1 --nLepTauFilter 2 --filterTrig --sys -d 10 \
-            2>&1 | \
-            tee >(tail -n ${nlines_tail}) >(head -n ${nlines_head}; cat >/dev/null) >/dev/null | \
-            tee ${tmp_log}
+            > ${tmp_detailed_log} 2>&1  
+	
+	more ${tmp_detailed_log} |head -n  ${nlines_head} > ${tmp_log} 
+	more ${tmp_detailed_log} |tail -n  ${nlines_tail} >> ${tmp_log} 
+	
         mv ${tmp_log} ${dest_dir}
+        mv ${tmp_detailed_log} ${dest_dir}
         echo "Logged to ${dest_dir}/${tmp_log}"
-    fi
+    #fi
 }
 
 main

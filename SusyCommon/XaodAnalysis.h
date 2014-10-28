@@ -21,6 +21,8 @@
 #include "xAODEgamma/PhotonContainer.h"
 #include "xAODTau/TauJetContainer.h"
 #include "xAODJet/JetContainer.h"
+#include "xAODMissingET/MissingETContainer.h"
+#include "xAODMissingET/MissingETAuxContainer.h"
 #include "xAODTruth/TruthParticleContainer.h"
 #include "xAODTruth/TruthEventContainer.h"
 #include "xAODCore/ShallowCopy.h"
@@ -383,27 +385,27 @@ class XaodAnalysis : public TSelector
        modifiable shallow copies, but you have to remember to delete
        them at each event. (see SUSYToolsTester.cxx)
      */
-    xAOD::MuonContainer* m_xaodMuons;
-    xAOD::ShallowAuxContainer* m_xaodMuonsAux; ///< muon aux info
-    xAOD::ElectronContainer* m_xaodElectrons;
-    xAOD::ShallowAuxContainer* m_xaodElectronsAux; ///< electron aux info
-    xAOD::TauJetContainer* m_xaodTaus;
-    xAOD::ShallowAuxContainer* m_xaodTausAux; ///< tau aux info
-    xAOD::JetContainer* m_xaodJets;
-    xAOD::ShallowAuxContainer* m_xaodJetsAux; ///< jet aux info
-    xAOD::JetContainer* m_metJets; ///< calibrated jets used for met rebuilding
-    xAOD::ShallowAuxContainer* m_metJetsAux;
-    xAOD::PhotonContainer* m_xaodPhotons;
-    xAOD::ShallowAuxContainer* m_xaodPhotonsAux; ///< photon aux info
-    const xAOD::TruthEventContainer* m_xaodTruthEvent;
+    xAOD::MuonContainer*                m_xaodMuons;
+    xAOD::ShallowAuxContainer*          m_xaodMuonsAux; ///< muon aux info
+    xAOD::ElectronContainer*            m_xaodElectrons;
+    xAOD::ShallowAuxContainer*          m_xaodElectronsAux; ///< electron aux info
+    xAOD::TauJetContainer*              m_xaodTaus;
+    xAOD::ShallowAuxContainer*          m_xaodTausAux; ///< tau aux info
+    xAOD::JetContainer*                 m_xaodJets;
+    xAOD::ShallowAuxContainer*          m_xaodJetsAux; ///< jet aux info
+    xAOD::JetContainer*                 m_metJets;     ///< calibrated jets used for met rebuilding
+    xAOD::ShallowAuxContainer*          m_metJetsAux;
+    xAOD::PhotonContainer*              m_xaodPhotons;
+    xAOD::ShallowAuxContainer*          m_xaodPhotonsAux; ///< photon aux info
+    const xAOD::TruthEventContainer*    m_xaodTruthEvent;
     const xAOD::TruthParticleContainer* m_xaodTruthParticles;
     /// met container
     /**
        DG, note to self: not clear whether this is needed also when we
        don't want to write it out (just to recompute the met).
      */
-    xAOD::MissingETContainer* m_metContainer;
-    xAOD::MissingETAuxContainer* m_metAuxContainer;
+    xAOD::MissingETContainer*           m_metContainer;
+    xAOD::MissingETAuxContainer*        m_metAuxContainer;
 
     /// cleanup shallow copies and aux containers
     /**
