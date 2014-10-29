@@ -247,6 +247,7 @@ void SusyNtMaker::fillEventVars()
 
   if(m_isMC){
       xAOD::TruthEventContainer::const_iterator truthE_itr = xaodTruthEvent()->begin();
+
       //--DG--( *truthE_itr )->pdfInfoParameter(evt->pdf_id1  , xAOD::TruthEvent::id1); // not available for some samples
       //--DG--( *truthE_itr )->pdfInfoParameter(evt->pdf_id2  , xAOD::TruthEvent::id2);
       // ( *truthE_itr )->pdfInfoParameter(evt->pdf_x1    , xAOD::TruthEvent::pdf1);
@@ -371,9 +372,24 @@ void SusyNtMaker::storeElectron(const xAOD::Electron &in)
     out.isSignal = in.auxdata< char >("signal");
     out.q   = in.charge();
     bool all_available=true;
-    all_available &= in.isolationValue(out.etcone20, xAOD::Iso::etcone20); // DG-2014-08-29 MeV2GeV ?
+    
+    // IsEM quality flags - no need to recalculate them
+    all_available &= in.passSelection(out.mediumPP,"Medium");
+    all_available &= in.passSelection(out.tightPP,"Tight"); 
+
+    //Isolations
+    all_available &= in.isolationValue(out.etcone20, xAOD::Iso::etcone20); 
+    all_available &= in.isolationValue(out.topoEtcone30Corr, xAOD::Iso::topoetcone30); 
     all_available &= in.isolationValue(out.ptcone20, xAOD::Iso::ptcone20);
     all_available &= in.isolationValue(out.ptcone30, xAOD::Iso::ptcone30);
+    out.etcone20 *= MeV2GeV;
+    out.topoEtcone30Corr *= MeV2GeV;
+    out.ptcone20 *= MeV2GeV;
+    out.ptcone30 *= MeV2GeV;
+
+    out.effSF = (m_isMC && out.tightPP) ? m_susyObj.GetSignalElecSF(in) : 1;
+    //AT:2014-10-28: how to get error and SF for mediumPP ??
+
     if(const xAOD::CaloCluster* c = in.caloCluster()) {
         out.clusE   = c->e()*MeV2GeV;
         out.clusEta = c->eta();
@@ -383,7 +399,24 @@ void SusyNtMaker::storeElectron(const xAOD::Electron &in)
     }
     if(const xAOD::TrackParticle* t = in.trackParticle()){
         out.trackPt = t->pt()*MeV2GeV;
-        // eleOut->d0            = element->trackd0pv();
+	out.d0      = t->d0();//AT:: wrt to PV ???
+
+	//AT: Follow what's done in SUSYObjDef_xAOD::IsSignalElectron
+	//How to grab the PV container?
+	/*
+	const xAOD::VertexContainer* primVertex = 0;
+	if( evtStore()->retrieve( primVertex, "PrimaryVertices" ) .isFailure() ) {
+	  ATH_MSG_WARNING( "No PrimaryVertices object could not be retrieved" );
+	}else{
+	  ATH_MSG_INFO( "PrimaryVertices object retrieved" );
+	}
+	double primvertex_z = 0;
+	
+	xAOD::VertexContainer::const_iterator pv_itr = primVertex->begin();
+	primvertex_z = (*pv_itr)->z(); // assume the 0th vertex is the primary one with higest sum pT^2
+	double el_z0 = track->z0() + track->vz() - primvertex_z;
+	*/
+
         // eleOut->errD0         = element->tracksigd0pv();
         // eleOut->z0            = element->trackz0pv();
         // eleOut->errZ0         = element->tracksigz0pv();
@@ -402,10 +435,7 @@ void SusyNtMaker::storeElectron(const xAOD::Electron &in)
     // eleOut->matched2TruthLepton   = m_isMC? m_recoTruthMatch.Matched2TruthLepton(*lv) : false;
     // eleOut->truthType             = m_isMC? m_recoTruthMatch.fakeType(*lv, element->origin(), element->type()) : -1;
 
-    // // IsEM quality flags - no need to recalculate them
-    // eleOut->mediumPP    = element->mediumPP();
-    // eleOut->tightPP     = element->tightPP();
-
+    // 
     // // Trigger flags
     // eleOut->trigFlags     = m_eleTrigFlags[ lepIn->idx() ];
 

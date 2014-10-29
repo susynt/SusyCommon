@@ -369,21 +369,7 @@ void XaodAnalysis::retrieveXaodMet()
 		     m_xaodMuons,
 		     m_xaodJets
 		     );
-    
-    /* //AT done in SusyNtMaker::fillMetVars
-      xAOD::MissingETContainer::const_iterator met_it = m_metContainer->find("Final");
       
-      if (met_it == m_metContainer->end()) {
-      cout<<"No RefFinal inside MET container"<<endl;
-      } else {
-      //AT: Why are we doing this here & not in SusyNtMaker
-      double mpx((*met_it)->mpx()),  mpy((*met_it)->mpy());
-      m_met.SetPxPyPzE(mpx, mpy, 0.0, sqrt(mpx*mpx+mpy*mpy));
-      cout << " AT: Met " << mpx << " " << mpy << " " << m_met.Pt() << endl;
-      if(m_dbg) cout<<"XaodAnalysis::xaodMet: retrieved met"<<endl;
-      }
-    */
-    
   }
 }
 //----------------------------------------------------------
