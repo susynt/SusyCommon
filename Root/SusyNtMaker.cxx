@@ -576,18 +576,23 @@ void SusyNtMaker::storeJet(const xAOD::Jet &in)
     out.phi = phi;
     out.m   = m;
     bool all_available=true;
-    // out.isBadVeryLoose = (in.auxdata<int>("bad")==1); // not available yet?
-// DG-2014-08-29 todo
-  // jetOut->detEta        = element->constscale_eta();
-  // jetOut->emfrac        = element->emfrac();
-  // jetOut->idx           = jetIdx;
-  // jetOut->jvf           = element->jvtxf();
-  // jetOut->truthLabel    = m_isMC? element->flavor_truth_label() : 0;
+    out.isBadVeryLoose = in.auxdata<char>("bad");
 
-  // // truth jet matching
-  // jetOut->matchTruth    = m_isMC? matchTruthJet(jetIdx) : false;
+    // Started on implementation by SERHAN on 30/10/2014
+    out.detEta = (in.jetP4(xAOD::JetConstitScaleMomentum)).eta();
+    in.getAttribute(xAOD::JetAttribute::EMFrac,out.emfrac);
+    //in.getAttribute(xAOD::JetAttribute::JVF,out.jvf); // JVF returns a vector that holds jvf per vertex
+                                                        // Not 100% sure about which one (PV) to pick in a robust 
+                                                        // manner. Check (ASM) 
+    // jetOut->truthLabel    = m_isMC? element->flavor_truth_label() : 0;
 
-  // // btag weights
+    // // truth jet matching
+    // jetOut->matchTruth    = m_isMC? matchTruthJet(jetIdx) : false;
+
+    // // btag weights
+    out.mv1           = (in.btagging())->MV1_discriminant();
+    out.sv1plusip3d   = (in.btagging())->SV1plusIP3D_discriminant();
+    // Most of these are not available in DC14 samples, some obselete (ASM)
   // jetOut->sv0           = element->flavor_weight_SV0();
   // jetOut->combNN        = element->flavor_weight_JetFitterCOMBNN();
   // jetOut->mv1           = element->flavor_weight_MV1();
@@ -595,8 +600,9 @@ void SusyNtMaker::storeJet(const xAOD::Jet &in)
   // jetOut->sv0p_mass     = element->flavor_component_sv0p_mass();
   // jetOut->svp_mass      = element->flavor_component_svp_mass();
 
-  // jetOut->bch_corr_jet  = element->BCH_CORR_JET();
-  // jetOut->bch_corr_cell = element->BCH_CORR_CELL();
+     in.getAttribute(xAOD::JetAttribute::BchCorrJet,out.bch_corr_jet);
+     in.getAttribute(xAOD::JetAttribute::BchCorrCell,out.bch_corr_cell);
+     // This isBadVeryLoose bit is set above, so obselete ?? (ASM)
   // jetOut->isBadVeryLoose= JetID::isBadJet(JetID::VeryLooseBad,
   //                                         element->emfrac(),
   //                                         element->hecf(),
