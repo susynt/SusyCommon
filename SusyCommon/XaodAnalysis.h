@@ -27,6 +27,9 @@
 #include "xAODTruth/TruthEventContainer.h"
 #include "xAODCore/ShallowCopy.h"
 
+#include "ElectronEfficiencyCorrection/AsgElectronEfficiencyCorrectionTool.h"
+
+
 #include "SusyCommon/XaodAnalysis_types.h"
 
 #include "TSelector.h"
@@ -56,6 +59,14 @@ class XaodAnalysis : public TSelector
     virtual XaodAnalysis& setDebug(int debugLevel) { m_dbg = debugLevel; return *this; }
     XaodAnalysis& initSusyTools(); ///< initialize SUSYObjDef_xAOD
     bool processingMc12b() const { return m_mcProd == MCProd_MC12b; }
+    
+    /**
+       Performance Tools 
+     **/
+    XaodAnalysis& initLocalTools(); ///< initialize performance tools
+    
+
+
     /// access the event info
     /**
       \todo: all these xaod getters should be cached (if they are a bottleneck) DG-2014-08-16 to be checked
@@ -102,17 +113,25 @@ class XaodAnalysis : public TSelector
     /// access the default collection of photons
     static susy::PhotonsWithAux_t retrievePhotonsWithAux(xAOD::TEvent &e, bool dbg);
     /// wrapper of retrievePhotonsWithAux; store outputs as datamembers
-    virtual const xAOD::PhotonContainer* xaodPhothons();
+    virtual const xAOD::PhotonContainer* xaodPhotons();
     /// access the truth event
     static const xAOD::TruthEventContainer* retrieveTruthEvent(xAOD::TEvent &e, bool dbg);
     /// wrapper of retrieveTruthEvent; store outputs as datamembers
     virtual const xAOD::TruthEventContainer* xaodTruthEvent();
+
     /// access the truth particles
     static const xAOD::TruthParticleContainer* retrieveTruthParticles(xAOD::TEvent &e, bool dbg);
     /// wrapper of retrieveTruthParticles; store outputs as datamembers
     virtual const xAOD::TruthParticleContainer* xaodTruthParticles();
+
     /// retrieve met
     virtual void retrieveXaodMet();
+
+    /// access the vertices
+    static const xAOD::VertexContainer* retrieveVertices(xAOD::TEvent &e, bool dbg);
+    /// wrapper of retrieveVertices; store outputs as datamembers
+    virtual const xAOD::VertexContainer* xaodVertices();
+
     /// retrieve all the input collections and cache pointers
     XaodAnalysis& retrieveCollections();
 
@@ -407,6 +426,10 @@ class XaodAnalysis : public TSelector
     xAOD::MissingETContainer*           m_metContainer;
     xAOD::MissingETAuxContainer*        m_metAuxContainer;
 
+    //VertexContainer
+    const xAOD::VertexContainer*        m_xaodVertices; 
+
+
     /// cleanup shallow copies and aux containers
     /**
        They are created when retrieving the collections with
@@ -422,6 +445,15 @@ class XaodAnalysis : public TSelector
        just need to reset the chached pointer.
      */
     XaodAnalysis& clearContainerPointers();
+
+
+
+    // Performance tools
+    std::string maindir;
+
+    AsgElectronEfficiencyCorrectionTool* m_electronEfficiencyTool;
+
+
 };
 
 } // susy

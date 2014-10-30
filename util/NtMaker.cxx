@@ -63,8 +63,8 @@ void help()
   cout << "  --errXsec set cross section uncert"<< endl;
   cout << "     default: -1"                    << endl;
 
-  //cout << "  --savePh will save photons"        << endl;
-  //cout << "     default: off"                   << endl;
+  cout << "  --savePh will save photons"        << endl;
+  cout << "     default: off"                   << endl;
 
   cout << "  --saveTau will save taus"          << endl;
   cout << "     default: off"                   << endl;
@@ -125,7 +125,7 @@ int main(int argc, char** argv)
   TString mcProdStr = "";
   string grl      = "";
   bool sysOn      = false;
-  //bool savePh     = false;
+  bool savePh     = false;
   bool saveTau    = false;
   bool saveContTau= false;
   bool saveTruth  = false;
@@ -170,8 +170,8 @@ int main(int argc, char** argv)
       sysOn = true;
     else if (strcmp(argv[i], "--errXsec") == 0)
       errXsec = atof(argv[++i]);
-    //else if (strcmp(argv[i], "--savePh") == 0)
-    //savePh = true;
+    else if (strcmp(argv[i], "--savePh") == 0)
+    savePh = true;
     else if (strcmp(argv[i], "--saveTau") == 0)
       saveTau = true;
     else if (strcmp(argv[i], "--saveContTau") == 0){
@@ -213,7 +213,7 @@ int main(int argc, char** argv)
   cout << "  sumw          " << sumw     << endl;
   cout << "  grl           " << grl      << endl;
   cout << "  sys           " << sysOn    << endl;
-  //cout << "  savePh      " << savePh   << endl;
+  cout << "  savePh        " << savePh   << endl;
   cout << "  saveTau       " << saveTau  << endl;
   cout << "  saveContTau   " << saveContTau << endl;
   cout << "  saveTru       " << saveTruth<< endl;
@@ -243,7 +243,7 @@ int main(int argc, char** argv)
   susyAna->setLumi(lumi);
   susyAna->setSumw(sumw);
   susyAna->setSys(sysOn);
-  //susyAna->setSelectPhotons(savePh);
+  susyAna->setSelectPhotons(savePh);
   susyAna->setSelectTaus(saveTau);
   susyAna->setSaveContTaus(saveContTau);
   susyAna->setAF2(isAF2);

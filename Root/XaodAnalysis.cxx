@@ -58,6 +58,10 @@ XaodAnalysis::XaodAnalysis() :
         m_susyObj("SUSYObjDef_xAOD")
 {
     clearContainerPointers();
+
+
+    m_electronEfficiencyTool = NULL;
+
 }
 //----------------------------------------------------------
 void XaodAnalysis::Init(TTree *tree)
@@ -69,6 +73,7 @@ void XaodAnalysis::Init(TTree *tree)
     bool isData = XaodAnalysis::isDataFromSamplename(m_sample);
     m_stream = XaodAnalysis::streamFromSamplename(m_sample, isData);
     initSusyTools();
+    initLocalTools();
 }
 //----------------------------------------------------------
 XaodAnalysis::~XaodAnalysis()
@@ -154,6 +159,60 @@ XaodAnalysis& XaodAnalysis::initSusyTools()
   }
   return *this;
 }
+//----------------------------------------------------------
+XaodAnalysis& XaodAnalysis::initLocalTools()
+{
+  
+  char *tmparea=getenv("ROOTCOREBIN");
+  char* TestArea = getenv("TestArea");
+  
+  if (tmparea != NULL) {
+    maindir = tmparea;
+    maindir = maindir + "/data/";
+  }
+  else if (TestArea != NULL ) {/// Athena
+    tmparea = TestArea;
+    maindir = tmparea;
+    maindir = maindir + "/";
+  } else {
+    cout << " RootCore area not set up " << endl
+    <<"Exiting... "<<endl << endl;
+    exit(-1);
+  }
+
+  //Tight Electron
+  AsgElectronEfficiencyCorrectionTool *elecEfficiencySFTool = new AsgElectronEfficiencyCorrectionTool("AsgElectronEfficiencyCorrectionTool");
+  std::vector< std::string > corrFileNameList;
+  corrFileNameList.push_back(maindir+"ElectronEfficiencyCorrection/efficiencySF.offline.RecoTrk.2012.8TeV.rel17p2.GEO20.v08.root");
+  corrFileNameList.push_back(maindir+"ElectronEfficiencyCorrection/efficiencySF.offline.Tight.2012.8TeV.rel17p2.v07.root");
+  corrFileNameList.push_back(maindir+"ElectronEfficiencyCorrection/efficiencySF.e24vhi_medium1_e60_medium1.Tight.2012.8TeV.rel17p2.v07.root");
+  if(elecEfficiencySFTool->setProperty("CorrectionFileNameList",corrFileNameList) != StatusCode::SUCCESS){
+    cout<<"XaodAnalysis::initLocalTools: cannot intialize elecEfficiencySFTool..."<<endl
+	<<"Exiting... "<<endl
+	<<endl;
+    exit(-1);
+
+  }   
+  if (m_isMC) {
+    PATCore::ParticleDataType::DataType data_type;
+    if(m_isAF2) data_type = PATCore::ParticleDataType::Fast;
+    else        data_type = PATCore::ParticleDataType::Full;
+    if(m_dbg) cout << "Setting data type to " << data_type << endl;
+    if( elecEfficiencySFTool->setProperty("ForceDataType",(int) data_type) != StatusCode::SUCCESS){
+      cout<<"XaodAnalysis::initLocalTools: cannot setProperty elecEfficiencySFTool..."<<endl
+	  <<"Exiting... "<<endl
+	  <<endl;
+      exit(-1);
+    }
+  }
+  elecEfficiencySFTool->initialize();
+
+  
+
+
+ return *this;
+}
+
 //----------------------------------------------------------
 const xAOD::EventInfo* XaodAnalysis::retrieveEventInfo(xAOD::TEvent &e, bool dbg)
 {
@@ -301,10 +360,10 @@ susy::PhotonsWithAux_t XaodAnalysis::retrievePhotonsWithAux(xAOD::TEvent &e, boo
     return pwa;
 }
 //----------------------------------------------------------
-const xAOD::PhotonContainer* XaodAnalysis::xaodPhothons()
+const xAOD::PhotonContainer* XaodAnalysis::xaodPhotons()
 {
     if(m_xaodPhotons==NULL){
-        PhotonsWithAux_t pwa = retrievePhotonsWithAux(m_event, m_dbg);
+      PhotonsWithAux_t pwa = retrievePhotonsWithAux(m_event, m_dbg);
         m_xaodPhotons = pwa.first;
         m_xaodPhotonsAux = pwa.second;
     }
@@ -316,8 +375,8 @@ const xAOD::TruthEventContainer* XaodAnalysis::retrieveTruthEvent(xAOD::TEvent &
     const xAOD::TruthEventContainer* truth = NULL;
     e.retrieve(truth, "TruthEvent");
     if(dbg){
-        if(truth) cout<<"XaodAnalysis::retrievePhotons: retrieved "<<endl;
-        else      cout<<"XaodAnalysis::retrievePhotons: failed"<<endl;
+        if(truth) cout<<"XaodAnalysis::retrieveTruthEvent: retrieved "<<endl;
+        else      cout<<"XaodAnalysis::retrieveTruthEvent: failed"<<endl;
     }
     return truth;
 }
@@ -372,6 +431,26 @@ void XaodAnalysis::retrieveXaodMet()
       
   }
 }
+//----------------------------------------------------------
+const xAOD::VertexContainer* XaodAnalysis::retrieveVertices(xAOD::TEvent &e, bool dbg)
+{
+  const xAOD::VertexContainer* vtx = NULL;
+  e.retrieve(vtx, "PrimaryVertices");
+  if(dbg){
+    if(vtx) cout<<"XaodAnalysis::retrieveVertices: retrieved "<<vtx->size()<<endl;
+    else    cout<<"XaodAnalysis::retrieveVertices: failed"<<endl;
+  }
+  return vtx;
+}
+//----------------------------------------------------------
+const xAOD::VertexContainer* XaodAnalysis::xaodVertices()
+{
+  if(m_xaodVertices==NULL){
+    m_xaodVertices = retrieveVertices(m_event, m_dbg);     
+  }
+  return m_xaodVertices;
+}
+
 //----------------------------------------------------------
 void XaodAnalysis::selectBaselineObjects(SusyNtSys sys)
 {
@@ -589,7 +668,7 @@ void XaodAnalysis::selectSignalObjects()
     if(m_dbg) cout<<"m_sigTaus["<<m_sigTaus.size()<<"]"<<endl;
 
     // int iPh=0;
-    // const xAOD::PhotonContainer* photons = xaodPhothons();
+    // const xAOD::PhotonContainer* photons = xaodPhotons();
     // for(auto it=photons->begin(), end=photons->end(); it!=end; ++it){
     //     const xAOD::Photon &ph = **it;
     //     if(ph.pt()>20.0*GeV &&
@@ -1474,6 +1553,7 @@ XaodAnalysis& XaodAnalysis::clearContainerPointers()
     m_metAuxContainer    = NULL;
     m_metJets            = NULL;
     m_metJetsAux         = NULL;
+    m_xaodVertices       = NULL;
     return *this;
 }
 //----------------------------------------------------------
@@ -1484,9 +1564,10 @@ XaodAnalysis& XaodAnalysis::retrieveCollections()
     xaodElectrons();
     xaodTaus();
     xaodJets();
-    xaodPhothons();
+    xaodPhotons();
     xaodTruthEvent();
     xaodTruthParticles();
     retrieveXaodMet();
+    xaodVertices();
     return *this;
 }

@@ -12,11 +12,14 @@
 
 #include "ElectronEfficiencyCorrection/TElectronEfficiencyCorrectionTool.h"
 
-
 #include "xAODTruth/TruthEvent.h"
 #include "xAODTruth/TruthEventContainer.h"
 #include "xAODPrimitives/IsolationType.h"
 #include "xAODTracking/TrackParticle.h"
+#include "xAODEgamma/EgammaxAODHelpers.h"
+
+// Amg include
+#include "EventPrimitives/EventPrimitivesHelpers.h"
 
 #include <algorithm> // max_element
 #include <iomanip> // setw
@@ -247,15 +250,14 @@ void SusyNtMaker::fillEventVars()
 
   if(m_isMC){
       xAOD::TruthEventContainer::const_iterator truthE_itr = xaodTruthEvent()->begin();
-
-      //--DG--( *truthE_itr )->pdfInfoParameter(evt->pdf_id1  , xAOD::TruthEvent::id1); // not available for some samples
-      //--DG--( *truthE_itr )->pdfInfoParameter(evt->pdf_id2  , xAOD::TruthEvent::id2);
-      // ( *truthE_itr )->pdfInfoParameter(evt->pdf_x1    , xAOD::TruthEvent::pdf1);
-      // ( *truthE_itr )->pdfInfoParameter(evt->pdf_x2    , xAOD::TruthEvent::pdf2);
-      // DG not working? ( *truthE_itr )->pdfInfoParameter(float(evt->pdf_scale), xAOD::TruthEvent::scalePDF);
+      ( *truthE_itr )->pdfInfoParameter(evt->pdf_id1   , xAOD::TruthEvent::id1); // not available for some samples
+      ( *truthE_itr )->pdfInfoParameter(evt->pdf_id2   , xAOD::TruthEvent::id2);
+      ( *truthE_itr )->pdfInfoParameter(evt->pdf_x1    , xAOD::TruthEvent::pdf1);
+      ( *truthE_itr )->pdfInfoParameter(evt->pdf_x2    , xAOD::TruthEvent::pdf2);
+      ( *truthE_itr )->pdfInfoParameter(evt->pdf_scale , xAOD::TruthEvent::scalePDF);
       // DG what are these two?
-      // ( *truthE_itr )->pdfInfoParameter(evt->pdf_x1   , xAOD::TruthEvent::x1);
-      // ( *truthE_itr )->pdfInfoParameter(evt->pdf_x2   , xAOD::TruthEvent::x2);
+      //( *truthE_itr )->pdfInfoParameter(evt->pdf_x1   , xAOD::TruthEvent::x1);
+      //( *truthE_itr )->pdfInfoParameter(evt->pdf_x2   , xAOD::TruthEvent::x2);
   }
   evt->pdfSF            = m_isMC? getPDFWeight8TeV() : 1;
   m_susyNt.evt()->cutFlags[NtSys_NOM] = m_cutFlags;
@@ -301,7 +303,7 @@ void SusyNtMaker::fillTauVars()
 void SusyNtMaker::fillPhotonVars()
 {
     if(m_dbg>=5) cout<<"fillPhotonVars"<<endl;
-    const xAOD::PhotonContainer* photons = XaodAnalysis::xaodPhothons();
+    const xAOD::PhotonContainer* photons = XaodAnalysis::xaodPhotons();
     for(auto &i : m_sigPhotons){
         storePhoton(*(photons->at(i)));
     }
@@ -387,8 +389,24 @@ void SusyNtMaker::storeElectron(const xAOD::Electron &in)
     out.ptcone20 *= MeV2GeV;
     out.ptcone30 *= MeV2GeV;
 
-    out.effSF = (m_isMC && out.tightPP) ? m_susyObj.GetSignalElecSF(in) : 1;
+    if(m_isMC && out.tightPP){
+      //AT 2014-10-29: To be updated once SusyTools function return both.
+      /*
+      const Root::TResult &result = m_electronEfficiencyTool->calculate(in);
+      out.effSF    = result.getScaleFactor();
+      out.errEffSF = result.getTotalUncertainty();
+      out.effSF = (m_isMC && out.tightPP) ? m_susyObj.GetSignalElecSF(in) : 1;
+      */
+    }
+
     //AT:2014-10-28: how to get error and SF for mediumPP ??
+
+    out.mcType   = xAOD::EgammaHelpers::getParticleTruthType(&in);
+    out.mcOrigin = xAOD::EgammaHelpers::getParticleTruthOrigin(&in);    
+    out.truthType             = m_isMC? m_recoTruthMatch.fakeType(out, out.mcOrigin, out.mcType) : -1;
+    //AT 2014-10-29: Do not work... Need to know about all the truth particles in the event.
+    out.isChargeFlip          = m_isMC? m_recoTruthMatch.isChargeFlip(out, out.q) : false;
+    out.matched2TruthLepton   = m_isMC? m_recoTruthMatch.Matched2TruthLepton(out) : false;
 
     if(const xAOD::CaloCluster* c = in.caloCluster()) {
         out.clusE   = c->e()*MeV2GeV;
@@ -401,25 +419,14 @@ void SusyNtMaker::storeElectron(const xAOD::Electron &in)
         out.trackPt = t->pt()*MeV2GeV;
 	out.d0      = t->d0();//AT:: wrt to PV ???
 
-	//AT: Follow what's done in SUSYObjDef_xAOD::IsSignalElectron
-	//How to grab the PV container?
-	/*
-	const xAOD::VertexContainer* primVertex = 0;
-	if( evtStore()->retrieve( primVertex, "PrimaryVertices" ) .isFailure() ) {
-	  ATH_MSG_WARNING( "No PrimaryVertices object could not be retrieved" );
-	}else{
-	  ATH_MSG_INFO( "PrimaryVertices object retrieved" );
-	}
 	double primvertex_z = 0;
-	
-	xAOD::VertexContainer::const_iterator pv_itr = primVertex->begin();
-	primvertex_z = (*pv_itr)->z(); // assume the 0th vertex is the primary one with higest sum pT^2
-	double el_z0 = track->z0() + track->vz() - primvertex_z;
-	*/
+	xAOD::VertexContainer::const_iterator pv_itr = m_xaodVertices->begin();
+	primvertex_z = (*pv_itr)->z();
+	out.z0 = t->z0() + t->vz() - primvertex_z;
 
-        // eleOut->errD0         = element->tracksigd0pv();
-        // eleOut->z0            = element->trackz0pv();
-        // eleOut->errZ0         = element->tracksigz0pv();
+	out.errD0         = Amg::error(t->definingParametersCovMatrix(),0);
+	out.errZ0         = Amg::error(t->definingParametersCovMatrix(),1);
+	//Obsolete
         // eleOut->d0Unbiased    = element->trackIPEstimate_d0_unbiasedpvunbiased();
         // eleOut->errD0Unbiased = element->trackIPEstimate_sigd0_unbiasedpvunbiased();
         // eleOut->z0Unbiased    = element->trackIPEstimate_z0_unbiasedpvunbiased();
@@ -428,12 +435,6 @@ void SusyNtMaker::storeElectron(const xAOD::Electron &in)
         all_available = false;
     }
     // DG-2014-08-29 mc info not available yet
-    // out.mcType = in.type();
-    // out.mcOrigin      = m_isMC? element->origin() : 0;
-    // // Check for charge flip
-    // eleOut->isChargeFlip          = m_isMC? m_recoTruthMatch.isChargeFlip(*lv, element->charge()) : false;
-    // eleOut->matched2TruthLepton   = m_isMC? m_recoTruthMatch.Matched2TruthLepton(*lv) : false;
-    // eleOut->truthType             = m_isMC? m_recoTruthMatch.fakeType(*lv, element->origin(), element->type()) : -1;
 
     // 
     // // Trigger flags
@@ -643,14 +644,25 @@ void SusyNtMaker::storePhoton(const xAOD::Photon &in)
     out.eta = eta;
     out.phi = phi;
     out.m   = m;
+    out.isConv = xAOD::EgammaHelpers::isConvertedPhoton(&in);
     bool all_available=true;
 
-  // // Save conversion info
-  // phoOut->isConv = element->isConv();
+    all_available &= in.passSelection(out.tight,"Tight");
 
-  // // Miscellaneous
-  // phoOut->idx    = phIdx;
-  // if(m_dbg>=5) cout << "fillPhotonVar" << endl;
+    if(const xAOD::CaloCluster* c = in.caloCluster()) {
+      out.clusE   = c->e()*MeV2GeV;
+      out.clusEta = c->eta();
+      out.clusPhi = c->phi();
+    } else {
+      all_available = false;
+    }
+    out.OQ = in.isGoodOQ(xAOD::EgammaParameters::BADCLUSPHOTON);
+    //out.OQ =  in.auxdata< uint32_t >("OQ"); //AT 2014-10-29 Can't we grab the SusyTool decoration ?
+
+    cout << "AT: storePhoton: " << out.pt << " " << out.tight << " " << out.isConv << endl;
+    // // Miscellaneous
+    // phoOut->idx    = phIdx;
+    // if(m_dbg>=5) cout << "fillPhotonVar" << endl;
     if(m_dbg && !all_available) cout<<"missing some photon variables"<<endl;
     m_susyNt.pho()->push_back(out);
 }
