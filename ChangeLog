@@ -1,5 +1,8 @@
 # vim: set noexpandtab:
 
+2014-10-30 Serhan Mete <amete@cern.ch>
+	* Started filling jet information for xAOD
+
 2014-02-13 Steve
 	* Now using central SUSYTools method for sherpa WW radiative
 	  b quark fix: Sherpa_WW_veto
