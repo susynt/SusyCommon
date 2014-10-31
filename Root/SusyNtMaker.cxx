@@ -12,8 +12,7 @@
 
 #include "ElectronEfficiencyCorrection/TElectronEfficiencyCorrectionTool.h"
 
-#include "xAODTruth/TruthEvent.h"
-#include "xAODTruth/TruthEventContainer.h"
+
 #include "xAODPrimitives/IsolationType.h"
 #include "xAODTracking/TrackParticle.h"
 #include "xAODEgamma/EgammaxAODHelpers.h"
@@ -241,9 +240,9 @@ void SusyNtMaker::fillEventVars()
   evt->eventWithSusyProp= m_hasSusyProp;
   evt->trigFlags        = m_evtTrigFlags;
 
-  // evt->wPileup          = m_isMC? getPileupWeight() : 1;
-  // evt->wPileup_up       = m_isMC? getPileupWeightUp() : 1;
-  // evt->wPileup_dn       = m_isMC? getPileupWeightDown() : 1;
+  evt->wPileup          = m_isMC? getPileupWeight() : 1;
+  evt->wPileup_up       = m_isMC? getPileupWeightUp() : 1;
+  evt->wPileup_dn       = m_isMC? getPileupWeightDown() : 1;
   evt->xsec             = m_isMC? getXsecWeight() : 1;
   evt->errXsec          = m_isMC? m_errXsec : 1;
   evt->sumw             = m_isMC? m_sumw : 1;
@@ -258,6 +257,10 @@ void SusyNtMaker::fillEventVars()
       // DG what are these two?
       //( *truthE_itr )->pdfInfoParameter(evt->pdf_x1   , xAOD::TruthEvent::x1);
       //( *truthE_itr )->pdfInfoParameter(evt->pdf_x2   , xAOD::TruthEvent::x2);
+      evt->eventScale = ( *truthE_itr )->eventScale();
+      evt->alphaQCD = ( *truthE_itr )->alphaQCD();
+      evt->alphaQED = ( *truthE_itr )->alphaQED();
+
   }
   evt->pdfSF            = m_isMC? getPDFWeight8TeV() : 1;
   m_susyNt.evt()->cutFlags[NtSys_NOM] = m_cutFlags;
@@ -391,15 +394,15 @@ void SusyNtMaker::storeElectron(const xAOD::Electron &in)
 
     if(m_isMC && out.tightPP){
       //AT 2014-10-29: To be updated once SusyTools function return both.
-      /*
-      const Root::TResult &result = m_electronEfficiencyTool->calculate(in);
+      out.effSF = (m_isMC && out.tightPP) ? m_susyObj.GetSignalElecSF(in) : 1;
+      cout << "AT: susyTool electron SF " << out.effSF << endl;
+      const Root::TResult &result =  m_electronEfficiencySFTool->calculate(in);
       out.effSF    = result.getScaleFactor();
       out.errEffSF = result.getTotalUncertainty();
-      out.effSF = (m_isMC && out.tightPP) ? m_susyObj.GetSignalElecSF(in) : 1;
-      */
+      cout << "AT: electron SF " << out.effSF << " " << out.errEffSF << endl;
     }
 
-    //AT:2014-10-28: how to get error and SF for mediumPP ??
+    //AT:2014-10-28: add mediumPP - need the tool
 
     out.mcType   = xAOD::EgammaHelpers::getParticleTruthType(&in);
     out.mcOrigin = xAOD::EgammaHelpers::getParticleTruthOrigin(&in);    

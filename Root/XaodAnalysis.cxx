@@ -4,10 +4,6 @@
 #include "SusyCommon/XaodAnalysis.h"
 //#include "SusyCommon/get_object_functions.h"
 
-// #include "xAODTruth/TruthParticleContainer.h"
-// #include "xAODTruth/TruthEventContainer.h"
-// #include "xAODTruth/TruthEvent.h"
-
 // #include "egammaAnalysisUtils/egammaTriggerMatching.h"
 // #include "D3PDReader/JetD3PDObject.h"
 
@@ -19,6 +15,18 @@ using namespace std;
 using susy::XaodAnalysis;
 
 const float GeV = 1000.0;
+
+#undef CHECK
+#define CHECK( ARG )					 \
+  do {							 \
+    const bool result = ARG;						\
+    if( ! result ) {							\
+      ::Error( "XaodAnalysis", "Failed to execute: \"%s\"",		\
+	       #ARG );							\
+      exit(-1);								\
+    }									\
+  } while( false )
+
 
 //----------------------------------------------------------
 XaodAnalysis::XaodAnalysis() :
@@ -55,12 +63,11 @@ XaodAnalysis::XaodAnalysis() :
         m_flagsHaveBeenChecked(false),
         m_event(xAOD::TEvent::kClassAccess),
         m_store(),
-        m_susyObj("SUSYObjDef_xAOD")
+        m_susyObj("SUSYObjDef_xAOD"),
+	m_electronEfficiencySFTool(0),
+	m_pileupReweightingTool(0)
 {
     clearContainerPointers();
-
-
-    m_electronEfficiencyTool = NULL;
 
 }
 //----------------------------------------------------------
@@ -135,6 +142,10 @@ void XaodAnalysis::Terminate()
     // delete m_pileup_up;
     // delete m_pileup_dn;
   }
+
+  delete m_electronEfficiencySFTool;
+  delete m_pileupReweightingTool;
+
 }
 //----------------------------------------------------------
 XaodAnalysis& XaodAnalysis::initSusyTools()
@@ -145,18 +156,13 @@ XaodAnalysis& XaodAnalysis::initSusyTools()
   m_susyObj.setProperty("IsAtlfast",       static_cast<int>(m_isAF2));
   m_susyObj.setProperty("IsMC12b",         static_cast<int>(processingMc12b()));
   m_susyObj.setProperty("UseLeptonTrigger",static_cast<int>(useLeptonTrigger));
-  if(m_susyObj.SUSYToolsInit() != StatusCode::SUCCESS){
-      cout<<"XaodAnalysis::initSusyTools: cannot intialize SUSYObjDef_xAOD..."<<endl
-          <<"Exiting... "<<endl
-          <<endl;
-      exit(-1);
-  }else {
-      if(m_dbg)
-          cout<<"XaodAnalysis::initSusyTools: SUSYObjDef_xAOD initialized... "<<endl;
-      // DG-2014-09-02 : tmp fix propagate dbg to met tool
-      //AT commented Base,2.0.14. Tool is protected
-      //m_susyObj.m_METRebuilder->msg().setLevel(m_dbg ? MSG::DEBUG : MSG::WARNING);
-  }
+  CHECK( m_susyObj.SUSYToolsInit() );
+  if(m_dbg)
+    cout<<"XaodAnalysis::initSusyTools: SUSYObjDef_xAOD initialized... "<<endl;
+  // DG-2014-09-02 : tmp fix propagate dbg to met tool
+  //AT commented Base,2.0.14. Tool is protected
+  //m_susyObj.m_METRebuilder->msg().setLevel(m_dbg ? MSG::DEBUG : MSG::WARNING);
+  
   return *this;
 }
 //----------------------------------------------------------
@@ -180,39 +186,56 @@ XaodAnalysis& XaodAnalysis::initLocalTools()
     exit(-1);
   }
 
+  initElectronTools();
+  initPileupTool();
+  
+
+ return *this;
+}
+
+//----------------------------------------------------------
+void XaodAnalysis::initElectronTools()
+{
   //Tight Electron
-  AsgElectronEfficiencyCorrectionTool *elecEfficiencySFTool = new AsgElectronEfficiencyCorrectionTool("AsgElectronEfficiencyCorrectionTool");
+  //AT-2014-10-30: does thir return the product of all 3? Don't want the trigger !
+  m_electronEfficiencySFTool = new AsgElectronEfficiencyCorrectionTool("AsgElectronEfficiencyCorrectionTool");
   std::vector< std::string > corrFileNameList;
   corrFileNameList.push_back(maindir+"ElectronEfficiencyCorrection/efficiencySF.offline.RecoTrk.2012.8TeV.rel17p2.GEO20.v08.root");
   corrFileNameList.push_back(maindir+"ElectronEfficiencyCorrection/efficiencySF.offline.Tight.2012.8TeV.rel17p2.v07.root");
   corrFileNameList.push_back(maindir+"ElectronEfficiencyCorrection/efficiencySF.e24vhi_medium1_e60_medium1.Tight.2012.8TeV.rel17p2.v07.root");
-  if(elecEfficiencySFTool->setProperty("CorrectionFileNameList",corrFileNameList) != StatusCode::SUCCESS){
-    cout<<"XaodAnalysis::initLocalTools: cannot intialize elecEfficiencySFTool..."<<endl
-	<<"Exiting... "<<endl
-	<<endl;
-    exit(-1);
+  CHECK( m_electronEfficiencySFTool->setProperty("CorrectionFileNameList",corrFileNameList) );
 
-  }   
   if (m_isMC) {
     PATCore::ParticleDataType::DataType data_type;
     if(m_isAF2) data_type = PATCore::ParticleDataType::Fast;
     else        data_type = PATCore::ParticleDataType::Full;
     if(m_dbg) cout << "Setting data type to " << data_type << endl;
-    if( elecEfficiencySFTool->setProperty("ForceDataType",(int) data_type) != StatusCode::SUCCESS){
-      cout<<"XaodAnalysis::initLocalTools: cannot setProperty elecEfficiencySFTool..."<<endl
-	  <<"Exiting... "<<endl
-	  <<endl;
-      exit(-1);
-    }
+    CHECK( m_electronEfficiencySFTool->setProperty("ForceDataType",(int) data_type) );
   }
-  elecEfficiencySFTool->initialize();
+  CHECK(  m_electronEfficiencySFTool->initialize() );
 
-  
+  cout << "AT: ElectronEffTool init OK " << endl;
 
 
- return *this;
 }
+//----------------------------------------------------------
+void XaodAnalysis::initPileupTool()
+{
+  m_pileupReweightingTool = new CP::PileupReweightingTool("PileupReweightingTool");
+  m_pileupReweightingTool->setProperty("Input","EventInfo");
+  
+  std::vector<std::string> prwFiles;
+  std::vector<std::string> lumicalcFiles;
 
+  prwFiles.push_back("PileupReweighting/mc14v1_defaults.prw.root");
+  CHECK (m_pileupReweightingTool->setProperty("ConfigFiles",prwFiles));
+  
+  lumicalcFiles.push_back(maindir+"SUSYTools/susy_data12_avgintperbx.root");
+  CHECK( m_pileupReweightingTool->setProperty("LumiCalcFiles",lumicalcFiles) );
+  CHECK( m_pileupReweightingTool->initialize() );
+ 
+  
+}
 //----------------------------------------------------------
 const xAOD::EventInfo* XaodAnalysis::retrieveEventInfo(xAOD::TEvent &e, bool dbg)
 {
@@ -360,7 +383,7 @@ susy::PhotonsWithAux_t XaodAnalysis::retrievePhotonsWithAux(xAOD::TEvent &e, boo
     return pwa;
 }
 //----------------------------------------------------------
-const xAOD::PhotonContainer* XaodAnalysis::xaodPhotons()
+xAOD::PhotonContainer* XaodAnalysis::xaodPhotons()
 {
     if(m_xaodPhotons==NULL){
       PhotonsWithAux_t pwa = retrievePhotonsWithAux(m_event, m_dbg);
@@ -518,8 +541,6 @@ void XaodAnalysis::selectBaselineObjects(SusyNtSys sys)
     // overlap removal and met (need to build 'MyJet' coll?)
     m_susyObj.OverlapRemoval(m_xaodElectrons, m_xaodMuons, m_xaodJets);
 
-    // retrieveXaodMet();  DG-2014-08-29 should be here or in retrieveXaodObjects?
-
     int iTau=0;
     xAOD::TauJetContainer* taus = xaodTaus();
     for(auto it=taus->begin(), end=taus->end(); it!=end; ++it){
@@ -666,18 +687,17 @@ void XaodAnalysis::selectSignalObjects()
         iTau++;
     }
     if(m_dbg) cout<<"m_sigTaus["<<m_sigTaus.size()<<"]"<<endl;
-
-    // int iPh=0;
-    // const xAOD::PhotonContainer* photons = xaodPhotons();
-    // for(auto it=photons->begin(), end=photons->end(); it!=end; ++it){
-    //     const xAOD::Photon &ph = **it;
-    //     if(ph.pt()>20.0*GeV &&
-    //        abs(ph.eta())<2.47 &&
-    //        ph.auxdata< int >("signal"))
-    //         m_sigPhotons.push_back(iPh);
-    //     iPh++;
-    // }
-    // if(m_dbg) cout<<"m_sigPhotons["<<m_sigPhotons.size()<<"]"<<endl;
+    
+    int iPh=0;
+    xAOD::PhotonContainer* photons = xaodPhotons();
+    for(auto it=photons->begin(), end=photons->end(); it!=end; ++it){
+      xAOD::Photon &ph = **it;
+      m_susyObj.FillPhoton(ph);
+      if(ph.auxdata< char >("baseline"))
+	m_sigPhotons.push_back(iPh);
+      iPh++;
+    }
+    if(m_dbg) cout<<"m_sigPhotons["<<m_sigPhotons.size()<<"]"<<endl;
 }
 
 /*--------------------------------------------------------------------------------*/
@@ -798,6 +818,8 @@ void XaodAnalysis::clearOutputObjects()
 /*--------------------------------------------------------------------------------*/
 uint XaodAnalysis::getNumGoodVtx()
 {
+  xAOD::VertexContainer::const_iterator pv_itr = m_xaodVertices->begin();
+  
 #warning getNumGoodVtx not implemented
     return 1;
   // uint nVtx = 0;
@@ -1143,14 +1165,26 @@ bool XaodAnalysis::passTileTrip()
 //----------------------------------------------------------
 bool XaodAnalysis::passBadMuon()
 {
-    return false;
-//  return !IsBadMuonEvent(m_susyObj, xaodMuons(), m_preMuons, 0.2);
+  xAOD::MuonContainer* muons = xaodMuons();
+  for(auto it=muons->begin(), end=muons->end(); it!=end; ++it){
+    const xAOD::Muon &mu = **it;
+    //AT-2014-10-30  should be done only for preMuons ? any more cuts to applied ?
+    if(m_susyObj.IsBadMuon(mu)) return false;
+  }
+  return true;
+  //  return !IsBadMuonEvent(m_susyObj, xaodMuons(), m_preMuons, 0.2);
 }
 //----------------------------------------------------------
 bool XaodAnalysis::passCosmic()
 {
-    return false;
-//  return !IsCosmic(m_susyObj, xaodMuons(), m_baseMuons, 1., 0.2);
+  xAOD::MuonContainer* muons = xaodMuons();
+  for(auto it=muons->begin(), end=muons->end(); it!=end; ++it){
+    const xAOD::Muon &mu = **it;
+    if(!mu.auxdata< char >("baseline")) continue;
+    if(m_susyObj.IsCosmicMuon(mu)) return false;
+  }
+  return true;
+    //  return !IsCosmic(m_susyObj, xaodMuons(), m_baseMuons, 1., 0.2);
 }
 //----------------------------------------------------------
 float XaodAnalysis::getEventWeight(float lumi)
@@ -1181,8 +1215,9 @@ float XaodAnalysis::getLumiWeight()
 //----------------------------------------------------------
 float XaodAnalysis::getPileupWeight()
 {
-    return 1.0;
-  // return m_pileup->GetCombinedWeight(m_event.eventinfo.RunNumber(), m_event.eventinfo.mc_channel_number(), m_event.eventinfo.averageIntPerXing());
+  if(!m_isMC) return 1;
+  m_pileupReweightingTool->execute();
+  return xaodEventInfo()->auxdata< double >( "PileupWeight" );
 }
 //----------------------------------------------------------
 float XaodAnalysis::getPileupWeightUp()

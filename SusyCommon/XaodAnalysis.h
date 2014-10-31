@@ -15,6 +15,7 @@
 #include "SusyCommon/LeptonInfo.h"
 #include "SusyNtuple/SusyDefs.h"
 
+//xAOD
 #include "xAODEventInfo/EventInfo.h"
 #include "xAODMuon/MuonContainer.h"
 #include "xAODEgamma/ElectronContainer.h"
@@ -25,10 +26,12 @@
 #include "xAODMissingET/MissingETAuxContainer.h"
 #include "xAODTruth/TruthParticleContainer.h"
 #include "xAODTruth/TruthEventContainer.h"
+// #include "xAODTruth/TruthEvent.h"
 #include "xAODCore/ShallowCopy.h"
 
+//Tools
 #include "ElectronEfficiencyCorrection/AsgElectronEfficiencyCorrectionTool.h"
-
+#include "PileupReweighting/PileupReweightingTool.h"
 
 #include "SusyCommon/XaodAnalysis_types.h"
 
@@ -38,7 +41,7 @@
 #include <iostream>
 
 namespace susy {
-
+  
 ///  a class for performing object selections and event cleaning on xaod
 class XaodAnalysis : public TSelector
 {
@@ -64,6 +67,8 @@ class XaodAnalysis : public TSelector
        Performance Tools 
      **/
     XaodAnalysis& initLocalTools(); ///< initialize performance tools
+    void          initElectronTools();
+    void          initPileupTool();
     
 
 
@@ -113,7 +118,7 @@ class XaodAnalysis : public TSelector
     /// access the default collection of photons
     static susy::PhotonsWithAux_t retrievePhotonsWithAux(xAOD::TEvent &e, bool dbg);
     /// wrapper of retrievePhotonsWithAux; store outputs as datamembers
-    virtual const xAOD::PhotonContainer* xaodPhotons();
+    virtual xAOD::PhotonContainer* xaodPhotons();
     /// access the truth event
     static const xAOD::TruthEventContainer* retrieveTruthEvent(xAOD::TEvent &e, bool dbg);
     /// wrapper of retrieveTruthEvent; store outputs as datamembers
@@ -451,7 +456,9 @@ class XaodAnalysis : public TSelector
     // Performance tools
     std::string maindir;
 
-    AsgElectronEfficiencyCorrectionTool* m_electronEfficiencyTool;
+    AsgElectronEfficiencyCorrectionTool *m_electronEfficiencySFTool;
+    CP::PileupReweightingTool           *m_pileupReweightingTool;
+
 
 
 };
