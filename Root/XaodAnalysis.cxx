@@ -232,6 +232,9 @@ void XaodAnalysis::initPileupTool()
   
   lumicalcFiles.push_back(maindir+"SUSYTools/susy_data12_avgintperbx.root");
   CHECK( m_pileupReweightingTool->setProperty("LumiCalcFiles",lumicalcFiles) );
+  //AT-2014-10-31 For systematic instanciate two more tools with difference SF
+  //CHECK( m_pileupReweightingTool->setProperty("DataScaleFactors",1/1.08) );
+  //CHECK( m_pileupReweightingTool->setProperty("DataScaleFactors",1/1.11) );
   CHECK( m_pileupReweightingTool->initialize() );
  
   
@@ -819,14 +822,19 @@ void XaodAnalysis::clearOutputObjects()
 uint XaodAnalysis::getNumGoodVtx()
 {
   xAOD::VertexContainer::const_iterator pv_itr = m_xaodVertices->begin();
+  //AT-2014-10-31: Run2 harmonisation - we don't need to cut on nTrack for run@
+  //https://cds.cern.ch/record/1700874/files/ATL-COM-PHYS-2014-451.pdf
+
+  uint nVtx = 0;
+  for(auto it=m_xaodVertices->begin(), end=m_xaodVertices->end(); it!=end; ++it){
+    const xAOD::Vertex &vtx = **it;
+    if(vtx.nTrackParticles() >=5 ) nVtx++;
+  }
+  return nVtx;
+
+  //AT:2014-10-31: To be change to this for run2
+  //return  m_xaodVertices-size();
   
-#warning getNumGoodVtx not implemented
-    return 1;
-  // uint nVtx = 0;
-  // for(int i=0; i < m_event.vxp.n(); i++){
-  //   if(m_event.vxp.nTracks()->at(i) >= 5) nVtx++;
-  // }
-  // return nVtx;
 }
 
 /*--------------------------------------------------------------------------------*/
@@ -1299,6 +1307,7 @@ void XaodAnalysis::calcRandomRunLB()
 int XaodAnalysis::getHFORDecision()
 {
 #warning getHFORDecision not implemented
+  //AT-2014-10-30 Will be obsolete in run2
     return 1;
   // return m_hforTool.getDecision(m_event.eventinfo.mc_channel_number(),
   //                               m_event.mc.n(),

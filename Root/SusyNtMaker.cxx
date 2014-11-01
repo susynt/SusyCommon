@@ -423,6 +423,7 @@ void SusyNtMaker::storeElectron(const xAOD::Electron &in)
 	out.d0      = t->d0();//AT:: wrt to PV ???
 
 	double primvertex_z = 0;
+	//AT-2014-10-31: Can't we really assume the 1st one if the PV ?
 	xAOD::VertexContainer::const_iterator pv_itr = m_xaodVertices->begin();
 	primvertex_z = (*pv_itr)->z();
 	out.z0 = t->z0() + t->vz() - primvertex_z;
