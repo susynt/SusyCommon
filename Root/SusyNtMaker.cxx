@@ -508,65 +508,87 @@ void SusyNtMaker::storeMuon(const xAOD::Muon &in)
     out.m   = m;
     out.q   = in.charge();
     out.isBaseline = in.auxdata< char >("baseline");
-    out.isSignal = in.auxdata< char >("signal");
+    out.isSignal   = in.auxdata< char >("signal");
     out.isCombined = in.muonType()==xAOD::Muon::Combined;
+    out.isCosmic   = in.auxdata< char >("cosmic");
+    out.isBadMuon  = m_susyObj.IsBadMuon(in); // Uses default qoverpcut of 0.2
 
     bool all_available=true;
-    all_available &= in.isolation(out.etcone20, xAOD::Iso::etcone20); // DG-2014-08-29 MeV2GeV ?
-    all_available &= in.isolation(out.ptcone20, xAOD::Iso::ptcone20);
-    all_available &= in.isolation(out.etcone30, xAOD::Iso::etcone30);
-    all_available &= in.isolation(out.ptcone30, xAOD::Iso::ptcone30);
 
+    // Isolation
+    all_available &= in.isolation(out.etcone20, xAOD::Iso::etcone20); out.etcone20 *= MeV2GeV;
+    all_available &= in.isolation(out.ptcone20, xAOD::Iso::ptcone20); out.ptcone20 *= MeV2GeV;
+    all_available &= in.isolation(out.etcone30, xAOD::Iso::etcone30); out.etcone30 *= MeV2GeV;
+    all_available &= in.isolation(out.ptcone30, xAOD::Iso::ptcone30); out.ptcone30 *= MeV2GeV;
+
+    // ASM-2014-11-02 :: These are w.r.t. beam line. storeElectron has an example to calculate these w.r.t.
+    // a given track, but we cannot rely on the first entry in the vertices container to be PV
     if(const xAOD::TrackParticle* t = in.primaryTrackParticle()){
-        // DG-2014-08-29  todo
-  // // ID coordinates
-  // muOut->idTrackPt      = element->id_qoverp_exPV() != 0.?
-  //                         fabs(sin(element->id_theta_exPV())/element->id_qoverp_exPV())/GeV : 0.;
-  // muOut->idTrackEta     = -1.*log(tan(element->id_theta_exPV()/2.));
-  // muOut->idTrackPhi     = element->id_phi_exPV();
-  // muOut->idTrackQ       = element->id_qoverp_exPV() < 0 ? -1 : 1;
-  // // MS coordinates
-  // muOut->msTrackPt      = element->ms_qoverp() != 0.?
-  //                         fabs(sin(element->ms_theta())/element->ms_qoverp())/GeV : 0.;
-  // muOut->msTrackEta     = -1.*log(tan(element->ms_theta()/2.));
-  // muOut->msTrackPhi     = element->ms_phi();
-  // muOut->msTrackQ       = element->ms_qoverp() < 0 ? -1 : 1;
-  // muOut->d0             = element->d0_exPV();
-  // muOut->errD0          = sqrt(element->cov_d0_exPV());
-  // muOut->z0             = element->z0_exPV();
-  // muOut->errZ0          = sqrt(element->cov_z0_exPV());
-  // muOut->d0Unbiased     = element->trackIPEstimate_d0_unbiasedpvunbiased();
-  // muOut->errD0Unbiased  = element->trackIPEstimate_sigd0_unbiasedpvunbiased();
-  // muOut->z0Unbiased     = element->trackIPEstimate_z0_unbiasedpvunbiased();
-  // muOut->errZ0Unbiased  = element->trackIPEstimate_sigz0_unbiasedpvunbiased();
-    } else {
-        all_available = false;
+      out.d0             = t->d0();
+      out.errD0          = Amg::error(t->definingParametersCovMatrix(),0); 
+      out.z0             = t->z0();
+      out.errZ0          = Amg::error(t->definingParametersCovMatrix(),1); 
     }
-    out.isCosmic = in.auxdata< char >("cosmic");
-    // muOut->isBadMuon      = // DG-2014-08-29 still relevant?
+    // Inner Detector Track - if exists
+    if(const xAOD::TrackParticle* idtrack = in.trackParticle( xAOD::Muon::InnerDetectorTrackParticle )){
+      out.idTrackPt      = idtrack->pt()*MeV2GeV;  
+      out.idTrackEta     = idtrack->eta();  
+      out.idTrackPhi     = idtrack->phi(); 
+      out.idTrackQ       = idtrack->qOverP() < 0 ? -1 : 1;
+      out.id_qoverp      = idtrack->qOverP()*MeV2GeV;
+      out.id_theta       = idtrack->theta();
+      out.id_phi         = idtrack->phi();
+    }
+    // Muon Spectrometer Track - if exists
+    if(const xAOD::TrackParticle* mstrack = in.trackParticle( xAOD::Muon::MuonSpectrometerTrackParticle )){
+      out.msTrackPt      = mstrack->pt()*MeV2GeV;
+      out.msTrackEta     = mstrack->eta();
+      out.msTrackPhi     = mstrack->phi();
+      out.msTrackQ       = mstrack->qOverP() < 0 ? -1 : 1;
+      out.ms_qoverp      = mstrack->qOverP()*MeV2GeV;
+      out.ms_theta       = mstrack->theta();
+      out.ms_phi         = mstrack->phi();
+    }
 
-  // // Truth flags
-  // if(m_isMC){
-  //   muOut->mcType       = element->type();
-  //   muOut->mcOrigin     = element->origin();
-  //   // If type and origin are zero, try matching to the muons in the truthMuon block
-  //   // This might not actually do anything
-  //   if(element->type()==0 && element->origin()==0 && element->truth_barcode()!=0){
-  //     const D3PDReader::TruthMuonD3PDObjectElement* trueMuon = getMuonTruth(d3pdMuons(), lepIn->idx(), &m_event.muonTruth);
-  //     muOut->mcType     = trueMuon? trueMuon->type()   : 0;
-  //     muOut->mcOrigin   = trueMuon? trueMuon->origin() : 0;
-  //   }
-  //   muOut->matched2TruthLepton  = m_recoTruthMatch.Matched2TruthLepton(*lv);
-  //   muOut->truthType            = m_recoTruthMatch.fakeType(*lv, muOut->mcOrigin, muOut->mcType);
-  // }
+    // Truth Flags 
+    // ASM-2014-11-02 :: Can't we access MC truth classifier results for muons? I couldn't find something
+    // like xAOD::EgammaHelpers for Muons 
+    // Currently rely on TrackParticle truth see https://indico.cern.ch/event/329880/session/8/contribution/30/material/slides/0.pdf
+    //  ElementLink<xAOD::TruthParticleContainer>& truthLink = in.auxdata<ElementLink<xAOD::TruthParticleContainer> >("truth");
+    if(m_isMC) {
+      //out.mcOrigin            = in.auxdata< int >("truthOrigin");
+      //out.mcType              = in.auxdata< int >("truthType");
+      //// Old method tried to loop over all truth particles and do the matching by hand if above two were zero.
+      //// ASM-2014-11-02, as as "AT 2014-10-29: Do not work... Need to know about all the truth particles in the event."
+      //out.truthType           = m_recoTruthMatch.fakeType(out, out.mcOrigin, out.mcType);
+      //out.matched2TruthLepton = m_recoTruthMatch.Matched2TruthLepton(out); 
+    }
 
-  // muOut->trigFlags      = m_muoTrigFlags[ lepIn->idx() ];
+    // Trigger Flags 
+    // ASM-2014-11-02 :: Trigger information in DC14 samples are problematic
+    // muOut->trigFlags      = m_muoTrigFlags[ lepIn->idx() ];
 
-  // // Syntax of the GetSignalMuonSF has changed.  Now, the same method is used to get the nominal and shifted value.
-  // // So, in order to store the uncert, I take the shifted value minus the nominal, and save that.
-  // muOut->effSF          = m_isMC? m_susyObj.GetSignalMuonSF(lepIn->idx()) : 1;
-  // muOut->errEffSF       = m_isMC? m_susyObj.GetSignalMuonSF(lepIn->idx(), SystErr::MEFFUP) - muOut->effSF : 0;
+    // Scale Factors
+    // ASM-2014-11-02 :: How to get the uncertatinty?
+    if(m_isMC) {
+      float value = 0.;
+      CP::CorrectionCode result = m_muonEfficiencySFTool->getEfficiencyScaleFactor( in, value );
 
+      if( result == CP::CorrectionCode::OutOfValidityRange ) {
+        cout << "ASM :: getEfficiencyScaleFactor out of validity range " << endl;
+      }
+      else {
+        out.effSF    = value; 
+        out.errEffSF = 0.;  // ASM-2014-11-02 0. for the time being
+      }
+    }
+    else {
+      out.effSF    = 1.; 
+      out.errEffSF = 0.; 
+    }
+
+    // ASM-2014-11-02 :: Store to be true at the moment
+    all_available =  false;
     if(m_dbg && !all_available) cout<<"missing some electron variables"<<endl;
     m_susyNt.muo()->push_back(out);
 }

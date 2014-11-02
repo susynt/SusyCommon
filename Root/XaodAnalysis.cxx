@@ -65,7 +65,8 @@ XaodAnalysis::XaodAnalysis() :
         m_store(),
         m_susyObj("SUSYObjDef_xAOD"),
 	m_electronEfficiencySFTool(0),
-	m_pileupReweightingTool(0)
+	m_pileupReweightingTool(0),
+	m_muonEfficiencySFTool(0)
 {
     clearContainerPointers();
 
@@ -145,6 +146,7 @@ void XaodAnalysis::Terminate()
 
   delete m_electronEfficiencySFTool;
   delete m_pileupReweightingTool;
+  delete m_muonEfficiencySFTool;
 
 }
 //----------------------------------------------------------
@@ -188,7 +190,7 @@ XaodAnalysis& XaodAnalysis::initLocalTools()
 
   initElectronTools();
   initPileupTool();
-  
+  initMuonTools(); 
 
  return *this;
 }
@@ -217,6 +219,16 @@ void XaodAnalysis::initElectronTools()
   cout << "AT: ElectronEffTool init OK " << endl;
 
 
+}
+//----------------------------------------------------------
+void XaodAnalysis::initMuonTools()
+{
+  m_muonEfficiencySFTool = new CP::MuonEfficiencyScaleFactors("MuonEfficiencyScaleFactors");
+  CHECK( m_muonEfficiencySFTool->setProperty("WorkingPoint","CBandST") );
+  CHECK( m_muonEfficiencySFTool->setProperty("DataPeriod","2012") );
+  CHECK( m_muonEfficiencySFTool->initialize() ); 
+  
+  cout << "ASM :: MuonEffTool is initialized correctly..." << endl;
 }
 //----------------------------------------------------------
 void XaodAnalysis::initPileupTool()

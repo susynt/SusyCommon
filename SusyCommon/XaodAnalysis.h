@@ -32,6 +32,7 @@
 //Tools
 #include "ElectronEfficiencyCorrection/AsgElectronEfficiencyCorrectionTool.h"
 #include "PileupReweighting/PileupReweightingTool.h"
+#include "MuonEfficiencyCorrections/MuonEfficiencyScaleFactors.h"
 
 #include "SusyCommon/XaodAnalysis_types.h"
 
@@ -69,7 +70,7 @@ class XaodAnalysis : public TSelector
     XaodAnalysis& initLocalTools(); ///< initialize performance tools
     void          initElectronTools();
     void          initPileupTool();
-    
+    void          initMuonTools(); 
 
 
     /// access the event info
@@ -459,6 +460,7 @@ class XaodAnalysis : public TSelector
     AsgElectronEfficiencyCorrectionTool *m_electronEfficiencySFTool;
     CP::PileupReweightingTool           *m_pileupReweightingTool;
 
+    CP::MuonEfficiencyScaleFactors      *m_muonEfficiencySFTool; 
 
 
 };
