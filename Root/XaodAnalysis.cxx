@@ -6,6 +6,7 @@
 
 // #include "egammaAnalysisUtils/egammaTriggerMatching.h"
 // #include "D3PDReader/JetD3PDObject.h"
+#include "xAODBase/IParticleHelpers.h" // setOriginalObjectLink
 
 #include <limits>
 #include <algorithm> // transform
@@ -281,6 +282,9 @@ susy::MuonsWithAux_t XaodAnalysis::retrieveMuonsWithAux(xAOD::TEvent &e, bool db
         else  cout<<"XaodAnalysis::retrieveMuons: failed"<<endl;
     }
     MuonsWithAux_t mwa = xAOD::shallowCopyContainer(*m);
+    bool link_success = xAOD::setOriginalObjectLink(*m, *mwa.first);
+    if(dbg)
+        cout<<"XaodAnalysis::retrieveMuonsWithAux: "<<(link_success ? "done":"failed")<<endl;
     return mwa;
 }
 //----------------------------------------------------------
@@ -303,6 +307,9 @@ susy::ElectronsWithAux_t XaodAnalysis::retrieveElectronsWithAux(xAOD::TEvent &e,
         else    cout<<"XaodAnalysis::retrieveElectrons: failed"<<endl;
     }
     ElectronsWithAux_t ewa = xAOD::shallowCopyContainer(*ele);
+    bool link_success = xAOD::setOriginalObjectLink(*ele, *ewa.first);
+    if(dbg)
+        cout<<"XaodAnalysis::retrieveElectronsWithAux: "<<(link_success ? "done":"failed")<<endl;
     return ewa;
 }
 //----------------------------------------------------------
@@ -325,6 +332,9 @@ susy::TausWithAux_t XaodAnalysis::retrieveTausWithAux(xAOD::TEvent &e, bool dbg)
         else    cout<<"XaodAnalysis::retrieveTaus: failed"<<endl;
     }
     TausWithAux_t twa = xAOD::shallowCopyContainer(*tau);
+    bool link_success = xAOD::setOriginalObjectLink(*tau, *twa.first);
+    if(dbg)
+        cout<<"XaodAnalysis::retrieveTausWithAux: "<<(link_success ? "done":"failed")<<endl;
     return twa;
 }
 //----------------------------------------------------------
@@ -347,6 +357,9 @@ susy::JetsWithAux_t XaodAnalysis::retrieveJetsWithAux(xAOD::TEvent &e, bool dbg)
         else    cout<<"XaodAnalysis::retrieveJets: failed"<<endl;
     }
     JetsWithAux_t jwa = xAOD::shallowCopyContainer(*jet);
+    bool link_success = xAOD::setOriginalObjectLink(*jet, *jwa.first);
+    if(dbg)
+        cout<<"XaodAnalysis::retrieveJets: "<<(link_success ? "done":"failed")<<endl;
     return jwa;
 }
 //----------------------------------------------------------
@@ -396,6 +409,9 @@ susy::PhotonsWithAux_t XaodAnalysis::retrievePhotonsWithAux(xAOD::TEvent &e, boo
         else        cout<<"XaodAnalysis::retrievePhotons: failed"<<endl;
     }
     PhotonsWithAux_t pwa = xAOD::shallowCopyContainer(*photons);
+    bool link_success = xAOD::setOriginalObjectLink(*photons, *pwa.first);
+    if(dbg)
+        cout<<"XaodAnalysis::retrievePhotonsWithAux: "<<(link_success ? "done":"failed")<<endl;
     return pwa;
 }
 //----------------------------------------------------------
