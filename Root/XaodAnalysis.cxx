@@ -702,7 +702,9 @@ void XaodAnalysis::selectSignalObjects()
         if(jet.pt()>20.0*GeV &&
            //jet.auxdata< int >("signal") &&  // no 'signal' def in SUSYObjDef_xAOD for now
            jet.auxdata< char >("passOR") &&
-           !jet.auxdata< char >("bad"))
+           true
+           // DG tmp-2014-11-02 (!jet.isAvailable("bad") || !jet.auxdata< char >("bad"))
+            )
             m_sigJets.push_back(iJet);
         iJet++;
     }

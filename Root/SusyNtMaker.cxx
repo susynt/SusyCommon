@@ -603,7 +603,7 @@ void SusyNtMaker::storeJet(const xAOD::Jet &in)
     out.phi = phi;
     out.m   = m;
     bool all_available=true;
-    out.isBadVeryLoose = in.auxdata<char>("bad");
+    out.isBadVeryLoose = false; // DG tmp-2014-11-02 in.isAvailable("bad") ? in.auxdata<char>("bad") : false;
 
     // Started on implementation by SERHAN on 30/10/2014
     out.detEta = (in.jetP4(xAOD::JetConstitScaleMomentum)).eta();
