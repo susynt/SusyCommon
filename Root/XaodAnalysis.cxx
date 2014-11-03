@@ -1124,7 +1124,7 @@ XaodAnalysis& XaodAnalysis::setGRLFile(TString fileName)
 bool XaodAnalysis::passGRL(const xAOD::EventInfo* eventinfo)
 {
     return (m_isMC ||
-            m_grl->passRunLB(eventinfo->eventNumber(), eventinfo->runNumber()));
+            m_grl->passRunLB(eventinfo->runNumber(), eventinfo->lumiBlock()));
 }
 //----------------------------------------------------------
 bool XaodAnalysis::passTTCVeto()
