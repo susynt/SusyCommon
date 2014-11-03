@@ -395,11 +395,11 @@ void SusyNtMaker::storeElectron(const xAOD::Electron &in)
     if(m_isMC && out.tightPP){
       //AT 2014-10-29: To be updated once SusyTools function return both.
       out.effSF = (m_isMC && out.tightPP) ? m_susyObj.GetSignalElecSF(in) : 1;
-      cout << "AT: susyTool electron SF " << out.effSF << endl;
+      if(m_dbg) cout << "AT: susyTool electron SF " << out.effSF << endl;
       const Root::TResult &result =  m_electronEfficiencySFTool->calculate(in);
       out.effSF    = result.getScaleFactor();
       out.errEffSF = result.getTotalUncertainty();
-      cout << "AT: electron SF " << out.effSF << " " << out.errEffSF << endl;
+      if(m_dbg) cout << "AT: electron SF " << out.effSF << " " << out.errEffSF << endl;
     }
 
     //AT:2014-10-28: add mediumPP - need the tool
@@ -691,7 +691,7 @@ void SusyNtMaker::storePhoton(const xAOD::Photon &in)
     out.OQ = in.isGoodOQ(xAOD::EgammaParameters::BADCLUSPHOTON);
     //out.OQ =  in.auxdata< uint32_t >("OQ"); //AT 2014-10-29 Can't we grab the SusyTool decoration ?
 
-    cout << "AT: storePhoton: " << out.pt << " " << out.tight << " " << out.isConv << endl;
+    if(m_dbg) cout << "AT: storePhoton: " << out.pt << " " << out.tight << " " << out.isConv << endl;
     // // Miscellaneous
     // phoOut->idx    = phIdx;
     // if(m_dbg>=5) cout << "fillPhotonVar" << endl;
@@ -800,7 +800,7 @@ void SusyNtMaker::fillMetVars(SusyNtSys sys)
   metOut->Et    = m_met.Et();
   metOut->phi   = m_met.Phi();
 
-  cout << " AT:fillMetVars " << metOut->Et << " " << metOut->phi << " " << metOut->lv().Pt() << endl;
+  if(m_dbg) cout << " AT:fillMetVars " << metOut->Et << " " << metOut->phi << " " << metOut->lv().Pt() << endl;
   
   
 

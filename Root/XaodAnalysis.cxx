@@ -153,6 +153,7 @@ void XaodAnalysis::Terminate()
 XaodAnalysis& XaodAnalysis::initSusyTools()
 {
   bool useLeptonTrigger = false;
+  cout<<"XaodAnalysis::initSusyTools: m_dgb "<<m_dbg<<endl;
   m_susyObj.msg().setLevel(m_dbg ? MSG::DEBUG : MSG::WARNING);
   m_susyObj.setProperty("IsData",          static_cast<int>(!m_isMC));
   m_susyObj.setProperty("IsAtlfast",       static_cast<int>(m_isAF2));
@@ -216,7 +217,7 @@ void XaodAnalysis::initElectronTools()
   }
   CHECK(  m_electronEfficiencySFTool->initialize() );
 
-  cout << "AT: ElectronEffTool init OK " << endl;
+  if(m_dbg) cout << "AT: ElectronEffTool init OK " << endl;
 
 
 }
