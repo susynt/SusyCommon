@@ -495,8 +495,8 @@ void XaodAnalysis::selectBaselineObjects(SusyNtSys sys)
         m_susyObj.IsSignalElectron(el);
         if(m_dbg) cout<<"El passing"
                       <<" baseline? "<<el.auxdata< char >("baseline")
-                      <<" signal? "<<el.auxdata< char >("signal")
-                      <<endl;
+                      <<" signal? "<<el.auxdata< char >("signal") 
+		      <<endl;
         if(el.auxdata< char >("baseline")) m_baseElectrons.push_back(iEl);
         iEl++;
     }

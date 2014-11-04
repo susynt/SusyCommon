@@ -13,7 +13,8 @@ function prepare_filelist {
     local dest_file="xaod_filelist.txt"
     local input_files=""
     #input_files+=" root://eosatlas//eos/atlas/user/j/jpoveda/r5625_test/AOD.01507244._011801.pool.root.1"
-    input_files+="/scratch/gerbaudo/xaod_example_input/AOD.01507244._011801.pool.root.1"
+    #input_files+="/scratch/gerbaudo/xaod_example_input/mc14_8TeV.117050.PowhegPythia_P2011C_ttbar.merge.AOD.e1727_s1933_s1911_r5591_r5625/AOD.01522855._015079.pool.root.1"
+    input_files+="/scratch/gerbaudo/xaod_example_input/AOD.01507244._011801.pool.root.1"  #Ximo test file - See README in that dir.
     if [ ! -f ${dest_file} ]
     then
         touch ${dest_file}
