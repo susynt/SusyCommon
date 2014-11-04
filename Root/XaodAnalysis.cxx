@@ -6,6 +6,7 @@
 
 // #include "egammaAnalysisUtils/egammaTriggerMatching.h"
 // #include "D3PDReader/JetD3PDObject.h"
+#include "xAODBase/IParticleHelpers.h" // setOriginalObjectLink
 
 #include <limits>
 #include <algorithm> // transform
@@ -65,7 +66,8 @@ XaodAnalysis::XaodAnalysis() :
         m_store(),
         m_susyObj("SUSYObjDef_xAOD"),
 	m_electronEfficiencySFTool(0),
-	m_pileupReweightingTool(0)
+	m_pileupReweightingTool(0),
+	m_muonEfficiencySFTool(0)
 {
     clearContainerPointers();
 
@@ -145,12 +147,14 @@ void XaodAnalysis::Terminate()
 
   delete m_electronEfficiencySFTool;
   delete m_pileupReweightingTool;
+  delete m_muonEfficiencySFTool;
 
 }
 //----------------------------------------------------------
 XaodAnalysis& XaodAnalysis::initSusyTools()
 {
   bool useLeptonTrigger = false;
+  cout<<"XaodAnalysis::initSusyTools: m_dgb "<<m_dbg<<endl;
   m_susyObj.msg().setLevel(m_dbg ? MSG::DEBUG : MSG::WARNING);
   m_susyObj.setProperty("IsData",          static_cast<int>(!m_isMC));
   m_susyObj.setProperty("IsAtlfast",       static_cast<int>(m_isAF2));
@@ -188,7 +192,7 @@ XaodAnalysis& XaodAnalysis::initLocalTools()
 
   initElectronTools();
   initPileupTool();
-  
+  initMuonTools(); 
 
  return *this;
 }
@@ -214,9 +218,19 @@ void XaodAnalysis::initElectronTools()
   }
   CHECK(  m_electronEfficiencySFTool->initialize() );
 
-  cout << "AT: ElectronEffTool init OK " << endl;
+  if(m_dbg) cout << "AT: ElectronEffTool init OK " << endl;
 
 
+}
+//----------------------------------------------------------
+void XaodAnalysis::initMuonTools()
+{
+  m_muonEfficiencySFTool = new CP::MuonEfficiencyScaleFactors("MuonEfficiencyScaleFactors");
+  CHECK( m_muonEfficiencySFTool->setProperty("WorkingPoint","CBandST") );
+  CHECK( m_muonEfficiencySFTool->setProperty("DataPeriod","2012") );
+  CHECK( m_muonEfficiencySFTool->initialize() ); 
+  
+  cout << "ASM :: MuonEffTool is initialized correctly..." << endl;
 }
 //----------------------------------------------------------
 void XaodAnalysis::initPileupTool()
@@ -268,6 +282,9 @@ susy::MuonsWithAux_t XaodAnalysis::retrieveMuonsWithAux(xAOD::TEvent &e, bool db
         else  cout<<"XaodAnalysis::retrieveMuons: failed"<<endl;
     }
     MuonsWithAux_t mwa = xAOD::shallowCopyContainer(*m);
+    bool link_success = xAOD::setOriginalObjectLink(*m, *mwa.first);
+    if(dbg)
+        cout<<"XaodAnalysis::retrieveMuonsWithAux: "<<(link_success ? "done":"failed")<<endl;
     return mwa;
 }
 //----------------------------------------------------------
@@ -290,6 +307,9 @@ susy::ElectronsWithAux_t XaodAnalysis::retrieveElectronsWithAux(xAOD::TEvent &e,
         else    cout<<"XaodAnalysis::retrieveElectrons: failed"<<endl;
     }
     ElectronsWithAux_t ewa = xAOD::shallowCopyContainer(*ele);
+    bool link_success = xAOD::setOriginalObjectLink(*ele, *ewa.first);
+    if(dbg)
+        cout<<"XaodAnalysis::retrieveElectronsWithAux: "<<(link_success ? "done":"failed")<<endl;
     return ewa;
 }
 //----------------------------------------------------------
@@ -312,6 +332,9 @@ susy::TausWithAux_t XaodAnalysis::retrieveTausWithAux(xAOD::TEvent &e, bool dbg)
         else    cout<<"XaodAnalysis::retrieveTaus: failed"<<endl;
     }
     TausWithAux_t twa = xAOD::shallowCopyContainer(*tau);
+    bool link_success = xAOD::setOriginalObjectLink(*tau, *twa.first);
+    if(dbg)
+        cout<<"XaodAnalysis::retrieveTausWithAux: "<<(link_success ? "done":"failed")<<endl;
     return twa;
 }
 //----------------------------------------------------------
@@ -334,6 +357,9 @@ susy::JetsWithAux_t XaodAnalysis::retrieveJetsWithAux(xAOD::TEvent &e, bool dbg)
         else    cout<<"XaodAnalysis::retrieveJets: failed"<<endl;
     }
     JetsWithAux_t jwa = xAOD::shallowCopyContainer(*jet);
+    bool link_success = xAOD::setOriginalObjectLink(*jet, *jwa.first);
+    if(dbg)
+        cout<<"XaodAnalysis::retrieveJets: "<<(link_success ? "done":"failed")<<endl;
     return jwa;
 }
 //----------------------------------------------------------
@@ -383,6 +409,9 @@ susy::PhotonsWithAux_t XaodAnalysis::retrievePhotonsWithAux(xAOD::TEvent &e, boo
         else        cout<<"XaodAnalysis::retrievePhotons: failed"<<endl;
     }
     PhotonsWithAux_t pwa = xAOD::shallowCopyContainer(*photons);
+    bool link_success = xAOD::setOriginalObjectLink(*photons, *pwa.first);
+    if(dbg)
+        cout<<"XaodAnalysis::retrievePhotonsWithAux: "<<(link_success ? "done":"failed")<<endl;
     return pwa;
 }
 //----------------------------------------------------------
@@ -673,7 +702,9 @@ void XaodAnalysis::selectSignalObjects()
         if(jet.pt()>20.0*GeV &&
            //jet.auxdata< int >("signal") &&  // no 'signal' def in SUSYObjDef_xAOD for now
            jet.auxdata< char >("passOR") &&
-           !jet.auxdata< char >("bad"))
+           true
+           // DG tmp-2014-11-02 (!jet.isAvailable("bad") || !jet.auxdata< char >("bad"))
+            )
             m_sigJets.push_back(iJet);
         iJet++;
     }
@@ -1095,7 +1126,7 @@ XaodAnalysis& XaodAnalysis::setGRLFile(TString fileName)
 bool XaodAnalysis::passGRL(const xAOD::EventInfo* eventinfo)
 {
     return (m_isMC ||
-            m_grl->passRunLB(eventinfo->eventNumber(), eventinfo->runNumber()));
+            m_grl->passRunLB(eventinfo->runNumber(), eventinfo->lumiBlock()));
 }
 //----------------------------------------------------------
 bool XaodAnalysis::passTTCVeto()

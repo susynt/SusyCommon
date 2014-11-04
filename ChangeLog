@@ -1,5 +1,8 @@
 # vim: set noexpandtab:
 
+2014-11-02 Serhan Mete <amete@cern.ch>
+	* Started filling muon information for xAOD
+
 2014-10-30 Serhan Mete <amete@cern.ch>
 	* Started filling jet information for xAOD
 
