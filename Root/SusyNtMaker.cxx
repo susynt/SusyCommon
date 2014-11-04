@@ -605,18 +605,17 @@ void SusyNtMaker::storeJet(const xAOD::Jet &in)
     bool all_available=true;
     out.isBadVeryLoose = false; // DG tmp-2014-11-02 in.isAvailable("bad") ? in.auxdata<char>("bad") : false;
 
-    // Started on implementation by SERHAN on 30/10/2014
-    out.detEta = (in.jetP4(xAOD::JetConstitScaleMomentum)).eta();
-    in.getAttribute(xAOD::JetAttribute::EMFrac,out.emfrac);
-    //in.getAttribute(xAOD::JetAttribute::JVF,out.jvf); // JVF returns a vector that holds jvf per vertex
-                                                        // Not 100% sure about which one (PV) to pick in a robust 
-                                                        // manner. Check (ASM) 
-    // jetOut->truthLabel    = m_isMC? element->flavor_truth_label() : 0;
+    // JVF 
+    // ASM-2014-11-04 :: Remember JVT is gonna replace JVF in Run-II but not yet available
+    vector<float> jetJVF;
+    in.getAttribute(xAOD::JetAttribute::JVF,jetJVF); // JVF returns a vector that holds jvf per vertex
+    out.jvf = jetJVF.size() > 0 ? jetJVF.at(0) : 0.; // Upon discussion w/ Ximo (2014-11-04), assume first one is PV
 
-    // // truth jet matching
+    // Truth Label/Matching 
+    if (m_isMC) in.getAttribute(xAOD::JetAttribute::JetLabel, out.truthLabel); 
     // jetOut->matchTruth    = m_isMC? matchTruthJet(jetIdx) : false;
 
-    // // btag weights
+    // B-tagging 
     out.mv1           = (in.btagging())->MV1_discriminant();
     out.sv1plusip3d   = (in.btagging())->SV1plusIP3D_discriminant();
     // Most of these are not available in DC14 samples, some obselete (ASM)
@@ -627,9 +626,13 @@ void SusyNtMaker::storeJet(const xAOD::Jet &in)
   // jetOut->sv0p_mass     = element->flavor_component_sv0p_mass();
   // jetOut->svp_mass      = element->flavor_component_svp_mass();
 
-     in.getAttribute(xAOD::JetAttribute::BchCorrJet,out.bch_corr_jet);
-     in.getAttribute(xAOD::JetAttribute::BchCorrCell,out.bch_corr_cell);
-     // This isBadVeryLoose bit is set above, so obselete ?? (ASM)
+    // Misc
+    out.detEta = (in.jetP4(xAOD::JetConstitScaleMomentum)).eta();
+    in.getAttribute(xAOD::JetAttribute::EMFrac,out.emfrac);
+    in.getAttribute(xAOD::JetAttribute::BchCorrJet,out.bch_corr_jet);
+    in.getAttribute(xAOD::JetAttribute::BchCorrCell,out.bch_corr_cell);
+
+    // This isBadVeryLoose bit is set above, so obselete ?? (ASM)
   // jetOut->isBadVeryLoose= JetID::isBadJet(JetID::VeryLooseBad,
   //                                         element->emfrac(),
   //                                         element->hecf(),
@@ -644,7 +647,7 @@ void SusyNtMaker::storeJet(const xAOD::Jet &in)
   // jetOut->isHotTile     = m_susyObj.isHotTile(m_event.eventinfo.RunNumber(), element->fracSamplingMax(),
   //                                             element->SamplingMax(), eta, phi);
 
-  // // BCH cleaning flags
+  // // BCH cleaning flags - ASM-2014-11-04 :: Obsolete???
   // uint bchRun = m_isMC? m_mcRun : m_event.eventinfo.RunNumber();
   // uint bchLB = m_isMC? m_mcLB : m_event.eventinfo.lbn();
   // #define BCH_ARGS bchRun, bchLB, jetOut->detEta, jetOut->phi, jetOut->bch_corr_cell, jetOut->emfrac, jetOut->pt*1000.
