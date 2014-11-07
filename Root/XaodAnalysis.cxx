@@ -1553,7 +1553,7 @@ bool XaodAnalysis::runningOptionsAreValid()
 //----------------------------------------------------------
 std::string XaodAnalysis::defauldGrlFile()
 {
-    return std::string( "$ROOTCOREBIN/../SUSYTools/data/GRL/Summer2013/"
+    return std::string( "$ROOTCOREBIN/data/SUSYTools/GRL/Summer2013/"
                         "data12_8TeV.periodAllYear_DetStatus-v61-pro14-02"
                         "_DQDefects-00-01-00_PHYS_StandardGRL_All_Good.xml");
 }
