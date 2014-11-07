@@ -9,7 +9,8 @@
 #include "xAODBase/IParticleHelpers.h" // setOriginalObjectLink
 
 #include <limits>
-#include <algorithm> // transform
+#include <algorithm> // copy_if, transform
+#include <iterator> // back_inserter
 #include <numeric> // accumulate
 
 using namespace std;
@@ -463,6 +464,14 @@ const xAOD::TruthParticleContainer* XaodAnalysis::xaodTruthParticles()
     return m_xaodTruthParticles;
 }
 //----------------------------------------------------------
+/// temporary patch, see SUSYToolsTester.cxx @ SUSYTools-00-05-00-14
+bool muon_is_safe_for_met(const xAOD::Muon_v1 *mu)
+{
+    return (mu->muonType()==xAOD::Muon::Combined ||
+            mu->muonType()==xAOD::Muon::SegmentTagged ||
+            mu->muonType()==xAOD::Muon::MuonStandAlone);
+}
+//----------------------------------------------------------
 void XaodAnalysis::retrieveXaodMet()
 {
   if(m_metContainer==NULL){
@@ -475,15 +484,16 @@ void XaodAnalysis::retrieveXaodMet()
     m_metContainer->setStore( m_metAuxContainer );
     m_store.record(m_metContainer, "MET_MyRefFinal");
     m_store.record(m_metAuxContainer, "MET_MyRefFinalAux.");
-    
-    m_susyObj.GetMET(*m_metContainer,
-		     m_xaodElectrons,
-		     m_xaodPhotons,
-		     m_xaodTaus,
-		     m_xaodMuons,
-		     m_xaodJets
-		     );
       
+    xAOD::MuonContainer muons_copy_met(SG::VIEW_ELEMENTS);
+    std::copy_if(m_xaodMuons->begin(), m_xaodMuons->end(),
+                 std::back_inserter(muons_copy_met), muon_is_safe_for_met);
+    m_susyObj.GetMET(*m_metContainer,
+                     m_xaodJets,
+                     m_xaodElectrons,
+                     &muons_copy_met,
+                     m_xaodPhotons,
+                     m_xaodTaus);
   }
 }
 //----------------------------------------------------------
