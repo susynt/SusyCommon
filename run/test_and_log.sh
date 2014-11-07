@@ -53,7 +53,7 @@ function main {
 #            tee >(tail -n ${nlines_tail}) >(head -n ${nlines_head}; cat >/dev/null) >/dev/null | \
 #            tee ${tmp_log}
 
-        NtMaker -f ${input_file} -p mc12a --saveContTau --savePh --nLepFilter 1 --nLepTauFilter 2 --filterTrig --sys -d 10 \
+        NtMaker -f ${input_file} -p mc12a --saveContTau --savePh --nLepFilter 1 --nLepTauFilter 2 --filterTrig --sys -d 10  \
             > ${tmp_detailed_log} 2>&1  
 	
 	more ${tmp_detailed_log} |head -n  ${nlines_head} > ${tmp_log} 

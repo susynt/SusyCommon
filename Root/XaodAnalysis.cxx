@@ -83,6 +83,7 @@ void XaodAnalysis::Init(TTree *tree)
     m_stream = XaodAnalysis::streamFromSamplename(m_sample, isData);
     initSusyTools();
     initLocalTools();
+    if(m_isMC && m_sys) getSystematicList(); 
 }
 //----------------------------------------------------------
 XaodAnalysis::~XaodAnalysis()
@@ -253,6 +254,45 @@ void XaodAnalysis::initPileupTool()
  
   
 }
+
+/*--------------------------------------------------------------------------------*/
+// Get the list of recommended systematics from CP
+/*--------------------------------------------------------------------------------*/
+void XaodAnalysis::getSystematicList()
+{
+  if(m_dbg>=5) cout << "getSystematicList" << endl;
+
+  const CP::SystematicRegistry& registry = CP::SystematicRegistry::getInstance();
+  const CP::SystematicSet& recommendedSystematics = registry.recommendedSystematics();
+  // this is the nominal set
+  sysList.push_back(CP::SystematicSet());
+  for(CP::SystematicSet::const_iterator sysItr = recommendedSystematics.begin();
+      sysItr != recommendedSystematics.end(); ++sysItr){ 
+    if (*sysItr == CP::SystematicVariation (sysItr->basename(), CP::SystematicVariation::CONTINUOUS)){
+      // for continuous systematics just evaluate +/-1 sigma
+      sysList.push_back(CP::SystematicSet());
+      sysList.back().insert(CP::SystematicVariation (sysItr->basename(), 1));
+      sysList.push_back(CP::SystematicSet());
+      sysList.back().insert(CP::SystematicVariation (sysItr->basename(), -1));
+    }else{
+      // otherwise just add it flat
+      sysList.push_back(CP::SystematicSet());
+      sysList.back().insert(*sysItr);
+    }
+  }
+
+  if(m_dbg>=5){
+    cout << " Found " << sysList.size() << " systematics " << endl;  
+    std::vector<CP::SystematicSet>::iterator sysListItr;
+    for (sysListItr = sysList.begin(); sysListItr != sysList.end(); ++sysListItr){
+      cout << "Found syst in global registry: " << (*sysListItr).name() << endl;
+      //cout << " Our systematic " << susy::SystematicNames[susy::CPsys2sys((*sysListItr).name())] << endl;
+    }
+  }
+  
+}
+
+
 //----------------------------------------------------------
 const xAOD::EventInfo* XaodAnalysis::retrieveEventInfo(xAOD::TEvent &e, bool dbg)
 {
@@ -515,74 +555,78 @@ void XaodAnalysis::selectBaselineObjects(SusyNtSys sys)
     xAOD::ElectronContainer* electrons = xaodElectrons();
     xAOD::ElectronContainer::iterator el_itr = electrons->begin();
     xAOD::ElectronContainer::iterator el_end = electrons->end();
-    int iEl = 0;
+    int iEl = -1;
     for(;el_itr!=el_end; ++el_itr){ // todo: use std::transform
         xAOD::Electron &el = **el_itr;
-        if(true) // DG 2014-08-27 used to be mediumPP, don't know what will be for RunII
-            m_preElectrons.push_back(iEl);
-        m_susyObj.FillElectron(el);
-        m_susyObj.IsSignalElectron(el);
-        if(m_dbg) cout<<"El passing"
-                      <<" baseline? "<<el.auxdata< char >("baseline")
-                      <<" signal? "<<el.auxdata< char >("signal") 
+	iEl++;
+	//AT-2014-11-05: What was the definition used in Run1?
+	// Put all the hard coded cuts into a header file
+        CHECK (m_susyObj.FillElectron(el, 7));
+	m_susyObj.IsSignalElectron(el);
+
+	if( !el.auxdata< char >("baseline")) continue;
+	m_preElectrons.push_back(iEl);
+	if(el.auxdata< char >("baseline"))  m_baseElectrons.push_back(iEl);
+
+	if(m_dbg) cout<<"El passing"
+		      <<" baseline? "<<el.auxdata< char >("baseline")
+		      <<" signal? "<<el.auxdata< char >("signal") 
 		      <<endl;
-        if(el.auxdata< char >("baseline")) m_baseElectrons.push_back(iEl);
-        iEl++;
     }
     if(m_dbg) cout<<"preElectrons["<<m_preElectrons.size()<<"]"<<endl;
 
-    int iMu = 0;
+    int iMu = -1;
     xAOD::MuonContainer* muons = xaodMuons();
     xAOD::MuonContainer::iterator mu_itr = muons->begin();
     xAOD::MuonContainer::iterator mu_end = muons->end();
     for(;mu_itr!=mu_end; ++mu_itr){ // todo: use std::transform
         xAOD::Muon &mu = **mu_itr;
-        m_preMuons.push_back(iMu);
-        m_susyObj.FillMuon(mu);
+        iMu++;
+        CHECK( m_susyObj.FillMuon(mu) );
+	m_preMuons.push_back(iMu);
         m_susyObj.IsSignalMuon(mu);
-        m_susyObj.IsCosmicMuon(mu);
+	m_susyObj.IsCosmicMuon(mu);
         if(m_dbg) cout<<"Mu passing"
                       <<" baseline? "<<mu.auxdata< char >("baseline")
                       <<" signal? "<<mu.auxdata< char >("signal")
                       <<endl;
         if(mu.auxdata< char >("baseline")) m_baseMuons.push_back(iMu);
         // if(signal) m_sigMuons.push_back(iMu);
-        iMu++;
     }
     if(m_dbg) cout<<"preMuons["<<m_preMuons.size()<<"]"<<endl;
 
-    int iJet=0;
+    int iJet=-1;
     xAOD::JetContainer* jets = xaodJets();
     xAOD::JetContainer::iterator jet_itr = jets->begin();
     xAOD::JetContainer::iterator jet_end = jets->end();
     for(;jet_itr!=jet_end; ++jet_itr){ // todo: use std::transform
         xAOD::Jet &jet = **jet_itr;
+        iJet++;
         m_preJets.push_back(iJet);
-        m_susyObj.FillJet(jet);
+        CHECK( m_susyObj.FillJet(jet) );
         m_susyObj.IsGoodJet(jet);
-        m_susyObj.IsBJet(jet);
+	m_susyObj.IsBJet(jet);
         if(m_dbg) cout<<"Jet passing"
                       <<" baseline? "<<jet.auxdata< char >("baseline")
                       <<" signal? "<<jet.auxdata< char >("signal")
                       <<endl;
         if(jet.auxdata< char >("baseline")) m_baseJets.push_back(iJet);
         // if(signal) m_sigJets.push_back(iJet);
-        iJet++;
     }
 
     // overlap removal and met (need to build 'MyJet' coll?)
     m_susyObj.OverlapRemoval(m_xaodElectrons, m_xaodMuons, m_xaodJets);
 
-    int iTau=0;
+    int iTau=-1;
     xAOD::TauJetContainer* taus = xaodTaus();
     for(auto it=taus->begin(), end=taus->end(); it!=end; ++it){
         xAOD::TauJet &tau = **it;
-        m_susyObj.FillTau(tau);
+        iTau++;
+        CHECK ( m_susyObj.FillTau(tau) );
         m_susyObj.IsSignalTau(tau);
         if(tau.auxdata< char >("baseline"))
             m_preTaus.push_back(iTau);
         //tau.pt()>20*GeV && abs(tau.eta())<2.47
-        iTau++;
     }
     if(m_dbg) cout<<"m_preTaus["<<m_preTaus.size()<<"]"<<endl;
 

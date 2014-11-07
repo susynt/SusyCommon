@@ -14,6 +14,7 @@
 
 #include "SusyCommon/LeptonInfo.h"
 #include "SusyNtuple/SusyDefs.h"
+#include "SusyNtuple/SusyNtSys.h"
 
 //xAOD
 #include "xAODEventInfo/EventInfo.h"
@@ -29,6 +30,13 @@
 // #include "xAODTruth/TruthEvent.h"
 #include "xAODCore/ShallowCopy.h"
 
+//CP systematics
+#include "PATInterfaces/SystematicList.h"
+#include "PATInterfaces/SystematicVariation.h"
+#include "PATInterfaces/SystematicRegistry.h"
+#include "PATInterfaces/SystematicCode.h"
+
+
 //Tools
 #include "ElectronEfficiencyCorrection/AsgElectronEfficiencyCorrectionTool.h"
 #include "PileupReweighting/PileupReweightingTool.h"
@@ -40,6 +48,9 @@
 #include "TTree.h"
 
 #include <iostream>
+
+using namespace Susy;
+using namespace NtSys;
 
 namespace susy {
   
@@ -71,6 +82,9 @@ class XaodAnalysis : public TSelector
     void          initElectronTools();
     void          initPileupTool();
     void          initMuonTools(); 
+    
+    // Systematic Methods
+    void getSystematicList();
 
 
     /// access the event info
@@ -155,7 +169,7 @@ class XaodAnalysis : public TSelector
     void selectTruthObjects();
 
     // MissingEt
-    void buildMet(SusyNtSys sys = NtSys_NOM);
+    void buildMet(SusyNtSys sys = NtSys::NOM);
 
     // Clear object selection
     void clearOutputObjects();
@@ -313,6 +327,8 @@ class XaodAnalysis : public TSelector
     std::vector<int>            m_contTaus;     // container taus
 
     // "selected" objects pass kinematic cuts, but no overlap removal applied
+    // Store idx of object in xAOD container
+    // AT-2014-11-5: Need to add check to make sure idx don't change when doing systematics.
     std::vector<int>            m_preElectrons; // selected electrons
     std::vector<int>            m_preMuons;     // selected muons
     std::vector<LeptonInfo>     m_preLeptons;   // selected leptons
@@ -397,6 +413,8 @@ class XaodAnalysis : public TSelector
     xAOD::TEvent m_event;
     xAOD::TStore m_store;
     ST::SUSYObjDef_xAOD m_susyObj;      // SUSY object definitions
+
+    std::vector<CP::SystematicSet> sysList;  //CP Systematic list
 
     /// internal pointers to the xaod containers
     /**

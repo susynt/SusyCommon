@@ -17,8 +17,12 @@
 #include "xAODTracking/TrackParticle.h"
 #include "xAODEgamma/EgammaxAODHelpers.h"
 
+
+
+
 // Amg include
 #include "EventPrimitives/EventPrimitivesHelpers.h"
+
 
 #include <algorithm> // max_element
 #include <iomanip> // setw
@@ -58,6 +62,9 @@ SusyNtMaker::SusyNtMaker() :
   n_sig_muo=0;
   n_sig_tau=0;
   n_sig_jet=0;
+
+  //AT-2014-11-05: Correct place to put this ?
+  CP::SystematicCode::enableFailure();
 }
 //----------------------------------------------------------
 SusyNtMaker::~SusyNtMaker()
@@ -73,6 +80,7 @@ void SusyNtMaker::SlaveBegin(TTree* tree)
       initializeOuputTree();
   m_isWhSample = guessWhetherIsWhSample(m_sample);
   initializeCutflowHistograms();
+
   m_timer.Start();
 }
 //----------------------------------------------------------
@@ -132,6 +140,7 @@ Bool_t SusyNtMaker::Process(Long64_t entry)
   m_event.getEntry(chainEntry); // DG 2014-09-19 TEvent wants the chain entry, not the tree entry (?)
   clearOutputObjects();
   retrieveCollections();
+  
   const xAOD::EventInfo* eventinfo = XaodAnalysis::xaodEventInfo();
 
   if(!m_flagsHaveBeenChecked) {
@@ -145,13 +154,16 @@ Bool_t SusyNtMaker::Process(Long64_t entry)
 
   if(m_dbg || chainEntry%5000==0)
   {
+    cout << "***********************************************************" << endl;
     cout << "**** Processing entry " << setw(6) << chainEntry
          << " run " << setw(6) << eventinfo->runNumber()
          << " event " << setw(7) << eventinfo->eventNumber() << " ****" << endl;
+    cout << "***********************************************************" << endl;
   }
 
   if(selectEvent() && m_fillNt){
       fillNtVars();
+      if(m_isMC && m_sys) doSystematic();
       int bytes = m_outTree->Fill();
       if(bytes==-1){
           cout << "SusyNtMaker ERROR filling tree!  Abort!" << endl;
@@ -192,8 +204,8 @@ void SusyNtMaker::fillNtVars()
   fillEventVars();
   fillElectronVars();
   fillMuonVars();
-  fillJetVars();
   fillTauVars();
+  fillJetVars();
   fillMetVars();
   fillPhotonVars();
   if(m_isMC && getSelectTruthObjects() ) {
@@ -263,7 +275,7 @@ void SusyNtMaker::fillEventVars()
 
   }
   evt->pdfSF            = m_isMC? getPDFWeight8TeV() : 1;
-  m_susyNt.evt()->cutFlags[NtSys_NOM] = m_cutFlags;
+  m_susyNt.evt()->cutFlags[NtSys::NOM] = m_cutFlags;
 }
 //----------------------------------------------------------
 void SusyNtMaker::fillElectronVars()
@@ -589,7 +601,7 @@ void SusyNtMaker::storeMuon(const xAOD::Muon &in)
 
     // ASM-2014-11-02 :: Store to be true at the moment
     all_available =  false;
-    if(m_dbg && !all_available) cout<<"missing some electron variables"<<endl;
+    if(m_dbg && !all_available) cout<<"missing some muon variables"<<endl;
     m_susyNt.muo()->push_back(out);
 }
 /*--------------------------------------------------------------------------------*/
@@ -961,12 +973,40 @@ void SusyNtMaker::fillTruthMetVars()
   // truMetOut->phi = phi;
 }
 
+
+
 /*--------------------------------------------------------------------------------*/
 // Handle Systematic
 /*--------------------------------------------------------------------------------*/
 void SusyNtMaker::doSystematic()
 {
+  if(m_dbg>=5) cout<< "doSystematic " << sysList.size() << endl;
+  std::vector<CP::SystematicSet>::iterator sysListItr;
+  for (sysListItr = sysList.begin(); sysListItr != sysList.end(); ++sysListItr){
+    if((*sysListItr).name()=="") continue; // skip Nominal
+    NtSys::SusyNtSys sys = NtSys::CPsys2sys((*sysListItr).name());
+    if( sys == NtSys::SYSUNKNOWN ) continue;
+    if(!NtSys::isObjectSystematic(sys)) continue;
+    
+    cout << "Found syst in global registry: " << (*sysListItr).name() << endl;
+    cout << " Our systematic " << NtSys::SusyNtSysNames[sys] << endl;
+    
+    if ( m_susyObj.applySystematicVariation(*sysListItr) != CP::SystematicCode::Ok){
+      cout << "SusyNtMaker::doSystematic - cannot configure SUSYTools for " << (*sysListItr).name() << endl;
+      continue;
+    }
+
+    /*
+      Do our stuff here
+    */
+
+
+
+     m_susyObj.resetSystematics();
+  }
+
   // Loop over the systematics: start at 1, nominal saved
+  /*
   for(int i = 1; i < NtSys_N; i++){
       SusyNtSys sys = static_cast<SusyNtSys>(i);
     if(m_dbg>=5) cout << "Doing sys " << SusyNtSystNames[sys] << endl;
@@ -982,6 +1022,7 @@ void SusyNtMaker::doSystematic()
     fillMetVars(sys);
     m_susyNt.evt()->cutFlags[sys] = m_cutFlags;
   }
+  */
 }
 
 /*--------------------------------------------------------------------------------*/
@@ -1348,12 +1389,15 @@ bool SusyNtMaker::passEventlevelSelection()
     fillCutFlow(pass_ttc, w);
     fillCutFlow(pass_goodpv, w);
     fillCutFlow(pass_wwfix, w);
+    if(m_dbg>=5 &&  !(keep_all_events || fillCutFlow.passAll) ) 
+      cout << "SusyNtMaker fail passEventlevelSelection " 
+	   << keep_all_events << " " << fillCutFlow.passAll <<  endl;
     return (keep_all_events || fillCutFlow.passAll);
 }
 //----------------------------------------------------------
 bool SusyNtMaker::passObjectlevelSelection()
 {
-    SusyNtSys sys=NtSys_NOM;
+  SusyNtSys sys=NtSys::NOM;
     selectObjects(sys);
     // buildMet(sys);
     // assignObjectCleaningFlags();
@@ -1382,6 +1426,8 @@ bool SusyNtMaker::passObjectlevelSelection()
     fillCutFlow(pass_ge2l, w);
     fillCutFlow(pass_eq3l, w);
     bool has_at_least_one_lepton = pass_ge1l;
+    if(m_dbg>=5 && !has_at_least_one_lepton)
+      cout << "SusyNtMaker: fail passObjectlevelSelection " << endl;
     return has_at_least_one_lepton;
 }
 //----------------------------------------------------------

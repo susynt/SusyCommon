@@ -3,6 +3,9 @@
 
 #include "SusyNtuple/SusyNtObject.h" // DG-2014-08-15 note to self: reversed include order breaks things (VarHandle bug?)
 #include "SusyCommon/XaodAnalysis.h"
+#include "SusyCommon/SystematicMapping.h"
+
+
 
 #include "TStopwatch.h"
 
@@ -83,11 +86,10 @@ class SusyNtMaker : public XaodAnalysis
     void storeTau(const xAOD::TauJet &in);
     void storePhoton(const xAOD::Photon &in);
     void storeTruthParticle(const xAOD::TruthParticle &in);
-    void fillMetVars(SusyNtSys sys = NtSys_NOM);
+    void fillMetVars(SusyNtSys sys = NtSys::NOM);
     void fillTruthJetVars();
     void fillTruthMetVars();
-
-    // Systematic Methods
+  
     void doSystematic();
 
     void saveElectronSF(SusyNtSys sys);
@@ -103,20 +105,20 @@ class SusyNtMaker : public XaodAnalysis
 
     // Systematic enum checks
     bool isElecSys(SusyNtSys s){
-      return (s == NtSys_EES_Z_UP   || s == NtSys_EES_Z_DN ||
-	      s == NtSys_EES_MAT_UP || s == NtSys_EES_MAT_DN ||
-	      s == NtSys_EES_PS_UP  || s == NtSys_EES_PS_DN ||
-	      s == NtSys_EES_LOW_UP || s == NtSys_EES_LOW_DN ||
-	      s == NtSys_EER_UP     || s == NtSys_EER_DN);
+      return (s == NtSys::EES_Z_UP   || s == NtSys::EES_Z_DN ||
+	      s == NtSys::EES_MAT_UP || s == NtSys::EES_MAT_DN ||
+	      s == NtSys::EES_PS_UP  || s == NtSys::EES_PS_DN ||
+	      s == NtSys::EES_LOW_UP || s == NtSys::EES_LOW_DN ||
+	      s == NtSys::EER_UP     || s == NtSys::EER_DN);
     };
     bool isMuonSys(SusyNtSys s){
-      return (s == NtSys_MS_UP || s == NtSys_MS_DN || s == NtSys_ID_UP || s == NtSys_ID_DN);
+      return (s == NtSys::MS_UP || s == NtSys::MS_DN || s == NtSys::ID_UP || s == NtSys::ID_DN);
     };
     bool isJetSys(SusyNtSys s){
-      return (s == NtSys_JES_UP || s == NtSys_JES_DN || s == NtSys_JER);
+      return (s == NtSys::JES_UP || s == NtSys::JES_DN || s == NtSys::JER);
     };
     bool isTauSys(SusyNtSys s){
-      return (s == NtSys_TES_UP || s == NtSys_TES_DN);
+      return (s == NtSys::TES_UP || s == NtSys::TES_DN);
     }
 
     //void addEventFlag(SusyNtSys s, int eventFlag){
