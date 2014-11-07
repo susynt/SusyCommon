@@ -261,18 +261,14 @@ void SusyNtMaker::fillEventVars()
 
   if(m_isMC){
       xAOD::TruthEventContainer::const_iterator truthE_itr = xaodTruthEvent()->begin();
-      ( *truthE_itr )->pdfInfoParameter(evt->pdf_id1   , xAOD::TruthEvent::id1); // not available for some samples
-      ( *truthE_itr )->pdfInfoParameter(evt->pdf_id2   , xAOD::TruthEvent::id2);
-      ( *truthE_itr )->pdfInfoParameter(evt->pdf_x1    , xAOD::TruthEvent::pdf1);
-      ( *truthE_itr )->pdfInfoParameter(evt->pdf_x2    , xAOD::TruthEvent::pdf2);
-      ( *truthE_itr )->pdfInfoParameter(evt->pdf_scale , xAOD::TruthEvent::scalePDF);
+      // ( *truthE_itr )->pdfInfoParameter(evt->pdf_id1   , xAOD::TruthEvent::PDGID1); // not available for some samples
+      // ( *truthE_itr )->pdfInfoParameter(evt->pdf_id2   , xAOD::TruthEvent::PDGID2);
+      // ( *truthE_itr )->pdfInfoParameter(evt->pdf_x1    , xAOD::TruthEvent::X1);
+      // ( *truthE_itr )->pdfInfoParameter(evt->pdf_x2    , xAOD::TruthEvent::X2);
+      // ( *truthE_itr )->pdfInfoParameter(evt->pdf_scale , xAOD::TruthEvent::SCALE);
       // DG what are these two?
       //( *truthE_itr )->pdfInfoParameter(evt->pdf_x1   , xAOD::TruthEvent::x1);
       //( *truthE_itr )->pdfInfoParameter(evt->pdf_x2   , xAOD::TruthEvent::x2);
-      evt->eventScale = ( *truthE_itr )->eventScale();
-      evt->alphaQCD = ( *truthE_itr )->alphaQCD();
-      evt->alphaQED = ( *truthE_itr )->alphaQED();
-
   }
   evt->pdfSF            = m_isMC? getPDFWeight8TeV() : 1;
   m_susyNt.evt()->cutFlags[NtSys::NOM] = m_cutFlags;

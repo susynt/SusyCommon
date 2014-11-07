@@ -9,7 +9,8 @@
 #include "xAODBase/IParticleHelpers.h" // setOriginalObjectLink
 
 #include <limits>
-#include <algorithm> // transform
+#include <algorithm> // copy_if, transform
+#include <iterator> // back_inserter
 #include <numeric> // accumulate
 
 using namespace std;
@@ -154,13 +155,10 @@ void XaodAnalysis::Terminate()
 //----------------------------------------------------------
 XaodAnalysis& XaodAnalysis::initSusyTools()
 {
-  bool useLeptonTrigger = false;
   cout<<"XaodAnalysis::initSusyTools: m_dgb "<<m_dbg<<endl;
   m_susyObj.msg().setLevel(m_dbg ? MSG::DEBUG : MSG::WARNING);
   m_susyObj.setProperty("IsData",          static_cast<int>(!m_isMC));
   m_susyObj.setProperty("IsAtlfast",       static_cast<int>(m_isAF2));
-  m_susyObj.setProperty("IsMC12b",         static_cast<int>(processingMc12b()));
-  m_susyObj.setProperty("UseLeptonTrigger",static_cast<int>(useLeptonTrigger));
   CHECK( m_susyObj.SUSYToolsInit() );
   if(m_dbg)
     cout<<"XaodAnalysis::initSusyTools: SUSYObjDef_xAOD initialized... "<<endl;
@@ -313,108 +311,41 @@ const xAOD::EventInfo* XaodAnalysis::xaodEventInfo()
     return m_xaodEventInfo;
 }
 //----------------------------------------------------------
-susy::MuonsWithAux_t XaodAnalysis::retrieveMuonsWithAux(xAOD::TEvent &e, bool dbg)
-{
-    const xAOD::MuonContainer* m = NULL;
-    e.retrieve(m, "Muons");
-    if(dbg){
-        if(m) cout<<"XaodAnalysis::retrieveMuons: retrieved "<<m->size()<<endl;
-        else  cout<<"XaodAnalysis::retrieveMuons: failed"<<endl;
-    }
-    MuonsWithAux_t mwa = xAOD::shallowCopyContainer(*m);
-    bool link_success = xAOD::setOriginalObjectLink(*m, *mwa.first);
-    if(dbg)
-        cout<<"XaodAnalysis::retrieveMuonsWithAux: "<<(link_success ? "done":"failed")<<endl;
-    return mwa;
-}
-//----------------------------------------------------------
 xAOD::MuonContainer* XaodAnalysis::xaodMuons()
 {
     if(m_xaodMuons==NULL){
-        MuonsWithAux_t mwa = retrieveMuonsWithAux(m_event, m_dbg);
-        m_xaodMuons = mwa.first;
-        m_xaodMuonsAux = mwa.second;
+        m_susyObj.GetMuons(m_xaodMuons, m_xaodMuonsAux);
     }
     return m_xaodMuons;
-}
-//----------------------------------------------------------
-susy::ElectronsWithAux_t XaodAnalysis::retrieveElectronsWithAux(xAOD::TEvent &e, bool dbg)
-{
-    const xAOD::ElectronContainer* ele = NULL;
-    e.retrieve(ele, "ElectronCollection");
-    if(dbg){
-        if(ele) cout<<"XaodAnalysis::retrieveElectrons: retrieved "<<ele->size()<<endl;
-        else    cout<<"XaodAnalysis::retrieveElectrons: failed"<<endl;
-    }
-    ElectronsWithAux_t ewa = xAOD::shallowCopyContainer(*ele);
-    bool link_success = xAOD::setOriginalObjectLink(*ele, *ewa.first);
-    if(dbg)
-        cout<<"XaodAnalysis::retrieveElectronsWithAux: "<<(link_success ? "done":"failed")<<endl;
-    return ewa;
 }
 //----------------------------------------------------------
 xAOD::ElectronContainer* XaodAnalysis::xaodElectrons()
 {
     if(m_xaodElectrons==NULL){
-        ElectronsWithAux_t ewa = retrieveElectronsWithAux(m_event, m_dbg);
-        m_xaodElectrons = ewa.first;
-        m_xaodElectronsAux = ewa.second;
+        m_susyObj.GetElectrons(m_xaodElectrons, m_xaodElectronsAux);
     }
     return m_xaodElectrons;
-}
-//----------------------------------------------------------
-susy::TausWithAux_t XaodAnalysis::retrieveTausWithAux(xAOD::TEvent &e, bool dbg)
-{
-    const xAOD::TauJetContainer* tau = NULL;
-    e.retrieve(tau, "TauRecContainer");
-    if(dbg){
-        if(tau) cout<<"XaodAnalysis::retrieveTaus: retrieved "<<tau->size()<<endl;
-        else    cout<<"XaodAnalysis::retrieveTaus: failed"<<endl;
-    }
-    TausWithAux_t twa = xAOD::shallowCopyContainer(*tau);
-    bool link_success = xAOD::setOriginalObjectLink(*tau, *twa.first);
-    if(dbg)
-        cout<<"XaodAnalysis::retrieveTausWithAux: "<<(link_success ? "done":"failed")<<endl;
-    return twa;
 }
 //----------------------------------------------------------
 xAOD::TauJetContainer* XaodAnalysis::xaodTaus()
 {
     if(m_xaodTaus==NULL){
-        TausWithAux_t twa = retrieveTausWithAux(m_event, m_dbg);
-        m_xaodTaus = twa.first;
-        m_xaodTausAux = twa.second;
+        m_susyObj.GetTaus(m_xaodTaus, m_xaodTausAux);
     }
     return m_xaodTaus;
-}
-//----------------------------------------------------------
-susy::JetsWithAux_t XaodAnalysis::retrieveJetsWithAux(xAOD::TEvent &e, bool dbg)
-{
-    const xAOD::JetContainer* jet = NULL;
-    e.retrieve(jet, "AntiKt4LCTopoJets");
-    if(dbg){
-        if(jet) cout<<"XaodAnalysis::retrieveJets: retrieved "<<jet->size()<<endl;
-        else    cout<<"XaodAnalysis::retrieveJets: failed"<<endl;
-    }
-    JetsWithAux_t jwa = xAOD::shallowCopyContainer(*jet);
-    bool link_success = xAOD::setOriginalObjectLink(*jet, *jwa.first);
-    if(dbg)
-        cout<<"XaodAnalysis::retrieveJets: "<<(link_success ? "done":"failed")<<endl;
-    return jwa;
 }
 //----------------------------------------------------------
 xAOD::JetContainer* XaodAnalysis::xaodJets()
 {
     if(m_xaodJets==NULL){
-        JetsWithAux_t jwa = retrieveJetsWithAux(m_event, m_dbg);
-        m_xaodJets = jwa.first;
-        m_xaodJetsAux = jwa.second;
+        m_susyObj.GetJets(m_xaodJets, m_xaodJetsAux);
+/*
+// DG 2014-11-06 : not needed anymore with 05-14?
 
         // also create shallow copy for MET rebuilding
         const xAOD::JetContainer* jets = 0;
         m_event.retrieve( jets, "AntiKt4LCTopoJets");
         JetsWithAux_t metjets = xAOD::shallowCopyContainer( *jets );
-        // std::pair< xAOD::JetContainer*, xAOD::ShallowAuxContainer* > metjets = xAOD::shallowCopyContainer(*jwa.first);
         m_metJets = metjets.first;
         m_metJetsAux = metjets.second; // will be deleted by TStore::clear
         m_store.record(m_metJets, "CalibratedAntiKt4LCTopoJets");
@@ -436,31 +367,15 @@ xAOD::JetContainer* XaodAnalysis::xaodJets()
                     <<endl;
             }
         }
+*/
     }
     return m_xaodJets;
-}
-//----------------------------------------------------------
-susy::PhotonsWithAux_t XaodAnalysis::retrievePhotonsWithAux(xAOD::TEvent &e, bool dbg)
-{
-    const xAOD::PhotonContainer* photons = NULL;
-    e.retrieve(photons, "PhotonCollection");
-    if(dbg){
-        if(photons) cout<<"XaodAnalysis::retrievePhotons: retrieved "<<photons->size()<<endl;
-        else        cout<<"XaodAnalysis::retrievePhotons: failed"<<endl;
-    }
-    PhotonsWithAux_t pwa = xAOD::shallowCopyContainer(*photons);
-    bool link_success = xAOD::setOriginalObjectLink(*photons, *pwa.first);
-    if(dbg)
-        cout<<"XaodAnalysis::retrievePhotonsWithAux: "<<(link_success ? "done":"failed")<<endl;
-    return pwa;
 }
 //----------------------------------------------------------
 xAOD::PhotonContainer* XaodAnalysis::xaodPhotons()
 {
     if(m_xaodPhotons==NULL){
-      PhotonsWithAux_t pwa = retrievePhotonsWithAux(m_event, m_dbg);
-        m_xaodPhotons = pwa.first;
-        m_xaodPhotonsAux = pwa.second;
+        m_susyObj.GetPhotons(m_xaodPhotons, m_xaodPhotonsAux);
     }
     return m_xaodPhotons;
 }
@@ -503,6 +418,14 @@ const xAOD::TruthParticleContainer* XaodAnalysis::xaodTruthParticles()
     return m_xaodTruthParticles;
 }
 //----------------------------------------------------------
+/// temporary patch, see SUSYToolsTester.cxx @ SUSYTools-00-05-00-14
+bool muon_is_safe_for_met(const xAOD::Muon_v1 *mu)
+{
+    return (mu->muonType()==xAOD::Muon::Combined ||
+            mu->muonType()==xAOD::Muon::SegmentTagged ||
+            mu->muonType()==xAOD::Muon::MuonStandAlone);
+}
+//----------------------------------------------------------
 void XaodAnalysis::retrieveXaodMet()
 {
   if(m_metContainer==NULL){
@@ -515,15 +438,16 @@ void XaodAnalysis::retrieveXaodMet()
     m_metContainer->setStore( m_metAuxContainer );
     m_store.record(m_metContainer, "MET_MyRefFinal");
     m_store.record(m_metAuxContainer, "MET_MyRefFinalAux.");
-    
-    m_susyObj.GetMET(*m_metContainer,
-		     m_xaodElectrons,
-		     m_xaodPhotons,
-		     m_xaodTaus,
-		     m_xaodMuons,
-		     m_xaodJets
-		     );
       
+    xAOD::MuonContainer muons_copy_met(SG::VIEW_ELEMENTS);
+    std::copy_if(m_xaodMuons->begin(), m_xaodMuons->end(),
+                 std::back_inserter(muons_copy_met), muon_is_safe_for_met);
+    m_susyObj.GetMET(*m_metContainer,
+                     m_xaodJets,
+                     m_xaodElectrons,
+                     &muons_copy_met,
+                     m_xaodPhotons,
+                     m_xaodTaus);
   }
 }
 //----------------------------------------------------------
@@ -603,9 +527,9 @@ void XaodAnalysis::selectBaselineObjects(SusyNtSys sys)
         xAOD::Jet &jet = **jet_itr;
         iJet++;
         m_preJets.push_back(iJet);
-        CHECK( m_susyObj.FillJet(jet) );
-        m_susyObj.IsGoodJet(jet);
-	m_susyObj.IsBJet(jet);
+        // m_susyObj.FillJet(jet);
+        // m_susyObj.IsGoodJet(jet);
+        m_susyObj.IsBJet(jet);
         if(m_dbg) cout<<"Jet passing"
                       <<" baseline? "<<jet.auxdata< char >("baseline")
                       <<" signal? "<<jet.auxdata< char >("signal")
@@ -1587,7 +1511,7 @@ bool XaodAnalysis::runningOptionsAreValid()
 //----------------------------------------------------------
 std::string XaodAnalysis::defauldGrlFile()
 {
-    return std::string( "$ROOTCOREBIN/../SUSYTools/data/GRL/Summer2013/"
+    return std::string( "$ROOTCOREBIN/data/SUSYTools/GRL/Summer2013/"
                         "data12_8TeV.periodAllYear_DetStatus-v61-pro14-02"
                         "_DQDefects-00-01-00_PHYS_StandardGRL_All_Good.xml");
 }
