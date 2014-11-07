@@ -154,13 +154,10 @@ void XaodAnalysis::Terminate()
 //----------------------------------------------------------
 XaodAnalysis& XaodAnalysis::initSusyTools()
 {
-  bool useLeptonTrigger = false;
   cout<<"XaodAnalysis::initSusyTools: m_dgb "<<m_dbg<<endl;
   m_susyObj.msg().setLevel(m_dbg ? MSG::DEBUG : MSG::WARNING);
   m_susyObj.setProperty("IsData",          static_cast<int>(!m_isMC));
   m_susyObj.setProperty("IsAtlfast",       static_cast<int>(m_isAF2));
-  m_susyObj.setProperty("IsMC12b",         static_cast<int>(processingMc12b()));
-  m_susyObj.setProperty("UseLeptonTrigger",static_cast<int>(useLeptonTrigger));
   CHECK( m_susyObj.SUSYToolsInit() );
   if(m_dbg)
     cout<<"XaodAnalysis::initSusyTools: SUSYObjDef_xAOD initialized... "<<endl;
