@@ -80,45 +80,31 @@ class XaodAnalysis : public TSelector
     static const xAOD::EventInfo* retrieveEventInfo(xAOD::TEvent &e, bool dbg);
     /// wrapper of retrieveEventInfo; store result as datamember ptrs
     virtual const xAOD::EventInfo* xaodEventInfo();
-    /// access the default collection of muons from the D3PDReader
+    /// access the default collection of muons from SUSYObjDef_xAOD
     /**
        By default this function returns a pointer to
        mu_staco. However, if we always call this function (rather than
        accessing directly m_event.mu_staco), one can decide to
        override this member function, and easily switch to another
        muon collection.
-       In addition we can call here all the functions needed to access
-       the auxilliary information.
      */
-    static susy::MuonsWithAux_t retrieveMuonsWithAux(xAOD::TEvent &e, bool dbg);
-    /// wrapper of retrieveMuonsWithAux; store result as datamember ptrs
     virtual xAOD::MuonContainer* xaodMuons();
-    /// access the default collection of electrons from the D3PDReader
+    /// access the default collection of electrons from SUSYObjDef_xAOD
     /**
        By default returns m_event.el; for its motivation, see XaodAnalysis::xaodMuons().
-       \todo In this case there might be some ambiguity to be sorted out when calling SUSYObjDef::GetMET().
      */
-    static susy::ElectronsWithAux_t retrieveElectronsWithAux(xAOD::TEvent &e, bool dbg);
-    /// wrapper of retrieveElectronsWithAux; store outputs as datamembers
     virtual xAOD::ElectronContainer* xaodElectrons();
-    /// access the default collection of taus from the D3PDReader
+    /// access the default collection of taus from the SUSYObjDef_xAOD
     /**
        By default returns m_event.tau; for its motivation, see XaodAnalysis::xaodMuons().
      */
-    static susy::TausWithAux_t retrieveTausWithAux(xAOD::TEvent &e, bool dbg);
-    /// wrapper of retrieveTausWithAux; store outputs as datamembers
     virtual xAOD::TauJetContainer* xaodTaus();
-    /// access the default collection of jets from the D3PDReader
+    /// access the default collection of jets from the SUSYObjDef_xAOD
     /**
        By default returns m_event.jet_AntiKt4LCTopo; for its motivation, see XaodAnalysis::xaodMuons().
-       \todo In this case there might be some ambiguity to be sorted out when calling SUSYObjDef::GetMET().
      */
-    static susy::JetsWithAux_t retrieveJetsWithAux(xAOD::TEvent &e, bool dbg);
-    /// wrapper of retrieveJetsWithAux; store outputs as datamembers
     virtual xAOD::JetContainer* xaodJets();
-    /// access the default collection of photons
-    static susy::PhotonsWithAux_t retrievePhotonsWithAux(xAOD::TEvent &e, bool dbg);
-    /// wrapper of retrievePhotonsWithAux; store outputs as datamembers
+    /// access the default collection of photons from SUSYObjDef_xAOD
     virtual xAOD::PhotonContainer* xaodPhotons();
     /// access the truth event
     static const xAOD::TruthEventContainer* retrieveTruthEvent(xAOD::TEvent &e, bool dbg);
