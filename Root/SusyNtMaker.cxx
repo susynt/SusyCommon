@@ -340,37 +340,7 @@ void SusyNtMaker::fillTruthParticleVars()
         storeTruthParticle(*(particles->at(i)));
     }
 }
-//----------------------------------------------------------
-void get_electron_eff_sf(float& sf, float& uncert,
-                         const float &el_cl_eta, const float &pt,
-                         bool recoSF, bool idSF, bool triggerSF, bool isAF2,
-                         Root::TElectronEfficiencyCorrectionTool* electronRecoSF,
-                         Root::TElectronEfficiencyCorrectionTool* electronIDSF,
-                         Root::TElectronEfficiencyCorrectionTool* electronTriggerSF,
-                         int RunNumber)
-{
-    sf = 1;
-    uncert = 0;
-    PATCore::ParticleDataType::DataType dataType;
-    if(isAF2) dataType = PATCore::ParticleDataType::Fast;
-    else dataType = PATCore::ParticleDataType::Full;
 
-    if(recoSF && electronRecoSF){
-        const Root::TResult &resultReco = electronRecoSF->calculate(dataType, RunNumber, el_cl_eta, pt);
-        sf *= resultReco.getScaleFactor();
-        uncert = resultReco.getTotalUncertainty();
-    }
-    if(idSF && electronIDSF){
-        const Root::TResult &resultID = electronIDSF->calculate(dataType, RunNumber, el_cl_eta, pt);
-        sf *= resultID.getScaleFactor();
-        uncert = sqrt(pow(uncert,2) + pow(resultID.getTotalUncertainty(),2));
-    }
-    if(triggerSF && electronTriggerSF){
-        const Root::TResult &resultTrigger = electronTriggerSF->calculate(dataType, RunNumber, el_cl_eta, pt);
-        sf *= resultTrigger.getScaleFactor();
-        uncert = sqrt(pow(uncert,2) + pow(resultTrigger.getTotalUncertainty(),2));
-    }
-}
 //----------------------------------------------------------
 void SusyNtMaker::storeElectron(const xAOD::Electron &in)
 {
@@ -454,11 +424,6 @@ void SusyNtMaker::storeElectron(const xAOD::Electron &in)
 
 	out.errD0         = Amg::error(t->definingParametersCovMatrix(),0);
 	out.errZ0         = Amg::error(t->definingParametersCovMatrix(),1);
-	//Obsolete
-        // eleOut->d0Unbiased    = element->trackIPEstimate_d0_unbiasedpvunbiased();
-        // eleOut->errD0Unbiased = element->trackIPEstimate_sigd0_unbiasedpvunbiased();
-        // eleOut->z0Unbiased    = element->trackIPEstimate_z0_unbiasedpvunbiased();
-        // eleOut->errZ0Unbiased = element->trackIPEstimate_sigz0_unbiasedpvunbiased();
     } else {
         all_available = false;
     }
@@ -1046,6 +1011,7 @@ void SusyNtMaker::doSystematic()
       continue;
     }
 
+    
     /*
       Do our stuff here
     */

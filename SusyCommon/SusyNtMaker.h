@@ -152,16 +152,7 @@ class SusyNtMaker : public XaodAnalysis
     //static bool isBuggyWwSherpaSample(const int &dsid); //!< see thread "Diboson MC Truth Discrepancy" atlas-phys-susy-d3pd.cern.ch, Mar2013
     //static bool hasRadiativeBquark(const vint_t *pdg, const vint_t *status);
 
-/*     // Function to get reco + ID efficiency scale factors. */
-/*     // Copied from SUSYTools in order to provide the extra flexibility to use more than one set of electron ID. */
-/*     // DG May2014: this function should really be somewhere else. Do we still need it? */
-/*     void get_electron_eff_sf(float& sf, float& uncert, */
-/*                              const float el_cl_eta, const float pt, */
-/*                              bool recoSF, bool idSF, bool triggerSF, bool isAF2, */
-/*                              Root::TElectronEfficiencyCorrectionTool* electronRecoSF, */
-/*                              Root::TElectronEfficiencyCorrectionTool* electronIDSF, */
-/*                              Root::TElectronEfficiencyCorrectionTool* electronTriggerSF, */
-/*                              int RunNumber); */
+
 
  protected:
 

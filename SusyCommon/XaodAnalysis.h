@@ -97,7 +97,6 @@ class XaodAnalysis : public TSelector
        Performance Tools 
      **/
     XaodAnalysis& initLocalTools(); ///< initialize performance tools
-    void          initElectronTools();
     void          initPileupTool();
     void          initMuonTools(); 
     

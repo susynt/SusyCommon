@@ -159,21 +159,6 @@ void XaodAnalysis::Terminate()
 //----------------------------------------------------------
 XaodAnalysis& XaodAnalysis::initSusyTools()
 {
-  /*
-  cout << "---------------------------------------" << endl;
-  cout << "XaodAnalysis::initSusyTools: m_dgb "     << m_dbg<<endl;
-  cout << "---------------------------------------" << endl;
-  m_susyObj[m_eleIDDefault]->msg().setLevel(m_dbg ? MSG::DEBUG : MSG::WARNING);
-  m_susyObj[m_eleIDDefault]->setProperty("IsData",          static_cast<int>(!m_isMC));
-  m_susyObj[m_eleIDDefault]->setProperty("IsAtlfast",       static_cast<int>(m_isAF2));
-  CHECK( m_susyObj[m_eleIDDefault]->SUSYToolsInit() );
-  if(m_dbg)
-    cout<<"XaodAnalysis::initSusyTools: SUSYObjDef_xAOD initialized... "<<endl;
-  // DG-2014-09-02 : tmp fix propagate dbg to met tool
-  //AT commented Base,2.0.14. Tool is protected
-  //m_susyObj[m_eleIDDefault]->m_METRebuilder->msg().setLevel(m_dbg ? MSG::DEBUG : MSG::WARNING);
-  */
-  
   for(int i=Medium; i<eleIDInvalid; i++){
     string name = "SUSYObjDef_xAOD_" + eleIDNames[i];
     m_susyObj[i] = new ST::SUSYObjDef_xAOD(name);
@@ -182,8 +167,6 @@ XaodAnalysis& XaodAnalysis::initSusyTools()
     cout << "---------------------------------------" << endl;    
     
     m_susyObj[i]->msg().setLevel(m_dbg ? MSG::DEBUG : MSG::WARNING);
-    //if(i==0) m_susyObj[i]->msg().setLevel(m_dbg ? MSG::DEBUG : MSG::WARNING);
-    //else     m_susyObj[i]->msg().setLevel(MSG::WARNING);
     m_susyObj[i]->setProperty("IsData",          static_cast<int>(!m_isMC));
     m_susyObj[i]->setProperty("IsAtlfast",       static_cast<int>(m_isAF2));
     m_susyObj[i]->setProperty("EleId", eleIDNames[i]);
@@ -191,7 +174,6 @@ XaodAnalysis& XaodAnalysis::initSusyTools()
     CHECK( m_susyObj[i]->SUSYToolsInit() );
     if(m_dbg)
       cout<<"XaodAnalysis::initSusyTools "<< name <<endl;
-
   }
 
   return *this;
@@ -217,38 +199,12 @@ XaodAnalysis& XaodAnalysis::initLocalTools()
     exit(-1);
   }
 
-  initElectronTools();
   initPileupTool();
   initMuonTools(); 
 
  return *this;
 }
 
-//----------------------------------------------------------
-void XaodAnalysis::initElectronTools()
-{
-  //Tight Electron
-  //AT-2014-10-30: does thir return the product of all 3? Don't want the trigger !
-  m_electronEfficiencySFTool = new AsgElectronEfficiencyCorrectionTool("AsgElectronEfficiencyCorrectionTool");
-  std::vector< std::string > corrFileNameList;
-  corrFileNameList.push_back(maindir+"ElectronEfficiencyCorrection/efficiencySF.offline.RecoTrk.2012.8TeV.rel17p2.GEO20.v08.root");
-  corrFileNameList.push_back(maindir+"ElectronEfficiencyCorrection/efficiencySF.offline.Tight.2012.8TeV.rel17p2.v07.root");
-  corrFileNameList.push_back(maindir+"ElectronEfficiencyCorrection/efficiencySF.e24vhi_medium1_e60_medium1.Tight.2012.8TeV.rel17p2.v07.root");
-  CHECK( m_electronEfficiencySFTool->setProperty("CorrectionFileNameList",corrFileNameList) );
-
-  if (m_isMC) {
-    PATCore::ParticleDataType::DataType data_type;
-    if(m_isAF2) data_type = PATCore::ParticleDataType::Fast;
-    else        data_type = PATCore::ParticleDataType::Full;
-    if(m_dbg) cout << "Setting data type to " << data_type << endl;
-    CHECK( m_electronEfficiencySFTool->setProperty("ForceDataType",(int) data_type) );
-  }
-  CHECK(  m_electronEfficiencySFTool->initialize() );
-
-  if(m_dbg) cout << "AT: ElectronEffTool init OK " << endl;
-
-
-}
 //----------------------------------------------------------
 void XaodAnalysis::initMuonTools()
 {
@@ -367,35 +323,6 @@ xAOD::JetContainer* XaodAnalysis::xaodJets()
 {
     if(m_xaodJets==NULL){
         m_susyObj[m_eleIDDefault]->GetJets(m_xaodJets, m_xaodJetsAux);
-/*
-// DG 2014-11-06 : not needed anymore with 05-14?
-
-        // also create shallow copy for MET rebuilding
-        const xAOD::JetContainer* jets = 0;
-        m_event.retrieve( jets, "AntiKt4LCTopoJets");
-        JetsWithAux_t metjets = xAOD::shallowCopyContainer( *jets );
-        m_metJets = metjets.first;
-        m_metJetsAux = metjets.second; // will be deleted by TStore::clear
-        m_store.record(m_metJets, "CalibratedAntiKt4LCTopoJets");
-        // black magic for object link
-        typedef xAOD::JetContainer::iterator Jci_t;
-        typedef xAOD::IParticleContainer Ipc_t;
-        typedef ElementLink< Ipc_t > El_t;
-        static const char* linkName = "originalObjectLink";
-        Jci_t it = metjets.first->begin(), end = metjets.first->end();
-        for(; it!=end; ++it){
-            if(const Ipc_t *container = dynamic_cast<const Ipc_t*>((*it)->container())){
-                const El_t link(*jets, (*it)->index());
-                El_t &auxLink = (*it)->auxdata< El_t >( linkName );
-                auxLink = link;
-                auxLink.toPersistent();
-            } else {
-                cout<<"Input object not part of a container, '"<<linkName<<"' not established "
-                    <<"("<<container<<")" // just to avoid nused variable 'container'
-                    <<endl;
-            }
-        }
-*/
     }
     return m_xaodJets;
 }
@@ -555,8 +482,9 @@ void XaodAnalysis::selectBaselineObjects(SusyNtSys sys)
         xAOD::Jet &jet = **jet_itr;
         iJet++;
         m_preJets.push_back(iJet);
-        // m_susyObj[m_eleIDDefault]->FillJet(jet);
-        // m_susyObj[m_eleIDDefault]->IsGoodJet(jet);
+	//AT:2014-11-08: remove comment on the next 2 lines... why were these commented out?
+	m_susyObj[m_eleIDDefault]->FillJet(jet);
+	m_susyObj[m_eleIDDefault]->IsGoodJet(jet);
         m_susyObj[m_eleIDDefault]->IsBJet(jet);
         if(m_dbg) cout<<"Jet passing"
                       <<" baseline? "<<jet.auxdata< char >("baseline")
