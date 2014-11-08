@@ -803,17 +803,86 @@ void SusyNtMaker::fillMetVars(SusyNtSys sys)
     return;
   }
   
-  double mpx((*met_it)->mpx()*MeV2GeV),  mpy((*met_it)->mpy()*MeV2GeV);
-  m_met.SetPxPyPzE(mpx, mpy, 0.0, sqrt(mpx*mpx+mpy*mpy));
-
   m_susyNt.met()->push_back( Susy::Met() );
   Susy::Met* metOut = & m_susyNt.met()->back();
-  metOut->Et    = m_met.Et();
-  metOut->phi   = m_met.Phi();
+
+  metOut->Et = (*met_it)->met()*MeV2GeV;// m_met.Et();
+  metOut->phi = (*met_it)->phi()*MeV2GeV;// m_met.Phi();
+  metOut->sys = sys;
+  metOut->sumet = (*met_it)->sumet()*MeV2GeV;
 
   if(m_dbg) cout << " AT:fillMetVars " << metOut->Et << " " << metOut->phi << " " << metOut->lv().Pt() << endl;
+
+  // RefEle
+  xAOD::MissingETContainer::const_iterator met_find = m_metContainer->find("RefEle");
+  if (met_find == m_metContainer->end()) {
+      // cout << "No RefEle inside MET container" << endl;
+  }
+  else {
+      metOut->refEle = (*met_find)->met()*MeV2GeV;
+      metOut->refEle_etx = (*met_find)->mpx()*MeV2GeV;
+      metOut->refEle_ety = (*met_find)->mpy()*MeV2GeV;
+      metOut->refEle_sumet = (*met_find)->sumet()*MeV2GeV;
+  }
   
+  // RefGamma
+  met_find = m_metContainer->find("RefGamma");
+  if (met_find == m_metContainer->end()) {
+      // cout << "No RefGamma inside MET container" << endl;
+  }
+  else {
+      metOut->refGamma = (*met_find)->met()*MeV2GeV;
+      metOut->refGamma_etx = (*met_find)->mpx()*MeV2GeV;
+      metOut->refGamma_ety = (*met_find)->mpy()*MeV2GeV;
+      metOut->refGamma_sumet = (*met_find)->sumet()*MeV2GeV;
+  }
   
+  // RefTau
+  met_find = m_metContainer->find("RefTau");
+  if (met_find == m_metContainer->end()) {
+      // cout << "No RefTau inside MET container" << endl;
+  }
+  else {
+      // cout << "Found RefTau inside MET container, not stored." << endl;
+  }
+
+  // Muons
+  met_find = m_metContainer->find("Muons");
+  if (met_find == m_metContainer->end()) {
+      // cout << "No Muons inside MET container" << endl;
+  }
+  else {
+      metOut->refMuo = (*met_find)->met()*MeV2GeV;
+      metOut->refMuo_etx = (*met_find)->mpx()*MeV2GeV;
+      metOut->refMuo_ety = (*met_find)->mpy()*MeV2GeV;
+      metOut->refMuo_sumet = (*met_find)->sumet()*MeV2GeV;
+  }
+
+  // RefJet
+  met_find = m_metContainer->find("RefJet");
+  if (met_find == m_metContainer->end()) {
+      // cout << "No RefJet inside MET container" << endl;
+  }
+  else {
+      metOut->refJet = (*met_find)->met()*MeV2GeV;
+      metOut->refJet_etx = (*met_find)->mpx()*MeV2GeV;
+      metOut->refJet_ety = (*met_find)->mpy()*MeV2GeV;
+      metOut->refJet_sumet = (*met_find)->sumet()*MeV2GeV;
+  }
+
+  // SoftClus
+  met_find = m_metContainer->find("SoftClus");
+  if (met_find == m_metContainer->end()) {
+      // cout << "No SoftClus (softTerm) inside MET container" << endl;
+  }
+  else {
+      metOut->softTerm = (*met_find)->met()*MeV2GeV;
+      metOut->softTerm_etx = (*met_find)->mpx()*MeV2GeV;
+      metOut->softTerm_ety = (*met_find)->mpy()*MeV2GeV;
+      metOut->softTerm_sumet = (*met_find)->sumet()*MeV2GeV;
+  }
+
+  // cout << "Done looking for MET terms!" << endl;
 
 #warning fillMetVars not implemented
   // if(m_dbg>=5) cout << "fillMetVars: sys " << sys << endl;
@@ -863,25 +932,25 @@ void SusyNtMaker::fillMetVars(SusyNtSys sys)
   // TVector2 softTermV = m_susyObj.computeMETComponent(METUtil::SoftTerms, metSys);
   // //float sumet = m_susyObj._metUtility->getMissingET(METUtil::SoftTerms).sumet();
 
-  // metOut->refEle     = refEleV.Mod()/GeV;
-  // metOut->refEle_etx = refEleV.Px()/GeV;
-  // metOut->refEle_ety = refEleV.Py()/GeV;
-  // metOut->refEle_sumet = metUtil->getMissingET(METUtil::RefEle, metSys).sumet()/GeV;
+  //migrated// metOut->refEle     = refEleV.Mod()/GeV;
+  //migrated// metOut->refEle_etx = refEleV.Px()/GeV;
+  //migrated// metOut->refEle_ety = refEleV.Py()/GeV;
+  //migrated// metOut->refEle_sumet = metUtil->getMissingET(METUtil::RefEle, metSys).sumet()/GeV;
 
-  // metOut->refMuo     = refMuoV.Mod()/GeV;
-  // metOut->refMuo_etx = refMuoV.Px()/GeV;
-  // metOut->refMuo_ety = refMuoV.Py()/GeV;
-  // metOut->refMuo_sumet = metUtil->getMissingET(METUtil::MuonTotal, metSys).sumet()/GeV;
+  //migrated// metOut->refMuo     = refMuoV.Mod()/GeV;
+  //migrated// metOut->refMuo_etx = refMuoV.Px()/GeV;
+  //migrated// metOut->refMuo_ety = refMuoV.Py()/GeV;
+  //migrated// metOut->refMuo_sumet = metUtil->getMissingET(METUtil::MuonTotal, metSys).sumet()/GeV;
 
-  // metOut->refJet     = refJetV.Mod()/GeV;
-  // metOut->refJet_etx = refJetV.Px()/GeV;
-  // metOut->refJet_ety = refJetV.Py()/GeV;
-  // metOut->refJet_sumet = metUtil->getMissingET(METUtil::RefJet, metSys).sumet()/GeV;
+  //migrated// metOut->refJet     = refJetV.Mod()/GeV;
+  //migrated// metOut->refJet_etx = refJetV.Px()/GeV;
+  //migrated// metOut->refJet_ety = refJetV.Py()/GeV;
+  //migrated// metOut->refJet_sumet = metUtil->getMissingET(METUtil::RefJet, metSys).sumet()/GeV;
 
-  // metOut->refGamma     = refGammaV.Mod()/GeV;
-  // metOut->refGamma_etx = refGammaV.Px()/GeV;
-  // metOut->refGamma_ety = refGammaV.Py()/GeV;
-  // metOut->refGamma_sumet = metUtil->getMissingET(METUtil::RefGamma, metSys).sumet()/GeV;
+  //migrated// metOut->refGamma     = refGammaV.Mod()/GeV;
+  //migrated// metOut->refGamma_etx = refGammaV.Px()/GeV;
+  //migrated// metOut->refGamma_ety = refGammaV.Py()/GeV;
+  //migrated// metOut->refGamma_sumet = metUtil->getMissingET(METUtil::RefGamma, metSys).sumet()/GeV;
 
   // //metOut->softJet     = softJetV.Mod()/GeV;
   // //metOut->softJet_etx = softJetV.Px()/GeV;
@@ -891,10 +960,10 @@ void SusyNtMaker::fillMetVars(SusyNtSys sys)
   // //metOut->refCell_etx = refCellV.Px()/GeV;
   // //metOut->refCell_ety = refCellV.Py()/GeV;
 
-  // metOut->softTerm     = softTermV.Mod()/GeV;
-  // metOut->softTerm_etx = softTermV.Px()/GeV;
-  // metOut->softTerm_ety = softTermV.Py()/GeV;
-  // metOut->softTerm_sumet = metUtil->getMissingET(METUtil::SoftTerms, metSys).sumet()/GeV;
+  //migrated// metOut->softTerm     = softTermV.Mod()/GeV;
+  //migrated// metOut->softTerm_etx = softTermV.Px()/GeV;
+  //migrated// metOut->softTerm_ety = softTermV.Py()/GeV;
+  //migrated// metOut->softTerm_sumet = metUtil->getMissingET(METUtil::SoftTerms, metSys).sumet()/GeV;
 
   // //metOut->refEle        = m_susyObj.computeMETComponent(METUtil::RefEle, metSys).Mod()/GeV;
   // //metOut->refMuo        = m_susyObj.computeMETComponent(METUtil::MuonTotal, metSys).Mod()/GeV;
