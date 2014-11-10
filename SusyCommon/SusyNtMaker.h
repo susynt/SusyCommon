@@ -108,8 +108,23 @@ class SusyNtMaker : public SusyD3PDAna
 
     // Toggle saving container taus instead of selected taus
     void setSaveContTaus(bool saveContTaus=true) { m_saveContTaus = saveContTaus; }
+    /// whether this is one of our LFV higgs signal samples
+    /**
+       This is used for the uncertainty on the Higgs boson pT.
+       \todo should it be ggh only?
+     */
+    static bool isPowhegLfvHiggsSignalSample(const std::string &samplename);
     /// whether this is one of our higgs signal samples
     static bool isHiggsSignalSample(const std::string &samplename);
+    /// compute the two parameters needed for the Higgs pT and Njets reweighing of Powheg ggF
+    /**
+       Implements the prescription described at
+       https://dgillber.web.cern.ch/dgillber/Higgs_pT_reweigh/
+       and
+       https://twiki.cern.ch/twiki/bin/view/AtlasProtected/HiggsCrossSection#3_Higgs_pT_and_associated_uncert
+     */
+    bool computeHiggsPtUncertaintyParameters(const vint_t &h_children_indices,
+                                             float &h_pt, int &n_truth_jets);
  private:
     //static bool isBuggyWwSherpaSample(const int &dsid); //!< see thread "Diboson MC Truth Discrepancy" atlas-phys-susy-d3pd.cern.ch, Mar2013
     //static bool hasRadiativeBquark(const vint_t *pdg, const vint_t *status);
