@@ -1654,7 +1654,7 @@ bool SusyNtMaker::computeHiggsPtUncertaintyParameters(const vint_t &h_children_i
     bool h_index_found=false;
     int h_index=-1;
     int n_jets_found=0;
-    const int h_pdg_id=25, h_status=62;
+    const int h_pdg_id=25, h_status=999;
     const int &n_truth_particles = d3pd.truth.n();
     const vint_t    &pdg = *d3pd.truth.pdgId();
     const vfloat_t   &pt = *d3pd.truth.pt();
@@ -1662,37 +1662,28 @@ bool SusyNtMaker::computeHiggsPtUncertaintyParameters(const vint_t &h_children_i
     const vfloat_t  &phi = *d3pd.truth.phi();
     const vfloat_t    &m = *d3pd.truth.m();
     const vint_t &status = *d3pd.truth.status();
-/*
-  // DG 2014-11-10: cannot see higgs with status 62; for now use the h we store as truth
     for(int i_part=0; i_part<n_truth_particles; ++i_part){
-        if(pdg[i_part]==h_pdg_id)
-            cout<<"h at "<<i_part<<" status "<<status[i_part]<<endl;
         if(pdg[i_part]==h_pdg_id && status[i_part]==h_status){
             h_index=i_part;
             h_index_found=true;
             break;
         }
     }
-*/
-    if(pdg[h_children_indices[0]]==h_pdg_id){
-        h_index_found = true;
-        h_index = h_children_indices[0];
-    }
-    cout<<"found higgs index "<<(h_index_found ? h_index : -1)<<endl;
     float mev2gev=1.0e-3;
     float min_pt=25.0;
     float min_delta_r=0.4;
     typedef vector<TLorentzVector> vtlv_t;
     vtlv_t h_children;
-    for(int i_child=0; i_child<h_children_indices.size(); ++i_child){
+    vint_t h_children_pdg;
+    for(int i=0; i<h_children_indices.size(); ++i){
+        int i_child = h_children_indices[i];
         if(pdg[i_child]!=h_pdg_id){ // skip h, see WhTruthExtractor::higgsEventParticleIndices
             TLorentzVector lv;
             lv.SetPtEtaPhiM(pt[i_child]*mev2gev, eta[i_child], phi[i_child], m[i_child]*mev2gev);
             h_children.push_back(lv);
+            h_children_pdg.push_back(pdg[i_child]);
         }
     }
-    cout<<"got "<<h_children.size()<<" higgs children"<<endl;
-    cout<<"got "<<d3pd.truthJet.n()<<" truth jets"<<endl;
     // note to self: these are the jet_AntiKt4TruthJets
     for(int i_jet=0; i_jet < d3pd.truthJet.n(); ++i_jet) {
         const TruthJetElement* jet = & d3pd.truthJet[i_jet];
@@ -1700,17 +1691,19 @@ bool SusyNtMaker::computeHiggsPtUncertaintyParameters(const vint_t &h_children_i
         if(jlv.Pt()>min_pt){
             bool jet_from_higgs_decay=false;
             for(vtlv_t::const_iterator child = h_children.begin(); child!=h_children.end(); ++child)
-                if(child->DeltaR(jlv)<min_delta_r)
-                    jet_from_higgs_decay=true;
-            if(!jet_from_higgs_decay)
-                n_jets_found++;
+                if(child->DeltaR(jlv)<min_delta_r) jet_from_higgs_decay=true;
+            if(!jet_from_higgs_decay) n_jets_found++;
         } // end if(pt>min_pt)
     } // end for(i_jet)
     if(h_index_found){
         success = true;
         h_pt = pt[h_index]*mev2gev;
         n_truth_jets = n_jets_found;
-        cout<<"found higgs with pt "<<h_pt<<" and n_truth_jets "<<n_truth_jets<<endl;
+        if(m_dbg)
+            cout<<"found higgs with pt "<<h_pt
+                <<" and n_truth_jets "<<n_truth_jets
+                <<" ( "<<d3pd.truthJet.n()<<" total)"
+                <<endl;
     }
     return success;
 }
