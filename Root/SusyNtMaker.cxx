@@ -1636,7 +1636,7 @@ bool SusyNtMaker::isPowhegLfvHiggsSignalSample(const std::string &samplename)
     bool is_hlfv_signal_sample = (sample.Contains("H125_taumu") ||
                                   sample.Contains("H125_taue"));
     bool is_powhegpythia = sample.Contains("PowHegPythia8");
-    return is_hlfv_signal_sample;
+    return is_hlfv_signal_sample && is_powhegpythia;
 }
 //--------------------------------------------------------------------
 bool SusyNtMaker::isHiggsSignalSample(const std::string &samplename)
