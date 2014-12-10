@@ -249,7 +249,7 @@ void XaodAnalysis::initTauTools()
   CHECK(m_tauTruthMatchingTool->initialize());
   
   m_tauTruthTrackMatchingTool = new TauAnalysisTools::TauTruthTrackMatchingTool("TauTruthTrackMatchingTool");
-  m_tauTruthTrackMatchingTool->msg().setLevel(m_dbg ? MSG::DEBUG : MSG::WARNING));
+  m_tauTruthTrackMatchingTool->msg().setLevel(m_dbg ? MSG::DEBUG : MSG::WARNING);
   CHECK(m_tauTruthTrackMatchingTool->initialize());
   
 }
