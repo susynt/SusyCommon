@@ -68,7 +68,9 @@ XaodAnalysis::XaodAnalysis() :
 	m_eleIDDefault(Medium),
 	m_electronEfficiencySFTool(0),
 	m_pileupReweightingTool(0),
-	m_muonEfficiencySFTool(0)
+	m_muonEfficiencySFTool(0),
+	m_tauTruthMatchingTool(0),
+	m_tauTruthTrackMatchingTool(0)
 {
     clearContainerPointers();
    
@@ -82,6 +84,8 @@ void XaodAnalysis::Init(TTree *tree)
     m_isMC = XaodAnalysis::isSimuFromSamplename(m_sample);
     bool isData = XaodAnalysis::isDataFromSamplename(m_sample);
     m_stream = XaodAnalysis::streamFromSamplename(m_sample, isData);
+    cout << " AT init stream: " << m_stream << " isData : " << isData << endl;
+    cout << " sample name " << m_sample << endl;
     initSusyTools();
     initLocalTools();
     if(m_isMC && m_sys) getSystematicList(); 
@@ -150,6 +154,8 @@ void XaodAnalysis::Terminate()
   delete m_electronEfficiencySFTool;
   delete m_pileupReweightingTool;
   delete m_muonEfficiencySFTool;
+  delete m_tauTruthMatchingTool;
+  delete m_tauTruthTrackMatchingTool;
   
   for(int i=Medium; i<eleIDInvalid; i++){
     delete m_susyObj[i];
@@ -201,19 +207,9 @@ XaodAnalysis& XaodAnalysis::initLocalTools()
 
   initPileupTool();
   initMuonTools(); 
+  initTauTools();
 
  return *this;
-}
-
-//----------------------------------------------------------
-void XaodAnalysis::initMuonTools()
-{
-  m_muonEfficiencySFTool = new CP::MuonEfficiencyScaleFactors("MuonEfficiencyScaleFactors");
-  CHECK( m_muonEfficiencySFTool->setProperty("WorkingPoint","CBandST") );
-  CHECK( m_muonEfficiencySFTool->setProperty("DataPeriod","2012") );
-  CHECK( m_muonEfficiencySFTool->initialize() ); 
-  
-  cout << "ASM :: MuonEffTool is initialized correctly..." << endl;
 }
 //----------------------------------------------------------
 void XaodAnalysis::initPileupTool()
@@ -233,9 +229,31 @@ void XaodAnalysis::initPileupTool()
   //CHECK( m_pileupReweightingTool->setProperty("DataScaleFactors",1/1.08) );
   //CHECK( m_pileupReweightingTool->setProperty("DataScaleFactors",1/1.11) );
   CHECK( m_pileupReweightingTool->initialize() );
- 
   
 }
+//----------------------------------------------------------
+void XaodAnalysis::initMuonTools()
+{
+  m_muonEfficiencySFTool = new CP::MuonEfficiencyScaleFactors("MuonEfficiencyScaleFactors");
+  CHECK( m_muonEfficiencySFTool->setProperty("WorkingPoint","CBandST") );
+  CHECK( m_muonEfficiencySFTool->setProperty("DataPeriod","2012") );
+  CHECK( m_muonEfficiencySFTool->initialize() ); 
+  
+  cout << "ASM :: MuonEffTool is initialized correctly..." << endl;
+}
+//----------------------------------------------------------
+void XaodAnalysis::initTauTools()
+{
+  m_tauTruthMatchingTool = new TauAnalysisTools::TauTruthMatchingTool("TauTruthMatchingTool");
+  m_tauTruthMatchingTool->msg().setLevel(m_dbg ? MSG::DEBUG : MSG::WARNING);
+  CHECK(m_tauTruthMatchingTool->initialize());
+  
+  m_tauTruthTrackMatchingTool = new TauAnalysisTools::TauTruthTrackMatchingTool("TauTruthTrackMatchingTool");
+  m_tauTruthTrackMatchingTool->msg().setLevel(m_dbg ? MSG::DEBUG : MSG::WARNING));
+  CHECK(m_tauTruthTrackMatchingTool->initialize());
+  
+}
+
 
 /*--------------------------------------------------------------------------------*/
 // Get the list of recommended systematics from CP
@@ -394,6 +412,8 @@ void XaodAnalysis::retrieveXaodMet()
     m_store.record(m_metContainer, "MET_MyRefFinal");
     m_store.record(m_metAuxContainer, "MET_MyRefFinalAux.");
       
+
+    //AT 12/09/14: TODO See SUSYToolsTester.cxx  to add protection against bad muons 
     xAOD::MuonContainer muons_copy_met(SG::VIEW_ELEMENTS);
     std::copy_if(m_xaodMuons->begin(), m_xaodMuons->end(),
                  std::back_inserter(muons_copy_met), muon_is_safe_for_met);
@@ -484,7 +504,7 @@ void XaodAnalysis::selectBaselineObjects(SusyNtSys sys)
         m_preJets.push_back(iJet);
 	//AT:2014-11-08: remove comment on the next 2 lines... why were these commented out?
 	m_susyObj[m_eleIDDefault]->FillJet(jet);
-	m_susyObj[m_eleIDDefault]->IsGoodJet(jet);
+	//m_susyObj[m_eleIDDefault]->IsGoodJet(jet); //AT done in FillJet 12/09/14
         m_susyObj[m_eleIDDefault]->IsBJet(jet);
         if(m_dbg) cout<<"Jet passing"
                       <<" baseline? "<<jet.auxdata< char >("baseline")
@@ -1456,7 +1476,10 @@ bool XaodAnalysis::runningOptionsAreValid()
         const std::vector< xAOD::EventInfo::StreamTag > &streams= xaodEventInfo()->streamTags();
         vector<string> streamnames(streams.size());
         std::transform(streams.begin(), streams.end(), streamnames.begin(),
-                       [](const xAOD::EventInfo::StreamTag &s) { return s.name(); });
+                       [](const xAOD::EventInfo::StreamTag &s) { 
+			 cout << "AT:  stream " << s.name()<< endl;
+			 return s.name(); 
+		       });
         bool isEgamma = (find(streamnames.begin(), streamnames.end(), "Egamma") != streamnames.end());
         bool isJetEt  = (find(streamnames.begin(), streamnames.end(), "JetTauEtmiss") != streamnames.end());
         bool isMuons  = (find(streamnames.begin(), streamnames.end(), "Muons") != streamnames.end());

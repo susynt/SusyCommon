@@ -27,6 +27,9 @@
 #include "xAODMissingET/MissingETAuxContainer.h"
 #include "xAODTruth/TruthParticleContainer.h"
 #include "xAODTruth/TruthEventContainer.h"
+#include "TauAnalysisTools/TauTruthMatchingTool.h"
+#include "TauAnalysisTools/TauTruthTrackMatchingTool.h"
+
 // #include "xAODTruth/TruthEvent.h"
 #include "xAODCore/ShallowCopy.h"
 
@@ -99,6 +102,7 @@ class XaodAnalysis : public TSelector
     XaodAnalysis& initLocalTools(); ///< initialize performance tools
     void          initPileupTool();
     void          initMuonTools(); 
+    void          initTauTools(); 
     
     // Systematic Methods
     void getSystematicList();
@@ -489,7 +493,9 @@ class XaodAnalysis : public TSelector
 
     CP::MuonEfficiencyScaleFactors      *m_muonEfficiencySFTool; 
 
-
+    //Tau truth matchong tools
+    TauAnalysisTools::TauTruthMatchingTool       *m_tauTruthMatchingTool;
+    TauAnalysisTools::TauTruthTrackMatchingTool  *m_tauTruthTrackMatchingTool;
 
 };
 

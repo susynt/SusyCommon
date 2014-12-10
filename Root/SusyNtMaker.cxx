@@ -514,8 +514,14 @@ void SusyNtMaker::storeMuon(const xAOD::Muon &in)
     // Currently rely on TrackParticle truth see https://indico.cern.ch/event/329880/session/8/contribution/30/material/slides/0.pdf
     //  ElementLink<xAOD::TruthParticleContainer>& truthLink = in.auxdata<ElementLink<xAOD::TruthParticleContainer> >("truth");
     if(m_isMC) {
-      //out.mcOrigin            = in.auxdata< int >("truthOrigin");
-      //out.mcType              = in.auxdata< int >("truthType");
+      //AT added Type/Origin
+      const xAOD::TrackParticle* trackParticle = in.primaryTrackParticle();
+      if(trackParticle){
+	static SG::AuxElement::Accessor<int> acc_truthType("truthType");
+	static SG::AuxElement::Accessor<int> acc_truthOrigin("truthOrigin");
+	if (acc_truthType.isAvailable(*trackParticle)  ) out.mcType    = acc_truthType(*trackParticle);
+	if (acc_truthOrigin.isAvailable(*trackParticle)) out.mcOrigin  = acc_truthOrigin(*trackParticle);
+      }
       //// Old method tried to loop over all truth particles and do the matching by hand if above two were zero.
       //// ASM-2014-11-02, as as "AT 2014-10-29: Do not work... Need to know about all the truth particles in the event."
       //out.truthType           = m_recoTruthMatch.fakeType(out, out.mcOrigin, out.mcType);
