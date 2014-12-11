@@ -479,12 +479,13 @@ void SusyNtMaker::storeMuon(const xAOD::Muon &in)
     all_available &= in.isolation(out.etcone30, xAOD::Iso::etcone30); out.etcone30 *= MeV2GeV;
     all_available &= in.isolation(out.ptcone30, xAOD::Iso::ptcone30); out.ptcone30 *= MeV2GeV;
 
-    // ASM-2014-11-02 :: These are w.r.t. beam line. storeElectron has an example to calculate these w.r.t.
-    // a given track, but we cannot rely on the first entry in the vertices container to be PV
+    // ASM-2014-12-11 
     if(const xAOD::TrackParticle* t = in.primaryTrackParticle()){
+      const xAOD::Vertex* PV = getPV();
+      double  primvertex_z = (PV) ? PV->z() : 0.;
       out.d0             = t->d0();
       out.errD0          = Amg::error(t->definingParametersCovMatrix(),0); 
-      out.z0             = t->z0();
+      out.z0             = t->z0() + t->vz() - primvertex_z;
       out.errZ0          = Amg::error(t->definingParametersCovMatrix(),1); 
     }
     // Inner Detector Track - if exists
@@ -509,10 +510,6 @@ void SusyNtMaker::storeMuon(const xAOD::Muon &in)
     }
 
     // Truth Flags 
-    // ASM-2014-11-02 :: Can't we access MC truth classifier results for muons? I couldn't find something
-    // like xAOD::EgammaHelpers for Muons 
-    // Currently rely on TrackParticle truth see https://indico.cern.ch/event/329880/session/8/contribution/30/material/slides/0.pdf
-    //  ElementLink<xAOD::TruthParticleContainer>& truthLink = in.auxdata<ElementLink<xAOD::TruthParticleContainer> >("truth");
     if(m_isMC) {
       //AT 09/12/14 added Type/Origin
       const xAOD::TrackParticle* trackParticle = in.primaryTrackParticle();
@@ -572,13 +569,13 @@ void SusyNtMaker::storeJet(const xAOD::Jet &in)
     out.phi = phi;
     out.m   = m;
     bool all_available=true;
-    out.isBadVeryLoose = false; // DG tmp-2014-11-02 in.isAvailable("bad") ? in.auxdata<char>("bad") : false;
 
     // JVF 
     // ASM-2014-11-04 :: Remember JVT is gonna replace JVF in Run-II but not yet available
     vector<float> jetJVF;
     in.getAttribute(xAOD::JetAttribute::JVF,jetJVF); // JVF returns a vector that holds jvf per vertex
-    out.jvf = jetJVF.size() > 0 ? jetJVF.at(0) : 0.; // Upon discussion w/ Ximo (2014-11-04), assume first one is PV
+    const xAOD::Vertex* PV = getPV();                // Need to know the PV
+    out.jvf = (PV) ? jetJVF.at(PV->index()) : 0.;    // Upon discussion w/ TJ (2014-12-11)   
 
     // Truth Label/Matching 
     if (m_isMC) in.getAttribute(xAOD::JetAttribute::JetLabel, out.truthLabel); 
@@ -590,7 +587,6 @@ void SusyNtMaker::storeJet(const xAOD::Jet &in)
     // Most of these are not available in DC14 samples, some obselete (ASM)
   // jetOut->sv0           = element->flavor_weight_SV0();
   // jetOut->combNN        = element->flavor_weight_JetFitterCOMBNN();
-  // jetOut->mv1           = element->flavor_weight_MV1();
   // jetOut->jfit_mass     = element->flavor_component_jfit_mass();
   // jetOut->sv0p_mass     = element->flavor_component_sv0p_mass();
   // jetOut->svp_mass      = element->flavor_component_svp_mass();
@@ -601,20 +597,18 @@ void SusyNtMaker::storeJet(const xAOD::Jet &in)
     in.getAttribute(xAOD::JetAttribute::BchCorrJet,out.bch_corr_jet);
     in.getAttribute(xAOD::JetAttribute::BchCorrCell,out.bch_corr_cell);
 
-    // This isBadVeryLoose bit is set above, so obselete ?? (ASM)
-  // jetOut->isBadVeryLoose= JetID::isBadJet(JetID::VeryLooseBad,
-  //                                         element->emfrac(),
-  //                                         element->hecf(),
-  //                                         element->LArQuality(),
-  //                                         element->HECQuality(),
-  //                                         element->Timing(),
-  //                                         element->sumPtTrk_pv0_500MeV()/GeV,
-  //                                         element->emscale_eta(), pt,
-  //                                         element->fracSamplingMax(),
-  //                                         element->NegativeE(),
-  //                                         element->AverageLArQF());
-  // jetOut->isHotTile     = m_susyObj[m_eleIDDefault]->isHotTile(m_event.eventinfo.RunNumber(), element->fracSamplingMax(),
-  //                                             element->SamplingMax(), eta, phi);
+    // isBadJet 
+    out.isBadVeryLoose = false; // DG tmp-2014-11-02 in.isAvailable("bad") ? in.auxdata<char>("bad") : false;
+
+    // Hot Tile
+    float fracSamplingMax, samplingMax;
+    in.getAttribute(xAOD::JetAttribute::SamplingMax, samplingMax);
+    in.getAttribute(xAOD::JetAttribute::FracSamplingMax, fracSamplingMax);
+    const xAOD::EventInfo* eventinfo = XaodAnalysis::xaodEventInfo();
+    out.isHotTile = m_susyObj[m_eleIDDefault]->isHotTile(eventinfo->runNumber(),
+                                                         fracSamplingMax,
+                                                         samplingMax,
+                                                         eta, phi); 
 
   // // BCH cleaning flags - ASM-2014-11-04 :: Obsolete???
   // uint bchRun = m_isMC? m_mcRun : m_event.eventinfo.RunNumber();
