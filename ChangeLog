@@ -1,5 +1,11 @@
 # vim: set noexpandtab:
 
+2014-12-11 Serhan Mete <amete@cern.ch>
+	M Root/SusyNtMaker.cxx
+	* Updated muon z0 so that it's w.r.t. PV
+	* Updated jet JVF so that it's w.r.t. PV
+	* Implement isHotTile 
+
 2014-11-02 Serhan Mete <amete@cern.ch>
 	* Started filling muon information for xAOD
 
