@@ -387,7 +387,7 @@ void SusyNtMaker::storeElectron(const xAOD::Electron &in)
 	out.effSF_LLH = m_susyObj[MediumLLH]->GetSignalElecSF(in, recoSF, idSF, trigSF);	 
       else if(eleIsOfType(in, LooseLLH))
 	out.effSF_LLH = m_susyObj[LooseLLH]->GetSignalElecSF(in, recoSF, idSF, trigSF);
-      
+
       if(m_dbg) cout << "AT: susyTool electron SF " << out.effSF << " LLH " << out.effSF_LLH << endl;
       /*
       const Root::TResult &result =  m_electronEfficiencySFTool->calculate(in);
@@ -1032,7 +1032,7 @@ void SusyNtMaker::doSystematic()
      m_susyObj[m_eleIDDefault]->resetSystematics();
   }
 
-  // Loop over the systematics: start at 1, nominal saved
+  // Loop over the systematics: start at 1, nominal already saved
   /*
   for(int i = 1; i < NtSys_N; i++){
       SusyNtSys sys = static_cast<SusyNtSys>(i);
