@@ -9,16 +9,13 @@
 #include "SusyNtuple/SusyNtTools.h"
 #include "SusyNtuple/WhTruthExtractor.h"
 #include "SusyNtuple/mc_truth_utils.h"
+#include "SusyNtuple/RecoTruthClassification.h"
 
 #include "ElectronEfficiencyCorrection/TElectronEfficiencyCorrectionTool.h"
-
 
 #include "xAODPrimitives/IsolationType.h"
 #include "xAODTracking/TrackParticle.h"
 #include "xAODEgamma/EgammaxAODHelpers.h"
-
-
-
 
 // Amg include
 #include "EventPrimitives/EventPrimitivesHelpers.h"
@@ -398,14 +395,17 @@ void SusyNtMaker::storeElectron(const xAOD::Electron &in)
       out.errEffSF = result.getTotalUncertainty();
       if(m_dbg) cout << "AT: electron SF " << out.effSF << " " << out.errEffSF << endl;
       */
+    
+      out.mcType   = xAOD::EgammaHelpers::getParticleTruthType(&in);
+      out.mcOrigin = xAOD::EgammaHelpers::getParticleTruthOrigin(&in);    
+      const xAOD::TruthParticle* truthEle = xAOD::EgammaHelpers::getTruthParticle(&in); //AT 10/12/14: Always false ????
+      out.matched2TruthLepton   = truthEle ? true : false;
+      int matchedPdgId = truthEle ? truthEle->pdgId() : -999;
+      out.truthType  = isFakeLepton(out.mcOrigin, out.mcType, matchedPdgId); 
+      
+      //AT 12/09/14: Need to get this from eGamma - at some point
+      out.isChargeFlip          = m_isMC? m_recoTruthMatch.isChargeFlip(out, out.q) : false;
     }
-
-    out.mcType   = xAOD::EgammaHelpers::getParticleTruthType(&in);
-    out.mcOrigin = xAOD::EgammaHelpers::getParticleTruthOrigin(&in);    
-    //AT 2014-10-29: Do not work... Need to know about all the truth particles in the event.
-    out.truthType             = m_isMC? m_recoTruthMatch.fakeType(out, out.mcOrigin, out.mcType) : -1;
-    out.isChargeFlip          = m_isMC? m_recoTruthMatch.isChargeFlip(out, out.q) : false;
-    out.matched2TruthLepton   = m_isMC? m_recoTruthMatch.Matched2TruthLepton(out) : false;
 
     if(const xAOD::CaloCluster* c = in.caloCluster()) {
         out.clusE   = c->e()*MeV2GeV;
@@ -514,17 +514,22 @@ void SusyNtMaker::storeMuon(const xAOD::Muon &in)
     // Currently rely on TrackParticle truth see https://indico.cern.ch/event/329880/session/8/contribution/30/material/slides/0.pdf
     //  ElementLink<xAOD::TruthParticleContainer>& truthLink = in.auxdata<ElementLink<xAOD::TruthParticleContainer> >("truth");
     if(m_isMC) {
-      //AT added Type/Origin
+      //AT 09/12/14 added Type/Origin
       const xAOD::TrackParticle* trackParticle = in.primaryTrackParticle();
       if(trackParticle){
 	static SG::AuxElement::Accessor<int> acc_truthType("truthType");
 	static SG::AuxElement::Accessor<int> acc_truthOrigin("truthOrigin");
 	if (acc_truthType.isAvailable(*trackParticle)  ) out.mcType    = acc_truthType(*trackParticle);
 	if (acc_truthOrigin.isAvailable(*trackParticle)) out.mcOrigin  = acc_truthOrigin(*trackParticle);
+
+	const xAOD::TruthParticle* truthMu = xAOD::EgammaHelpers::getTruthParticle(trackParticle);
+	out.matched2TruthLepton = truthMu ? true : false;
+	int matchedPdgId = truthMu ? truthMu->pdgId() : -999;
+	out.truthType  = isFakeLepton(out.mcOrigin, out.mcType, matchedPdgId); 
+
       }
       //// Old method tried to loop over all truth particles and do the matching by hand if above two were zero.
       //// ASM-2014-11-02, as as "AT 2014-10-29: Do not work... Need to know about all the truth particles in the event."
-      //out.truthType           = m_recoTruthMatch.fakeType(out, out.mcOrigin, out.mcType);
       //out.matched2TruthLepton = m_recoTruthMatch.Matched2TruthLepton(out); 
     }
 

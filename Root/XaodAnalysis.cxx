@@ -264,12 +264,11 @@ void XaodAnalysis::getSystematicList()
 
   const CP::SystematicRegistry& registry = CP::SystematicRegistry::getInstance();
   const CP::SystematicSet& recommendedSystematics = registry.recommendedSystematics();
-  // this is the nominal set
-  sysList.push_back(CP::SystematicSet());
+  sysList.push_back(CP::SystematicSet()); // nominal set
   for(CP::SystematicSet::const_iterator sysItr = recommendedSystematics.begin();
       sysItr != recommendedSystematics.end(); ++sysItr){ 
     if (*sysItr == CP::SystematicVariation (sysItr->basename(), CP::SystematicVariation::CONTINUOUS)){
-      // for continuous systematics just evaluate +/-1 sigma
+      // for continuous systematics evaluate +/-1 sigma
       sysList.push_back(CP::SystematicSet());
       sysList.back().insert(CP::SystematicVariation (sysItr->basename(), 1));
       sysList.push_back(CP::SystematicSet());
@@ -289,7 +288,10 @@ void XaodAnalysis::getSystematicList()
       //cout << " Our systematic " << susy::SystematicNames[susy::CPsys2sys((*sysListItr).name())] << endl;
     }
   }
-  
+
+  //Get from SUSYTools the list of systematics and what each systematics affects: weight/kin and object type
+  //m_susyObj[m_eleIDDefault]->getSystInfoList();
+
 }
 
 
