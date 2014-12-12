@@ -27,6 +27,9 @@
 #include "xAODMissingET/MissingETAuxContainer.h"
 #include "xAODTruth/TruthParticleContainer.h"
 #include "xAODTruth/TruthEventContainer.h"
+#include "TauAnalysisTools/TauTruthMatchingTool.h"
+#include "TauAnalysisTools/TauTruthTrackMatchingTool.h"
+
 // #include "xAODTruth/TruthEvent.h"
 #include "xAODCore/ShallowCopy.h"
 
@@ -54,6 +57,24 @@ using namespace NtSys;
 
 namespace susy {
   
+  enum eleID{
+    Medium
+    ,Tight
+    ,LooseLLH
+    ,MediumLLH
+    ,VeryTightLLH
+    ,eleIDInvalid
+  };
+  
+  const std::string eleIDNames[] = {
+    "Medium"
+    ,"Tight"
+    ,"LooseLLH"
+    ,"MediumLLH"
+    ,"VeryTightLLH"
+    ,"eleIDInvalid"
+  };
+
 ///  a class for performing object selections and event cleaning on xaod
 class XaodAnalysis : public TSelector
 {
@@ -79,9 +100,9 @@ class XaodAnalysis : public TSelector
        Performance Tools 
      **/
     XaodAnalysis& initLocalTools(); ///< initialize performance tools
-    void          initElectronTools();
     void          initPileupTool();
     void          initMuonTools(); 
+    void          initTauTools(); 
     
     // Systematic Methods
     void getSystematicList();
@@ -137,6 +158,8 @@ class XaodAnalysis : public TSelector
     static const xAOD::VertexContainer* retrieveVertices(xAOD::TEvent &e, bool dbg);
     /// wrapper of retrieveVertices; store outputs as datamembers
     virtual const xAOD::VertexContainer* xaodVertices();
+
+    virtual const xAOD::Vertex* getPV();
 
     /// retrieve all the input collections and cache pointers
     XaodAnalysis& retrieveCollections();
@@ -236,6 +259,9 @@ class XaodAnalysis : public TSelector
     int getHFORDecision(); ///< HF overlap removal decision (DG obsolete?)
     uint getNumGoodVtx(); ///< Count number of good vertices
     bool matchTruthJet(int iJet); ///< Match a reco jet to a truth jet
+
+    bool eleIsOfType(const xAOD::Electron &in, eleID id=Medium);
+
 
     // Running conditions
     TString sample() { return m_sample; } ///< Sample name - used to set isMC flag
@@ -398,7 +424,8 @@ class XaodAnalysis : public TSelector
 
     xAOD::TEvent m_event;
     xAOD::TStore m_store;
-    ST::SUSYObjDef_xAOD m_susyObj;      // SUSY object definitions
+    ST::SUSYObjDef_xAOD* m_susyObj[eleIDInvalid];      // SUSY object definitions
+    eleID m_eleIDDefault;
 
     std::vector<CP::SystematicSet> sysList;  //CP Systematic list
 
@@ -466,6 +493,9 @@ class XaodAnalysis : public TSelector
 
     CP::MuonEfficiencyScaleFactors      *m_muonEfficiencySFTool; 
 
+    //Tau truth matchong tools
+    TauAnalysisTools::TauTruthMatchingTool       *m_tauTruthMatchingTool;
+    TauAnalysisTools::TauTruthTrackMatchingTool  *m_tauTruthTrackMatchingTool;
 
 };
 

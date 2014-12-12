@@ -9,16 +9,13 @@
 #include "SusyNtuple/SusyNtTools.h"
 #include "SusyNtuple/WhTruthExtractor.h"
 #include "SusyNtuple/mc_truth_utils.h"
+#include "SusyNtuple/RecoTruthClassification.h"
 
 #include "ElectronEfficiencyCorrection/TElectronEfficiencyCorrectionTool.h"
-
 
 #include "xAODPrimitives/IsolationType.h"
 #include "xAODTracking/TrackParticle.h"
 #include "xAODEgamma/EgammaxAODHelpers.h"
-
-
-
 
 // Amg include
 #include "EventPrimitives/EventPrimitivesHelpers.h"
@@ -340,37 +337,7 @@ void SusyNtMaker::fillTruthParticleVars()
         storeTruthParticle(*(particles->at(i)));
     }
 }
-//----------------------------------------------------------
-void get_electron_eff_sf(float& sf, float& uncert,
-                         const float &el_cl_eta, const float &pt,
-                         bool recoSF, bool idSF, bool triggerSF, bool isAF2,
-                         Root::TElectronEfficiencyCorrectionTool* electronRecoSF,
-                         Root::TElectronEfficiencyCorrectionTool* electronIDSF,
-                         Root::TElectronEfficiencyCorrectionTool* electronTriggerSF,
-                         int RunNumber)
-{
-    sf = 1;
-    uncert = 0;
-    PATCore::ParticleDataType::DataType dataType;
-    if(isAF2) dataType = PATCore::ParticleDataType::Fast;
-    else dataType = PATCore::ParticleDataType::Full;
 
-    if(recoSF && electronRecoSF){
-        const Root::TResult &resultReco = electronRecoSF->calculate(dataType, RunNumber, el_cl_eta, pt);
-        sf *= resultReco.getScaleFactor();
-        uncert = resultReco.getTotalUncertainty();
-    }
-    if(idSF && electronIDSF){
-        const Root::TResult &resultID = electronIDSF->calculate(dataType, RunNumber, el_cl_eta, pt);
-        sf *= resultID.getScaleFactor();
-        uncert = sqrt(pow(uncert,2) + pow(resultID.getTotalUncertainty(),2));
-    }
-    if(triggerSF && electronTriggerSF){
-        const Root::TResult &resultTrigger = electronTriggerSF->calculate(dataType, RunNumber, el_cl_eta, pt);
-        sf *= resultTrigger.getScaleFactor();
-        uncert = sqrt(pow(uncert,2) + pow(resultTrigger.getTotalUncertainty(),2));
-    }
-}
 //----------------------------------------------------------
 void SusyNtMaker::storeElectron(const xAOD::Electron &in)
 {
@@ -389,6 +356,9 @@ void SusyNtMaker::storeElectron(const xAOD::Electron &in)
     // IsEM quality flags - no need to recalculate them
     all_available &= in.passSelection(out.mediumPP,"Medium");
     all_available &= in.passSelection(out.tightPP,"Tight"); 
+    all_available &= in.passSelection(out.looseLLH,"LooseLLH");
+    all_available &= in.passSelection(out.mediumLLH,"MediumLLH");
+    all_available &= in.passSelection(out.veryTightLLH,"VeryTightLLH");
 
     //Isolations
     all_available &= in.isolationValue(out.etcone20, xAOD::Iso::etcone20); 
@@ -400,24 +370,42 @@ void SusyNtMaker::storeElectron(const xAOD::Electron &in)
     out.ptcone20 *= MeV2GeV;
     out.ptcone30 *= MeV2GeV;
 
-    if(m_isMC && out.tightPP){
-      //AT 2014-10-29: To be updated once SusyTools function return both.
-      out.effSF = (m_isMC && out.tightPP) ? m_susyObj.GetSignalElecSF(in) : 1;
-      if(m_dbg) cout << "AT: susyTool electron SF " << out.effSF << endl;
+    if(m_isMC){
+      //Store the SF of the tightest ID
+      bool recoSF=true;
+      bool idSF=true;
+      bool trigSF=false;
+      //AT 2014-10-29: To be updated once SusyTools function return also the error.
+      if(eleIsOfType(in, Tight))
+	out.effSF = m_susyObj[Tight]->GetSignalElecSF(in, recoSF, idSF, trigSF);
+      else if(eleIsOfType(in, Medium))
+	out.effSF = m_susyObj[Medium]->GetSignalElecSF(in, recoSF, idSF, trigSF);
+      
+      if(eleIsOfType(in, VeryTightLLH))
+	out.effSF_LLH = m_susyObj[VeryTightLLH]->GetSignalElecSF(in, recoSF, idSF, trigSF);
+      else if(eleIsOfType(in, MediumLLH))
+	out.effSF_LLH = m_susyObj[MediumLLH]->GetSignalElecSF(in, recoSF, idSF, trigSF);	 
+      else if(eleIsOfType(in, LooseLLH))
+	out.effSF_LLH = m_susyObj[LooseLLH]->GetSignalElecSF(in, recoSF, idSF, trigSF);
+      
+      if(m_dbg) cout << "AT: susyTool electron SF " << out.effSF << " LLH " << out.effSF_LLH << endl;
+      /*
       const Root::TResult &result =  m_electronEfficiencySFTool->calculate(in);
       out.effSF    = result.getScaleFactor();
       out.errEffSF = result.getTotalUncertainty();
       if(m_dbg) cout << "AT: electron SF " << out.effSF << " " << out.errEffSF << endl;
+      */
+    
+      out.mcType   = xAOD::EgammaHelpers::getParticleTruthType(&in);
+      out.mcOrigin = xAOD::EgammaHelpers::getParticleTruthOrigin(&in);    
+      const xAOD::TruthParticle* truthEle = xAOD::EgammaHelpers::getTruthParticle(&in); //AT 10/12/14: Always false ????
+      out.matched2TruthLepton   = truthEle ? true : false;
+      int matchedPdgId = truthEle ? truthEle->pdgId() : -999;
+      out.truthType  = isFakeLepton(out.mcOrigin, out.mcType, matchedPdgId); 
+      
+      //AT 12/09/14: Need to get this from eGamma - at some point
+      out.isChargeFlip          = m_isMC? m_recoTruthMatch.isChargeFlip(out, out.q) : false;
     }
-
-    //AT:2014-10-28: add mediumPP - need the tool
-
-    out.mcType   = xAOD::EgammaHelpers::getParticleTruthType(&in);
-    out.mcOrigin = xAOD::EgammaHelpers::getParticleTruthOrigin(&in);    
-    out.truthType             = m_isMC? m_recoTruthMatch.fakeType(out, out.mcOrigin, out.mcType) : -1;
-    //AT 2014-10-29: Do not work... Need to know about all the truth particles in the event.
-    out.isChargeFlip          = m_isMC? m_recoTruthMatch.isChargeFlip(out, out.q) : false;
-    out.matched2TruthLepton   = m_isMC? m_recoTruthMatch.Matched2TruthLepton(out) : false;
 
     if(const xAOD::CaloCluster* c = in.caloCluster()) {
         out.clusE   = c->e()*MeV2GeV;
@@ -430,59 +418,21 @@ void SusyNtMaker::storeElectron(const xAOD::Electron &in)
         out.trackPt = t->pt()*MeV2GeV;
 	out.d0      = t->d0();//AT:: wrt to PV ???
 
-	double primvertex_z = 0;
-	//AT-2014-10-31: Can't we really assume the 1st one if the PV ?
-	xAOD::VertexContainer::const_iterator pv_itr = m_xaodVertices->begin();
-	primvertex_z = (*pv_itr)->z();
+	const xAOD::Vertex* PV = getPV();
+	double  primvertex_z = (PV) ? PV->z() : -999;
 	out.z0 = t->z0() + t->vz() - primvertex_z;
 
 	out.errD0         = Amg::error(t->definingParametersCovMatrix(),0);
 	out.errZ0         = Amg::error(t->definingParametersCovMatrix(),1);
-	//Obsolete
-        // eleOut->d0Unbiased    = element->trackIPEstimate_d0_unbiasedpvunbiased();
-        // eleOut->errD0Unbiased = element->trackIPEstimate_sigd0_unbiasedpvunbiased();
-        // eleOut->z0Unbiased    = element->trackIPEstimate_z0_unbiasedpvunbiased();
-        // eleOut->errZ0Unbiased = element->trackIPEstimate_sigz0_unbiasedpvunbiased();
     } else {
         all_available = false;
     }
     // DG-2014-08-29 mc info not available yet
-
     // 
     // // Trigger flags
     // eleOut->trigFlags     = m_eleTrigFlags[ lepIn->idx() ];
 
-    // // Efficiency scale factor.  For now, use tightPP if electrons is tightPP, otherwise mediumPP
-    // //int set               = eleOut->tightPP? 7 : 6;
-    // //eleOut->effSF         = m_isMC? m_susyObj.GetSignalElecSF   ( element->cl_eta(), lepIn->lv()->Pt(), set ) : 1;
-    // //eleOut->errEffSF      = m_isMC? m_susyObj.GetSignalElecSFUnc( element->cl_eta(), lepIn->lv()->Pt(), set ) : 1;
-
-    // // Tight electron SFs can come directly from SUSYTools
-    // // To get the SF uncert using GetSignalElecSF, we must get the shifted value and take the difference
-    // float nomPt = lepIn->lv()->Pt();
-    // float sfPt = nomPt >= 7.*GeV ? nomPt : 7.*GeV;
-    // if(eleOut->tightPP){
-    //   eleOut->effSF       = // m_isMC? // DG not implemented yet
-    //                         // m_susyObj.GetSignalElecSF(element->cl_eta(), sfPt, true, true, false) :
-    //       1;
-    //   eleOut->errEffSF    = //m_isMC? // DG not implemented yet
-    //                         //m_susyObj.GetSignalElecSF(element->cl_eta(), sfPt, true, true, false,
-    //                         //                          200841, SystErr::EEFFUP) - eleOut->effSF :
-    //       0;
-    // }
-
-    // // For the medium SF, need to use our own function
-    // else{
-    //   float sf = 1, uncert = 0;
-    //   bool recoSF(true), idSF(true), triggerSF(false);
-    //   int runNumber=200841; // DG why this dummy value? (copied from MultiLep/ElectronTools.h)
-    //   if (m_isMC) get_electron_eff_sf(sf, uncert, element->cl_eta(), sfPt,
-    //                                   recoSF, idSF, triggerSF, m_isAF2,
-    //                                   m_susyObj.GetElectron_recoSF_Class(), m_eleMediumSFTool, 0,
-    //                                   runNumber);
-    //   eleOut->effSF       = sf;
-    //   eleOut->errEffSF    = uncert;
-    // }
+ 
     if(m_dbg && !all_available) cout<<"missing some electron variables"<<endl;
     m_susyNt.ele()->push_back(out);
 }
@@ -519,7 +469,7 @@ void SusyNtMaker::storeMuon(const xAOD::Muon &in)
     out.isSignal   = in.auxdata< char >("signal");
     out.isCombined = in.muonType()==xAOD::Muon::Combined;
     out.isCosmic   = in.auxdata< char >("cosmic");
-    out.isBadMuon  = m_susyObj.IsBadMuon(in); // Uses default qoverpcut of 0.2
+    out.isBadMuon  = m_susyObj[m_eleIDDefault]->IsBadMuon(in); // Uses default qoverpcut of 0.2
 
     bool all_available=true;
 
@@ -529,12 +479,13 @@ void SusyNtMaker::storeMuon(const xAOD::Muon &in)
     all_available &= in.isolation(out.etcone30, xAOD::Iso::etcone30); out.etcone30 *= MeV2GeV;
     all_available &= in.isolation(out.ptcone30, xAOD::Iso::ptcone30); out.ptcone30 *= MeV2GeV;
 
-    // ASM-2014-11-02 :: These are w.r.t. beam line. storeElectron has an example to calculate these w.r.t.
-    // a given track, but we cannot rely on the first entry in the vertices container to be PV
+    // ASM-2014-12-11 
     if(const xAOD::TrackParticle* t = in.primaryTrackParticle()){
+      const xAOD::Vertex* PV = getPV();
+      double  primvertex_z = (PV) ? PV->z() : 0.;
       out.d0             = t->d0();
       out.errD0          = Amg::error(t->definingParametersCovMatrix(),0); 
-      out.z0             = t->z0();
+      out.z0             = t->z0() + t->vz() - primvertex_z;
       out.errZ0          = Amg::error(t->definingParametersCovMatrix(),1); 
     }
     // Inner Detector Track - if exists
@@ -559,16 +510,23 @@ void SusyNtMaker::storeMuon(const xAOD::Muon &in)
     }
 
     // Truth Flags 
-    // ASM-2014-11-02 :: Can't we access MC truth classifier results for muons? I couldn't find something
-    // like xAOD::EgammaHelpers for Muons 
-    // Currently rely on TrackParticle truth see https://indico.cern.ch/event/329880/session/8/contribution/30/material/slides/0.pdf
-    //  ElementLink<xAOD::TruthParticleContainer>& truthLink = in.auxdata<ElementLink<xAOD::TruthParticleContainer> >("truth");
     if(m_isMC) {
-      //out.mcOrigin            = in.auxdata< int >("truthOrigin");
-      //out.mcType              = in.auxdata< int >("truthType");
+      //AT 09/12/14 added Type/Origin
+      const xAOD::TrackParticle* trackParticle = in.primaryTrackParticle();
+      if(trackParticle){
+	static SG::AuxElement::Accessor<int> acc_truthType("truthType");
+	static SG::AuxElement::Accessor<int> acc_truthOrigin("truthOrigin");
+	if (acc_truthType.isAvailable(*trackParticle)  ) out.mcType    = acc_truthType(*trackParticle);
+	if (acc_truthOrigin.isAvailable(*trackParticle)) out.mcOrigin  = acc_truthOrigin(*trackParticle);
+
+	const xAOD::TruthParticle* truthMu = xAOD::EgammaHelpers::getTruthParticle(trackParticle);
+	out.matched2TruthLepton = truthMu ? true : false;
+	int matchedPdgId = truthMu ? truthMu->pdgId() : -999;
+	out.truthType  = isFakeLepton(out.mcOrigin, out.mcType, matchedPdgId); 
+
+      }
       //// Old method tried to loop over all truth particles and do the matching by hand if above two were zero.
       //// ASM-2014-11-02, as as "AT 2014-10-29: Do not work... Need to know about all the truth particles in the event."
-      //out.truthType           = m_recoTruthMatch.fakeType(out, out.mcOrigin, out.mcType);
       //out.matched2TruthLepton = m_recoTruthMatch.Matched2TruthLepton(out); 
     }
 
@@ -611,13 +569,13 @@ void SusyNtMaker::storeJet(const xAOD::Jet &in)
     out.phi = phi;
     out.m   = m;
     bool all_available=true;
-    out.isBadVeryLoose = false; // DG tmp-2014-11-02 in.isAvailable("bad") ? in.auxdata<char>("bad") : false;
 
     // JVF 
     // ASM-2014-11-04 :: Remember JVT is gonna replace JVF in Run-II but not yet available
     vector<float> jetJVF;
     in.getAttribute(xAOD::JetAttribute::JVF,jetJVF); // JVF returns a vector that holds jvf per vertex
-    out.jvf = jetJVF.size() > 0 ? jetJVF.at(0) : 0.; // Upon discussion w/ Ximo (2014-11-04), assume first one is PV
+    const xAOD::Vertex* PV = getPV();                // Need to know the PV
+    out.jvf = (PV) ? jetJVF.at(PV->index()) : 0.;    // Upon discussion w/ TJ (2014-12-11)   
 
     // Truth Label/Matching 
     if (m_isMC) in.getAttribute(xAOD::JetAttribute::JetLabel, out.truthLabel); 
@@ -629,7 +587,6 @@ void SusyNtMaker::storeJet(const xAOD::Jet &in)
     // Most of these are not available in DC14 samples, some obselete (ASM)
   // jetOut->sv0           = element->flavor_weight_SV0();
   // jetOut->combNN        = element->flavor_weight_JetFitterCOMBNN();
-  // jetOut->mv1           = element->flavor_weight_MV1();
   // jetOut->jfit_mass     = element->flavor_component_jfit_mass();
   // jetOut->sv0p_mass     = element->flavor_component_sv0p_mass();
   // jetOut->svp_mass      = element->flavor_component_svp_mass();
@@ -640,29 +597,27 @@ void SusyNtMaker::storeJet(const xAOD::Jet &in)
     in.getAttribute(xAOD::JetAttribute::BchCorrJet,out.bch_corr_jet);
     in.getAttribute(xAOD::JetAttribute::BchCorrCell,out.bch_corr_cell);
 
-    // This isBadVeryLoose bit is set above, so obselete ?? (ASM)
-  // jetOut->isBadVeryLoose= JetID::isBadJet(JetID::VeryLooseBad,
-  //                                         element->emfrac(),
-  //                                         element->hecf(),
-  //                                         element->LArQuality(),
-  //                                         element->HECQuality(),
-  //                                         element->Timing(),
-  //                                         element->sumPtTrk_pv0_500MeV()/GeV,
-  //                                         element->emscale_eta(), pt,
-  //                                         element->fracSamplingMax(),
-  //                                         element->NegativeE(),
-  //                                         element->AverageLArQF());
-  // jetOut->isHotTile     = m_susyObj.isHotTile(m_event.eventinfo.RunNumber(), element->fracSamplingMax(),
-  //                                             element->SamplingMax(), eta, phi);
+    // isBadJet 
+    out.isBadVeryLoose = false; // DG tmp-2014-11-02 in.isAvailable("bad") ? in.auxdata<char>("bad") : false;
+
+    // Hot Tile
+    float fracSamplingMax, samplingMax;
+    in.getAttribute(xAOD::JetAttribute::SamplingMax, samplingMax);
+    in.getAttribute(xAOD::JetAttribute::FracSamplingMax, fracSamplingMax);
+    const xAOD::EventInfo* eventinfo = XaodAnalysis::xaodEventInfo();
+    out.isHotTile = m_susyObj[m_eleIDDefault]->isHotTile(eventinfo->runNumber(),
+                                                         fracSamplingMax,
+                                                         samplingMax,
+                                                         eta, phi); 
 
   // // BCH cleaning flags - ASM-2014-11-04 :: Obsolete???
   // uint bchRun = m_isMC? m_mcRun : m_event.eventinfo.RunNumber();
   // uint bchLB = m_isMC? m_mcLB : m_event.eventinfo.lbn();
   // #define BCH_ARGS bchRun, bchLB, jetOut->detEta, jetOut->phi, jetOut->bch_corr_cell, jetOut->emfrac, jetOut->pt*1000.
-  // jetOut->isBadMediumBCH = !m_susyObj.passBCHCleaningMedium(BCH_ARGS, 0);
-  // jetOut->isBadMediumBCH_up = !m_susyObj.passBCHCleaningMedium(BCH_ARGS, 1);
-  // jetOut->isBadMediumBCH_dn = !m_susyObj.passBCHCleaningMedium(BCH_ARGS, -1);
-  // jetOut->isBadTightBCH = !m_susyObj.passBCHCleaningTight(BCH_ARGS);
+  // jetOut->isBadMediumBCH = !m_susyObj[m_eleIDDefault]->passBCHCleaningMedium(BCH_ARGS, 0);
+  // jetOut->isBadMediumBCH_up = !m_susyObj[m_eleIDDefault]->passBCHCleaningMedium(BCH_ARGS, 1);
+  // jetOut->isBadMediumBCH_dn = !m_susyObj[m_eleIDDefault]->passBCHCleaningMedium(BCH_ARGS, -1);
+  // jetOut->isBadTightBCH = !m_susyObj[m_eleIDDefault]->passBCHCleaningTight(BCH_ARGS);
   // #undef BCH_ARGS
 
   // // Save the met weights for the jets
@@ -700,7 +655,7 @@ void SusyNtMaker::storePhoton(const xAOD::Photon &in)
       all_available = false;
     }
     out.OQ = in.isGoodOQ(xAOD::EgammaParameters::BADCLUSPHOTON);
-    //out.OQ =  in.auxdata< uint32_t >("OQ"); //AT 2014-10-29 Can't we grab the SusyTool decoration ?
+    in.isolationValue(out.topoEtcone40,xAOD::Iso::topoetcone40);
 
     if(m_dbg) cout << "AT: storePhoton: " << out.pt << " " << out.tight << " " << out.isConv << endl;
     // // Miscellaneous
@@ -739,7 +694,7 @@ void SusyNtMaker::storeTau(const xAOD::TauJet &tau)
   // //tauOut->eleBDTLoose           = element->EleBDTLoose();
   // //tauOut->eleBDTMedium          = element->EleBDTMedium();
   // //tauOut->eleBDTTight           = element->EleBDTTight();
-  // tauOut->eleBDTLoose           = m_susyObj.GetCorrectedEleBDTFlag(SUSYTau::TauLoose, element->EleBDTLoose(),
+  // tauOut->eleBDTLoose           = m_susyObj[m_eleIDDefault]->GetCorrectedEleBDTFlag(SUSYTau::TauLoose, element->EleBDTLoose(),
   //                                                                  element->BDTEleScore(), element->numTrack(),
   //                                                                  tauLV->Pt(), element->leadTrack_eta());
   tauOut.eleBDTLoose = tau.isTau(xAOD::TauJetParameters::EleBDTLoose);
@@ -762,8 +717,8 @@ void SusyNtMaker::storeTau(const xAOD::TauJet &tau)
   // // ID efficiency scale factors
   // if(m_isMC){
   //   #define TAU_ARGS TauCorrUncert::BDTLOOSE, tauLV->Eta(), element->numTrack()
-  //   //TauCorrections* tauSF       = m_susyObj.GetTauCorrectionsProvider();
-  //   TauCorrUncert::TauSF* tauSF = m_susyObj.GetSFTool();
+  //   //TauCorrections* tauSF       = m_susyObj[m_eleIDDefault]->GetTauCorrectionsProvider();
+  //   TauCorrUncert::TauSF* tauSF = m_susyObj[m_eleIDDefault]->GetSFTool();
   //   //tauOut->looseEffSF        = tauSF->GetIDSF(TauCorrUncert::BDTLOOSE, tauLV->Eta(), element->numTrack());
   //   //tauOut->mediumEffSF       = tauSF->GetIDSF(TauCorrUncert::BDTMEDIUM, tauLV->Eta(), element->numTrack());
   //   //tauOut->tightEffSF        = tauSF->GetIDSF(TauCorrUncert::BDTTIGHT, tauLV->Eta(), element->numTrack());
@@ -909,7 +864,7 @@ void SusyNtMaker::fillMetVars(SusyNtSys sys)
   // // comonents instead of the SUSYTools method
   // // computeMetComponent, but that is up to Steve,
   // // Lord of the Ntuples.
-  // METUtility* metUtil = m_susyObj.GetMETUtility();
+  // METUtility* metUtil = m_susyObj[m_eleIDDefault]->GetMETUtility();
 
   // m_susyNt.met()->push_back( Susy::Met() );
   // Susy::Met* metOut = & m_susyNt.met()->back();
@@ -930,14 +885,14 @@ void SusyNtMaker::fillMetVars(SusyNtSys sys)
   // else if(sys == NtSys_RESOST) metSys = METUtil::ResoSoftTermsUp;
 
   // // Save the MET terms
-  // TVector2 refEleV   = m_susyObj.computeMETComponent(METUtil::RefEle, metSys);
-  // TVector2 refMuoV   = m_susyObj.computeMETComponent(METUtil::MuonTotal, metSys);
-  // TVector2 refJetV   = m_susyObj.computeMETComponent(METUtil::RefJet, metSys);
-  // TVector2 refGammaV = m_susyObj.computeMETComponent(METUtil::RefGamma, metSys);
-  // //TVector2 softJetV  = m_susyObj.computeMETComponent(METUtil::SoftJets, metSys);
-  // //TVector2 refCellV  = m_susyObj.computeMETComponent(METUtil::CellOutEflow, metSys);
-  // TVector2 softTermV = m_susyObj.computeMETComponent(METUtil::SoftTerms, metSys);
-  // //float sumet = m_susyObj._metUtility->getMissingET(METUtil::SoftTerms).sumet();
+  // TVector2 refEleV   = m_susyObj[m_eleIDDefault]->computeMETComponent(METUtil::RefEle, metSys);
+  // TVector2 refMuoV   = m_susyObj[m_eleIDDefault]->computeMETComponent(METUtil::MuonTotal, metSys);
+  // TVector2 refJetV   = m_susyObj[m_eleIDDefault]->computeMETComponent(METUtil::RefJet, metSys);
+  // TVector2 refGammaV = m_susyObj[m_eleIDDefault]->computeMETComponent(METUtil::RefGamma, metSys);
+  // //TVector2 softJetV  = m_susyObj[m_eleIDDefault]->computeMETComponent(METUtil::SoftJets, metSys);
+  // //TVector2 refCellV  = m_susyObj[m_eleIDDefault]->computeMETComponent(METUtil::CellOutEflow, metSys);
+  // TVector2 softTermV = m_susyObj[m_eleIDDefault]->computeMETComponent(METUtil::SoftTerms, metSys);
+  // //float sumet = m_susyObj[m_eleIDDefault]->_metUtility->getMissingET(METUtil::SoftTerms).sumet();
 
   //migrated// metOut->refEle     = refEleV.Mod()/GeV;
   //migrated// metOut->refEle_etx = refEleV.Px()/GeV;
@@ -972,12 +927,12 @@ void SusyNtMaker::fillMetVars(SusyNtSys sys)
   //migrated// metOut->softTerm_ety = softTermV.Py()/GeV;
   //migrated// metOut->softTerm_sumet = metUtil->getMissingET(METUtil::SoftTerms, metSys).sumet()/GeV;
 
-  // //metOut->refEle        = m_susyObj.computeMETComponent(METUtil::RefEle, metSys).Mod()/GeV;
-  // //metOut->refMuo        = m_susyObj.computeMETComponent(METUtil::MuonTotal, metSys).Mod()/GeV;
-  // //metOut->refJet        = m_susyObj.computeMETComponent(METUtil::RefJet, metSys).Mod()/GeV;
-  // //metOut->refGamma      = m_susyObj.computeMETComponent(METUtil::RefGamma, metSys).Mod()/GeV;
-  // //metOut->softJet       = m_susyObj.computeMETComponent(METUtil::SoftJets, metSys).Mod()/GeV;
-  // //metOut->refCell       = m_susyObj.computeMETComponent(METUtil::CellOutEflow, metSys).Mod()/GeV;
+  // //metOut->refEle        = m_susyObj[m_eleIDDefault]->computeMETComponent(METUtil::RefEle, metSys).Mod()/GeV;
+  // //metOut->refMuo        = m_susyObj[m_eleIDDefault]->computeMETComponent(METUtil::MuonTotal, metSys).Mod()/GeV;
+  // //metOut->refJet        = m_susyObj[m_eleIDDefault]->computeMETComponent(METUtil::RefJet, metSys).Mod()/GeV;
+  // //metOut->refGamma      = m_susyObj[m_eleIDDefault]->computeMETComponent(METUtil::RefGamma, metSys).Mod()/GeV;
+  // //metOut->softJet       = m_susyObj[m_eleIDDefault]->computeMETComponent(METUtil::SoftJets, metSys).Mod()/GeV;
+  // //metOut->refCell       = m_susyObj[m_eleIDDefault]->computeMETComponent(METUtil::CellOutEflow, metSys).Mod()/GeV;
 }
 //----------------------------------------------------------
 void SusyNtMaker::storeTruthParticle(const xAOD::TruthParticle &in)
@@ -1063,18 +1018,19 @@ void SusyNtMaker::doSystematic()
     cout << "Found syst in global registry: " << (*sysListItr).name() << endl;
     cout << " Our systematic " << NtSys::SusyNtSysNames[sys] << endl;
     
-    if ( m_susyObj.applySystematicVariation(*sysListItr) != CP::SystematicCode::Ok){
+    if ( m_susyObj[m_eleIDDefault]->applySystematicVariation(*sysListItr) != CP::SystematicCode::Ok){
       cout << "SusyNtMaker::doSystematic - cannot configure SUSYTools for " << (*sysListItr).name() << endl;
       continue;
     }
 
+    
     /*
       Do our stuff here
     */
 
 
 
-     m_susyObj.resetSystematics();
+     m_susyObj[m_eleIDDefault]->resetSystematics();
   }
 
   // Loop over the systematics: start at 1, nominal saved
@@ -1186,7 +1142,7 @@ void SusyNtMaker::saveJetSF(SusyNtSys sys)
   //   uint jetIdx = m_preJets[iJet];
 
   //   // Systematic shifted energy
-  //   float E_sys = m_susyObj.GetJetTLV(jetIdx).E() / GeV;
+  //   float E_sys = m_susyObj[m_eleIDDefault]->GetJetTLV(jetIdx).E() / GeV;
 
   //   // Try to find this jet in the list of SusyNt jets
   //   Susy::Jet* jetOut = 0;
@@ -1221,7 +1177,7 @@ void SusyNtMaker::saveTauSF(SusyNtSys sys)
   //   uint tauIdx = m_preTaus[iTau];
 
   //   // Get the systematic shifted E, used to calculate a shift factor
-  //   float E_sys = m_susyObj.GetTauTLV(tauIdx).E() / GeV;
+  //   float E_sys = m_susyObj[m_eleIDDefault]->GetTauTLV(tauIdx).E() / GeV;
 
   //   // Try to find this tau in the list of SusyNt taus
   //   Susy::Tau* tauOut = 0;
@@ -1255,7 +1211,7 @@ void SusyNtMaker::addMissingElectron(const LeptonInfo* lep, SusyNtSys sys)
   // // NOTE: this overwrites the TLV in SUSYObjDef with the nominal variables,
   // // regardless of our current systematic.
   // const D3PDReader::ElectronD3PDObjectElement* element = lep->getElectronElement();
-  // m_susyObj.SetElecTLV(lep->idx(), element->eta(), element->phi(), element->cl_eta(), element->cl_phi(), element->cl_E(),
+  // m_susyObj[m_eleIDDefault]->SetElecTLV(lep->idx(), element->eta(), element->phi(), element->cl_eta(), element->cl_phi(), element->cl_E(),
   //                      element->tracketa(), element->trackphi(), element->nPixHits(), element->nSCTHits(), SystErr::NONE);
   // // Now push it back onto to susyNt
   // fillElectronVars(lep);
@@ -1270,7 +1226,7 @@ void SusyNtMaker::addMissingMuon(const LeptonInfo* lep, SusyNtSys sys)
   // // NOTE: this overwrites the TLV in SUSYObjDef with the nominal variables,
   // // regardless of our current systematic.
   // const D3PDReader::MuonD3PDObjectElement* element = lep->getMuonElement();
-  // m_susyObj.SetMuonTLV(lep->idx(), element->pt(), element->eta(), element->phi(),
+  // m_susyObj[m_eleIDDefault]->SetMuonTLV(lep->idx(), element->pt(), element->eta(), element->phi(),
   //                      element->me_qoverp_exPV(), element->id_qoverp_exPV(), element->me_theta_exPV(),
   //                      element->id_theta_exPV(), element->charge(), element->isCombinedMuon(),
   //                      element->isSegmentTaggedMuon(), SystErr::NONE);
@@ -1281,14 +1237,14 @@ void SusyNtMaker::addMissingMuon(const LeptonInfo* lep, SusyNtSys sys)
 void SusyNtMaker::addMissingJet(int index, SusyNtSys sys)
 {
   // // Get the systematic shifted E, used to calculate a shift factor
-  // //TLorentzVector tlv_sys = m_susyObj.GetJetTLV(index);
-  // //float E_sys = m_susyObj.GetJetTLV(index).E();
+  // //TLorentzVector tlv_sys = m_susyObj[m_eleIDDefault]->GetJetTLV(index);
+  // //float E_sys = m_susyObj[m_eleIDDefault]->GetJetTLV(index).E();
 
   // // Reset the Nominal TLV
   // // NOTE: this overwrites the TLV in SUSYObjDef with the nominal variables,
   // // regardless of our current systematic.
   // const D3PDReader::JetD3PDObjectElement* jet = &m_event.jet_AntiKt4LCTopo[index];
-  // m_susyObj.FillJet(index, jet->pt(), jet->eta(), jet->phi(), jet->E(),
+  // m_susyObj[m_eleIDDefault]->FillJet(index, jet->pt(), jet->eta(), jet->phi(), jet->E(),
   //                   jet->constscale_eta(), jet->constscale_phi(), jet->constscale_E(), jet->constscale_m(),
   //                   jet->ActiveAreaPx(), jet->ActiveAreaPy(), jet->ActiveAreaPz(), jet->ActiveAreaE(),
   //                   m_event.Eventshape.rhoKt4LC(),
@@ -1304,14 +1260,14 @@ void SusyNtMaker::addMissingTau(int index, SusyNtSys sys)
   // // This tau did not pass nominal cuts, and therefore
   // // needs to be added, but with the correct TLV.
   // // Get the systematic shifted E, used to calculate a shift factor
-  // //TLorentzVector tlv_sys = m_susyObj.GetTauTLV(index);
-  // //float E_sys = m_susyObj.GetTauTLV(index).E();
+  // //TLorentzVector tlv_sys = m_susyObj[m_eleIDDefault]->GetTauTLV(index);
+  // //float E_sys = m_susyObj[m_eleIDDefault]->GetTauTLV(index).E();
   // // Grab the d3pd variables
   // const D3PDReader::TauD3PDObjectElement* element = & m_event.tau[index];
   // // Reset the Nominal TLV
   // // NOTE: this overwrites the TLV in SUSYObjDef with the nominal variables,
   // // regardless of our current systematic.
-  // m_susyObj.SetTauTLV(index, element->pt(), element->eta(), element->phi(), element->Et(), element->numTrack(),
+  // m_susyObj[m_eleIDDefault]->SetTauTLV(index, element->pt(), element->eta(), element->phi(), element->Et(), element->numTrack(),
   //                     element->leadTrack_eta(), SUSYTau::TauMedium, SystErr::NONE, true);
   // // Fill the tau vars for this guy
   // fillTauVar(index);
@@ -1449,7 +1405,7 @@ bool SusyNtMaker::passEventlevelSelection()
     bool pass_susyprop(!m_hasSusyProp);
     bool pass_grl(m_cutFlags & ECut_GRL), pass_lar(m_cutFlags & ECut_LarErr), pass_tile(m_cutFlags & ECut_TileErr);
     bool pass_ttc(m_cutFlags & ECut_TTC), pass_goodpv(m_cutFlags & ECut_GoodVtx), pass_tiletrip(m_cutFlags & ECut_TileTrip);
-    bool pass_wwfix(true); //(!m_isMC || (m_susyObj.Sherpa_WW_veto())); // DG-2014-08-16 sherpa ww bugfix probably obsolete
+    bool pass_wwfix(true); //(!m_isMC || (m_susyObj[m_eleIDDefault]->Sherpa_WW_veto())); // DG-2014-08-16 sherpa ww bugfix probably obsolete
 
     fillCutFlow(true, w); // initial bin
     fillCutFlow.includeThisCut(false); // susyProp just counts (for normalization), doesn't drop
