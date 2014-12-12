@@ -676,78 +676,78 @@ void SusyNtMaker::storeTau(const xAOD::TauJet &tau)
     out.m   = m;
     bool all_available=true;
     out.q = tau.charge();
-
-  // tauOut->author                = element->author(); // suneet: there is no author flag anymore?
-  // tauOut->nTrack                = element->numTrack();
-    tauOut.nTrack = tau.nTracks();
-  // tauOut->eleBDT                = element->BDTEleScore();
-    tauOut.eleBDT = tau.discriminant(xAOD::TauJetParameters::BDTEleScore);
-  // tauOut->jetBDT                = element->BDTJetScore();
-    tauOut.jetBDT = tau.discriminant(xAOD::TauJetParameters::BDTJetScore);
-  // tauOut->jetBDTSigLoose        = element->JetBDTSigLoose();
-    tauOut.jetBDTSigLoose = tau.isTau(xAOD::TauJetParameters::JetBDTSigLoose);
-  // tauOut->jetBDTSigMedium       = element->JetBDTSigMedium();
-    tauOut.jetBDTSigMedium = tau.isTau(xAOD::TauJetParameters::JetBDTSigMedium);
-  // tauOut->jetBDTSigTight        = element->JetBDTSigTight();
-  tauOut.jetBDTSigTight = tau.isTau(xAOD::TauJetParameters::JetBDTSigTight);
-  // // New ele BDT corrections
-  // //tauOut->eleBDTLoose           = element->EleBDTLoose();
-  // //tauOut->eleBDTMedium          = element->EleBDTMedium();
-  // //tauOut->eleBDTTight           = element->EleBDTTight();
-  // tauOut->eleBDTLoose           = m_susyObj[m_eleIDDefault]->GetCorrectedEleBDTFlag(SUSYTau::TauLoose, element->EleBDTLoose(),
-  //                                                                  element->BDTEleScore(), element->numTrack(),
-  //                                                                  tauLV->Pt(), element->leadTrack_eta());
-  tauOut.eleBDTLoose = tau.isTau(xAOD::TauJetParameters::EleBDTLoose);
-  // tauOut->eleBDTMedium          = m_susyObj.GetCorrectedEleBDTFlag(SUSYTau::TauMedium, element->EleBDTMedium(),
-  //                                                                  element->BDTEleScore(), element->numTrack(),
-  //                                                                  tauLV->Pt(), element->leadTrack_eta());
-  tauOut.eleBDTMedium = tau.isTau(xAOD::TauJetParameters::EleBDTMedium);
-  // tauOut->eleBDTTight           = m_susyObj.GetCorrectedEleBDTFlag(SUSYTau::TauTight, element->EleBDTTight(),
-  //                                                                  element->BDTEleScore(), element->numTrack(),
-  //                                                                  tauLV->Pt(), element->leadTrack_eta());
-  tauOut.eleBDTTight = tau.isTau(xAOD::TauJetParameters::EleBDTTight);
-  // tauOut->muonVeto              = element->muonVeto();
-  tauOut.muonVeto = tau.isTau(xAOD::TauJetParameters::MuonVeto);
-  // tauOut->trueTau               = m_isMC? element->trueTauAssoc_matched() : false;
-
-  // tauOut->matched2TruthLepton   = m_isMC? m_recoTruthMatch.Matched2TruthLepton(*tauLV, true) : false;
-  // tauOut->detailedTruthType     = m_isMC? m_recoTruthMatch.TauDetailedFakeType(*tauLV) : -1;
-  // tauOut->truthType             = m_isMC? m_recoTruthMatch.TauFakeType(tauOut->detailedTruthType) : -1;
-
-  // // ID efficiency scale factors
-  // if(m_isMC){
-  //   #define TAU_ARGS TauCorrUncert::BDTLOOSE, tauLV->Eta(), element->numTrack()
-  //   //TauCorrections* tauSF       = m_susyObj[m_eleIDDefault]->GetTauCorrectionsProvider();
-  //   TauCorrUncert::TauSF* tauSF = m_susyObj[m_eleIDDefault]->GetSFTool();
-  //   //tauOut->looseEffSF        = tauSF->GetIDSF(TauCorrUncert::BDTLOOSE, tauLV->Eta(), element->numTrack());
-  //   //tauOut->mediumEffSF       = tauSF->GetIDSF(TauCorrUncert::BDTMEDIUM, tauLV->Eta(), element->numTrack());
-  //   //tauOut->tightEffSF        = tauSF->GetIDSF(TauCorrUncert::BDTTIGHT, tauLV->Eta(), element->numTrack());
-  //   //tauOut->errLooseEffSF     = tauSF->GetIDSFUnc(TauCorrUncert::BDTLOOSE, tauLV->Eta(), element->numTrack());
-  //   //tauOut->errMediumEffSF    = tauSF->GetIDSFUnc(TauCorrUncert::BDTMEDIUM, tauLV->Eta(), element->numTrack());
-  //   //tauOut->errTightEffSF     = tauSF->GetIDSFUnc(TauCorrUncert::BDTTIGHT, tauLV->Eta(), element->numTrack());
-  //   tauOut->looseEffSF          = tauSF->GetIDSF(TAU_ARGS);
-  //   tauOut->mediumEffSF         = tauSF->GetIDSF(TAU_ARGS);
-  //   tauOut->tightEffSF          = tauSF->GetIDSF(TAU_ARGS);
-  //   tauOut->errLooseEffSF       = sqrt(pow(tauSF->GetIDStatUnc(TAU_ARGS), 2) + pow(tauSF->GetIDSysUnc(TAU_ARGS), 2));
-  //   tauOut->errMediumEffSF      = sqrt(pow(tauSF->GetIDStatUnc(TAU_ARGS), 2) + pow(tauSF->GetIDSysUnc(TAU_ARGS), 2));
-  //   tauOut->errTightEffSF       = sqrt(pow(tauSF->GetIDStatUnc(TAU_ARGS), 2) + pow(tauSF->GetIDSysUnc(TAU_ARGS), 2));
-  //   #undef TAU_ARGS
-
-  //   if(element->numTrack()==1){
-  //     float eta = element->leadTrack_eta();
-  //     tauOut->looseEVetoSF      = tauSF->GetEVetoSF(eta, TauCorrUncert::BDTLOOSE, TauCorrUncert::LOOSE, TauCorrUncert::MEDIUMPP);
-  //     tauOut->mediumEVetoSF     = tauSF->GetEVetoSF(eta, TauCorrUncert::BDTMEDIUM, TauCorrUncert::MEDIUM, TauCorrUncert::MEDIUMPP);
-  //     // Doesn't currently work. Not sure why. Maybe they don't provide SFs for this combo
-  //     //tauOut->tightEVetoSF      = tauSF->GetEVetoSF(eta, TauCorrUncert::BDTTIGHT, TauCorrUncert::TIGHT, TauCorrUncert::MEDIUMPP);
-  //     tauOut->errLooseEVetoSF   = tauSF->GetEVetoSFUnc(eta, TauCorrUncert::BDTLOOSE, TauCorrUncert::LOOSE, TauCorrUncert::MEDIUMPP, 1);
-  //     tauOut->errMediumEVetoSF  = tauSF->GetEVetoSFUnc(eta, TauCorrUncert::BDTMEDIUM, TauCorrUncert::MEDIUM, TauCorrUncert::MEDIUMPP, 1);
-  //     //tauOut->errTightEVetoSF   = tauSF->GetEVetoSFUnc(eta, TauCorrUncert::BDTTIGHT, TauCorrUncert::TIGHT, TauCorrUncert::MEDIUMPP, 1);
-  //   }
-  // }
-
-  // tauOut->trigFlags             = m_tauTrigFlags[tauIdx];
-
-  // tauOut->idx   = tauIdx;
+    
+    // tauOut->author                = element->author(); // suneet: there is no author flag anymore?
+    // tauOut->nTrack                = element->numTrack();
+    out.nTrack = tau.nTracks();
+    // tauOut->eleBDT                = element->BDTEleScore();
+    out.eleBDT = tau.discriminant(xAOD::TauJetParameters::BDTEleScore);
+    // tauOut->jetBDT                = element->BDTJetScore();
+    out.jetBDT = tau.discriminant(xAOD::TauJetParameters::BDTJetScore);
+    // tauOut->jetBDTSigLoose        = element->JetBDTSigLoose();
+    out.jetBDTSigLoose = tau.isTau(xAOD::TauJetParameters::JetBDTSigLoose);
+    // tauOut->jetBDTSigMedium       = element->JetBDTSigMedium();
+    out.jetBDTSigMedium = tau.isTau(xAOD::TauJetParameters::JetBDTSigMedium);
+    // tauOut->jetBDTSigTight        = element->JetBDTSigTight();
+    out.jetBDTSigTight = tau.isTau(xAOD::TauJetParameters::JetBDTSigTight);
+    // // New ele BDT corrections
+    // //tauOut->eleBDTLoose           = element->EleBDTLoose();
+    // //tauOut->eleBDTMedium          = element->EleBDTMedium();
+    // //tauOut->eleBDTTight           = element->EleBDTTight();
+    // tauOut->eleBDTLoose           = m_susyObj[m_eleIDDefault]->GetCorrectedEleBDTFlag(SUSYTau::TauLoose, element->EleBDTLoose(),
+    //                                                                  element->BDTEleScore(), element->numTrack(),
+    //                                                                  tauLV->Pt(), element->leadTrack_eta());
+    out.eleBDTLoose = tau.isTau(xAOD::TauJetParameters::EleBDTLoose);
+    // tauOut->eleBDTMedium          = m_susyObj.GetCorrectedEleBDTFlag(SUSYTau::TauMedium, element->EleBDTMedium(),
+    //                                                                  element->BDTEleScore(), element->numTrack(),
+    //                                                                  tauLV->Pt(), element->leadTrack_eta());
+    out.eleBDTMedium = tau.isTau(xAOD::TauJetParameters::EleBDTMedium);
+    // tauOut->eleBDTTight           = m_susyObj.GetCorrectedEleBDTFlag(SUSYTau::TauTight, element->EleBDTTight(),
+    //                                                                  element->BDTEleScore(), element->numTrack(),
+    //                                                                  tauLV->Pt(), element->leadTrack_eta());
+    out.eleBDTTight = tau.isTau(xAOD::TauJetParameters::EleBDTTight);
+    // tauOut->muonVeto              = element->muonVeto();
+    out.muonVeto = tau.isTau(xAOD::TauJetParameters::MuonVeto);
+    // tauOut->trueTau               = m_isMC? element->trueTauAssoc_matched() : false;
+    
+    // tauOut->matched2TruthLepton   = m_isMC? m_recoTruthMatch.Matched2TruthLepton(*tauLV, true) : false;
+    // tauOut->detailedTruthType     = m_isMC? m_recoTruthMatch.TauDetailedFakeType(*tauLV) : -1;
+    // tauOut->truthType             = m_isMC? m_recoTruthMatch.TauFakeType(tauOut->detailedTruthType) : -1;
+    
+    // // ID efficiency scale factors
+    // if(m_isMC){
+    //   #define TAU_ARGS TauCorrUncert::BDTLOOSE, tauLV->Eta(), element->numTrack()
+    //   //TauCorrections* tauSF       = m_susyObj[m_eleIDDefault]->GetTauCorrectionsProvider();
+    //   TauCorrUncert::TauSF* tauSF = m_susyObj[m_eleIDDefault]->GetSFTool();
+    //   //tauOut->looseEffSF        = tauSF->GetIDSF(TauCorrUncert::BDTLOOSE, tauLV->Eta(), element->numTrack());
+    //   //tauOut->mediumEffSF       = tauSF->GetIDSF(TauCorrUncert::BDTMEDIUM, tauLV->Eta(), element->numTrack());
+    //   //tauOut->tightEffSF        = tauSF->GetIDSF(TauCorrUncert::BDTTIGHT, tauLV->Eta(), element->numTrack());
+    //   //tauOut->errLooseEffSF     = tauSF->GetIDSFUnc(TauCorrUncert::BDTLOOSE, tauLV->Eta(), element->numTrack());
+    //   //tauOut->errMediumEffSF    = tauSF->GetIDSFUnc(TauCorrUncert::BDTMEDIUM, tauLV->Eta(), element->numTrack());
+    //   //tauOut->errTightEffSF     = tauSF->GetIDSFUnc(TauCorrUncert::BDTTIGHT, tauLV->Eta(), element->numTrack());
+    //   tauOut->looseEffSF          = tauSF->GetIDSF(TAU_ARGS);
+    //   tauOut->mediumEffSF         = tauSF->GetIDSF(TAU_ARGS);
+    //   tauOut->tightEffSF          = tauSF->GetIDSF(TAU_ARGS);
+    //   tauOut->errLooseEffSF       = sqrt(pow(tauSF->GetIDStatUnc(TAU_ARGS), 2) + pow(tauSF->GetIDSysUnc(TAU_ARGS), 2));
+    //   tauOut->errMediumEffSF      = sqrt(pow(tauSF->GetIDStatUnc(TAU_ARGS), 2) + pow(tauSF->GetIDSysUnc(TAU_ARGS), 2));
+    //   tauOut->errTightEffSF       = sqrt(pow(tauSF->GetIDStatUnc(TAU_ARGS), 2) + pow(tauSF->GetIDSysUnc(TAU_ARGS), 2));
+    //   #undef TAU_ARGS
+    
+    //   if(element->numTrack()==1){
+    //     float eta = element->leadTrack_eta();
+    //     tauOut->looseEVetoSF      = tauSF->GetEVetoSF(eta, TauCorrUncert::BDTLOOSE, TauCorrUncert::LOOSE, TauCorrUncert::MEDIUMPP);
+    //     tauOut->mediumEVetoSF     = tauSF->GetEVetoSF(eta, TauCorrUncert::BDTMEDIUM, TauCorrUncert::MEDIUM, TauCorrUncert::MEDIUMPP);
+    //     // Doesn't currently work. Not sure why. Maybe they don't provide SFs for this combo
+    //     //tauOut->tightEVetoSF      = tauSF->GetEVetoSF(eta, TauCorrUncert::BDTTIGHT, TauCorrUncert::TIGHT, TauCorrUncert::MEDIUMPP);
+    //     tauOut->errLooseEVetoSF   = tauSF->GetEVetoSFUnc(eta, TauCorrUncert::BDTLOOSE, TauCorrUncert::LOOSE, TauCorrUncert::MEDIUMPP, 1);
+    //     tauOut->errMediumEVetoSF  = tauSF->GetEVetoSFUnc(eta, TauCorrUncert::BDTMEDIUM, TauCorrUncert::MEDIUM, TauCorrUncert::MEDIUMPP, 1);
+    //     //tauOut->errTightEVetoSF   = tauSF->GetEVetoSFUnc(eta, TauCorrUncert::BDTTIGHT, TauCorrUncert::TIGHT, TauCorrUncert::MEDIUMPP, 1);
+    //   }
+    // }
+    
+    // tauOut->trigFlags             = m_tauTrigFlags[tauIdx];
+    
+    // tauOut->idx   = tauIdx;
     if(m_dbg && !all_available) cout<<"missing some tau variables"<<endl;
     m_susyNt.tau()->push_back(out);
 }
