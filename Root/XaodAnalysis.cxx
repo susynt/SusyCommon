@@ -775,6 +775,7 @@ void XaodAnalysis::clearOutputObjects()
   m_preElectrons.clear();
   m_preMuons.clear();
   m_preJets.clear();
+  m_preTaus.clear();
   m_preLeptons.clear();
   m_baseElectrons.clear();
   m_baseMuons.clear();
