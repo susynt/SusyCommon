@@ -192,8 +192,9 @@ bool SusyNtMaker::selectEvent()
   if(m_dbg>=5) cout << "selectEvent" << endl;
   clearOutputObjects();
   m_susyNt.clear();
-  return (passEventlevelSelection() &&
-          passObjectlevelSelection());
+  bool pass_event_and_object_sel = (passEventlevelSelection() && passObjectlevelSelection());
+  bool keep_all_events(!m_filter);
+  return (pass_event_and_object_sel || keep_all_events);
 }
 //----------------------------------------------------------
 void SusyNtMaker::fillNtVars()
