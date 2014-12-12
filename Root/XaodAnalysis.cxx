@@ -1220,9 +1220,11 @@ float XaodAnalysis::getXsecWeight()
 float XaodAnalysis::getLumiWeight()
 { return m_lumi / m_sumw; }
 //----------------------------------------------------------
-float XaodAnalysis::getPileupWeight()
+float XaodAnalysis::getPileupWeight(const xAOD::EventInfo* eventinfo)
 {
   if(!m_isMC) return 1;
+  if(eventinfo->runNumber() == 222222) return 1; //Cannot yet reweight mc14_13TeV
+
   m_pileupReweightingTool->execute();
   return xaodEventInfo()->auxdata< double >( "PileupWeight" );
 }

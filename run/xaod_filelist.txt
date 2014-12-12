@@ -1,1 +1,1 @@
-/scratch/gerbaudo/xaod_example_input/AOD.01507244._011801.pool.root.1
+/scratch/gerbaudo/xaod_example_input/mc14_13TeV.204422.Herwigpp_UEEE4_CTEQ6L1_Tt_T800_L1.merge.AOD.e3064_s1982_s2008_r5787_r5853/AOD.01604167._000005.pool.root.1

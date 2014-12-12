@@ -12,11 +12,23 @@
 function prepare_filelist {
     local dest_file="xaod_filelist.txt"
     local input_files=""
+    #See /scratch/gerbaudo/xaod_example_input/README
+
     #input_files+=" root://eosatlas//eos/atlas/user/j/jpoveda/r5625_test/AOD.01507244._011801.pool.root.1"
     #input_files+="/scratch/gerbaudo/xaod_example_input/mc14_8TeV.117050.PowhegPythia_P2011C_ttbar.merge.AOD.e1727_s1933_s1911_r5591_r5625/AOD.01522855._015079.pool.root.1"
-    input_files+="/scratch/gerbaudo/xaod_example_input/AOD.01507244._011801.pool.root.1"  #Ximo test file - See README in that dir.
+
     #input_files+="/scratch/gerbaudo/xaod_example_input/data12_8TeV.00204442.physics_Egamma.merge.AOD.r5723_p1751_tid01534464_00/AOD.01534464._000002.pool.root.1"  #data xAOD
     #input_files+="/scratch/gerbaudo/xaod_example_input/mc14_8TeV.117050.PowhegPythia_P2011C_ttbar.merge.AOD.e1727_s1933_s1911_r5591_r5625_tid01522855_00/AOD.01522855._015010.pool.root.1" #ttbar xAOD
+    
+    #input_files+="/scratch/gerbaudo/xaod_example_input/AOD.01507244._011801.pool.root.1"  #Ximo original test file 
+    input_files+="/scratch/gerbaudo/xaod_example_input/mc14_13TeV.204422.Herwigpp_UEEE4_CTEQ6L1_Tt_T800_L1.merge.AOD.e3064_s1982_s2008_r5787_r5853/AOD.01604167._000005.pool.root.1" #ttbar Ximo
+    
+    #DC14
+    #input_files+="/scratch/gerbaudo/xaod_example_input/mc14_8TeV.117050.PowhegPythia_P2011C_ttbar.merge.AOD.e1727_s1933_s1911_r5591_r5625/AOD.01522855._015010.pool.root.1"  #ttbar DxAOD
+    #input_files+="/scratch/gerbaudo/xaod_example_input/mc14_8TeV.117050.PowhegPythia_P2011C_ttbar.merge.AOD.e1727_s1933_s1911_r5591_r5625/AOD.01522855._015010.pool.root.1"  #ttbar xAOD
+    #input_files+="/scratch/gerbaudo/xaod_example_input/data12_8TeV.00204442.physics_Egamma.merge.AOD.r5723_p1751/AOD.01534464._000002.pool.root.1" #data xAOD
+    #input_files+="/scratch/gerbaudo/xaod_example_input/mc14_valid.164288.Herwigpp_UEEE3_CTEQ6L1_simplifiedModel_wA_noslep_lepW_15.recon.AOD.e2658_s1967_s2008_r5787/AOD.04307072._000025.pool.root.1" #signal xAOD
+
     if [ ! -f ${dest_file} ]
     then
         touch ${dest_file}
@@ -59,7 +71,7 @@ function main {
         #NtMaker -f ${input_file} -saveContTau --savePh --nLepFilter 1 --nLepTauFilter 2 --filterTrig -d 10 --sys > ${tmp_detailed_log} 2>&1  
 	#to run on MC
         #NtMaker -f ${input_file} -p mc12a --saveContTau --savePh --nLepFilter 1 --nLepTauFilter 2 --filterTrig -d 0 --sys > ${tmp_detailed_log} 2>&1  
-        NtMaker -f ${input_file} -p mc12a --saveContTau --savePh --nLepFilter 1 --nLepTauFilter 2 --filterTrig  -d 10 -n 100 \
+        NtMaker -f ${input_file} -p mc12a --saveContTau --savePh --nLepFilter 1 --nLepTauFilter 2 --filterTrig --sys -d 10 -n 100 \
         > ${tmp_detailed_log} 2>&1  
 
 	more ${tmp_detailed_log} |head -n  ${nlines_head} > ${tmp_log} 

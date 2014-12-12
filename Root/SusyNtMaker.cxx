@@ -249,7 +249,7 @@ void SusyNtMaker::fillEventVars()
   evt->eventWithSusyProp= m_hasSusyProp;
   evt->trigFlags        = m_evtTrigFlags;
 
-  evt->wPileup          = m_isMC? getPileupWeight() : 1;
+  evt->wPileup          = m_isMC? getPileupWeight(eventinfo) : 1;
   evt->wPileup_up       = m_isMC? getPileupWeightUp() : 1;
   evt->wPileup_dn       = m_isMC? getPileupWeightDown() : 1;
   evt->xsec             = m_isMC? getXsecWeight() : 1;
