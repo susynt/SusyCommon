@@ -302,7 +302,8 @@ void SusyNtMaker::fillTauVars()
 {
     if(m_dbg>=5) cout<<"fillTauVars"<<endl;
     xAOD::TauJetContainer* taus =  XaodAnalysis::xaodTaus();
-    vector<int>& saveTaus = m_saveContTaus? m_contTaus : m_preTaus;
+    // vector<int>& saveTaus = m_saveContTaus? m_contTaus : m_preTaus; // container taus are meant to be used only for background estimates?
+    vector<int>& saveTaus = m_preTaus;
     for(auto &i : saveTaus){
         storeTau(*(taus->at(i)));
     }
