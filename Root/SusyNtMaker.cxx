@@ -710,26 +710,31 @@ void SusyNtMaker::storePhoton(const xAOD::Photon &in)
     m_susyNt.pho()->push_back(out);
 }
 //----------------------------------------------------------
-void SusyNtMaker::storeTau(const xAOD::TauJet &in)
+void SusyNtMaker::storeTau(const xAOD::TauJet &tau)
 {
     Susy::Tau out;
-    double pt(in.pt()*MeV2GeV), eta(in.eta()), phi(in.phi()), m(in.m()*MeV2GeV);
+    double pt(tau.pt()*MeV2GeV), eta(tau.eta()), phi(tau.phi()), m(tau.m()*MeV2GeV);
     out.SetPtEtaPhiM(pt, eta, phi, m);
     out.pt  = pt;
     out.eta = eta;
     out.phi = phi;
     out.m   = m;
     bool all_available=true;
-    out.q = in.charge();
-  // tauOut->author                = element->author();
+    out.q = tau.charge();
+
+  // tauOut->author                = element->author(); // suneet: there is no author flag anymore?
   // tauOut->nTrack                = element->numTrack();
+    tauOut.nTrack = tau.nTracks();
   // tauOut->eleBDT                = element->BDTEleScore();
+    tauOut.eleBDT = tau.discriminant(xAOD::TauJetParameters::BDTEleScore);
   // tauOut->jetBDT                = element->BDTJetScore();
-
+    tauOut.jetBDT = tau.discriminant(xAOD::TauJetParameters::BDTJetScore);
   // tauOut->jetBDTSigLoose        = element->JetBDTSigLoose();
+    tauOut.jetBDTSigLoose = tau.isTau(xAOD::TauJetParameters::JetBDTSigLoose);
   // tauOut->jetBDTSigMedium       = element->JetBDTSigMedium();
+    tauOut.jetBDTSigMedium = tau.isTau(xAOD::TauJetParameters::JetBDTSigMedium);
   // tauOut->jetBDTSigTight        = element->JetBDTSigTight();
-
+  tauOut.jetBDTSigTight = tau.isTau(xAOD::TauJetParameters::JetBDTSigTight);
   // // New ele BDT corrections
   // //tauOut->eleBDTLoose           = element->EleBDTLoose();
   // //tauOut->eleBDTMedium          = element->EleBDTMedium();
@@ -737,15 +742,17 @@ void SusyNtMaker::storeTau(const xAOD::TauJet &in)
   // tauOut->eleBDTLoose           = m_susyObj.GetCorrectedEleBDTFlag(SUSYTau::TauLoose, element->EleBDTLoose(),
   //                                                                  element->BDTEleScore(), element->numTrack(),
   //                                                                  tauLV->Pt(), element->leadTrack_eta());
+  tauOut.eleBDTLoose = tau.isTau(xAOD::TauJetParameters::EleBDTLoose);
   // tauOut->eleBDTMedium          = m_susyObj.GetCorrectedEleBDTFlag(SUSYTau::TauMedium, element->EleBDTMedium(),
   //                                                                  element->BDTEleScore(), element->numTrack(),
   //                                                                  tauLV->Pt(), element->leadTrack_eta());
+  tauOut.eleBDTMedium = tau.isTau(xAOD::TauJetParameters::EleBDTMedium);
   // tauOut->eleBDTTight           = m_susyObj.GetCorrectedEleBDTFlag(SUSYTau::TauTight, element->EleBDTTight(),
   //                                                                  element->BDTEleScore(), element->numTrack(),
   //                                                                  tauLV->Pt(), element->leadTrack_eta());
-
+  tauOut.eleBDTTight = tau.isTau(xAOD::TauJetParameters::EleBDTTight);
   // tauOut->muonVeto              = element->muonVeto();
-
+  tauOut.muonVeto = tau.isTau(xAOD::TauJetParameters::MuonVeto);
   // tauOut->trueTau               = m_isMC? element->trueTauAssoc_matched() : false;
 
   // tauOut->matched2TruthLepton   = m_isMC? m_recoTruthMatch.Matched2TruthLepton(*tauLV, true) : false;
