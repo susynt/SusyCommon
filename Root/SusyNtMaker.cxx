@@ -1365,7 +1365,7 @@ struct FillCutFlow { ///< local function object to fill the cutflow histograms
     vector< size_t > *counters;
     FillCutFlow(TH1 *r, TH1* g, TH1* p, vector< size_t > *cs) :
         raw(r), gen(g), perProcess(p), iCut(0), passAll(true), includeThisCut_(true), counters(cs) {}
-    void operator()(bool thisEventDoesPassThisCut, float weight) {
+    FillCutFlow& operator()(bool thisEventDoesPassThisCut, float weight) {
         if(thisEventDoesPassThisCut && passAll) {
             if(raw       ) raw       ->Fill(iCut);
             if(gen       ) gen       ->Fill(iCut, weight);
@@ -1375,8 +1375,10 @@ struct FillCutFlow { ///< local function object to fill the cutflow histograms
             if(includeThisCut_) passAll = false;
         }
         iCut++;
+        return *this;
     }
-    FillCutFlow& includeThisCut(bool v) { includeThisCut_ = v; return *this; }
+    FillCutFlow& disableFilterNextCuts() { includeThisCut_ = false; return *this; }
+    FillCutFlow& enableFilterNextCuts() { includeThisCut_ = true; return *this; }
 };
 //----------------------------------------------------------
 bool SusyNtMaker::passEventlevelSelection()
@@ -1394,9 +1396,7 @@ bool SusyNtMaker::passEventlevelSelection()
     bool pass_wwfix(true); //(!m_isMC || (m_susyObj[m_eleIDDefault]->Sherpa_WW_veto())); // DG-2014-08-16 sherpa ww bugfix probably obsolete
 
     fillCutFlow(true, w); // initial bin
-    fillCutFlow.includeThisCut(false); // susyProp just counts (for normalization), doesn't drop
-    fillCutFlow(pass_susyprop, w);
-    fillCutFlow.includeThisCut(true);
+    fillCutFlow.disableFilterNextCuts()(pass_susyprop, w).enableFilterNextCuts();
     fillCutFlow(pass_grl, w);
     fillCutFlow(pass_lar, w);
     fillCutFlow(pass_tile, w);
