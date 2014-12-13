@@ -135,7 +135,6 @@ Bool_t SusyNtMaker::Process(Long64_t entry)
   static Long64_t chainEntry = -1;
   chainEntry++;
   m_event.getEntry(chainEntry); // DG 2014-09-19 TEvent wants the chain entry, not the tree entry (?)
-  clearOutputObjects();
   retrieveCollections();
   
   const xAOD::EventInfo* eventinfo = XaodAnalysis::xaodEventInfo();
@@ -1021,7 +1020,7 @@ void SusyNtMaker::doSystematic()
     if(ourSys == NtSys::SYSUNKNOWN ) continue;
 
     cout << "Found syst in global registry: " << sys.name() 
-	 << " mathcing to our systematic " << NtSys::SusyNtSysNames[ourSys] << endl;
+	 << " matching to our systematic " << NtSys::SusyNtSysNames[ourSys] << endl;
 
     if ( m_susyObj[m_eleIDDefault]->applySystematicVariation(sys) != CP::SystematicCode::Ok){
       cout << "SusyNtMaker::doSystematic - cannot configure SUSYTools for " << sys.name() << endl;
@@ -1033,10 +1032,11 @@ void SusyNtMaker::doSystematic()
       Do our stuff here
     */
     deleteShallowCopies(false);//Don't clear the nominal containers
+    clearContainerPointers(false);
     clearOutputObjects(false);
     selectObjects(ourSys, sysInfo);
-    retrieveXaodMet(ourSys);
-
+    retrieveXaodMet(sysInfo,ourSys);
+    
     //Reset the systematics for all tools
     m_susyObj[m_eleIDDefault]->resetSystematics();
   }

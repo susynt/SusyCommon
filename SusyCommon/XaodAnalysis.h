@@ -151,7 +151,7 @@ class XaodAnalysis : public TSelector
     virtual const xAOD::TruthParticleContainer* xaodTruthParticles();
 
     /// retrieve met
-    virtual void retrieveXaodMet(SusyNtSys sys = NtSys::NOM);
+    virtual void retrieveXaodMet(ST::SystInfo sysInfo, SusyNtSys sys = NtSys::NOM);
 
     /// access the vertices
     static const xAOD::VertexContainer* retrieveVertices(xAOD::TEvent &e, bool dbg);
@@ -507,7 +507,7 @@ class XaodAnalysis : public TSelector
        XaodAnalysis::deleteShallowCopies), but for the other ones we
        just need to reset the chached pointer.
      */
-    XaodAnalysis& clearContainerPointers();
+    XaodAnalysis& clearContainerPointers(bool deleteNominal=true);
 
 
 
