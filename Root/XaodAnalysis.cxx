@@ -459,20 +459,15 @@ void XaodAnalysis::selectBaselineObjects(SusyNtSys sys)
     int iEl = -1;
     for(;el_itr!=el_end; ++el_itr){ // todo: use std::transform
         xAOD::Electron &el = **el_itr;
-	iEl++;
-	//AT-2014-11-05: What was the definition used in Run1?
-	// Put all the hard coded cuts into a header file
-        CHECK (m_susyObj[m_eleIDDefault]->FillElectron(el, 7));
-	m_susyObj[m_eleIDDefault]->IsSignalElectron(el);
-
-	if( !el.auxdata< char >("baseline")) continue;
-	m_preElectrons.push_back(iEl);
-	if(el.auxdata< char >("baseline"))  m_baseElectrons.push_back(iEl);
-
-	if(m_dbg) cout<<"El passing"
-		      <<" baseline? "<<el.auxdata< char >("baseline")
-		      <<" signal? "<<el.auxdata< char >("signal") 
-		      <<endl;
+        iEl++;
+        m_susyObj[m_eleIDDefault]->IsSignalElectron(el);
+        if( !el.auxdata< char >("baseline")) continue;
+        m_preElectrons.push_back(iEl);
+        if(el.auxdata< char >("baseline"))  m_baseElectrons.push_back(iEl);
+        if(m_dbg) cout<<"El passing"
+                      <<" baseline? "<<el.auxdata< char >("baseline")
+                      <<" signal? "<<el.auxdata< char >("signal")
+                      <<endl;
     }
     if(m_dbg) cout<<"preElectrons["<<m_preElectrons.size()<<"]"<<endl;
 
@@ -483,10 +478,9 @@ void XaodAnalysis::selectBaselineObjects(SusyNtSys sys)
     for(;mu_itr!=mu_end; ++mu_itr){ // todo: use std::transform
         xAOD::Muon &mu = **mu_itr;
         iMu++;
-        CHECK( m_susyObj[m_eleIDDefault]->FillMuon(mu) );
-	m_preMuons.push_back(iMu);
+        m_preMuons.push_back(iMu);
         m_susyObj[m_eleIDDefault]->IsSignalMuon(mu);
-	m_susyObj[m_eleIDDefault]->IsCosmicMuon(mu);
+        m_susyObj[m_eleIDDefault]->IsCosmicMuon(mu);
         if(m_dbg) cout<<"Mu passing"
                       <<" baseline? "<<mu.auxdata< char >("baseline")
                       <<" signal? "<<mu.auxdata< char >("signal")
@@ -504,9 +498,6 @@ void XaodAnalysis::selectBaselineObjects(SusyNtSys sys)
         xAOD::Jet &jet = **jet_itr;
         iJet++;
         m_preJets.push_back(iJet);
-	//AT:2014-11-08: remove comment on the next 2 lines... why were these commented out?
-	m_susyObj[m_eleIDDefault]->FillJet(jet);
-	//m_susyObj[m_eleIDDefault]->IsGoodJet(jet); //AT done in FillJet 12/09/14
         m_susyObj[m_eleIDDefault]->IsBJet(jet);
         if(m_dbg) cout<<"Jet passing"
                       <<" baseline? "<<jet.auxdata< char >("baseline")
@@ -524,7 +515,6 @@ void XaodAnalysis::selectBaselineObjects(SusyNtSys sys)
     for(auto it=taus->begin(), end=taus->end(); it!=end; ++it){
         xAOD::TauJet &tau = **it;
         iTau++;
-        CHECK ( m_susyObj[m_eleIDDefault]->FillTau(tau) );
         m_susyObj[m_eleIDDefault]->IsSignalTau(tau);
         if(tau.auxdata< char >("baseline"))
             m_preTaus.push_back(iTau);
