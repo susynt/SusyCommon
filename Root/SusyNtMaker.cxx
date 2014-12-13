@@ -97,6 +97,7 @@ const std::vector< std::string > SusyNtMaker::cutflowLabels()
     labels.push_back("Bad Muon"       );
     labels.push_back("Cosmic"         );
     labels.push_back(">=1 lep"        );
+    labels.push_back(">=2 base lep"   );
     labels.push_back(">=2 lep"        );
     labels.push_back("==3 lep"        );
     return labels;
@@ -1429,6 +1430,7 @@ bool SusyNtMaker::passObjectlevelSelection()
     fillCutFlow.iCut = 8; // we've filled up to 'Buggy WWSherpa' in passEventlevelSelection
     bool pass_hotspot(true), pass_basdjet(true), pass_badmuon(true), pass_cosmic(true); // dummy values, todo
     bool pass_ge1l(1<=(m_sigElectrons.size()+m_sigMuons.size()));
+    bool pass_ge2bl(2<=(m_baseElectrons.size()+m_baseMuons.size()));
     bool pass_ge2l(2<=(m_sigElectrons.size()+m_sigMuons.size()));
     bool pass_eq3l(3==(m_sigElectrons.size()+m_sigMuons.size()));
     float w = m_susyNt.evt()->w;
@@ -1436,13 +1438,15 @@ bool SusyNtMaker::passObjectlevelSelection()
     fillCutFlow(pass_basdjet, w);
     fillCutFlow(pass_badmuon, w);
     fillCutFlow(pass_cosmic, w);
-    fillCutFlow(pass_ge1l, w);
+    fillCutFlow.disableFilterNextCuts()(pass_ge1l, w).enableFilterNextCuts();
+    fillCutFlow(pass_ge2bl, w);
     fillCutFlow(pass_ge2l, w);
     fillCutFlow(pass_eq3l, w);
     bool has_at_least_one_lepton = pass_ge1l;
-    if(m_dbg>=5 && !has_at_least_one_lepton)
+    bool has_at_least_two_base_leptons = pass_ge2bl;
+    if(m_dbg>=5 && !has_at_least_two_base_leptons)
       cout << "SusyNtMaker: fail passObjectlevelSelection " << endl;
-    return has_at_least_one_lepton;
+    return has_at_least_two_base_leptons;
 }
 //----------------------------------------------------------
 #undef GeV
