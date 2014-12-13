@@ -107,7 +107,6 @@ class XaodAnalysis : public TSelector
     // Systematic Methods
     void getSystematicList();
 
-
     /// access the event info
     /**
       \todo: all these xaod getters should be cached (if they are a bottleneck) DG-2014-08-16 to be checked
@@ -123,24 +122,24 @@ class XaodAnalysis : public TSelector
        override this member function, and easily switch to another
        muon collection.
      */
-    virtual xAOD::MuonContainer* xaodMuons();
+    virtual xAOD::MuonContainer* xaodMuons(SusyNtSys sys = NtSys::NOM);
     /// access the default collection of electrons from SUSYObjDef_xAOD
     /**
        By default returns m_event.el; for its motivation, see XaodAnalysis::xaodMuons().
      */
-    virtual xAOD::ElectronContainer* xaodElectrons();
+    virtual xAOD::ElectronContainer* xaodElectrons(SusyNtSys sys = NtSys::NOM);
     /// access the default collection of taus from the SUSYObjDef_xAOD
     /**
        By default returns m_event.tau; for its motivation, see XaodAnalysis::xaodMuons().
      */
-    virtual xAOD::TauJetContainer* xaodTaus();
+    virtual xAOD::TauJetContainer* xaodTaus(SusyNtSys sys = NtSys::NOM);
     /// access the default collection of jets from the SUSYObjDef_xAOD
     /**
        By default returns m_event.jet_AntiKt4LCTopo; for its motivation, see XaodAnalysis::xaodMuons().
      */
-    virtual xAOD::JetContainer* xaodJets();
+    virtual xAOD::JetContainer* xaodJets(SusyNtSys sys = NtSys::NOM);
     /// access the default collection of photons from SUSYObjDef_xAOD
-    virtual xAOD::PhotonContainer* xaodPhotons();
+    virtual xAOD::PhotonContainer* xaodPhotons(SusyNtSys sys = NtSys::NOM);
     /// access the truth event
     static const xAOD::TruthEventContainer* retrieveTruthEvent(xAOD::TEvent &e, bool dbg);
     /// wrapper of retrieveTruthEvent; store outputs as datamembers
@@ -152,7 +151,7 @@ class XaodAnalysis : public TSelector
     virtual const xAOD::TruthParticleContainer* xaodTruthParticles();
 
     /// retrieve met
-    virtual void retrieveXaodMet();
+    virtual void retrieveXaodMet(SusyNtSys sys = NtSys::NOM);
 
     /// access the vertices
     static const xAOD::VertexContainer* retrieveVertices(xAOD::TEvent &e, bool dbg);
@@ -170,9 +169,9 @@ class XaodAnalysis : public TSelector
        Selected leptons have kinematic and cleaning cuts (no overlap removal)
        Baseline leptons = selected + overlap removed
     */
-    void selectObjects(SusyNtSys sys);
-    void selectBaselineObjects(SusyNtSys sys);
-    void selectSignalObjects();
+    void selectObjects(SusyNtSys sys, ST::SystInfo sysInfo);
+    void selectBaselineObjects(SusyNtSys sys, ST::SystInfo sysInfo);
+    void selectSignalObjects(SusyNtSys sys, ST::SystInfo sysInfo);
     void performOverlapRemoval();
     void selectSignalPhotons();
     void selectTruthObjects();
@@ -181,7 +180,7 @@ class XaodAnalysis : public TSelector
     void buildMet(SusyNtSys sys = NtSys::NOM);
 
     // Clear object selection
-    void clearOutputObjects();
+    void clearOutputObjects(bool deleteNominal=true);
 
 
     //
@@ -363,6 +362,16 @@ class XaodAnalysis : public TSelector
     std::vector<int>            m_sigPhotons;   // signal photons
     std::vector<int>            m_sigJets;      // signal jets
 
+
+    //Keep track of the nominal pre_object selected 
+    //Use when doing systematics
+    std::vector<int>            m_preElectrons_nom; // selected electrons
+    std::vector<int>            m_preMuons_nom;     // selected muons
+    std::vector<LeptonInfo>     m_preLeptons_nom;   // selected leptons
+    std::vector<int>            m_preJets_nom;      // selected jets
+    std::vector<int>            m_preTaus_nom;      // selected taus
+
+
     // MET
     TLorentzVector              m_met;          // fully corrected MET
 
@@ -428,6 +437,7 @@ class XaodAnalysis : public TSelector
     eleID m_eleIDDefault;
 
     std::vector<CP::SystematicSet> sysList;  //CP Systematic list
+    std::vector<ST::SystInfo> systInfoList;  //SUSYTools simplify version
 
     /// internal pointers to the xaod containers
     /**
@@ -435,12 +445,13 @@ class XaodAnalysis : public TSelector
        the @c xaod* functions.
      */
     const xAOD::EventInfo* m_xaodEventInfo;
-    /// electrons from the xaod
     /**
        Note: one can only access collections as const. One can make
        modifiable shallow copies, but you have to remember to delete
        them at each event. (see SUSYToolsTester.cxx)
-     */
+    */
+    //Shallow copy containers
+    //Contain the calibrated objects either at the nominal calibrated scale or after systematic variation
     xAOD::MuonContainer*                m_xaodMuons;
     xAOD::ShallowAuxContainer*          m_xaodMuonsAux; ///< muon aux info
     xAOD::ElectronContainer*            m_xaodElectrons;
@@ -449,7 +460,7 @@ class XaodAnalysis : public TSelector
     xAOD::ShallowAuxContainer*          m_xaodTausAux; ///< tau aux info
     xAOD::JetContainer*                 m_xaodJets;
     xAOD::ShallowAuxContainer*          m_xaodJetsAux; ///< jet aux info
-    xAOD::JetContainer*                 m_metJets;     ///< calibrated jets used for met rebuilding
+    xAOD::JetContainer*                 m_metJets;     ///< calibrated jets used for met rebuilding //AT:11/12/14: Do we need this ???
     xAOD::ShallowAuxContainer*          m_metJetsAux;
     xAOD::PhotonContainer*              m_xaodPhotons;
     xAOD::ShallowAuxContainer*          m_xaodPhotonsAux; ///< photon aux info
@@ -466,6 +477,21 @@ class XaodAnalysis : public TSelector
     //VertexContainer
     const xAOD::VertexContainer*        m_xaodVertices; 
 
+    //
+    //Containers at the nominal scale. Needed when performing systematics variations
+    // May be there is a nicer way of doing this code wise.
+    //
+    xAOD::MuonContainer*                m_xaodMuons_nom;
+    xAOD::ShallowAuxContainer*          m_xaodMuonsAux_nom; 
+    xAOD::ElectronContainer*            m_xaodElectrons_nom;
+    xAOD::ShallowAuxContainer*          m_xaodElectronsAux_nom; 
+    xAOD::TauJetContainer*              m_xaodTaus_nom;
+    xAOD::ShallowAuxContainer*          m_xaodTausAux_nom; 
+    xAOD::JetContainer*                 m_xaodJets_nom;
+    xAOD::ShallowAuxContainer*          m_xaodJetsAux_nom;
+    xAOD::PhotonContainer*              m_xaodPhotons_nom;
+    xAOD::ShallowAuxContainer*          m_xaodPhotonsAux_nom; 
+
 
     /// cleanup shallow copies and aux containers
     /**
@@ -473,7 +499,7 @@ class XaodAnalysis : public TSelector
        XaodAnalysis::xaodMuons etc; it's the user's responsibility to
        clean things up.
     */
-    XaodAnalysis& deleteShallowCopies();
+    XaodAnalysis& deleteShallowCopies(bool deleteNominal=true);
     /// clear the internal pointers
     /**
        Note that for those containers for which we created shallow

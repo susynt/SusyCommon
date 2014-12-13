@@ -74,7 +74,7 @@ void SusyNtMaker::SlaveBegin(TTree* tree)
   if(m_dbg)
       cout<<"SusyNtMaker::SlaveBegin"<<endl;
   if(m_fillNt)
-      initializeOuputTree();
+    initializeOuputTree();
   m_isWhSample = guessWhetherIsWhSample(m_sample);
   initializeCutflowHistograms();
 
@@ -168,6 +168,7 @@ Bool_t SusyNtMaker::Process(Long64_t entry)
       }
   }
   deleteShallowCopies();
+  clearOutputObjects();
   clearContainerPointers();
   return kTRUE;
 }
@@ -1007,30 +1008,37 @@ void SusyNtMaker::fillTruthMetVars()
 /*--------------------------------------------------------------------------------*/
 void SusyNtMaker::doSystematic()
 {
-  if(m_dbg>=5) cout<< "doSystematic " << sysList.size() << endl;
-  std::vector<CP::SystematicSet>::iterator sysListItr;
-  for (sysListItr = sysList.begin(); sysListItr != sysList.end(); ++sysListItr){
-    if((*sysListItr).name()=="") continue; // skip Nominal
-    NtSys::SusyNtSys sys = NtSys::CPsys2sys((*sysListItr).name());
-    if( sys == NtSys::SYSUNKNOWN ) continue;
-    if(!NtSys::isObjectSystematic(sys)) continue;
+  if(m_dbg>=5) cout<< "doSystematic " << systInfoList.size() << endl;
+
+  for(const auto& sysInfo : systInfoList){
+    const CP::SystematicSet& sys = sysInfo.systset;
+    std::cout << ">>>> Working on variation: \"" <<(sys.name()).c_str() << "\" <<<<<<" << std::endl;
+    if(sys.name()=="") continue; // skip Nominal
+    if(!sysInfo.affectsKinematics) continue;
+    std::cout << "systematic is affecting the kinematics "<< endl;
     
-    cout << "Found syst in global registry: " << (*sysListItr).name() << endl;
-    cout << " Our systematic " << NtSys::SusyNtSysNames[sys] << endl;
-    
-    if ( m_susyObj[m_eleIDDefault]->applySystematicVariation(*sysListItr) != CP::SystematicCode::Ok){
-      cout << "SusyNtMaker::doSystematic - cannot configure SUSYTools for " << (*sysListItr).name() << endl;
+    SusyNtSys ourSys = CPsys2sys((sys.name()).c_str());
+    if(ourSys == NtSys::SYSUNKNOWN ) continue;
+
+    cout << "Found syst in global registry: " << sys.name() 
+	 << " mathcing to our systematic " << NtSys::SusyNtSysNames[ourSys] << endl;
+
+    if ( m_susyObj[m_eleIDDefault]->applySystematicVariation(sys) != CP::SystematicCode::Ok){
+      cout << "SusyNtMaker::doSystematic - cannot configure SUSYTools for " << sys.name() << endl;
       continue;
     }
 
-    
+      
     /*
       Do our stuff here
     */
+    deleteShallowCopies(false);//Don't clear the nominal containers
+    clearOutputObjects(false);
+    selectObjects(ourSys, sysInfo);
+    retrieveXaodMet(ourSys);
 
-
-
-     m_susyObj[m_eleIDDefault]->resetSystematics();
+    //Reset the systematics for all tools
+    m_susyObj[m_eleIDDefault]->resetSystematics();
   }
 
   // Loop over the systematics: start at 1, nominal already saved
@@ -1426,7 +1434,8 @@ bool SusyNtMaker::passEventlevelSelection()
 bool SusyNtMaker::passObjectlevelSelection()
 {
   SusyNtSys sys=NtSys::NOM;
-    selectObjects(sys);
+  ST::SystInfo sysInfo =  systInfoList[0];//nominal
+  selectObjects(sys,sysInfo);
     // buildMet(sys);
     // assignObjectCleaningFlags();
 
