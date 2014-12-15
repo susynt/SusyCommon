@@ -669,6 +669,7 @@ void SusyNtMaker::storeTau(const xAOD::TauJet &tau)
 {
     Susy::Tau out;
     double pt(tau.pt()*MeV2GeV), eta(tau.eta()), phi(tau.phi()), m(tau.m()*MeV2GeV);
+
     out.SetPtEtaPhiM(pt, eta, phi, m);
     out.pt  = pt;
     out.eta = eta;
@@ -676,6 +677,8 @@ void SusyNtMaker::storeTau(const xAOD::TauJet &tau)
     out.m   = m;
     bool all_available=true;
     out.q = tau.charge();
+
+    cout << "AT: Tau pt " << out.pt << " eta " << out.eta << " phi " << out.phi << endl;
     
     // tauOut->author                = element->author(); // suneet: there is no author flag anymore?
     // tauOut->nTrack                = element->numTrack();
@@ -1036,7 +1039,21 @@ void SusyNtMaker::doSystematic()
     clearOutputObjects(false);
     selectObjects(ourSys, sysInfo);
     retrieveXaodMet(sysInfo,ourSys);
+    assignEventCleaningFlags(); //AT really needed fro each systematic ?
+    assignObjectCleaningFlags();//AT really needed fro each systematic ?
+
+    bool syst_affectsElectrons = ST::testAffectsObject(xAOD::Type::Electron, sysInfo.affectsType);
+    bool syst_affectsMuons     = ST::testAffectsObject(xAOD::Type::Muon, sysInfo.affectsType);
+    bool syst_affectsTaus      = ST::testAffectsObject(xAOD::Type::Tau, sysInfo.affectsType);
+    bool syst_affectsPhotons   = ST::testAffectsObject(xAOD::Type::Photon, sysInfo.affectsType);
+    bool syst_affectsJets      = ST::testAffectsObject(xAOD::Type::Jet, sysInfo.affectsType);
     
+    if(syst_affectsElectrons) saveElectronSF(ourSys);
+    if(syst_affectsMuons)     saveMuonSF(ourSys);
+    if(syst_affectsTaus)      saveTauSF(ourSys);
+    if(syst_affectsJets)      saveJetSF(ourSys);
+    //if(syst_affectsPhotons)   savePhotonSF(ourSys);
+
     //Reset the systematics for all tools
     m_susyObj[m_eleIDDefault]->resetSystematics();
   }
@@ -1064,154 +1081,325 @@ void SusyNtMaker::doSystematic()
 /*--------------------------------------------------------------------------------*/
 void SusyNtMaker::saveElectronSF(SusyNtSys sys)
 {
-#warning saveElectronSF not implemented
-  // // Loop over preselected leptons and fill the systematic shifts
-  // for(uint iLep=0; iLep < m_preLeptons.size(); iLep++){
-  //   const LeptonInfo* lep = & m_preLeptons[iLep];
-  //   if(!lep->isElectron()) continue;
+  xAOD::ElectronContainer* electrons     = xaodElectrons(sys);
+  xAOD::ElectronContainer* electrons_nom = xaodElectrons(NtSys::NOM);
 
-  //   // Systematic shifted energy
-  //   float E_sys = lep->lv()->E() / GeV;
+  if(m_dbg>=5) cout << "saveElectronSF " << NtSys::SusyNtSysNames[sys]  << endl;
+  for(const auto &iEl : m_preElectrons){
+    const xAOD::Electron* ele = electrons->at(iEl);
+    cout << "This ele pt " << ele->pt() << " eta " << ele->eta() << " phi " << ele->phi() << endl; 
+    
+    const xAOD::Electron* ele_nom = NULL;
+    Susy::Electron* ele_susyNt = NULL;
+    int idx_susyNt=-1;
+    for(uint idx=0; idx<m_preElectrons_nom.size(); idx++){
+      int iEl_nom = m_preElectrons_nom[idx];
+      if(iEl == iEl_nom){
+	ele_nom = electrons_nom->at(iEl_nom);
+	ele_susyNt = & m_susyNt.ele()->at(idx);
+	idx_susyNt=idx;
+	if(m_dbg>=5){
+	  cout << "Found matching electron sys: " << iEl << "  " << iEl_nom << " " << idx_susyNt << endl;
+	  cout << "ele_nom pt " << ele_nom->pt() << " eta " << ele_nom->eta() << " phi " << ele_nom->phi() << endl; 
+	  ele_susyNt->print();
+	}
+	break;
+      }
+    }
 
-  //   // Try to find this electron in the list of SusyNt electrons
-  //   Susy::Electron* eleOut = 0;
-  //   for(uint iEl=0; iEl<m_susyNt.ele()->size(); iEl++){
-  //     Susy::Electron* ele = & m_susyNt.ele()->at(iEl);
-  //     if(ele->idx == lep->idx()){
-  //       eleOut = ele;
-  //       break;
-  //     }
-  //   }
+    //Electron was not found. Add it at its nominal scale to susyNt and m_preElectron_nom 
+    if(ele_susyNt == NULL){
+      cout << "susyNt electrons before" << endl;
+      for(const auto &i: *m_susyNt.ele()) i.print();
+      cout << " Electron not found - adding to susyNt" << endl;
+      ele_nom = electrons_nom->at(iEl);//assume order is preserved
+      storeElectron(*ele_nom);//this add the electron at the end... 
+      m_preElectrons_nom.push_back(iEl);
+      cout << "susyNt electrons after" << endl;
+      for(const auto &i: *m_susyNt.ele()) i.print();
+      ele_susyNt = & m_susyNt.ele()->back(); //get the newly inserted element
+      //m_susyNt.ele()->insert( m_susyNt.ele()->begin()+iEl,*ele_susyNt);//insert it to correct position
+      //m_susyNt.ele()->pop_back(); //remove it from the end
+      //m_preElectrons_nom.insert(m_preElectrons_nom.begin()+iEl, iEl);
+    }
 
-  //   // If electron not found, then we need to add it
-  //   if(eleOut == 0){
-  //     addMissingElectron(lep, sys);
-  //     eleOut = & m_susyNt.ele()->back();
-  //   }
-
-  //   // Calculate systematic scale factor
-  //   float sf = E_sys / eleOut->E();
-  //   if(sys == NtSys_EES_Z_UP)        eleOut->ees_z_up = sf;
-  //   else if(sys == NtSys_EES_Z_DN)   eleOut->ees_z_dn = sf;
-  //   else if(sys == NtSys_EES_MAT_UP) eleOut->ees_mat_up = sf;
-  //   else if(sys == NtSys_EES_MAT_DN) eleOut->ees_mat_dn = sf;
-  //   else if(sys == NtSys_EES_PS_UP)  eleOut->ees_ps_up = sf;
-  //   else if(sys == NtSys_EES_PS_DN)  eleOut->ees_ps_dn = sf;
-  //   else if(sys == NtSys_EES_LOW_UP) eleOut->ees_low_up = sf;
-  //   else if(sys == NtSys_EES_LOW_DN) eleOut->ees_low_dn = sf;
-  //   else if(sys == NtSys_EER_UP)     eleOut->eer_up = sf;
-  //   else if(sys == NtSys_EER_DN)     eleOut->eer_dn = sf;
-  // }
+    //Calculate systematic SF: shift/nom
+    float sf = ele->e() / ele_nom->e();
+    cout << "Ele SF " << sf << endl;
+    //AT: INSANE !!!!
+    if     ( sys == NtSys::EG_RESOLUTION_ALL_DN ) ele_susyNt->res_all_dn = sf;
+    else if( sys == NtSys::EG_RESOLUTION_ALL_UP ) ele_susyNt->res_all_up = sf;
+    else if( sys == NtSys::EG_RESOLUTION_MATERIALCALO_DN ) ele_susyNt->res_matCalo_dn = sf;
+    else if( sys == NtSys::EG_RESOLUTION_MATERIALCALO_UP ) ele_susyNt->res_matCalo_up = sf;
+    else if( sys == NtSys::EG_RESOLUTION_MATERIALCRYO_DN ) ele_susyNt->res_matCryo_dn = sf;
+    else if( sys == NtSys::EG_RESOLUTION_MATERIALCRYO_UP ) ele_susyNt->res_matCryo_up = sf;
+    else if( sys == NtSys::EG_RESOLUTION_MATERIALGAP_DN ) ele_susyNt->res_matGap_dn = sf;
+    else if( sys == NtSys::EG_RESOLUTION_MATERIALGAP_UP) ele_susyNt->res_matGap_up = sf;
+    else if( sys == NtSys::EG_RESOLUTION_MATERIALID_DN ) ele_susyNt->res_matId_dn = sf;
+    else if( sys == NtSys::EG_RESOLUTION_MATERIALID_UP ) ele_susyNt->res_matId_up = sf;
+    else if( sys == NtSys::EG_RESOLUTION_NOMINAL ) ele_susyNt->res_nom = sf;
+    else if( sys == NtSys::EG_RESOLUTION_NONE ) ele_susyNt->res_none = sf;
+    else if( sys == NtSys::EG_RESOLUTION_PILEUP_DN ) ele_susyNt->res_pileup_dn = sf;
+    else if( sys == NtSys::EG_RESOLUTION_PILEUP_UP ) ele_susyNt->res_pileup_up = sf;
+    else if( sys == NtSys::EG_RESOLUTION_SAMPLINGTERM_DN ) ele_susyNt->res_sampTerm_dn = sf;
+    else if( sys == NtSys::EG_RESOLUTION_SAMPLINGTERM_UP ) ele_susyNt->res_sampTerm_up = sf;
+    else if( sys == NtSys::EG_RESOLUTION_ZSMEARING_DN ) ele_susyNt->res_z_dn = sf;
+    else if( sys == NtSys::EG_RESOLUTION_ZSMEARING_UP ) ele_susyNt->res_z_up = sf;
+    else if( sys == NtSys::EG_SCALE_ALL_DN ) ele_susyNt->scale_all_dn = sf;
+    else if( sys == NtSys::EG_SCALE_ALL_UP ) ele_susyNt->scale_all_up = sf;
+    else if( sys == NtSys::EG_SCALE_G4_DN ) ele_susyNt->scale_G4_dn = sf;
+    else if( sys == NtSys::EG_SCALE_G4_UP ) ele_susyNt->scale_G4_up = sf;
+    else if( sys == NtSys::EG_SCALE_L1GAIN_DN ) ele_susyNt->scale_L1_dn = sf;
+    else if( sys == NtSys::EG_SCALE_L1GAIN_UP ) ele_susyNt->scale_L1_up = sf;
+    else if( sys == NtSys::EG_SCALE_L2GAIN_DN ) ele_susyNt->scale_L2_dn = sf;
+    else if( sys == NtSys::EG_SCALE_L2GAIN_UP ) ele_susyNt->scale_L2_up = sf;
+    else if( sys == NtSys::EG_SCALE_LARCALIB_DN ) ele_susyNt->scale_LArCalib_dn = sf;
+    else if( sys == NtSys::EG_SCALE_LARCALIB_UP ) ele_susyNt->scale_LArCalib_up = sf;
+    else if( sys == NtSys::EG_SCALE_LARELECCALIB_DN ) ele_susyNt->scale_LArECalib_dn = sf;
+    else if( sys == NtSys::EG_SCALE_LARELECCALIB_UP ) ele_susyNt->scale_LArECalib_up = sf;
+    else if( sys == NtSys::EG_SCALE_LARELECUNCONV_DN ) ele_susyNt->scale_LArEunconv_dn = sf;
+    else if( sys == NtSys::EG_SCALE_LARELECUNCONV_UP ) ele_susyNt->scale_LArEunconv_up = sf;
+    else if( sys == NtSys::EG_SCALE_LARUNCONVCALIB_DN ) ele_susyNt->scale_LArUnconv_dn = sf;
+    else if( sys == NtSys::EG_SCALE_LARUNCONVCALIB_UP ) ele_susyNt->scale_LArUnconv_up = sf;
+    else if( sys == NtSys::EG_SCALE_LASTSCALEVARIATION ) ele_susyNt->scale_last = sf;
+    else if( sys == NtSys::EG_SCALE_MATCALO_DN ) ele_susyNt->scale_matCalo_dn = sf;
+    else if( sys == NtSys::EG_SCALE_MATCALO_UP ) ele_susyNt->scale_matCalo_up = sf;
+    else if( sys == NtSys::EG_SCALE_MATCRYO_DN ) ele_susyNt->scale_matCryo_dn = sf;
+    else if( sys == NtSys::EG_SCALE_MATCRYO_UP ) ele_susyNt->scale_matCryo_up = sf;
+    else if( sys == NtSys::EG_SCALE_MATID_DN ) ele_susyNt->scale_matId_dn = sf;
+    else if( sys == NtSys::EG_SCALE_MATID_UP ) ele_susyNt->scale_matId_up = sf;
+    else if( sys == NtSys::EG_SCALE_NOMINAL ) ele_susyNt->scale_nom = sf;
+    else if( sys == NtSys::EG_SCALE_NONE ) ele_susyNt->scale_none = sf;
+    else if( sys == NtSys::EG_SCALE_PEDESTAL_DN ) ele_susyNt->scale_ped_dn = sf;
+    else if( sys == NtSys::EG_SCALE_PEDESTAL_UP ) ele_susyNt->scale_ped_up = sf;
+    else if( sys == NtSys::EG_SCALE_PS_DN ) ele_susyNt->scale_ps_dn = sf;
+    else if( sys == NtSys::EG_SCALE_PS_UP ) ele_susyNt->scale_ps_up = sf;
+    else if( sys == NtSys::EG_SCALE_S12_DN ) ele_susyNt->scale_s12_dn = sf;
+    else if( sys == NtSys::EG_SCALE_S12_UP ) ele_susyNt->scale_s12_up = sf;
+    else if( sys == NtSys::EG_SCALE_ZEESTAT_DN ) ele_susyNt->scale_ZeeStat_dn = sf;
+    else if( sys == NtSys::EG_SCALE_ZEESTAT_UP ) ele_susyNt->scale_ZeeStat_up = sf;
+    else if( sys == NtSys::EG_SCALE_ZEESYST_DN ) ele_susyNt->scale_ZeeSys_dn = sf;
+    else if( sys == NtSys::EG_SCALE_ZEESYST_UP ) ele_susyNt->scale_ZeeSys_up = sf;
+    else if( sys == NtSys::EL_SCALE_MOMENTUM_DN ) ele_susyNt->scale_mom_dn = sf;
+    else if( sys == NtSys::EL_SCALE_MOMENTUM_UP ) ele_susyNt->scale_mom_up = sf;
+  }
 }
 
 /*--------------------------------------------------------------------------------*/
 void SusyNtMaker::saveMuonSF(SusyNtSys sys)
 {
-#warning saveMuonSF not implemented
-  // // Loop over preselected leptons and fill the systematic shifts
-  // for(uint iLep=0; iLep < m_preLeptons.size(); iLep++){
-  //   const LeptonInfo* lep = & m_preLeptons[iLep];
-  //   if(lep->isElectron()) continue;
+  xAOD::MuonContainer* muons     = xaodMuons(sys);
+  xAOD::MuonContainer* muons_nom = xaodMuons(NtSys::NOM);
+  
+  if(m_dbg>=5) cout << "saveMuonSF "  << NtSys::SusyNtSysNames[sys] << endl;
+  for(const auto &iMu : m_preMuons){
+    const xAOD::Muon* mu = muons->at(iMu);
+    cout << "This mu pt " << mu->pt() << " eta " << mu->eta() << " phi " << mu->phi() << endl; 
+    
+    const xAOD::Muon* mu_nom = NULL;
+    Susy::Muon* mu_susyNt = NULL;
+    int idx_susyNt=-1;
+    for(uint idx=0; idx<m_preMuons_nom.size(); idx++){
+      int iMu_nom = m_preMuons_nom[idx];
+      if(iMu == iMu_nom){
+	mu_nom = muons_nom->at(iMu_nom);
+	mu_susyNt = & m_susyNt.muo()->at(idx);
+	idx_susyNt=idx;
+	if(m_dbg>=5){
+	  cout << "Found matching muon sys: " << iMu << "  " << iMu_nom << " " << idx_susyNt << endl;
+	  cout << "mu_nom pt " << mu_nom->pt() << " eta " << mu_nom->eta() << " phi " << mu_nom->phi() << endl; 
+	  mu_susyNt->print();
+	}
+	break;
+      }
+    }
+    
+    //Muon was not found. Add it at its nominal scale to susyNt and m_preMuon_nom 
+    if(mu_susyNt == NULL){
+      cout << "susyNt muons before" << endl;
+      for(const auto &i: *m_susyNt.muo()) i.print();
+      cout << " Muon not found - adding to susyNt" << endl;
+      mu_nom = muons_nom->at(iMu);//assume order is preserved
+      storeMuon(*mu_nom);//this add the muctron at the end... 
+      m_preMuons_nom.push_back(iMu);
+      cout << "susyNt muons after" << endl;
+      for(const auto &i: *m_susyNt.muo()) i.print();
+      mu_susyNt = & m_susyNt.muo()->back(); //get the newly inserted mument
+      //m_susyNt.muo()->insert( m_susyNt.muo()->begin()+iMu,*mu_susyNt);//insert it to correct position
+      //m_susyNt.muo()->pop_back(); //remove it from the end
+      //m_preMuons_nom.insert(m_preMuons_nom.begin()+iMu, iMu);
+    }
 
-  //   // Systematic shifted energy
-  //   float E_sys = lep->lv()->E() / GeV;
-
-  //   // Try to find this muon in the list of SusyNt muons
-  //   Susy::Muon* muOut = 0;
-  //   for(uint iMu=0; iMu<m_susyNt.muo()->size(); iMu++){
-  //     Susy::Muon* mu = & m_susyNt.muo()->at(iMu);
-  //     if(mu->idx == lep->idx()){
-  //       muOut = mu;
-  //       break;
-  //     }
-  //   }
-
-  //   // If muon not found, then we need to add it
-  //   if(muOut == 0){
-  //     addMissingMuon(lep, sys);
-  //     muOut = & m_susyNt.muo()->back();
-  //   }
-
-  //   // Calculate systematic scale factor
-  //   float sf = E_sys / muOut->E();
-  //   if(sys == NtSys_MS_UP)      muOut->ms_up = sf;
-  //   else if(sys == NtSys_MS_DN) muOut->ms_dn = sf;
-  //   else if(sys == NtSys_ID_UP) muOut->id_up = sf;
-  //   else if(sys == NtSys_ID_DN) muOut->id_dn = sf;
-  //  } // end loop over leptons
+    //Calculate systematic SF: shift/nom
+    float sf = mu->e() / mu_nom->e();
+    cout << "Muo SF " << sf << endl;
+    if(sys == NtSys::MUONS_MS_UP)      mu_susyNt->ms_up = sf;
+    else if(sys == NtSys::MUONS_MS_DN) mu_susyNt->ms_dn = sf;
+    else if(sys == NtSys::MUONS_ID_UP) mu_susyNt->id_up = sf;
+    else if(sys == NtSys::MUONS_ID_DN) mu_susyNt->id_dn = sf;
+#warning saveMuonSF save SF incomplete
+  }
 }
 
 /*--------------------------------------------------------------------------------*/
 void SusyNtMaker::saveJetSF(SusyNtSys sys)
 {
-#warning saveJetSF not implemented
-  // // Loop over selected jets and fill the systematic shifts
-  // for(uint iJet=0; iJet<m_preJets.size(); iJet++){
-  //   uint jetIdx = m_preJets[iJet];
+  xAOD::JetContainer* jets     = xaodJets(sys);
+  xAOD::JetContainer* jets_nom = xaodJets(NtSys::NOM);
+  
+  if(m_dbg>=5) cout << "saveJetSF "  << NtSys::SusyNtSysNames[sys] << endl;
+  for(const auto &iJ : m_preJets){
+    const xAOD::Jet* jet = jets->at(iJ);
+    cout << "This jet pt " << jet->pt() << " eta " << jet->eta() << " phi " << jet->phi() << endl; 
+    
+    const xAOD::Jet* jet_nom = NULL;
+    Susy::Jet* jet_susyNt = NULL;
+    int idx_susyNt=-1;
+    for(uint idx=0; idx<m_preJets_nom.size(); idx++){
+      int iJ_nom = m_preJets_nom[idx];
+      if(iJ == iJ_nom){
+	jet_nom = jets_nom->at(iJ_nom);
+	jet_susyNt = & m_susyNt.jet()->at(idx);
+	idx_susyNt=idx;
+	if(m_dbg>=5){
+	  cout << "Found matching jet sys: " << iJ << "  " << iJ_nom << " " << idx_susyNt << endl;
+	  cout << "jet_nom pt " << jet_nom->pt() << " eta " << jet_nom->eta() << " phi " << jet_nom->phi() << endl; 
+	  jet_susyNt->print();
+	}
+	break;
+      }
+    }
 
-  //   // Systematic shifted energy
-  //   float E_sys = m_susyObj[m_eleIDDefault]->GetJetTLV(jetIdx).E() / GeV;
+    //Jet was not found. Add it at its nominal scale to susyNt and m_preJet_nom 
+    if(jet_susyNt == NULL){
+      cout << "susyNt jets before" << endl;
+      for(const auto &i: *m_susyNt.jet()) i.print();
+      cout << " Jet not found - adding to susyNt" << endl;
+      jet_nom = jets_nom->at(iJ);//assume order is preserved
+      storeJet(*jet_nom);//this add the jetctron at the end... 
+      m_preJets_nom.push_back(iJ);
+      cout << "susyNt jets after" << endl;
+      for(const auto &i: *m_susyNt.jet()) i.print();
+      jet_susyNt = & m_susyNt.jet()->back(); //get the newly inserted jetment
+      //m_susyNt.jet()->insert( m_susyNt.jet()->begin()+iJ,*jet_susyNt);//insert it to correct position
+      //m_susyNt.jet()->pop_back(); //remove it from the end
+      //m_preJets_nom.insert(m_preJets_nom.begin()+iJ, iJ);
+    }
 
-  //   // Try to find this jet in the list of SusyNt jets
-  //   Susy::Jet* jetOut = 0;
-  //   for(uint iJ=0; iJ<m_susyNt.jet()->size(); ++iJ){
-  //     Susy::Jet* jet = & m_susyNt.jet()->at(iJ);
-  //     if(jet->idx == jetIdx){
-  //       jetOut = jet;
-  //       break;
-  //     }
-  //   }
+    //Calculate systematic SF: shift/nom
+    float sf = jet->e() / jet_nom->e();
+    cout << "Jet SF " << sf << endl;
 
-  //   // If jet not found, then we need to add it
-  //   if(jetOut == 0){
-  //     addMissingJet(jetIdx, sys);
-  //     jetOut = & m_susyNt.jet()->back();
-  //   }
+    if     ( sys == NtSys::JER) jet_susyNt->jer = sf;
+    else if( sys == NtSys::JET_BJES_Response_DN) jet_susyNt->bjes[0] = sf;
+    else if( sys == NtSys::JET_BJES_Response_UP) jet_susyNt->bjes[1] = sf;
+#warning saveJetSF save SF incomplete
+    /*
+    else if( sys == NtSys::JET_EffectiveNP_1_DN) jet_susyNt->effNp[0] = sf;
+    else if( sys == NtSys::JET_EffectiveNP_1_UP) jet_susyNt->effNp[1] = sf;
+    else if( sys == NtSys::JET_EffectiveNP_2_DN) jet_susyNt->effNp[2] = sf;
+    else if( sys == NtSys::JET_EffectiveNP_2_UP) jet_susyNt->effNp[3] = sf;
+    else if( sys == NtSys::JET_EffectiveNP_3_DN) jet_susyNt->effNp[4] = sf;
+    else if( sys == NtSys::JET_EffectiveNP_3_UP) jet_susyNt->effNp[5] = sf;
+    else if( sys == NtSys::JET_EffectiveNP_4_DN) jet_susyNt->effNp[6] = sf;
+    else if( sys == NtSys::JET_EffectiveNP_4_UP) jet_susyNt->effNp[7] = sf;
+    else if( sys == NtSys::JET_EffectiveNP_5_DN) jet_susyNt->effNp[8] = sf;
+    else if( sys == NtSys::JET_EffectiveNP_5_UP) jet_susyNt->effNp[9] = sf;
+    else if( sys == NtSys::JET_EffectiveNP_6restTerm_DN) jet_susyNt->effNp[10] = sf;
+    else if( sys == NtSys::JET_EffectiveNP_6restTerm_UP) jet_susyNt-> effNp[11] = sf;
+    */
+    /*
 
-  //   // Calculate systematic scale factor
-  //   float sf = E_sys / jetOut->E();
-  //   if(sys == NtSys_JES_UP)      jetOut->jes_up = sf;
-  //   else if(sys == NtSys_JES_DN) jetOut->jes_dn = sf;
-  //   else if(sys == NtSys_JER)    jetOut->jer = sf;
-  // } // end loop over jets in pre-jets
+    else if( sys == NtSys::JET_EtaIntercalibration_Modelling_DN) jet_susyNt->etaInter[0][0] = sf;
+    else if( sys == NtSys::JET_EtaIntercalibration_Modelling_UP) jet_susyNt->etaInter[0][1] = sf;
+    else if( sys == NtSys::JET_EtaIntercalibration_TotalStat_DN) jet_susyNt->etaInter[1][0] = sf;
+    else if( sys == NtSys::JET_EtaIntercalibration_TotalStat_UP) jet_susyNt->etaInter[1][1] = sf;
+    else if( sys == NtSys::JET_Flavor_Composition_DN) jet_susyNt->flavor[0][0] = sf;
+    else if( sys == NtSys::JET_Flavor_Composition_UP) jet_susyNt->flavor[0][1] = sf;
+    else if( sys == NtSys::JET_Flavor_Response_DN) jet_susyNt->flavor[1][0] = sf;
+    else if( sys == NtSys::JET_Flavor_Response_UP) jet_susyNt->flavor[1][1] = sf;
+    else if( sys == NtSys::JET_Pileup_OffsetMu_DN) jet_susyNt->pileup[0][0] = sf;
+    else if( sys == NtSys::JET_Pileup_OffsetMu_UP) jet_susyNt-> pileup[0][1] = sf;
+    else if( sys == NtSys::JET_Pileup_OffsetNPV_DN) jet_susyNt->pileup[1][0] = sf;
+    else if( sys == NtSys::JET_Pileup_OffsetNPV_UP) jet_susyNt->pileup[1][1] = sf;
+    else if( sys == NtSys::JET_Pileup_PtTerm_DN) jet_susyNt-> pileup[2][0] = sf;
+    else if( sys == NtSys::JET_Pileup_PtTerm_UP) jet_susyNt-> pileup[2][1] = sf;
+    else if( sys == NtSys::JET_Pileup_RhoTopology_DN) jet_susyNt-> pileup[3][0] = sf;
+    else if( sys == NtSys::JET_Pileup_RhoTopology_UP) jet_susyNt-> pileup[3][1] = sf;
+    else if( sys == NtSys::JET_PunchThrough_MC12_DN) jet_susyNt->punchThrough[0] = sf;
+    else if( sys == NtSys::JET_PunchThrough_MC12_UP) jet_susyNt->punchThrough[1] = sf;
+    else if( sys == NtSys::JET_RelativeNonClosure_MC12_DN) jet_susyNt->relativeNC[0] = sf;
+    else if( sys == NtSys::JET_RelativeNonClosure_MC12_UP) jet_susyNt->relativeNC[1] = sf;
+    else if( sys == NtSys::JET_SingleParticle_HighPt_DN) jet_susyNt->singlePart[0] = sf;
+    else if( sys == NtSys::JET_SingleParticle_HighPt_UP) jet_susyNt->singlePart[1] = sf;*/
+
+
+  }
 }
 
 /*--------------------------------------------------------------------------------*/
 void SusyNtMaker::saveTauSF(SusyNtSys sys)
 {
-#warning saveTauSF not implemented
-  // // Loop over preselected taus and fill systematic shifts
-  // for(uint iTau=0; iTau<m_preTaus.size(); iTau++){
-  //   uint tauIdx = m_preTaus[iTau];
+  xAOD::TauJetContainer* taus     = xaodTaus(sys);
+  xAOD::TauJetContainer* taus_nom = xaodTaus(NtSys::NOM);
 
-  //   // Get the systematic shifted E, used to calculate a shift factor
-  //   float E_sys = m_susyObj[m_eleIDDefault]->GetTauTLV(tauIdx).E() / GeV;
+  if(m_dbg>=5) cout << "saveTauSF " << NtSys::SusyNtSysNames[sys]  << endl;
+  for(const auto &iTau : m_preTaus){
+    const xAOD::TauJet* tau = taus->at(iTau);
+    cout << "This tau pt " << tau->pt() << " eta " << tau->eta() << " phi " << tau->phi() << endl; 
+    
+    const xAOD::TauJet* tau_nom = NULL;
+    Susy::Tau* tau_susyNt = NULL;
+    int idx_susyNt=-1;
+    for(uint idx=0; idx<m_preTaus_nom.size(); idx++){
+      int iTau_nom = m_preTaus_nom[idx];
+	  cout << "Found matching tau sys: " << iTau << "  " << iTau_nom << " " << idx_susyNt << endl;
+ cout << "susyNt taus check" << endl;
+      for(const auto &i: *m_susyNt.tau()) i.print();
+      if(iTau == iTau_nom){
+	tau_nom = taus_nom->at(iTau_nom);
+	tau_susyNt = & m_susyNt.tau()->at(idx);
+	idx_susyNt=idx;
+	if(m_dbg>=5){
+	  cout << "Found matching tau sys: " << iTau << "  " << iTau_nom << " " << idx_susyNt << endl;
+	  cout << "tau_nom pt " << tau_nom->pt() << " eta " << tau_nom->eta() << " phi " << tau_nom->phi() << endl; 
+	  tau_susyNt->print();
+	}
+	break;
+      }
+    }
 
-  //   // Try to find this tau in the list of SusyNt taus
-  //   Susy::Tau* tauOut = 0;
-  //   for(uint iT=0; iT<m_susyNt.tau()->size(); iT++){
-  //     Susy::Tau* tau = & m_susyNt.tau()->at(iT);
-  //     if(tau->idx == tauIdx){
-  //       tauOut = tau;
-  //       break;
-  //     }
-  //   }
-  //   // If tau not found, then it was not nominally pre-selected and must be added now
-  //   if(tauOut == 0){
-  //     addMissingTau(tauIdx, sys);
-  //     tauOut = & m_susyNt.tau()->back();
-  //   }
+    //Tau was not found. Add it at its nominal scale to susyNt and m_preTau_nom 
+    if(tau_susyNt == NULL){
+      cout << "susyNt taus before" << endl;
+      for(const auto &i: *m_susyNt.tau()) i.print();
+      cout << " Tau not found - adding to susyNt" << endl;
+      tau_nom = taus_nom->at(iTau);//assume order is preserved
+      storeTau(*tau_nom);//this add the tauctron at the end... 
+      m_preTaus_nom.push_back(iTau);
+      cout << "susyNt taus after" << endl;
+      for(const auto &i: *m_susyNt.tau()) i.print();
+      tau_susyNt = & m_susyNt.tau()->back(); //get the newly inserted taument
+      //m_susyNt.tau()->insert( m_susyNt.tau()->begin()+iTau,*tau_susyNt);//insert it to correct position
+      //m_susyNt.tau()->pop_back(); //remove it from the end
+      //m_preTaus_nom.insert(m_preTaus_nom.begin()+iTau, iTau);
+    }
 
-  //   // Calculate systematic scale factor
-  //   float sf = E_sys / tauOut->E();
-  //   if(sys == NtSys_TES_UP) tauOut->tes_up = sf;
-  //   if(sys == NtSys_TES_DN) tauOut->tes_dn = sf;
-  // }
+    //Calculate systematic SF: shift/nom
+    float sf = tau->e() / tau_nom->e();
+    cout << "Tau SF " << sf << endl;
+
+    if(sys == NtSys::TAUS_SME_TOTAL_UP) tau_susyNt->sme_total_up = sf;
+    if(sys == NtSys::TAUS_SME_TOTAL_DN) tau_susyNt->sme_total_dn = sf;
+  }
 }
 
 /*--------------------------------------------------------------------------------*/
 void SusyNtMaker::addMissingElectron(const LeptonInfo* lep, SusyNtSys sys)
 {
+  
+
+
   // // This electron did not pass nominal cuts, and therefore
   // // needs to be added, but with the correct TLV
 

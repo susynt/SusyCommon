@@ -548,72 +548,69 @@ void XaodAnalysis::selectBaselineObjects(SusyNtSys sys, ST::SystInfo sysInfo)
 
     xAOD::ElectronContainer* electrons = syst_affectsElectrons ? xaodElectrons(sys) : xaodElectrons(NtSys::NOM);
     int iEl = -1;
-    for(auto it=electrons->begin(), end=electrons->end(); it!=end; ++it){ // todo: use std::transform
-        xAOD::Electron &el = **it;
+    for(const auto& el : *electrons) {
 	iEl++;
 	//AT-2014-11-05: What was the definition used in Run1?
 	// Put all the hard coded cuts into a header file
         //CHECK (m_susyObj[m_eleIDDefault]->FillElectron(el, 7));
 	if(m_dbg) cout<<"El "
-		      <<" pt " << el.pt()
-		      <<" eta " << el.eta()
-		      <<" phi " << el.phi()
+		      <<" pt " << el->pt()
+		      <<" eta " << el->eta()
+		      <<" phi " << el->phi()
 		      <<endl;
-	m_susyObj[m_eleIDDefault]->IsSignalElectron(el);
+	m_susyObj[m_eleIDDefault]->IsSignalElectron(*el);
 
-	if( !el.auxdata< char >("baseline")) continue;
+	if( !el->auxdata< char >("baseline")) continue;
 	m_preElectrons.push_back(iEl);
-	if(el.auxdata< char >("baseline"))  m_baseElectrons.push_back(iEl);
+	if(el->auxdata< char >("baseline"))  m_baseElectrons.push_back(iEl);
 
 	if(m_dbg) cout<<"El passing"
-		      <<" baseline? "<< bool(el.auxdata< char >("baseline"))
-		      <<" signal? "<< bool(el.auxdata< char >("signal"))
-		      <<" pt " << el.pt()
-		      <<" eta " << el.eta()
-		      <<" phi " << el.phi()
+		      <<" baseline? "<< bool(el->auxdata< char >("baseline"))
+		      <<" signal? "<< bool(el->auxdata< char >("signal"))
+		      <<" pt " << el->pt()
+		      <<" eta " << el->eta()
+		      <<" phi " << el->phi()
 		      <<endl;
     }
     if(m_dbg) cout<<"preElectrons["<<m_preElectrons.size()<<"]"<<endl;
 
     int iMu = -1;
     xAOD::MuonContainer* muons = syst_affectsMuons ? xaodMuons(sys): xaodMuons(NtSys::NOM) ;
-    for(auto it=muons->begin(), end=muons->end(); it!=end; ++it){
-        xAOD::Muon &mu = **it;
-        iMu++;
-        //CHECK( m_susyObj[m_eleIDDefault]->FillMuon(mu) );
-	m_preMuons.push_back(iMu);
-        m_susyObj[m_eleIDDefault]->IsSignalMuon(mu);
-	m_susyObj[m_eleIDDefault]->IsCosmicMuon(mu);
-        if(m_dbg) cout<<"Mu passing"
-                      <<" baseline? "<< bool(mu.auxdata< char >("baseline"))
-                      <<" signal? "<< bool(mu.auxdata< char >("signal"))
-		      <<" pt " << mu.pt()
-		      <<" eta " << mu.eta()
-		      <<" phi " << mu.phi()
-                      <<endl;
-        if(mu.auxdata< char >("baseline")) m_baseMuons.push_back(iMu);
-        // if(signal) m_sigMuons.push_back(iMu);
+    for(const auto& mu : *muons){
+      iMu++;
+      //CHECK( m_susyObj[m_eleIDDefault]->FillMuon(mu) );
+      m_preMuons.push_back(iMu);
+      m_susyObj[m_eleIDDefault]->IsSignalMuon(*mu);
+      m_susyObj[m_eleIDDefault]->IsCosmicMuon(*mu);
+      if(m_dbg) cout<<"Mu passing"
+		    <<" baseline? "<< bool(mu->auxdata< char >("baseline"))
+		    <<" signal? "<< bool(mu->auxdata< char >("signal"))
+		    <<" pt " << mu->pt()
+		    <<" eta " << mu->eta()
+		    <<" phi " << mu->phi()
+		    <<endl;
+      if(mu->auxdata< char >("baseline")) m_baseMuons.push_back(iMu);
+      // if(signal) m_sigMuons.push_back(iMu);
     }
     if(m_dbg) cout<<"preMuons["<<m_preMuons.size()<<"]"<<endl;
-
+    
     int iJet=-1;
     xAOD::JetContainer* jets = syst_affectsJets ? xaodJets(sys): xaodJets(NtSys::NOM);
-    for(auto it=jets->begin(), end=jets->end(); it!=end; ++it){
-        xAOD::Jet &jet = **it;
+    for(const auto& jet : *jets){
         iJet++;
         m_preJets.push_back(iJet);
 	//AT:2014-11-08: remove comment on the next 2 lines... why were these commented out?
 	//m_susyObj[m_eleIDDefault]->FillJet(jet);
 	//m_susyObj[m_eleIDDefault]->IsGoodJet(jet); //AT done in FillJet 12/09/14
-        m_susyObj[m_eleIDDefault]->IsBJet(jet);
+        m_susyObj[m_eleIDDefault]->IsBJet(*jet);
         if(m_dbg) cout<<"Jet passing"
-                      <<" baseline? "<< bool(jet.auxdata< char >("baseline"))
-                      <<" signal? "<< bool(jet.auxdata< char >("signal"))
-		      <<" pt " << jet.pt()
-		      <<" eta " << jet.eta()
-		      <<" phi " << jet.phi()
+                      <<" baseline? "<< bool(jet->auxdata< char >("baseline"))
+                      <<" signal? "<< bool(jet->auxdata< char >("signal"))
+		      <<" pt " << jet->pt()
+		      <<" eta " << jet->eta()
+		      <<" phi " << jet->phi()
                       <<endl;
-        if(jet.auxdata< char >("baseline")) m_baseJets.push_back(iJet);
+        if(jet->auxdata< char >("baseline")) m_baseJets.push_back(iJet);
         // if(signal) m_sigJets.push_back(iJet);
     }
 
@@ -629,22 +626,21 @@ void XaodAnalysis::selectBaselineObjects(SusyNtSys sys, ST::SystInfo sysInfo)
     }
 
     int iTau=-1;
-    xAOD::TauJetContainer* taus = syst_affectsTaus ? xaodTaus(sys): xaodTaus(NtSys::NOM) ;
-    for(auto it=taus->begin(), end=taus->end(); it!=end; ++it){
-        xAOD::TauJet &tau = **it;
+    xAOD::TauJetContainer* taus = syst_affectsTaus ? xaodTaus(sys): xaodTaus(NtSys::NOM);
+    for(const auto& tau : *taus){
         iTau++;
         //CHECK ( m_susyObj[m_eleIDDefault]->FillTau(tau) );
-        m_susyObj[m_eleIDDefault]->IsSignalTau(tau);
+        m_susyObj[m_eleIDDefault]->IsSignalTau(*tau);
 	if(m_dbg) cout<<"Tau passing"
-                      <<" signal? "<< bool(tau.auxdata< char >("signal"))
-		      <<" pt " << tau.pt()
-		      <<" eta " << tau.eta()
-		      <<" phi " << tau.phi()
+                      <<" signal? "<< bool(tau->auxdata< char >("signal"))
+		      <<" pt " << tau->pt()
+		      <<" eta " << tau->eta()
+		      <<" phi " << tau->phi()
                       <<endl;
 
-        if(tau.auxdata< char >("baseline"))
+        if(tau->auxdata< char >("baseline"))
             m_preTaus.push_back(iTau);
-        //tau.pt()>20*GeV && abs(tau.eta())<2.47
+        //tau->pt()>20*GeV && abs(tau->eta())<2.47
     }
     if(m_dbg) cout<<"m_preTaus["<<m_preTaus.size()<<"]"<<endl;
 
@@ -1799,13 +1795,16 @@ XaodAnalysis& XaodAnalysis::clearContainerPointers(bool deleteNominal)
 //----------------------------------------------------------
 XaodAnalysis& XaodAnalysis::retrieveCollections()
 {
-  if(m_dbg) cout << "XaodAnalysis::retrieveCollections " << endl;
-  
+  if(m_dbg) cout << "XaodAnalysis::retrieveCollections " << endl; 
   xaodEventInfo();
-  xaodMuons();
+  const xAOD::EventInfo* eventinfo = XaodAnalysis::xaodEventInfo();
+  if(m_dbg) cout << " run " << setw(6) << eventinfo->runNumber()
+		 << " event " << setw(7) << eventinfo->eventNumber() << endl;
+
   xaodElectrons();
-  xaodTaus();
+  xaodMuons();
   xaodJets();
+  xaodTaus();
   xaodPhotons();
   xaodTruthEvent();
   xaodTruthParticles();
