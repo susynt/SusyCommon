@@ -97,6 +97,7 @@ const std::vector< std::string > SusyNtMaker::cutflowLabels()
     labels.push_back("Bad Muon"       );
     labels.push_back("Cosmic"         );
     labels.push_back(">=1 lep"        );
+    labels.push_back(">=2 base lep"   );
     labels.push_back(">=2 lep"        );
     labels.push_back("==3 lep"        );
     return labels;
@@ -192,8 +193,9 @@ bool SusyNtMaker::selectEvent()
   if(m_dbg>=5) cout << "selectEvent" << endl;
   clearOutputObjects();
   m_susyNt.clear();
-  return (passEventlevelSelection() &&
-          passObjectlevelSelection());
+  bool pass_event_and_object_sel = (passEventlevelSelection() && passObjectlevelSelection());
+  bool keep_all_events(!m_filter);
+  return (pass_event_and_object_sel || keep_all_events);
 }
 //----------------------------------------------------------
 void SusyNtMaker::fillNtVars()
@@ -302,7 +304,8 @@ void SusyNtMaker::fillTauVars()
 {
     if(m_dbg>=5) cout<<"fillTauVars"<<endl;
     xAOD::TauJetContainer* taus =  XaodAnalysis::xaodTaus();
-    vector<int>& saveTaus = m_saveContTaus? m_contTaus : m_preTaus;
+    // vector<int>& saveTaus = m_saveContTaus? m_contTaus : m_preTaus; // container taus are meant to be used only for background estimates?
+    vector<int>& saveTaus = m_preTaus;
     for(auto &i : saveTaus){
         storeTau(*(taus->at(i)));
     }
@@ -681,36 +684,20 @@ void SusyNtMaker::storeTau(const xAOD::TauJet &tau)
     cout << "AT: Tau pt " << out.pt << " eta " << out.eta << " phi " << out.phi << endl;
     
     // tauOut->author                = element->author(); // suneet: there is no author flag anymore?
-    // tauOut->nTrack                = element->numTrack();
     out.nTrack = tau.nTracks();
-    // tauOut->eleBDT                = element->BDTEleScore();
     out.eleBDT = tau.discriminant(xAOD::TauJetParameters::BDTEleScore);
-    // tauOut->jetBDT                = element->BDTJetScore();
     out.jetBDT = tau.discriminant(xAOD::TauJetParameters::BDTJetScore);
-    // tauOut->jetBDTSigLoose        = element->JetBDTSigLoose();
+
     out.jetBDTSigLoose = tau.isTau(xAOD::TauJetParameters::JetBDTSigLoose);
-    // tauOut->jetBDTSigMedium       = element->JetBDTSigMedium();
     out.jetBDTSigMedium = tau.isTau(xAOD::TauJetParameters::JetBDTSigMedium);
-    // tauOut->jetBDTSigTight        = element->JetBDTSigTight();
     out.jetBDTSigTight = tau.isTau(xAOD::TauJetParameters::JetBDTSigTight);
-    // // New ele BDT corrections
-    // //tauOut->eleBDTLoose           = element->EleBDTLoose();
-    // //tauOut->eleBDTMedium          = element->EleBDTMedium();
-    // //tauOut->eleBDTTight           = element->EleBDTTight();
-    // tauOut->eleBDTLoose           = m_susyObj[m_eleIDDefault]->GetCorrectedEleBDTFlag(SUSYTau::TauLoose, element->EleBDTLoose(),
-    //                                                                  element->BDTEleScore(), element->numTrack(),
-    //                                                                  tauLV->Pt(), element->leadTrack_eta());
+
     out.eleBDTLoose = tau.isTau(xAOD::TauJetParameters::EleBDTLoose);
-    // tauOut->eleBDTMedium          = m_susyObj.GetCorrectedEleBDTFlag(SUSYTau::TauMedium, element->EleBDTMedium(),
-    //                                                                  element->BDTEleScore(), element->numTrack(),
-    //                                                                  tauLV->Pt(), element->leadTrack_eta());
     out.eleBDTMedium = tau.isTau(xAOD::TauJetParameters::EleBDTMedium);
-    // tauOut->eleBDTTight           = m_susyObj.GetCorrectedEleBDTFlag(SUSYTau::TauTight, element->EleBDTTight(),
-    //                                                                  element->BDTEleScore(), element->numTrack(),
-    //                                                                  tauLV->Pt(), element->leadTrack_eta());
     out.eleBDTTight = tau.isTau(xAOD::TauJetParameters::EleBDTTight);
-    // tauOut->muonVeto              = element->muonVeto();
+
     out.muonVeto = tau.isTau(xAOD::TauJetParameters::MuonVeto);
+
     // tauOut->trueTau               = m_isMC? element->trueTauAssoc_matched() : false;
     
     // tauOut->matched2TruthLepton   = m_isMC? m_recoTruthMatch.Matched2TruthLepton(*tauLV, true) : false;
@@ -1575,7 +1562,7 @@ struct FillCutFlow { ///< local function object to fill the cutflow histograms
     vector< size_t > *counters;
     FillCutFlow(TH1 *r, TH1* g, TH1* p, vector< size_t > *cs) :
         raw(r), gen(g), perProcess(p), iCut(0), passAll(true), includeThisCut_(true), counters(cs) {}
-    void operator()(bool thisEventDoesPassThisCut, float weight) {
+    FillCutFlow& operator()(bool thisEventDoesPassThisCut, float weight) {
         if(thisEventDoesPassThisCut && passAll) {
             if(raw       ) raw       ->Fill(iCut);
             if(gen       ) gen       ->Fill(iCut, weight);
@@ -1585,8 +1572,10 @@ struct FillCutFlow { ///< local function object to fill the cutflow histograms
             if(includeThisCut_) passAll = false;
         }
         iCut++;
+        return *this;
     }
-    FillCutFlow& includeThisCut(bool v) { includeThisCut_ = v; return *this; }
+    FillCutFlow& disableFilterNextCuts() { includeThisCut_ = false; return *this; }
+    FillCutFlow& enableFilterNextCuts() { includeThisCut_ = true; return *this; }
 };
 //----------------------------------------------------------
 bool SusyNtMaker::passEventlevelSelection()
@@ -1604,9 +1593,7 @@ bool SusyNtMaker::passEventlevelSelection()
     bool pass_wwfix(true); //(!m_isMC || (m_susyObj[m_eleIDDefault]->Sherpa_WW_veto())); // DG-2014-08-16 sherpa ww bugfix probably obsolete
 
     fillCutFlow(true, w); // initial bin
-    fillCutFlow.includeThisCut(false); // susyProp just counts (for normalization), doesn't drop
-    fillCutFlow(pass_susyprop, w);
-    fillCutFlow.includeThisCut(true);
+    fillCutFlow.disableFilterNextCuts()(pass_susyprop, w).enableFilterNextCuts();
     fillCutFlow(pass_grl, w);
     fillCutFlow(pass_lar, w);
     fillCutFlow(pass_tile, w);
@@ -1640,6 +1627,7 @@ bool SusyNtMaker::passObjectlevelSelection()
     fillCutFlow.iCut = 8; // we've filled up to 'Buggy WWSherpa' in passEventlevelSelection
     bool pass_hotspot(true), pass_basdjet(true), pass_badmuon(true), pass_cosmic(true); // dummy values, todo
     bool pass_ge1l(1<=(m_sigElectrons.size()+m_sigMuons.size()));
+    bool pass_ge2bl(2<=(m_baseElectrons.size()+m_baseMuons.size()));
     bool pass_ge2l(2<=(m_sigElectrons.size()+m_sigMuons.size()));
     bool pass_eq3l(3==(m_sigElectrons.size()+m_sigMuons.size()));
     float w = m_susyNt.evt()->w;
@@ -1647,13 +1635,15 @@ bool SusyNtMaker::passObjectlevelSelection()
     fillCutFlow(pass_basdjet, w);
     fillCutFlow(pass_badmuon, w);
     fillCutFlow(pass_cosmic, w);
-    fillCutFlow(pass_ge1l, w);
+    fillCutFlow.disableFilterNextCuts()(pass_ge1l, w).enableFilterNextCuts();
+    fillCutFlow(pass_ge2bl, w);
     fillCutFlow(pass_ge2l, w);
     fillCutFlow(pass_eq3l, w);
     bool has_at_least_one_lepton = pass_ge1l;
-    if(m_dbg>=5 && !has_at_least_one_lepton)
+    bool has_at_least_two_base_leptons = pass_ge2bl;
+    if(m_dbg>=5 && !has_at_least_two_base_leptons)
       cout << "SusyNtMaker: fail passObjectlevelSelection " << endl;
-    return has_at_least_one_lepton;
+    return has_at_least_two_base_leptons;
 }
 //----------------------------------------------------------
 #undef GeV

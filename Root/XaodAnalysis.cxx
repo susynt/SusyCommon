@@ -639,7 +639,7 @@ void XaodAnalysis::selectBaselineObjects(SusyNtSys sys, ST::SystInfo sysInfo)
                       <<endl;
 
         if(tau->auxdata< char >("baseline"))
-            m_preTaus.push_back(iTau);
+	  m_preTaus.push_back(iTau);
         //tau->pt()>20*GeV && abs(tau->eta())<2.47
     }
     if(m_dbg) cout<<"m_preTaus["<<m_preTaus.size()<<"]"<<endl;
