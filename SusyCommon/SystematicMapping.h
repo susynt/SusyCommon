@@ -14,8 +14,6 @@ namespace Susy {
 
 namespace NtSys {
 
- bool isObjectSystematic(const SusyNtSys &s);
-
  inline bool isValid(const SusyNtSys &s) { return s>=NOM && s<SYSUNKNOWN; }
  inline std::string syst2str(const SusyNtSys &s) { return isValid(s) ? SusyNtSysNames[s] : "unknown"; }
  

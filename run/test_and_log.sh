@@ -71,7 +71,7 @@ function main {
         #NtMaker -f ${input_file} -saveContTau --savePh --nLepFilter 1 --nLepTauFilter 2 --filterTrig -d 10 --sys > ${tmp_detailed_log} 2>&1  
 	#to run on MC
         #NtMaker -f ${input_file} -p mc12a --saveContTau --savePh --nLepFilter 1 --nLepTauFilter 2 --filterTrig -d 0 --sys > ${tmp_detailed_log} 2>&1  
-        NtMaker -f ${input_file} -p mc12a --saveContTau --savePh --nLepFilter 1 --nLepTauFilter 2 --filterTrig --sys -d 10 -n 100 \
+        NtMaker -f ${input_file} -p mc12a --savePh --nLepFilter 1 --nLepTauFilter 2 --filterTrig --sys -d 10 -n 100 \
         > ${tmp_detailed_log} 2>&1  
 
 	more ${tmp_detailed_log} |head -n  ${nlines_head} > ${tmp_log} 
