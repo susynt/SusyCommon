@@ -759,7 +759,7 @@ void SusyNtMaker::fillMetVars(SusyNtSys sys)
   Susy::Met* metOut = & m_susyNt.met()->back();
 
   metOut->Et = (*met_it)->met()*MeV2GeV;// m_met.Et();
-  metOut->phi = (*met_it)->phi()*MeV2GeV;// m_met.Phi();
+  metOut->phi = (*met_it)->phi();// m_met.Phi();
   metOut->sys = sys;
   metOut->sumet = (*met_it)->sumet()*MeV2GeV;
 
