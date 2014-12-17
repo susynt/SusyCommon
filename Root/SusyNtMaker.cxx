@@ -754,14 +754,14 @@ void SusyNtMaker::fillMetVars(SusyNtSys sys)
   
     m_susyNt.met()->push_back( Susy::Met() );
     Susy::Met* metOut = & m_susyNt.met()->back();
-
+    
     metOut->Et = (*met_it)->met()*MeV2GeV;// m_met.Et();
-    metOut->phi = (*met_it)->phi()*MeV2GeV;// m_met.Phi();
+    metOut->phi = (*met_it)->phi();// m_met.Phi();
     metOut->sys = sys;
     metOut->sumet = (*met_it)->sumet()*MeV2GeV;
-
+    
     if(m_dbg) cout << " AT:fillMetVars " << metOut->Et << " " << metOut->phi << " " << metOut->lv().Pt() << endl;
-
+    
     // RefEle
     xAOD::MissingETContainer::const_iterator met_find = m_metContainer->find("RefEle");
     if (met_find == m_metContainer->end()) {
@@ -769,10 +769,11 @@ void SusyNtMaker::fillMetVars(SusyNtSys sys)
     }
     else {
         metOut->refEle = (*met_find)->met()*MeV2GeV;
-            metOut->refEle_etx = (*met_find)->mpx()*MeV2GeV;
-                metOut->refEle_ety = (*met_find)->mpy()*MeV2GeV;
-                    metOut->refEle_sumet = (*met_find)->sumet()*MeV2GeV;
+        metOut->refEle_etx = (*met_find)->mpx()*MeV2GeV;
+        metOut->refEle_ety = (*met_find)->mpy()*MeV2GeV;
+        metOut->refEle_sumet = (*met_find)->sumet()*MeV2GeV;
     }
+
   
     // RefGamma
     met_find = m_metContainer->find("RefGamma");
@@ -781,9 +782,9 @@ void SusyNtMaker::fillMetVars(SusyNtSys sys)
     }
     else {
         metOut->refGamma = (*met_find)->met()*MeV2GeV;
-            metOut->refGamma_etx = (*met_find)->mpx()*MeV2GeV;
-                metOut->refGamma_ety = (*met_find)->mpy()*MeV2GeV;
-                    metOut->refGamma_sumet = (*met_find)->sumet()*MeV2GeV;
+        metOut->refGamma_etx = (*met_find)->mpx()*MeV2GeV;
+        metOut->refGamma_ety = (*met_find)->mpy()*MeV2GeV;
+        metOut->refGamma_sumet = (*met_find)->sumet()*MeV2GeV;
     }
   
     // RefTau
@@ -802,9 +803,9 @@ void SusyNtMaker::fillMetVars(SusyNtSys sys)
     }
     else {
         metOut->refMuo = (*met_find)->met()*MeV2GeV;
-            metOut->refMuo_etx = (*met_find)->mpx()*MeV2GeV;
-                metOut->refMuo_ety = (*met_find)->mpy()*MeV2GeV;
-                    metOut->refMuo_sumet = (*met_find)->sumet()*MeV2GeV;
+        metOut->refMuo_etx = (*met_find)->mpx()*MeV2GeV;
+        metOut->refMuo_ety = (*met_find)->mpy()*MeV2GeV;
+        metOut->refMuo_sumet = (*met_find)->sumet()*MeV2GeV;
     }
 
     // RefJet
@@ -814,9 +815,9 @@ void SusyNtMaker::fillMetVars(SusyNtSys sys)
     }
     else {
         metOut->refJet = (*met_find)->met()*MeV2GeV;
-            metOut->refJet_etx = (*met_find)->mpx()*MeV2GeV;
-                metOut->refJet_ety = (*met_find)->mpy()*MeV2GeV;
-                    metOut->refJet_sumet = (*met_find)->sumet()*MeV2GeV;
+        metOut->refJet_etx = (*met_find)->mpx()*MeV2GeV;
+        metOut->refJet_ety = (*met_find)->mpy()*MeV2GeV;
+        metOut->refJet_sumet = (*met_find)->sumet()*MeV2GeV;
     }
 
     // SoftClus
@@ -826,9 +827,9 @@ void SusyNtMaker::fillMetVars(SusyNtSys sys)
     }
     else {
         metOut->softTerm = (*met_find)->met()*MeV2GeV;
-            metOut->softTerm_etx = (*met_find)->mpx()*MeV2GeV;
-                metOut->softTerm_ety = (*met_find)->mpy()*MeV2GeV;
-                    metOut->softTerm_sumet = (*met_find)->sumet()*MeV2GeV;
+        metOut->softTerm_etx = (*met_find)->mpx()*MeV2GeV;
+        metOut->softTerm_ety = (*met_find)->mpy()*MeV2GeV;
+        metOut->softTerm_sumet = (*met_find)->sumet()*MeV2GeV;
     }
 
     // cout << "Done looking for MET terms!" << endl;
