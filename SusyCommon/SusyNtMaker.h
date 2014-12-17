@@ -92,10 +92,10 @@ class SusyNtMaker : public XaodAnalysis
   
     void doSystematic();
 
-    void saveElectronSF(SusyNtSys sys);
-    void saveMuonSF(SusyNtSys sys);
-    void saveJetSF(SusyNtSys sys);
-    void saveTauSF(SusyNtSys sys);
+    void saveElectronSF(ST::SystInfo sysInfo, SusyNtSys sys);
+    void saveMuonSF(ST::SystInfo sysInfo, SusyNtSys sys);
+    void saveJetSF(ST::SystInfo sysInfo, SusyNtSys sys);
+    void saveTauSF(ST::SystInfo sysInfo, SusyNtSys sys);
 
     // This should be updated, we have some duplicated code which is dangerous
     void addMissingElectron(const LeptonInfo*, SusyNtSys sys);

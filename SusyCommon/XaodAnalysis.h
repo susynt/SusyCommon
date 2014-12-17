@@ -57,6 +57,8 @@ using namespace NtSys;
 
 namespace susy {
   
+  const double MeV2GeV=1.0e-3;
+
   enum eleID{
     Medium
     ,Tight
@@ -75,9 +77,9 @@ namespace susy {
     ,"eleIDInvalid"
   };
 
-///  a class for performing object selections and event cleaning on xaod
-class XaodAnalysis : public TSelector
-{
+  ///  a class for performing object selections and event cleaning on xaod
+  class XaodAnalysis : public TSelector
+  {
 
   public:
     XaodAnalysis();
@@ -98,7 +100,7 @@ class XaodAnalysis : public TSelector
     
     /**
        Performance Tools 
-     **/
+    **/
     XaodAnalysis& initLocalTools(); ///< initialize performance tools
     void          initPileupTool();
     void          initMuonTools(); 
@@ -109,8 +111,8 @@ class XaodAnalysis : public TSelector
 
     /// access the event info
     /**
-      \todo: all these xaod getters should be cached (if they are a bottleneck) DG-2014-08-16 to be checked
-     */
+       \todo: all these xaod getters should be cached (if they are a bottleneck) DG-2014-08-16 to be checked
+    */
     static const xAOD::EventInfo* retrieveEventInfo(xAOD::TEvent &e, bool dbg);
     /// wrapper of retrieveEventInfo; store result as datamember ptrs
     virtual const xAOD::EventInfo* xaodEventInfo();
@@ -121,25 +123,25 @@ class XaodAnalysis : public TSelector
        accessing directly m_event.mu_staco), one can decide to
        override this member function, and easily switch to another
        muon collection.
-     */
-    virtual xAOD::MuonContainer* xaodMuons(SusyNtSys sys = NtSys::NOM);
+    */
+    virtual xAOD::MuonContainer* xaodMuons(ST::SystInfo sysInfo, SusyNtSys sys = NtSys::NOM);
     /// access the default collection of electrons from SUSYObjDef_xAOD
     /**
        By default returns m_event.el; for its motivation, see XaodAnalysis::xaodMuons().
-     */
-    virtual xAOD::ElectronContainer* xaodElectrons(SusyNtSys sys = NtSys::NOM);
+    */
+    virtual xAOD::ElectronContainer* xaodElectrons(ST::SystInfo sysInfo, SusyNtSys sys = NtSys::NOM);
     /// access the default collection of taus from the SUSYObjDef_xAOD
     /**
        By default returns m_event.tau; for its motivation, see XaodAnalysis::xaodMuons().
-     */
-    virtual xAOD::TauJetContainer* xaodTaus(SusyNtSys sys = NtSys::NOM);
+    */
+    virtual xAOD::TauJetContainer* xaodTaus(ST::SystInfo sysInfo, SusyNtSys sys = NtSys::NOM);
     /// access the default collection of jets from the SUSYObjDef_xAOD
     /**
        By default returns m_event.jet_AntiKt4LCTopo; for its motivation, see XaodAnalysis::xaodMuons().
-     */
-    virtual xAOD::JetContainer* xaodJets(SusyNtSys sys = NtSys::NOM);
+    */
+    virtual xAOD::JetContainer* xaodJets(ST::SystInfo sysInfo, SusyNtSys sys = NtSys::NOM);
     /// access the default collection of photons from SUSYObjDef_xAOD
-    virtual xAOD::PhotonContainer* xaodPhotons(SusyNtSys sys = NtSys::NOM);
+    virtual xAOD::PhotonContainer* xaodPhotons(ST::SystInfo sysInfo, SusyNtSys sys = NtSys::NOM);
     /// access the truth event
     static const xAOD::TruthEventContainer* retrieveTruthEvent(xAOD::TEvent &e, bool dbg);
     /// wrapper of retrieveTruthEvent; store outputs as datamembers
@@ -150,7 +152,7 @@ class XaodAnalysis : public TSelector
     /// wrapper of retrieveTruthParticles; store outputs as datamembers
     virtual const xAOD::TruthParticleContainer* xaodTruthParticles();
 
-    /// retrieve met
+    /// retrieve & build met
     virtual void retrieveXaodMet(ST::SystInfo sysInfo, SusyNtSys sys = NtSys::NOM);
 
     /// access the vertices
@@ -176,8 +178,6 @@ class XaodAnalysis : public TSelector
     void selectSignalPhotons();
     void selectTruthObjects();
 
-    // MissingEt
-    void buildMet(SusyNtSys sys = NtSys::NOM);
 
     // Clear object selection
     void clearOutputObjects(bool deleteNominal=true);
@@ -226,18 +226,18 @@ class XaodAnalysis : public TSelector
     bool passBadJet(); ///< bad jet
     bool passGoodVtx(); ///< good vertex
     bool passTileTrip(); ///< tile trip
-    bool passBadMuon(); ///< bad muon veto
-    bool passCosmic(); ///< cosmic veto
+    bool passBadMuon(ST::SystInfo sysInfo, SusyNtSys sys = NtSys::NOM); ///< bad muon veto
+    bool passCosmic(ST::SystInfo sysInfo, SusyNtSys sys = NtSys::NOM); ///< cosmic veto
 
     void assignEventCleaningFlags(); ///< Event level cleaning cuts
-    void assignObjectCleaningFlags();// Object level cleaning cuts;  t/<hese depend on sys
+    void assignObjectCleaningFlags(ST::SystInfo sysInfo, SusyNtSys sys = NtSys::NOM);// Object level cleaning cuts;  t/<hese depend on sys
 
     // Event weighting
 
     /// Full event weight includes generator, xsec, pileup, and lumi weights.
     /** Default weight uses A-E lumi.
-     You can supply a different integrated luminosity,
-     but the the pileup weights will still correspond to A-E.
+        You can supply a different integrated luminosity,
+        but the the pileup weights will still correspond to A-E.
     */
     float getEventWeight(float lumi = LUMI_A_E);
     float getXsecWeight(); ///< event weight (xsec*kfac)
@@ -285,15 +285,15 @@ class XaodAnalysis : public TSelector
        In the class inheriting from XaodAnalysis, one should have:
        \code{.cpp}
        Process() {
-           GetEntry(entry);
-           if(!m_flagsHaveBeenChecked) {
-               m_flagsAreConsistent = runningOptionsAreValid();
-               m_flagsHaveBeenChecked=true;
-           }
+       GetEntry(entry);
+       if(!m_flagsHaveBeenChecked) {
+       m_flagsAreConsistent = runningOptionsAreValid();
+       m_flagsHaveBeenChecked=true;
+       }
        ...
        }
        \endcode
-     */
+    */
     bool runningOptionsAreValid();
     //void setUseMetMuons(bool useMetMu) { m_useMetMuons = useMetMu; }
 
@@ -443,7 +443,7 @@ class XaodAnalysis : public TSelector
     /**
        should proably make these private and force the user to call
        the @c xaod* functions.
-     */
+    */
     const xAOD::EventInfo* m_xaodEventInfo;
     /**
        Note: one can only access collections as const. One can make
@@ -470,7 +470,7 @@ class XaodAnalysis : public TSelector
     /**
        DG, note to self: not clear whether this is needed also when we
        don't want to write it out (just to recompute the met).
-     */
+    */
     xAOD::MissingETContainer*           m_metContainer;
     xAOD::MissingETAuxContainer*        m_metAuxContainer;
 
@@ -506,7 +506,7 @@ class XaodAnalysis : public TSelector
        copies we need to call delete (see
        XaodAnalysis::deleteShallowCopies), but for the other ones we
        just need to reset the chached pointer.
-     */
+    */
     XaodAnalysis& clearContainerPointers(bool deleteNominal=true);
 
 
@@ -523,7 +523,7 @@ class XaodAnalysis : public TSelector
     TauAnalysisTools::TauTruthMatchingTool       *m_tauTruthMatchingTool;
     TauAnalysisTools::TauTruthTrackMatchingTool  *m_tauTruthTrackMatchingTool;
 
-};
+  };
 
 } // susy
 
