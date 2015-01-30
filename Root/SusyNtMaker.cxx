@@ -350,8 +350,8 @@ void SusyNtMaker::storeElectron(const xAOD::Electron &in)
     out.eta = eta;
     out.phi = phi;
     out.m   = m;
-    out.isBaseline = in.auxdata< char >("baseline");
-    out.isSignal = in.auxdata< char >("signal");
+    out.isBaseline = in.auxdata< bool >("baseline");
+    out.isSignal = in.auxdata< bool >("signal");
     out.q   = in.charge();
     bool all_available=true;
     
@@ -467,10 +467,10 @@ void SusyNtMaker::storeMuon(const xAOD::Muon &in)
     out.phi = phi;
     out.m   = m;
     out.q   = in.charge();
-    out.isBaseline = in.auxdata< char >("baseline");
-    out.isSignal   = in.auxdata< char >("signal");
+    out.isBaseline = in.auxdata< bool >("baseline");
+    out.isSignal   = in.auxdata< bool >("signal");
     out.isCombined = in.muonType()==xAOD::Muon::Combined;
-    out.isCosmic   = in.auxdata< char >("cosmic");
+    out.isCosmic   = in.auxdata< bool >("cosmic");
     out.isBadMuon  = m_susyObj[m_eleIDDefault]->IsBadMuon(in); // Uses default qoverpcut of 0.2
 
     bool all_available=true;
