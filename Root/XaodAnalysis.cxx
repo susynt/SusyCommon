@@ -84,7 +84,7 @@ void XaodAnalysis::Init(TTree *tree)
     m_stream = XaodAnalysis::streamFromSamplename(m_sample, isData);
     initSusyTools();
     initLocalTools();
-    if(m_isMC && m_sys) getSystematicList(); 
+    if(m_isMC && m_sys) getSystematicList();
     else{
         ST::SystInfo infodef;
         infodef.affectsKinematics = false;
@@ -159,7 +159,7 @@ void XaodAnalysis::Terminate()
     delete m_muonEfficiencySFTool;
     delete m_tauTruthMatchingTool;
     delete m_tauTruthTrackMatchingTool;
-  
+
     for(int i=Medium; i<eleIDInvalid; i++){
         delete m_susyObj[i];
     }
@@ -173,8 +173,8 @@ XaodAnalysis& XaodAnalysis::initSusyTools()
         m_susyObj[i] = new ST::SUSYObjDef_xAOD(name);
         cout << "---------------------------------------" << endl;
         cout << "XaodAnalysis::initSusyTools:           " << name <<endl;
-        cout << "---------------------------------------" << endl;    
-    
+        cout << "---------------------------------------" << endl;
+
         m_susyObj[i]->msg().setLevel(m_dbg ? MSG::DEBUG : MSG::WARNING);
         m_susyObj[i]->setProperty("IsData",          static_cast<int>(!m_isMC));
         m_susyObj[i]->setProperty("IsAtlfast",       static_cast<int>(m_isAF2));
@@ -190,7 +190,7 @@ XaodAnalysis& XaodAnalysis::initLocalTools()
 {
     char *tmparea=getenv("ROOTCOREBIN");
     char* TestArea = getenv("TestArea");
-  
+
     if (tmparea != NULL) {
         maindir = tmparea;
         maindir = maindir + "/data/";
@@ -206,7 +206,7 @@ XaodAnalysis& XaodAnalysis::initLocalTools()
     }
 
     initPileupTool();
-    initMuonTools(); 
+    initMuonTools();
     initTauTools();
 
     return *this;
@@ -216,20 +216,20 @@ void XaodAnalysis::initPileupTool()
 {
     m_pileupReweightingTool = new CP::PileupReweightingTool("PileupReweightingTool");
     m_pileupReweightingTool->setProperty("Input","EventInfo");
-  
+
     std::vector<std::string> prwFiles;
     std::vector<std::string> lumicalcFiles;
 
     prwFiles.push_back("PileupReweighting/mc14v1_defaults.prw.root");
     CHECK (m_pileupReweightingTool->setProperty("ConfigFiles",prwFiles));
-  
+
     lumicalcFiles.push_back(maindir+"SUSYTools/susy_data12_avgintperbx.root");
     CHECK( m_pileupReweightingTool->setProperty("LumiCalcFiles",lumicalcFiles) );
     //AT-2014-10-31 For systematic instanciate two more tools with difference SF
     //CHECK( m_pileupReweightingTool->setProperty("DataScaleFactors",1/1.08) );
     //CHECK( m_pileupReweightingTool->setProperty("DataScaleFactors",1/1.11) );
     CHECK( m_pileupReweightingTool->initialize() );
-  
+
 }
 //----------------------------------------------------------
 void XaodAnalysis::initMuonTools()
@@ -237,8 +237,8 @@ void XaodAnalysis::initMuonTools()
     m_muonEfficiencySFTool = new CP::MuonEfficiencyScaleFactors("MuonEfficiencyScaleFactors");
     CHECK( m_muonEfficiencySFTool->setProperty("WorkingPoint","CBandST") );
     CHECK( m_muonEfficiencySFTool->setProperty("DataPeriod","2012") );
-    CHECK( m_muonEfficiencySFTool->initialize() ); 
-    
+    CHECK( m_muonEfficiencySFTool->initialize() );
+
     cout << "ASM :: MuonEffTool is initialized correctly..." << endl;
 }
 //----------------------------------------------------------
@@ -247,11 +247,11 @@ void XaodAnalysis::initTauTools()
     m_tauTruthMatchingTool = new TauAnalysisTools::TauTruthMatchingTool("TauTruthMatchingTool");
     m_tauTruthMatchingTool->msg().setLevel(m_dbg ? MSG::DEBUG : MSG::WARNING);
     CHECK(m_tauTruthMatchingTool->initialize());
-  
+
     m_tauTruthTrackMatchingTool = new TauAnalysisTools::TauTruthTrackMatchingTool("TauTruthTrackMatchingTool");
     m_tauTruthTrackMatchingTool->msg().setLevel(m_dbg ? MSG::DEBUG : MSG::WARNING);
     CHECK(m_tauTruthTrackMatchingTool->initialize());
-    
+
 }
 
 
@@ -261,7 +261,7 @@ void XaodAnalysis::initTauTools()
 void XaodAnalysis::getSystematicList()
 {
     if(m_dbg>=5) cout << "getSystematicList" << endl;
-    //Get from SUSYTools the list of systematics and 
+    //Get from SUSYTools the list of systematics and
     //what each systematics affects: weight/kin and object type
     systInfoList = m_susyObj[m_eleIDDefault]->getSystInfoList();
 }
@@ -345,7 +345,7 @@ xAOD::TauJetContainer* XaodAnalysis::xaodTaus(ST::SystInfo sysInfo, SusyNtSys sy
         if(m_dbg>=5) cout << "xaodTaus_nom " << m_xaodTaus_nom->size() << endl;
         return m_xaodTaus_nom;
     }
-  
+
     return NULL;
 }
 //----------------------------------------------------------
@@ -445,15 +445,15 @@ void XaodAnalysis::retrieveXaodMet( ST::SystInfo sysInfo, SusyNtSys sys)
         // DG 2014-09-01 : todo: define 'MySelJets' collection and use it to rebuild 'MET_MyRefFinal'.
         // These placeholder labels are currently hardcoded in SUSYObjDef_xAOD::GetMET()
         // std::pair< xAOD::JetContainer*, xAOD::ShallowAuxContainer* > jets_shallowCopy = xAOD::shallowCopyContainer( *jets );
-    
+
         m_metContainer = new xAOD::MissingETContainer();
         m_metAuxContainer = new xAOD::MissingETAuxContainer();
         m_metContainer->setStore( m_metAuxContainer );
         //AT 12/12/14: don't need these anymore
         //m_store.record(m_metContainer, "MET_MyRefFinal");
         //m_store.record(m_metAuxContainer, "MET_MyRefFinalAux.");
-    }      
-  
+    }
+
     xAOD::ElectronContainer* electrons = xaodElectrons(sysInfo,sys);
     xAOD::MuonContainer*     muons     = xaodMuons(sysInfo,sys);
     xAOD::JetContainer*      jets      = xaodJets(sysInfo,sys);
@@ -463,14 +463,14 @@ void XaodAnalysis::retrieveXaodMet( ST::SystInfo sysInfo, SusyNtSys sys)
     //AT 12/16/14: obsolete - done in GetMet
     //xAOD::MuonContainer muons_copy_met(SG::VIEW_ELEMENTS);
     //std::copy_if(muons->begin(), muons->end(), std::back_inserter(muons_copy_met), muon_is_safe_for_met);
-  
+
     m_susyObj[m_eleIDDefault]->GetMET(*m_metContainer,
                                       jets,
                                       electrons,
                                       muons,
                                       photons,
                                       taus);
-  
+
 }
 //----------------------------------------------------------
 const xAOD::VertexContainer* XaodAnalysis::retrieveVertices(xAOD::TEvent &e, bool dbg)
@@ -486,7 +486,7 @@ const xAOD::VertexContainer* XaodAnalysis::retrieveVertices(xAOD::TEvent &e, boo
 const xAOD::VertexContainer* XaodAnalysis::xaodVertices()
 {
     if(m_xaodVertices==NULL){
-        m_xaodVertices = retrieveVertices(m_event, m_dbg);     
+        m_xaodVertices = retrieveVertices(m_event, m_dbg);
     }
     return m_xaodVertices;
 }
@@ -495,7 +495,7 @@ const xAOD::VertexContainer* XaodAnalysis::xaodVertices()
 void XaodAnalysis::selectBaselineObjects(SusyNtSys sys, ST::SystInfo sysInfo)
 {
     if(m_dbg>=5) cout << "selectBaselineObjects with sys=" <<  SusyNtSysNames[sys] << endl;
-  
+
     xAOD::ElectronContainer* electrons = xaodElectrons(sysInfo,sys);
     int iEl = -1;
     for(const auto& el : *electrons) {
@@ -506,19 +506,18 @@ void XaodAnalysis::selectBaselineObjects(SusyNtSys sys, ST::SystInfo sysInfo)
                          <<" phi " << el->phi()
                          <<endl;
         m_susyObj[m_eleIDDefault]->IsSignalElectron(*el);
-        
-        if(!el->auxdata< char >("baseline")) continue;
+        if(!el->auxdata< bool >("baseline")) continue;
         m_preElectrons.push_back(iEl);
-        //AT:12/16/14 TO UPDATE Base Obj should be after overlap removal 
-        if(el->auxdata< char >("baseline"))  m_baseElectrons.push_back(iEl); 
-        
+        //AT:12/16/14 TO UPDATE Base Obj should be after overlap removal
+        if(el->auxdata< bool >("baseline"))  m_baseElectrons.push_back(iEl);
+
         if(m_dbg>=5) cout<<"\t El passing"
-                         <<" baseline? "<< bool(el->auxdata< char >("baseline"))
-                         <<" signal? "<< bool(el->auxdata< char >("signal"))
+                         <<" baseline? "<< bool(el->auxdata< bool >("baseline"))
+                         <<" signal? "<< bool(el->auxdata< bool >("signal"))
                          <<endl;
     }
     if(m_dbg) cout<<"preElectrons["<<m_preElectrons.size()<<"]"<<endl;
-  
+
     int iMu = -1;
     xAOD::MuonContainer* muons =xaodMuons(sysInfo,sys);
     for(const auto& mu : *muons){
@@ -527,17 +526,17 @@ void XaodAnalysis::selectBaselineObjects(SusyNtSys sys, ST::SystInfo sysInfo)
         m_susyObj[m_eleIDDefault]->IsSignalMuon(*mu);
         m_susyObj[m_eleIDDefault]->IsCosmicMuon(*mu);
         if(m_dbg>=5) cout<<"Mu passing"
-                         <<" baseline? "<< bool(mu->auxdata< char >("baseline"))
-                         <<" signal? "<< bool(mu->auxdata< char >("signal"))
+                         <<" baseline? "<< bool(mu->auxdata< bool >("baseline"))
+                         <<" signal? "<< bool(mu->auxdata< bool >("signal"))
                          <<" pt " << mu->pt()
                          <<" eta " << mu->eta()
                          <<" phi " << mu->phi()
                          <<endl;
-        if(mu->auxdata< char >("baseline")) m_baseMuons.push_back(iMu);
+        if(mu->auxdata< bool >("baseline")) m_baseMuons.push_back(iMu);
         // if(signal) m_sigMuons.push_back(iMu);
     }
     if(m_dbg) cout<<"preMuons["<<m_preMuons.size()<<"]"<<endl;
-    
+
     int iJet=-1;
     xAOD::JetContainer* jets = xaodJets(sysInfo,sys);
     for(const auto& jet : *jets){
@@ -545,33 +544,33 @@ void XaodAnalysis::selectBaselineObjects(SusyNtSys sys, ST::SystInfo sysInfo)
         m_preJets.push_back(iJet);
         m_susyObj[m_eleIDDefault]->IsBJet(*jet);
         if(m_dbg>=5) cout<<"Jet passing"
-                         <<" baseline? "<< bool(jet->auxdata< char >("baseline"))
-                         <<" signal? "<< bool(jet->auxdata< char >("signal"))
+                         <<" baseline? "<< bool(jet->auxdata< bool >("baseline"))
+                         <<" signal? "<< bool(jet->auxdata< bool >("signal"))
                          <<" pt " << jet->pt()
                          <<" eta " << jet->eta()
                          <<" phi " << jet->phi()
                          <<endl;
-        if(jet->auxdata< char >("baseline")) m_baseJets.push_back(iJet);
+        if(jet->auxdata< bool >("baseline")) m_baseJets.push_back(iJet);
     }
     if(m_dbg) cout<<"preJets["<<m_preJets.size()<<"]"<<endl;
 
     // overlap removal and met (need to build 'MyJet' coll?)
     //AT:: Depending of what container is affected by systematic, feed the correct set for the met computation
     m_susyObj[m_eleIDDefault]->OverlapRemoval(xaodElectrons(sysInfo,sys), xaodMuons(sysInfo, sys), xaodJets(sysInfo, sys));
-  
+
     int iTau=-1;
     xAOD::TauJetContainer* taus = xaodTaus(sysInfo,sys);
     for(const auto& tau : *taus){
         iTau++;
         m_susyObj[m_eleIDDefault]->IsSignalTau(*tau);
         if(m_dbg>=5) cout<<"Tau passing"
-                         <<" signal? "<< bool(tau->auxdata< char >("signal"))
+                         <<" signal? "<< bool(tau->auxdata< bool >("signal"))
                          <<" pt " << tau->pt()
                          <<" eta " << tau->eta()
                          <<" phi " << tau->phi()
                          <<endl;
 
-        if(tau->auxdata< char >("baseline")) m_preTaus.push_back(iTau);
+        if(tau->auxdata< bool >("baseline")) m_preTaus.push_back(iTau);
         //tau->pt()>20*GeV && abs(tau->eta())<2.47
     }
     if(m_dbg) cout<<"m_preTaus["<<m_preTaus.size()<<"]"<<endl;
@@ -670,13 +669,13 @@ void XaodAnalysis::performOverlapRemoval()
 void XaodAnalysis::selectSignalObjects(SusyNtSys sys, ST::SystInfo sysInfo)
 {
     if(m_dbg>=5) cout << "selectSignalObjects with sys=" <<  SusyNtSysNames[sys] << endl;
-   
+
     int iEl = 0;
     xAOD::ElectronContainer* electrons = xaodElectrons(sysInfo,sys);
     for(const auto& el : *electrons) {
         if(el->pt()>10*MeV2GeV &&
-           el->auxdata< char >("signal") &&
-           el->auxdata< char >("passOR") )
+           el->auxdata< bool >("signal") &&
+           el->auxdata< bool >("passOR") )
             m_sigElectrons.push_back(iEl);
         iEl++;
     }
@@ -686,9 +685,9 @@ void XaodAnalysis::selectSignalObjects(SusyNtSys sys, ST::SystInfo sysInfo)
     xAOD::MuonContainer* muons = xaodMuons(sysInfo,sys);
     for(const auto& mu : *muons){
         if(mu->pt()>10.0*MeV2GeV &&
-           mu->auxdata< char >("signal") &&
-           mu->auxdata< char >("passOR") &&
-           !mu->auxdata< char >("cosmic"))
+           mu->auxdata< bool >("signal") &&
+           mu->auxdata< bool >("passOR") &&
+           !mu->auxdata< bool >("cosmic"))
             m_sigMuons.push_back(iMu);
     }
     if(m_dbg) cout<<"m_sigMuons["<<m_sigMuons.size()<<"]"<<endl;
@@ -697,9 +696,9 @@ void XaodAnalysis::selectSignalObjects(SusyNtSys sys, ST::SystInfo sysInfo)
     xAOD::JetContainer* jets = xaodJets(sysInfo,sys);
     for(const auto& jet : *jets){
         if(jet->pt()>20.0*MeV2GeV &&
-           jet->auxdata< char >("passOR") &&
-           !jet->auxdata< char >("bad") //AT: Added 12/13/14
-           // DG tmp-2014-11-02 (!jet->isAvailable("bad") || !jet->auxdata< char >("bad"))
+           jet->auxdata< bool >("passOR") &&
+           !jet->auxdata< bool >("bad") //AT: Added 12/13/14
+           // DG tmp-2014-11-02 (!jet->isAvailable("bad") || !jet->auxdata< bool >("bad"))
             )
             m_sigJets.push_back(iJet);
         iJet++;
@@ -710,18 +709,18 @@ void XaodAnalysis::selectSignalObjects(SusyNtSys sys, ST::SystInfo sysInfo)
     xAOD::TauJetContainer* taus = xaodTaus(sysInfo,sys);
     for(const auto& tau : *taus){
         if(tau->pt()>20.0*MeV2GeV &&
-           tau->auxdata< char >("signal"))
+           tau->auxdata< bool >("signal"))
             // tau->auxdata< int >("passOR") && // tau not involved in OR?
             m_sigTaus.push_back(iTau);
         iTau++;
     }
     if(m_dbg) cout<<"m_sigTaus["<<m_sigTaus.size()<<"]"<<endl;
-    
+
     int iPh=0;
     xAOD::PhotonContainer* photons = xaodPhotons(sysInfo,sys);
     for(const auto& ph : *photons){
         //m_susyObj[m_eleIDDefault]->FillPhoton(ph);
-        if(ph->auxdata< char >("baseline"))
+        if(ph->auxdata< bool >("baseline"))
             m_sigPhotons.push_back(iPh);
         iPh++;
     }
@@ -822,7 +821,7 @@ uint XaodAnalysis::getNumGoodVtx()
 
     //AT:2014-10-31: To be change to this for run2 : 2
     //return  m_xaodVertices-size();
-  
+
 }
 
 /*--------------------------------------------------------------------------------*/
@@ -1199,7 +1198,7 @@ bool XaodAnalysis::passCosmic(ST::SystInfo sysInfo, SusyNtSys sys)
     xAOD::MuonContainer* muons = xaodMuons(sysInfo, sys);
     for(auto it=muons->begin(), end=muons->end(); it!=end; ++it){
         const xAOD::Muon &mu = **it;
-        if(!mu.auxdata< char >("baseline")) continue;
+        if(!mu.auxdata< bool >("baseline")) continue;
         if(m_susyObj[m_eleIDDefault]->IsCosmicMuon(mu)) return false;
     }
     return true;
@@ -1492,9 +1491,9 @@ bool XaodAnalysis::runningOptionsAreValid()
         const std::vector< xAOD::EventInfo::StreamTag > &streams= xaodEventInfo()->streamTags();
         vector<string> streamnames(streams.size());
         std::transform(streams.begin(), streams.end(), streamnames.begin(),
-                       [](const xAOD::EventInfo::StreamTag &s) { 
+                       [](const xAOD::EventInfo::StreamTag &s) {
                            cout << "AT:  stream " << s.name()<< endl;
-                           return s.name(); 
+                           return s.name();
                        });
         bool isEgamma = (find(streamnames.begin(), streamnames.end(), "Egamma") != streamnames.end());
         bool isJetEt  = (find(streamnames.begin(), streamnames.end(), "JetTauEtmiss") != streamnames.end());
@@ -1593,7 +1592,7 @@ XaodAnalysis& XaodAnalysis::deleteShallowCopies(bool deleteNominal)
     if(m_xaodPhotons      ) delete m_xaodPhotons;
     if(m_xaodPhotonsAux   ) delete m_xaodPhotonsAux;
 
-    cout << "Check delete shallowCopied mu " << m_xaodMuons 
+    cout << "Check delete shallowCopied mu " << m_xaodMuons
          << " ele " << m_xaodElectrons
          << " pho " << m_xaodPhotons
          << " jets " << m_xaodJets
@@ -1604,7 +1603,7 @@ XaodAnalysis& XaodAnalysis::deleteShallowCopies(bool deleteNominal)
         m_store.print();
         m_store.clear(); // this clears m_metContainer and the objs recorded with TStore - AT: 12/12/14- not needed anymore
         m_store.print();
-      
+
         if(m_xaodMuons_nom       ) delete m_xaodMuons_nom;
         if(m_xaodMuonsAux_nom    ) delete m_xaodMuonsAux_nom;
         if(m_xaodElectrons_nom   ) delete m_xaodElectrons_nom;
@@ -1664,7 +1663,7 @@ XaodAnalysis& XaodAnalysis::clearContainerPointers(bool deleteNominal)
 //----------------------------------------------------------
 XaodAnalysis& XaodAnalysis::retrieveCollections()
 {
-    if(m_dbg) cout << "XaodAnalysis::retrieveCollections " << endl; 
+    if(m_dbg) cout << "XaodAnalysis::retrieveCollections " << endl;
     xaodEventInfo();
     const xAOD::EventInfo* eventinfo = XaodAnalysis::xaodEventInfo();
     if(m_dbg) cout << " run " << setw(6) << eventinfo->runNumber()
