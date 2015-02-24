@@ -12,7 +12,9 @@
 #include <iterator> // back_inserter
 #include <numeric> // accumulate
 
+
 using namespace std;
+
 using susy::XaodAnalysis;
 
 
@@ -68,7 +70,10 @@ XaodAnalysis::XaodAnalysis() :
 	m_pileupReweightingTool(0),
 	m_muonEfficiencySFTool(0),
 	m_tauTruthMatchingTool(0),
-	m_tauTruthTrackMatchingTool(0)
+	m_tauTruthTrackMatchingTool(0),
+        //dantrim trig
+        m_configTool(0),
+        m_trigTool(0)
 {
     clearContainerPointers();
     clearOutputObjects();
@@ -78,6 +83,11 @@ XaodAnalysis::XaodAnalysis() :
 void XaodAnalysis::Init(TTree *tree)
 {
     xAOD::Init("susy::XaodAnalysis").ignore();
+
+
+
+
+
     m_event.readFrom(tree);
     m_isMC = XaodAnalysis::isSimuFromSamplename(m_sample);
     bool isData = XaodAnalysis::isDataFromSamplename(m_sample);
@@ -160,9 +170,13 @@ void XaodAnalysis::Terminate()
     delete m_tauTruthMatchingTool;
     delete m_tauTruthTrackMatchingTool;
 
+
     for(int i=Medium; i<eleIDInvalid; i++){
         delete m_susyObj[i];
     }
+    // dantrim trig
+    delete m_configTool;
+    delete m_trigTool;
 
 }
 //----------------------------------------------------------
@@ -205,9 +219,43 @@ XaodAnalysis& XaodAnalysis::initLocalTools()
         exit(-1);
     }
 
+//    // dantrim trig
+    m_configTool = new TrigConf::xAODConfigTool("TrigConf::xAODConfigTool");
+    
+//    TrigConf::xAODConfigTool configTool("xAODConfigTool");
+ //   ToolHandle<TrigConf::ITrigConfigTool> configHandle(&configTool);
+    ToolHandle<TrigConf::ITrigConfigTool> configHandle(m_configTool);
+    CHECK( configHandle->initialize() );
+
+//   Trig::TrigDecisionTool m_trigTool("TrigDecTool");
+     
+
+    //m_trigTool = new Trig::TrigDecisionTool("TrigDecTool");
+    m_trigTool = new Trig::TrigDecisionTool("TrigDecTool");
+    m_trigTool->setProperty("ConfigTool", configHandle);
+    m_trigTool->setProperty("TrigDecisionKey", "xTrigDecision");
+    CHECK( m_trigTool->initialize() );
+
+
     initPileupTool();
     initMuonTools();
     initTauTools();
+
+    // dantrim trig
+   // if(!m_trigTool) {
+//        m_trigTool = new Trig::TrigDecisionTool( "TrigDecisionTool");
+//   // }
+//  //  if(!m_configTool) {
+//        m_configTool = new TrigConf::xAODConfigTool("xAODConfigTool");
+//  //  }
+//    CHECK( m_configTool->initialize() );
+//    ToolHandle< TrigConf::ITrigConfigTool > configHandle( m_configTool );
+//    m_trigTool->setProperty("ConfigTool", configHandle );
+//    m_trigTool->setProperty("TrigDecisionKey", "xTrigDecision");
+//    CHECK( m_trigTool->initialize() );
+
+
+
 
     return *this;
 }
@@ -292,14 +340,16 @@ xAOD::MuonContainer* XaodAnalysis::xaodMuons(ST::SystInfo sysInfo, SusyNtSys sys
     bool syst_affectsMuons     = ST::testAffectsObject(xAOD::Type::Muon, sysInfo.affectsType);
     if(sys!=NtSys::NOM && syst_affectsMuons){
         if(m_xaodMuons==NULL){
-            m_susyObj[m_eleIDDefault]->GetMuons(m_xaodMuons, m_xaodMuonsAux, false, minPt);
+            //m_susyObj[m_eleIDDefault]->GetMuons(m_xaodMuons, m_xaodMuonsAux, false, minPt);
+            m_susyObj[m_eleIDDefault]->GetMuons(m_xaodMuons, m_xaodMuonsAux);
         }
         if(m_dbg>=5) cout << "xaodMuo "<< m_xaodMuons->size() << endl;
         return m_xaodMuons;
     }
     else{
         if(m_xaodMuons_nom==NULL){
-            m_susyObj[m_eleIDDefault]->GetMuons(m_xaodMuons_nom, m_xaodMuonsAux_nom, false, minPt);
+            //m_susyObj[m_eleIDDefault]->GetMuons(m_xaodMuons_nom, m_xaodMuonsAux_nom, false, minPt);
+            m_susyObj[m_eleIDDefault]->GetMuons(m_xaodMuons_nom, m_xaodMuonsAux_nom);
         }
         if(m_dbg>=5) cout << "xaodMuo_nom " << m_xaodMuons_nom->size() << endl;
         return m_xaodMuons_nom;
@@ -313,6 +363,7 @@ xAOD::ElectronContainer* XaodAnalysis::xaodElectrons(ST::SystInfo sysInfo, SusyN
     bool syst_affectsElectrons = ST::testAffectsObject(xAOD::Type::Electron, sysInfo.affectsType);
     if(sys!=NtSys::NOM && syst_affectsElectrons){
         if(m_xaodElectrons==NULL){
+            //m_susyObj[m_eleIDDefault]->GetElectrons(m_xaodElectrons, m_xaodElectronsAux, false, minPt);
             m_susyObj[m_eleIDDefault]->GetElectrons(m_xaodElectrons, m_xaodElectronsAux, false, minPt);
         }
         if(m_dbg>=5) cout << "xaodEle " << m_xaodElectrons->size() << endl;
@@ -320,7 +371,8 @@ xAOD::ElectronContainer* XaodAnalysis::xaodElectrons(ST::SystInfo sysInfo, SusyN
     }
     else{
         if(m_xaodElectrons_nom==NULL){
-            m_susyObj[m_eleIDDefault]->GetElectrons(m_xaodElectrons_nom, m_xaodElectronsAux_nom, false, minPt);
+            //m_susyObj[m_eleIDDefault]->GetElectrons(m_xaodElectrons_nom, m_xaodElectronsAux_nom, false, minPt);
+            m_susyObj[m_eleIDDefault]->GetElectrons(m_xaodElectrons_nom, m_xaodElectronsAux_nom);
         }
         if(m_dbg>=5) cout << "xaodEle_nom " << m_xaodElectrons_nom->size() << endl;
         return m_xaodElectrons_nom;
@@ -1171,7 +1223,15 @@ bool XaodAnalysis::passBadJet()
 //----------------------------------------------------------
 bool XaodAnalysis::passGoodVtx()
 {
-    return true; // DG-2014-08-16 \todo
+    // dantrim-2015-02-14 : following Ximo's method of checking if there is at least one fulfilling...
+    bool at_least_one = false;
+    for(auto it=m_xaodVertices->begin(), end=m_xaodVertices->end(); it!=end; ++it){
+        const xAOD::Vertex *vtx = *it;
+        if(vtx->vertexType() == xAOD::VxType::PriVtx) at_least_one = true;
+    }
+    return at_least_one;
+
+//    return true; // DG-2014-08-16 \todo
 //  return PrimaryVertexCut(m_susyObj, &m_event.vxp);
 }
 //----------------------------------------------------------
@@ -1198,7 +1258,8 @@ bool XaodAnalysis::passCosmic(ST::SystInfo sysInfo, SusyNtSys sys)
     xAOD::MuonContainer* muons = xaodMuons(sysInfo, sys);
     for(auto it=muons->begin(), end=muons->end(); it!=end; ++it){
         const xAOD::Muon &mu = **it;
-        if(!mu.auxdata< bool >("baseline")) continue;
+        if(!mu.auxdata< bool >("baseline")) continue; // dantrim -- removing this, cutflow is in line with Maria : Feb 14 2015
+    //    if(!mu.auxdata< bool >("passOR")) continue; // dantrim -- in line with selectSignalObjects : Feb 14 2015
         if(m_susyObj[m_eleIDDefault]->IsCosmicMuon(mu)) return false;
     }
     return true;
@@ -1592,17 +1653,17 @@ XaodAnalysis& XaodAnalysis::deleteShallowCopies(bool deleteNominal)
     if(m_xaodPhotons      ) delete m_xaodPhotons;
     if(m_xaodPhotonsAux   ) delete m_xaodPhotonsAux;
 
-    cout << "Check delete shallowCopied mu " << m_xaodMuons
-         << " ele " << m_xaodElectrons
-         << " pho " << m_xaodPhotons
-         << " jets " << m_xaodJets
-         << " taus " << m_xaodTaus << endl;
+    if(m_dbg>5) cout << "Check delete shallowCopied mu " << m_xaodMuons
+                     << " ele " << m_xaodElectrons
+                     << " pho " << m_xaodPhotons
+                     << " jets " << m_xaodJets
+                     << " taus " << m_xaodTaus << endl;
 
 
     if(deleteNominal){
-        m_store.print();
+    //    m_store.print();  // annoying print out - dantrim : Feb 14 2015
         m_store.clear(); // this clears m_metContainer and the objs recorded with TStore - AT: 12/12/14- not needed anymore
-        m_store.print();
+    //    m_store.print();
 
         if(m_xaodMuons_nom       ) delete m_xaodMuons_nom;
         if(m_xaodMuonsAux_nom    ) delete m_xaodMuonsAux_nom;

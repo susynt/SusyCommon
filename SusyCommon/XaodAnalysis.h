@@ -47,6 +47,10 @@
 
 #include "SusyCommon/XaodAnalysis_types.h"
 
+// Trigger
+#include "TrigConfxAOD/xAODConfigTool.h"
+#include "TrigDecisionTool/TrigDecisionTool.h"
+
 #include "TSelector.h"
 #include "TTree.h"
 
@@ -54,6 +58,15 @@
 
 using namespace Susy;
 using namespace NtSys;
+
+// dantrim trig
+namespace TrigConf {
+    class xAODConfigTool;
+}
+namespace Trig {
+    class TrigDecisionTool;
+}
+
 
 namespace susy {
   
@@ -311,6 +324,7 @@ namespace susy {
 
   protected:
 
+
     TString                     m_sample;       // sample name
     DataStream                  m_stream;       // data stream enum, taken from sample name
     bool                        m_isAF2;        // flag for ATLFastII samples
@@ -523,6 +537,9 @@ namespace susy {
     TauAnalysisTools::TauTruthMatchingTool       *m_tauTruthMatchingTool;
     TauAnalysisTools::TauTruthTrackMatchingTool  *m_tauTruthTrackMatchingTool;
 
+    // dantrim trig
+    TrigConf::xAODConfigTool*      m_configTool;
+    Trig::TrigDecisionTool*    m_trigTool;
   };
 
 } // susy

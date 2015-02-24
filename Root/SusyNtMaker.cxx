@@ -84,21 +84,27 @@ const std::vector< std::string > SusyNtMaker::cutflowLabels()
 {
     vector<string> labels;
     labels.push_back("Initial"        );
-    labels.push_back("SusyProp Veto"  );
     labels.push_back("GRL"            );
-    labels.push_back("LAr Error"      );
-    labels.push_back("Tile Error"     );
-    labels.push_back("TTC Veto"       );
-    labels.push_back("Good Vertex"    );
-    labels.push_back("Buggy WWSherpa" );
-    labels.push_back("Hot Spot"       );
-    labels.push_back("Bad Jet"        );
-    labels.push_back("Bad Muon"       );
-    labels.push_back("Cosmic"         );
-    labels.push_back(">=1 lep"        );
-    labels.push_back(">=2 base lep"   );
-    labels.push_back(">=2 lep"        );
-    labels.push_back("==3 lep"        );
+    labels.push_back("Jet Cleaning"   );
+    labels.push_back("Primary Vertex" );
+    labels.push_back("Cosmic veto"    );
+    labels.push_back("==2 base lep"   );
+    labels.push_back("==2 sig leptons");
+  //  labels.push_back("SusyProp Veto"  );
+  //  labels.push_back("GRL"            );
+  //  labels.push_back("LAr Error"      );
+  //  labels.push_back("Tile Error"     );
+  //  labels.push_back("TTC Veto"       );
+  //  labels.push_back("Good Vertex"    );
+  //  labels.push_back("Buggy WWSherpa" );
+  //  labels.push_back("Hot Spot"       );
+  //  labels.push_back("Bad Jet"        );
+  //  labels.push_back("Bad Muon"       );
+  //  labels.push_back("Cosmic"         );
+  //  labels.push_back(">=1 lep"        );
+  //  labels.push_back(">=2 base lep"   );
+  //  labels.push_back(">=2 lep"        );
+  //  labels.push_back("==3 lep"        );
     return labels;
 }
 //----------------------------------------------------------
@@ -1531,7 +1537,17 @@ bool SusyNtMaker::passEventlevelSelection()
 
     assignEventCleaningFlags();
     bool keep_all_events(!m_filter);
-    bool pass_susyprop(!m_hasSusyProp);
+
+    // cutflow comparison with Ximo, et al.
+    bool pass_grl(m_cutFlags & ECut_GRL);
+
+    fillCutFlow(true, w); // initial bin (total read-in)
+    fillCutFlow(pass_grl, w);
+ //   fillCutFlow(pass_JetCleaning, w);
+ //   fillCutFlow(pass_goodpv, w);
+
+
+/*    bool pass_susyprop(!m_hasSusyProp);
     bool pass_grl(m_cutFlags & ECut_GRL), pass_lar(m_cutFlags & ECut_LarErr), pass_tile(m_cutFlags & ECut_TileErr);
     bool pass_ttc(m_cutFlags & ECut_TTC), pass_goodpv(m_cutFlags & ECut_GoodVtx), pass_tiletrip(m_cutFlags & ECut_TileTrip);
     bool pass_wwfix(true); //(!m_isMC || (m_susyObj[m_eleIDDefault]->Sherpa_WW_veto())); // DG-2014-08-16 sherpa ww bugfix probably obsolete
@@ -1544,6 +1560,7 @@ bool SusyNtMaker::passEventlevelSelection()
     fillCutFlow(pass_ttc, w);
     fillCutFlow(pass_goodpv, w);
     fillCutFlow(pass_wwfix, w);
+*/
     if(m_dbg>=5 &&  !(keep_all_events || fillCutFlow.passAll) ) 
         cout << "SusyNtMaker fail passEventlevelSelection " 
              << keep_all_events << " " << fillCutFlow.passAll <<  endl;
@@ -1556,7 +1573,8 @@ bool SusyNtMaker::passObjectlevelSelection()
     ST::SystInfo sysInfo =  systInfoList[0];//nominal
     selectObjects(sys,sysInfo);
     // buildMet(sys);  //AT: 12/16/14: Should retreive Met be called so that can add cut on met as event filter ?
-    // assignObjectCleaningFlags(); //AT 12/16/14: why is this commented out
+    
+    assignObjectCleaningFlags(sysInfo, sys); //AT 12/16/14: why is this commented out // TODO: dantrim -- check this
 
     n_base_ele += m_baseElectrons.size();
     n_base_muo += m_baseMuons.size();
@@ -1566,23 +1584,54 @@ bool SusyNtMaker::passObjectlevelSelection()
     n_sig_muo += m_sigMuons.size();
     n_sig_tau += m_sigTaus.size();
     n_sig_jet += m_sigJets.size();
+
     TH1F* h_procCutFlow = getProcCutFlow(m_susyFinalState);
     FillCutFlow fillCutFlow(h_rawCutFlow, h_genCutFlow, h_procCutFlow, &m_cutstageCounters);
-    fillCutFlow.iCut = 8; // we've filled up to 'Buggy WWSherpa' in passEventlevelSelection
-    bool pass_hotspot(true), pass_basdjet(true), pass_badmuon(true), pass_cosmic(true); // dummy values, todo
+    fillCutFlow.iCut = 2; // we've filled up to 'Primary vertex' in passEvent...
+    
+
+//    bool pass_hotspot(true), pass_basdjet(true), pass_badmuon(true), pass_cosmic(true); // dummy values, todo
     bool pass_ge1l(1<=(m_sigElectrons.size()+m_sigMuons.size()));
     bool pass_ge2bl(2<=(m_baseElectrons.size()+m_baseMuons.size()));
-    bool pass_ge2l(2<=(m_sigElectrons.size()+m_sigMuons.size()));
-    bool pass_eq3l(3==(m_sigElectrons.size()+m_sigMuons.size()));
+//    bool pass_ge2l(2<=(m_sigElectrons.size()+m_sigMuons.size()));
+//    bool pass_eq3l(3==(m_sigElectrons.size()+m_sigMuons.size()));
+
+    // cutflow comparison with Ximo, et al.
+    xAOD::JetContainer* jets = XaodAnalysis::xaodJets(sysInfo); 
+    bool pass_JetCleaning = true;
+    for(auto &i : m_preJets) {
+        if(jets->at(i)->auxdata<bool>("bad")) { pass_JetCleaning = false; }
+    }
+    bool pass_goodpv(m_cutFlags & ECut_GoodVtx);
+    bool pass_cosmic(m_cutFlags & ECut_Cosmic);
+    bool pass_e2l(2==(m_baseElectrons.size()+m_baseMuons.size())); //+m_baseTaus.size()));
+    bool pass_e2sl(2==(m_sigElectrons.size()+m_sigMuons.size())); //+m_sigTaus.size())); // + m_sigTaus.size()));
+    bool pass_3Jet(3==n_sig_jet);
+    bool pass_jetPt = true;
+    for(auto &i : m_sigJets){
+        if(jets->at(i)->pt() < 40000.) { pass_jetPt = false; }
+        
+    }
+    bool pass_3JetPt = pass_3Jet && pass_jetPt;
+
     float w = m_susyNt.evt()->w;
-    fillCutFlow(pass_hotspot, w);
-    fillCutFlow(pass_basdjet, w);
-    fillCutFlow(pass_badmuon, w);
+    fillCutFlow(pass_JetCleaning, w);
+    fillCutFlow(pass_goodpv, w);
     fillCutFlow(pass_cosmic, w);
-    fillCutFlow.disableFilterNextCuts()(pass_ge1l, w).enableFilterNextCuts();
-    fillCutFlow(pass_ge2bl, w);
-    fillCutFlow(pass_ge2l, w);
-    fillCutFlow(pass_eq3l, w);
+    fillCutFlow(pass_e2l, w);
+    fillCutFlow(pass_e2sl, w);
+
+
+//    fillCutFlow(pass_hotspot, w);
+//    fillCutFlow(pass_basdjet, w);
+//    fillCutFlow(pass_badmuon, w);
+//    fillCutFlow.disableFilterNextCuts()(pass_ge1l, w).enableFilterNextCuts();
+//    fillCutFlow(pass_e2l, w);
+//    fillCutFlow(pass_e2sl, w);
+//    fillCutFlow(pass_3JetPt, w);
+//    fillCutFlow(pass_ge2bl, w);
+//    fillCutFlow(pass_ge2l, w);
+//    fillCutFlow(pass_eq3l, w);
     bool has_at_least_one_lepton = pass_ge1l;
     bool has_at_least_two_base_leptons = pass_ge2bl;
     if(m_dbg>=5 && !has_at_least_two_base_leptons)
