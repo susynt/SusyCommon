@@ -12,6 +12,8 @@
 #include <iterator> // back_inserter
 #include <numeric> // accumulate
 
+#include "SusyCommon/TriggerMap.h"
+
 
 using namespace std;
 
@@ -72,8 +74,10 @@ XaodAnalysis::XaodAnalysis() :
 	m_tauTruthMatchingTool(0),
 	m_tauTruthTrackMatchingTool(0),
         //dantrim trig
+        m_trigTool(0),
         m_configTool(0),
-        m_trigTool(0)
+        hLevelPassed(NULL),
+        m_evtTriggerBits(m_nTriggerBits)
 {
     clearContainerPointers();
     clearOutputObjects();
@@ -82,12 +86,15 @@ XaodAnalysis::XaodAnalysis() :
 //----------------------------------------------------------
 void XaodAnalysis::Init(TTree *tree)
 {
+//    // dantrim trig
+//    hLevelPassed = new TH1F("passEvents", "Events passing each level", 4, 0.0, 4.0);
+//    hLevelPassed->GetXaxis()->SetBinLabel(1, "HLT");
+//    hLevelPassed->GetXaxis()->SetBinLabel(2, "L1");
+//    hLevelPassed->GetXaxis()->SetBinLabel(3, "L2");
+//    hLevelPassed->GetXaxis()->SetBinLabel(4, "EF");
+    
+    
     xAOD::Init("susy::XaodAnalysis").ignore();
-
-
-
-
-
     m_event.readFrom(tree);
     m_isMC = XaodAnalysis::isSimuFromSamplename(m_sample);
     bool isData = XaodAnalysis::isDataFromSamplename(m_sample);
@@ -175,8 +182,8 @@ void XaodAnalysis::Terminate()
         delete m_susyObj[i];
     }
     // dantrim trig
-    delete m_configTool;
     delete m_trigTool;
+    delete m_configTool;
 
 }
 //----------------------------------------------------------
@@ -219,22 +226,6 @@ XaodAnalysis& XaodAnalysis::initLocalTools()
         exit(-1);
     }
 
-//    // dantrim trig
-    m_configTool = new TrigConf::xAODConfigTool("TrigConf::xAODConfigTool");
-    
-//    TrigConf::xAODConfigTool configTool("xAODConfigTool");
- //   ToolHandle<TrigConf::ITrigConfigTool> configHandle(&configTool);
-    ToolHandle<TrigConf::ITrigConfigTool> configHandle(m_configTool);
-    CHECK( configHandle->initialize() );
-
-//   Trig::TrigDecisionTool m_trigTool("TrigDecTool");
-     
-
-    //m_trigTool = new Trig::TrigDecisionTool("TrigDecTool");
-    m_trigTool = new Trig::TrigDecisionTool("TrigDecTool");
-    m_trigTool->setProperty("ConfigTool", configHandle);
-    m_trigTool->setProperty("TrigDecisionKey", "xTrigDecision");
-    CHECK( m_trigTool->initialize() );
 
 
     initPileupTool();
@@ -254,6 +245,23 @@ XaodAnalysis& XaodAnalysis::initLocalTools()
 //    m_trigTool->setProperty("TrigDecisionKey", "xTrigDecision");
 //    CHECK( m_trigTool->initialize() );
 
+
+//    // dantrim trig
+    m_configTool = new TrigConf::xAODConfigTool("TrigConf::xAODConfigTool");
+    
+//    TrigConf::xAODConfigTool configTool("xAODConfigTool");
+ //   ToolHandle<TrigConf::ITrigConfigTool> configHandle(&configTool);
+    ToolHandle<TrigConf::ITrigConfigTool> configHandle(m_configTool);
+    CHECK( configHandle->initialize() );
+
+//   Trig::TrigDecisionTool m_trigTool("TrigDecTool");
+     
+
+    //m_trigTool = new Trig::TrigDecisionTool("TrigDecTool");
+    m_trigTool = new Trig::TrigDecisionTool("TrigDecTool");
+    m_trigTool->setProperty("ConfigTool", configHandle);
+    m_trigTool->setProperty("TrigDecisionKey", "xTrigDecision");
+    CHECK( m_trigTool->initialize() );
 
 
 
@@ -340,16 +348,16 @@ xAOD::MuonContainer* XaodAnalysis::xaodMuons(ST::SystInfo sysInfo, SusyNtSys sys
     bool syst_affectsMuons     = ST::testAffectsObject(xAOD::Type::Muon, sysInfo.affectsType);
     if(sys!=NtSys::NOM && syst_affectsMuons){
         if(m_xaodMuons==NULL){
-            //m_susyObj[m_eleIDDefault]->GetMuons(m_xaodMuons, m_xaodMuonsAux, false, minPt);
-            m_susyObj[m_eleIDDefault]->GetMuons(m_xaodMuons, m_xaodMuonsAux);
+            m_susyObj[m_eleIDDefault]->GetMuons(m_xaodMuons, m_xaodMuonsAux, false, minPt);
+           // m_susyObj[m_eleIDDefault]->GetMuons(m_xaodMuons, m_xaodMuonsAux);
         }
         if(m_dbg>=5) cout << "xaodMuo "<< m_xaodMuons->size() << endl;
         return m_xaodMuons;
     }
     else{
         if(m_xaodMuons_nom==NULL){
-            //m_susyObj[m_eleIDDefault]->GetMuons(m_xaodMuons_nom, m_xaodMuonsAux_nom, false, minPt);
-            m_susyObj[m_eleIDDefault]->GetMuons(m_xaodMuons_nom, m_xaodMuonsAux_nom);
+            m_susyObj[m_eleIDDefault]->GetMuons(m_xaodMuons_nom, m_xaodMuonsAux_nom, false, minPt);
+            //m_susyObj[m_eleIDDefault]->GetMuons(m_xaodMuons_nom, m_xaodMuonsAux_nom);
         }
         if(m_dbg>=5) cout << "xaodMuo_nom " << m_xaodMuons_nom->size() << endl;
         return m_xaodMuons_nom;
@@ -363,16 +371,16 @@ xAOD::ElectronContainer* XaodAnalysis::xaodElectrons(ST::SystInfo sysInfo, SusyN
     bool syst_affectsElectrons = ST::testAffectsObject(xAOD::Type::Electron, sysInfo.affectsType);
     if(sys!=NtSys::NOM && syst_affectsElectrons){
         if(m_xaodElectrons==NULL){
-            //m_susyObj[m_eleIDDefault]->GetElectrons(m_xaodElectrons, m_xaodElectronsAux, false, minPt);
             m_susyObj[m_eleIDDefault]->GetElectrons(m_xaodElectrons, m_xaodElectronsAux, false, minPt);
+            //m_susyObj[m_eleIDDefault]->GetElectrons(m_xaodElectrons, m_xaodElectronsAux, false, minPt);
         }
         if(m_dbg>=5) cout << "xaodEle " << m_xaodElectrons->size() << endl;
         return m_xaodElectrons;
     }
     else{
         if(m_xaodElectrons_nom==NULL){
-            //m_susyObj[m_eleIDDefault]->GetElectrons(m_xaodElectrons_nom, m_xaodElectronsAux_nom, false, minPt);
-            m_susyObj[m_eleIDDefault]->GetElectrons(m_xaodElectrons_nom, m_xaodElectronsAux_nom);
+            m_susyObj[m_eleIDDefault]->GetElectrons(m_xaodElectrons_nom, m_xaodElectronsAux_nom, false, minPt);
+            //m_susyObj[m_eleIDDefault]->GetElectrons(m_xaodElectrons_nom, m_xaodElectronsAux_nom);
         }
         if(m_dbg>=5) cout << "xaodEle_nom " << m_xaodElectrons_nom->size() << endl;
         return m_xaodElectrons_nom;
@@ -594,7 +602,7 @@ void XaodAnalysis::selectBaselineObjects(SusyNtSys sys, ST::SystInfo sysInfo)
     for(const auto& jet : *jets){
         iJet++;
         m_preJets.push_back(iJet);
-        m_susyObj[m_eleIDDefault]->IsBJet(*jet);
+//        m_susyObj[m_eleIDDefault]->IsBJet(*jet);              // dantrim - Feb 25 2015 - still causing seg-faults
         if(m_dbg>=5) cout<<"Jet passing"
                          <<" baseline? "<< bool(jet->auxdata< bool >("baseline"))
                          <<" signal? "<< bool(jet->auxdata< bool >("signal"))
@@ -921,8 +929,57 @@ bool XaodAnalysis::eleIsOfType(const xAOD::Electron &in, eleID id)
 void XaodAnalysis::fillEventTriggers()
 {
     if(m_dbg>=5) cout << "fillEventTriggers" << endl;
+   
+    m_evtTrigFlags = 0; 
+    if(m_trigTool->isPassed("EF_e7_medium1"))                   m_evtTrigFlags |= triggerbits::TRIG_e7_medium1;
+    if(m_trigTool->isPassed("EF_e12Tvh_loose1"))                m_evtTrigFlags |= triggerbits::TRIG_e12Tvh_loose1;
+    if(m_trigTool->isPassed("EF_e12Tvh_medium1"))               m_evtTrigFlags |= triggerbits::TRIG_e12Tvh_medium1;
+    if(m_trigTool->isPassed("EF_e24vh_medium1"))                m_evtTrigFlags |= triggerbits::TRIG_e24vh_medium1;
+    if(m_trigTool->isPassed("EF_2e12Tvh_loose1"))               m_evtTrigFlags |= triggerbits::TRIG_2e12Tvh_loose1;
+    if(m_trigTool->isPassed("EF_e24vh_medium1_e7_medium1"))     m_evtTrigFlags |= triggerbits::TRIG_e24vh_medium1_e7_medium1;
+    // move to muon triggers since validating on Muon stream
+    if(m_trigTool->isPassed("EF_mu8"))                          m_evtTrigFlags |= triggerbits::TRIG_mu8;
+    if(m_trigTool->isPassed("EF_mu13"))                         m_evtTrigFlags |= triggerbits::TRIG_mu18_tight;
+    if(m_trigTool->isPassed("EF_mu24i_tight"))                  m_evtTrigFlags |= triggerbits::TRIG_mu24i_tight;
+    if(m_trigTool->isPassed("EF_2mu13"))                        m_evtTrigFlags |= triggerbits::TRIG_2mu13;
+    if(m_trigTool->isPassed("EF_mu18_tight_mu8_EFFS"))          m_evtTrigFlags |= triggerbits::TRIG_mu18_tight_mu8_EFFS;
+    if(m_trigTool->isPassed("EF_e12Tvh_medium1_mu8"))           m_evtTrigFlags |= triggerbits::TRIG_e12Tvh_medium1_mu8;
+    if(m_trigTool->isPassed("EF_mu18_tight_e7_medium1"))        m_evtTrigFlags |= triggerbits::TRIG_mu18_tight_e7_medium1;
 
-    m_evtTrigFlags = 0;
+    // photon trigger
+    if(m_trigTool->isPassed("EF_g20_loose"))                    m_evtTrigFlags |= triggerbits::TRIG_g20_loose;
+    if(m_trigTool->isPassed("EF_g40_loose"))                    m_evtTrigFlags |= triggerbits::TRIG_g40_loose;
+    if(m_trigTool->isPassed("EF_g60_loose"))                    m_evtTrigFlags |= triggerbits::TRIG_g60_loose;
+    if(m_trigTool->isPassed("EF_g80_loose"))                    m_evtTrigFlags |= triggerbits::TRIG_g80_loose;
+    if(m_trigTool->isPassed("EF_g100_loose"))                   m_evtTrigFlags |= triggerbits::TRIG_g100_loose;
+    if(m_trigTool->isPassed("EF_g120_loose"))                   m_evtTrigFlags |= triggerbits::TRIG_g120_loose;
+    
+    // tau trigger
+    if(m_trigTool->isPassed("EF_tau20_medium1"))                m_evtTrigFlags |= triggerbits::TRIG_tau20_medium1;
+    if(m_trigTool->isPassed("EF_tau20Ti_medium1"))              m_evtTrigFlags |= triggerbits::TRIG_tau20Ti_medium1;
+    if(m_trigTool->isPassed("EF_tau29Ti_medium1"))              m_evtTrigFlags |= triggerbits::TRIG_tau29Ti_medium1;
+    if(m_trigTool->isPassed("EF_tau29Ti_medium1_tau20Ti_medium1")) m_evtTrigFlags |= triggerbits::TRIG_tau29Ti_medium1_tau20Ti_medium1;
+    if(m_trigTool->isPassed("EF_tau20Ti_medium1_e18vh_medium1"))   m_evtTrigFlags |= triggerbits::TRIG_tau20Ti_medium1_e18vh_medium1;
+    if(m_trigTool->isPassed("EF_tau20_medium1_mu15"))           m_evtTrigFlags |= triggerbits::TRIG_tau20_medium1_mu15;
+    
+    // lep-tau matching trigger
+    if(m_trigTool->isPassed("EF_e18vh_medium1"))                m_evtTrigFlags |= triggerbits::TRIG_e18vh_medium1;
+    if(m_trigTool->isPassed("EF_mu15"))                         m_evtTrigFlags |= triggerbits::TRIG_mu15;
+    
+    // MET triggers
+    if(m_trigTool->isPassed("EF_2mu8_EFxe40wMu_tclcw"))         m_evtTrigFlags |= triggerbits::TRIG_2mu8_EFxe40wMu_tclcw;
+    if(m_trigTool->isPassed("EF_xe80_tclcw_loose"))             m_evtTrigFlags |= triggerbits::TRIG_xe80_tclcw_loose;
+    if(m_trigTool->isPassed("EF_xe80T_tclcw_loose"))            m_evtTrigFlags |= triggerbits::TRIG_xe80T_tclcw_loose;
+    
+
+    
+
+//    m_evtTriggerBits.ResetAllBits(); // dantrim trig
+//    
+//    if(m_trigTool->isPassed("EF_e7T_medium1"))                  m_evtTriggerBits.SetBitNumber(triggerbits::BIT_e7_medium1, true);
+//    if(m_trigTool->isPassed("EF_e7T_medium1"))                  m_evtTrigFlags |= triggerbits::TRIG_e7_medium1;
+
+//    m_evtTrigFlags = 0;
 //-DG--  if(m_event.triggerbits.EF_e7T_medium1())                m_evtTrigFlags |= TRIG_e7_medium1;
 //-DG--  if(m_event.triggerbits.EF_e12Tvh_loose1())              m_evtTrigFlags |= TRIG_e12Tvh_loose1;
 //-DG--  if(m_event.triggerbits.EF_e12Tvh_medium1())             m_evtTrigFlags |= TRIG_e12Tvh_medium1;

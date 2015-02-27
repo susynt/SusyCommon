@@ -20,10 +20,14 @@
 // Amg include
 #include "EventPrimitives/EventPrimitivesHelpers.h"
 
+#include "SusyCommon/TriggerMap.h" // dantrim trig
+
 
 #include <algorithm> // max_element
 #include <iomanip> // setw
 #include <sstream> // std::ostringstream
+#include <string>
+#include <iostream>
 
 using namespace std;
 namespace smc =susy::mc;
@@ -48,6 +52,7 @@ SusyNtMaker::SusyNtMaker() :
     m_hasSusyProp(false),
     h_rawCutFlow(NULL),
     h_genCutFlow(NULL),
+    h_passTrigLevel(NULL), // dantrim trig
     m_cutstageCounters(SusyNtMaker::cutflowLabels().size(), 0)
 {
     n_base_ele=0;
@@ -88,8 +93,8 @@ const std::vector< std::string > SusyNtMaker::cutflowLabels()
     labels.push_back("Jet Cleaning"   );
     labels.push_back("Primary Vertex" );
     labels.push_back("Cosmic veto"    );
-    labels.push_back("==2 base lep"   );
-    labels.push_back("==2 sig leptons");
+    labels.push_back("==1 base lep"   );
+    labels.push_back("==1 sig lep");
   //  labels.push_back("SusyProp Veto"  );
   //  labels.push_back("GRL"            );
   //  labels.push_back("LAr Error"      );
@@ -163,7 +168,9 @@ Bool_t SusyNtMaker::Process(Long64_t entry)
             cout << "***********************************************************" << endl;
         }
 
+    fillTriggerHisto(); // dantrim trig -- fill event level trigger info (testing TDT) (using muon stream)
     if(selectEvent() && m_fillNt){
+        matchTriggers(); // dantrim trig
         fillNtVars();
         if(m_isMC && m_sys) doSystematic();
         int bytes = m_outTree->Fill();
@@ -254,7 +261,13 @@ void SusyNtMaker::fillEventVars()
     evt->passMllForAlpgen = m_isMC ? (mZ < mZtruthMax) : true;
     evt->hDecay           = m_hDecay;
     evt->eventWithSusyProp= m_hasSusyProp;
+    
     evt->trigFlags        = m_evtTrigFlags;
+//    evt->m_TrigBits       = m_evtTriggerBits; // dantrim trig
+    
+
+  //  evt->m_evtTrigFlags_safe.Set(m_nTriggerBits, &m_evtTrigFlags);  // dantrim trig
+  //  evt->trigFlags        = m_evtTrigFlags_safe.Set(m_nTriggerBits, &m_evtTrigFlags);  // dantrim trig
 
     evt->wPileup          = m_isMC? getPileupWeight(eventinfo) : 1;
     evt->wPileup_up       = m_isMC? getPileupWeightUp() : 1;
@@ -590,8 +603,8 @@ void SusyNtMaker::storeJet(const xAOD::Jet &in)
     // jetOut->matchTruth    = m_isMC? matchTruthJet(jetIdx) : false;
 
     // B-tagging 
-    out.mv1           = (in.btagging())->MV1_discriminant();
-    out.sv1plusip3d   = (in.btagging())->SV1plusIP3D_discriminant();
+//    out.mv1           = (in.btagging())->MV1_discriminant();                   // dantrim - Feb 25 2015 - still causing seg-faults
+//    out.sv1plusip3d   = (in.btagging())->SV1plusIP3D_discriminant();           // dantrim - Feb 25 2015 - still causing seg-faults
     // Most of these are not available in DC14 samples, some obselete (ASM)
     // jetOut->sv0           = element->flavor_weight_SV0();
     // jetOut->combNN        = element->flavor_weight_JetFitterCOMBNN();
@@ -1436,6 +1449,12 @@ SusyNtMaker& SusyNtMaker::initializeCutflowHistograms()
 {
     h_rawCutFlow = makeCutFlow("rawCutFlow", "rawCutFlow;Cuts;Events");
     h_genCutFlow = makeCutFlow("genCutFlow", "genCutFlow;Cuts;Events");
+    h_passTrigLevel = new TH1F("trig", "trig", triggerbits::N_TRIG+1, 0.0, triggerbits::N_TRIG+1); // dantrim trig
+    for ( int i = 1; i < triggerbits::N_TRIG; i++ ) {
+        const char* label = triggerbits::trigger_names[i-1].c_str();
+        h_passTrigLevel->GetXaxis()->SetBinLabel(i, label);
+    }
+    
     return *this;
 }
 //----------------------------------------------------------
@@ -1528,6 +1547,34 @@ struct FillCutFlow { ///< local function object to fill the cutflow histograms
     FillCutFlow& enableFilterNextCuts() { includeThisCut_ = true; return *this; }
 };
 //----------------------------------------------------------
+void SusyNtMaker::fillTriggerHisto() // dantrim trig
+{
+    for (int i = 0; i < triggerbits::N_TRIG; i++) {
+        if(m_trigTool->isPassed(triggerbits::trigger_names[i])) h_passTrigLevel->Fill(i+0.5);
+    }
+
+    auto chainGroup = m_trigTool->getChainGroup(".*");
+    for(auto &trig : chainGroup->getListOfTriggers()) {
+        auto cg = m_trigTool->getChainGroup(trig);
+        if(cg->isPassed()) {
+            triggerCounts[trig]++;
+        } else {
+            triggerCounts[trig]+=0;
+        }
+    }
+    
+/*    if(m_trigTool->isPassed("EF_mu8"))                          h_passTrigLevel->Fill(0.5);
+    if(m_trigTool->isPassed("EF_mu13"))                         h_passTrigLevel->Fill(1.5);
+    if(m_trigTool->isPassed("EF_mu18_tight"))                   h_passTrigLevel->Fill(2.5);
+    if(m_trigTool->isPassed("EF_mu24i_tight"))                  h_passTrigLevel->Fill(3.5);
+    if(m_trigTool->isPassed("EF_2mu13"))                        h_passTrigLevel->Fill(4.5);
+    if(m_trigTool->isPassed("EF_mu18_tight_mu8_EFFS"))          h_passTrigLevel->Fill(5.5);
+    if(m_trigTool->isPassed("EF_e12Tvh_medium1_mu8"))           h_passTrigLevel->Fill(6.5);
+    if(m_trigTool->isPassed("EF_mu18_tight_e7_medium1"))        h_passTrigLevel->Fill(7.5);
+*/
+}
+    
+//----------------------------------------------------------
 bool SusyNtMaker::passEventlevelSelection()
 {
     TH1F* h_procCutFlow = getProcCutFlow(m_susyFinalState);
@@ -1604,8 +1651,8 @@ bool SusyNtMaker::passObjectlevelSelection()
     }
     bool pass_goodpv(m_cutFlags & ECut_GoodVtx);
     bool pass_cosmic(m_cutFlags & ECut_Cosmic);
-    bool pass_e2l(2==(m_baseElectrons.size()+m_baseMuons.size())); //+m_baseTaus.size()));
-    bool pass_e2sl(2==(m_sigElectrons.size()+m_sigMuons.size())); //+m_sigTaus.size())); // + m_sigTaus.size()));
+    bool pass_e1bl(1==(m_baseElectrons.size()+m_baseMuons.size())); //+m_baseTaus.size()));
+    bool pass_e1sl(1==(m_sigElectrons.size()+m_sigMuons.size())); //+m_sigTaus.size())); // + m_sigTaus.size()));
     bool pass_3Jet(3==n_sig_jet);
     bool pass_jetPt = true;
     for(auto &i : m_sigJets){
@@ -1618,8 +1665,8 @@ bool SusyNtMaker::passObjectlevelSelection()
     fillCutFlow(pass_JetCleaning, w);
     fillCutFlow(pass_goodpv, w);
     fillCutFlow(pass_cosmic, w);
-    fillCutFlow(pass_e2l, w);
-    fillCutFlow(pass_e2sl, w);
+    fillCutFlow(pass_e1bl, w);
+    fillCutFlow(pass_e1sl, w);
 
 
 //    fillCutFlow(pass_hotspot, w);

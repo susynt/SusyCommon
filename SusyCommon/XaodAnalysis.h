@@ -13,6 +13,7 @@
 #include "LeptonTruthTools/RecoTauMatch.h"
 
 #include "SusyCommon/LeptonInfo.h"
+#include "SusyNtuple/SusyNt.h"
 #include "SusyNtuple/SusyDefs.h"
 #include "SusyNtuple/SusyNtSys.h"
 
@@ -50,6 +51,7 @@
 // Trigger
 #include "TrigConfxAOD/xAODConfigTool.h"
 #include "TrigDecisionTool/TrigDecisionTool.h"
+#include "TBits.h"
 
 #include "TSelector.h"
 #include "TTree.h"
@@ -95,7 +97,7 @@ namespace susy {
   {
 
   public:
-    XaodAnalysis();
+    XaodAnalysis(); // original
     virtual ~XaodAnalysis();
 
     virtual Bool_t  Process(Long64_t entry);
@@ -201,15 +203,16 @@ namespace susy {
     //
     void resetTriggers(){
       m_evtTrigFlags = 0;
+  //    m_evtTrigFlags.ResetAllBits();    // dantrim trig
       m_eleTrigFlags.clear();
       m_muoTrigFlags.clear();
       m_tauTrigFlags.clear();
     }
     void matchTriggers(){
       fillEventTriggers();
-      matchElectronTriggers();
-      matchMuonTriggers();
-      matchTauTriggers();
+//      matchElectronTriggers();
+//      matchMuonTriggers();
+//      matchTauTriggers();
     }
     void fillEventTriggers();
     void matchElectronTriggers();
@@ -395,6 +398,10 @@ namespace susy {
     TLorentzVector              m_truMet;       // Truth MET
 
     long long                   m_evtTrigFlags; // Event trigger flags
+    TBits                       m_evtTriggerBits;   // dantrim trig
+    static const size_t         m_nTriggerBits=64;
+    TH1F* hLevelPassed;
+    
 
     // Trigger object matching maps
     // Key: d3pd index, Val: trig bit word
