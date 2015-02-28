@@ -51,6 +51,10 @@
 // Trigger
 #include "TrigConfxAOD/xAODConfigTool.h"
 #include "TrigDecisionTool/TrigDecisionTool.h"
+#include "xAODTrigEgamma/TrigElectron.h"
+#include "xAODTrigEgamma/TrigElectronContainer.h"
+
+
 #include "TBits.h"
 
 #include "TSelector.h"
@@ -67,6 +71,7 @@ namespace TrigConf {
 }
 namespace Trig {
     class TrigDecisionTool;
+    class FeatureContainer;
 }
 
 
@@ -210,13 +215,16 @@ namespace susy {
     }
     void matchTriggers(){
       fillEventTriggers();
-//      matchElectronTriggers();
+      matchElectronTriggers();
 //      matchMuonTriggers();
 //      matchTauTriggers();
     }
+    
+//    void getTriggerMap(); // dantrim trig
     void fillEventTriggers();
     void matchElectronTriggers();
-    bool matchElectronTrigger(const TLorentzVector &lv, std::vector<int>* trigBools);
+    bool matchElectronTrigger(const TLorentzVector* lv, std::string chain);
+ //   bool matchElectronTrigger(const TLorentzVector &lv, std::vector<int>* trigBools);
     void matchMuonTriggers();
     bool matchMuonTrigger(const TLorentzVector &lv, std::vector<int>* trigBools);
     void matchTauTriggers();
@@ -547,6 +555,8 @@ namespace susy {
     // dantrim trig
     TrigConf::xAODConfigTool*      m_configTool;
     Trig::TrigDecisionTool*    m_trigTool;
+ //   std::map<std::string, long long> bitmap;
+    
   };
 
 } // susy

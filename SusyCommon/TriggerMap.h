@@ -82,14 +82,14 @@ namespace triggerbits {
         
         
         
-    
+ 
         N_TRIG
     };
     
     // 2012 trigger bit masks
-    const long long TRIG_e7_medium1     = 1LL << BIT_e7_medium1;
-    const long long TRIG_e12Tvh_loose1 = 1LL << BIT_e12Tvh_loose1;
-    const long long TRIG_e12Tvh_medium1 = 1LL << BIT_e12Tvh_medium1; 
+    const long long TRIG_e7_medium1     = 1LL << BIT_e7_medium1;        
+    const long long TRIG_e12Tvh_loose1 = 1LL << BIT_e12Tvh_loose1;      
+    const long long TRIG_e12Tvh_medium1 = 1LL << BIT_e12Tvh_medium1;    
     const long long TRIG_e24vh_medium1  = 1LL << BIT_e24vh_medium1;
     const long long TRIG_e24vhi_medium1 = 1LL << BIT_e24vhi_medium1;
     const long long TRIG_2e12Tvh_loose1 = 1LL << BIT_2e12Tvh_loose1;
@@ -129,12 +129,12 @@ namespace triggerbits {
     const long long TRIG_2mu8_EFxe40wMu_tclcw = 1LL << BIT_2mu8_EFxe40wMu_tclcw;
     const long long TRIG_xe80_tclcw_loose = 1LL << BIT_xe80_tclcw_loose;
     const long long TRIG_xe80T_tclcw_loose = 1LL << BIT_xe80T_tclcw_loose;
-    
+ 
     
     const string trigger_names[N_TRIG] = {
         "EF_e7_medium1",
         "EF_e12Tvh_loose1",
-        "EF_e12Tvh_medium1",
+        "EF_e12Tvh_medium1"
         "EF_e24vh_medium1",
         "EF_e24vhi_medium1",
         "EF_e24vh_medium1_e7_medium1",
@@ -172,7 +172,7 @@ namespace triggerbits {
         "EF_2mu8_EFxe40wMu_tclcw",
         "EF_xe80_tclcw_loose",
         "EF_xe80T_tclcw_loose"
-        
+      
     };
 
 }; // end namespace triggerbits

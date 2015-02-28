@@ -594,7 +594,7 @@ void SusyNtMaker::storeJet(const xAOD::Jet &in)
     // JVF 
     // ASM-2014-11-04 :: Remember JVT is gonna replace JVF in Run-II but not yet available
     vector<float> jetJVF;
-    in.getAttribute(xAOD::JetAttribute::JVF,jetJVF); // JVF returns a vector that holds jvf per vertex
+//    in.getAttribute(xAOD::JetAttribute::JVF,jetJVF); // JVF returns a vector that holds jvf per vertex
     const xAOD::Vertex* PV = getPV();                // Need to know the PV
     out.jvf = (PV) ? jetJVF.at(PV->index()) : 0.;    // Upon discussion w/ TJ (2014-12-11)   
 
@@ -1449,7 +1449,7 @@ SusyNtMaker& SusyNtMaker::initializeCutflowHistograms()
 {
     h_rawCutFlow = makeCutFlow("rawCutFlow", "rawCutFlow;Cuts;Events");
     h_genCutFlow = makeCutFlow("genCutFlow", "genCutFlow;Cuts;Events");
-    h_passTrigLevel = new TH1F("trig", "trig", triggerbits::N_TRIG+1, 0.0, triggerbits::N_TRIG+1); // dantrim trig
+    h_passTrigLevel = new TH1F("trig", "Event Level Triggers Fired", triggerbits::N_TRIG+1, 0.0, triggerbits::N_TRIG+1); // dantrim trig
     for ( int i = 1; i < triggerbits::N_TRIG; i++ ) {
         const char* label = triggerbits::trigger_names[i-1].c_str();
         h_passTrigLevel->GetXaxis()->SetBinLabel(i, label);
@@ -1553,15 +1553,6 @@ void SusyNtMaker::fillTriggerHisto() // dantrim trig
         if(m_trigTool->isPassed(triggerbits::trigger_names[i])) h_passTrigLevel->Fill(i+0.5);
     }
 
-    auto chainGroup = m_trigTool->getChainGroup(".*");
-    for(auto &trig : chainGroup->getListOfTriggers()) {
-        auto cg = m_trigTool->getChainGroup(trig);
-        if(cg->isPassed()) {
-            triggerCounts[trig]++;
-        } else {
-            triggerCounts[trig]+=0;
-        }
-    }
     
 /*    if(m_trigTool->isPassed("EF_mu8"))                          h_passTrigLevel->Fill(0.5);
     if(m_trigTool->isPassed("EF_mu13"))                         h_passTrigLevel->Fill(1.5);

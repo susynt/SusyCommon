@@ -66,6 +66,7 @@ XaodAnalysis::XaodAnalysis() :
     m_flagsAreConsistent(false),
     m_flagsHaveBeenChecked(false),
     m_event(xAOD::TEvent::kClassAccess),
+    //m_event(xAOD::TEvent::kBranchAccess),
     m_store(),
 	m_eleIDDefault(Medium),
 	m_electronEfficiencySFTool(0),
@@ -74,8 +75,8 @@ XaodAnalysis::XaodAnalysis() :
 	m_tauTruthMatchingTool(0),
 	m_tauTruthTrackMatchingTool(0),
         //dantrim trig
-        m_trigTool(0),
         m_configTool(0),
+        m_trigTool(0),
         hLevelPassed(NULL),
         m_evtTriggerBits(m_nTriggerBits)
 {
@@ -86,14 +87,6 @@ XaodAnalysis::XaodAnalysis() :
 //----------------------------------------------------------
 void XaodAnalysis::Init(TTree *tree)
 {
-//    // dantrim trig
-//    hLevelPassed = new TH1F("passEvents", "Events passing each level", 4, 0.0, 4.0);
-//    hLevelPassed->GetXaxis()->SetBinLabel(1, "HLT");
-//    hLevelPassed->GetXaxis()->SetBinLabel(2, "L1");
-//    hLevelPassed->GetXaxis()->SetBinLabel(3, "L2");
-//    hLevelPassed->GetXaxis()->SetBinLabel(4, "EF");
-    
-    
     xAOD::Init("susy::XaodAnalysis").ignore();
     m_event.readFrom(tree);
     m_isMC = XaodAnalysis::isSimuFromSamplename(m_sample);
@@ -118,6 +111,9 @@ XaodAnalysis::~XaodAnalysis()
 /*--------------------------------------------------------------------------------*/
 void XaodAnalysis::SlaveBegin(TTree *tree)
 {
+
+//    getTriggerMap(); // dantrim trig
+
     if(m_dbg) cout << "XaodAnalysis::SlaveBegin" << endl;
     bool isData(!m_isMC);
 
@@ -309,7 +305,6 @@ void XaodAnalysis::initTauTools()
     CHECK(m_tauTruthTrackMatchingTool->initialize());
 
 }
-
 
 /*--------------------------------------------------------------------------------*/
 // Get the list of recommended systematics from CP
@@ -931,6 +926,7 @@ void XaodAnalysis::fillEventTriggers()
     if(m_dbg>=5) cout << "fillEventTriggers" << endl;
    
     m_evtTrigFlags = 0; 
+
     if(m_trigTool->isPassed("EF_e7_medium1"))                   m_evtTrigFlags |= triggerbits::TRIG_e7_medium1;
     if(m_trigTool->isPassed("EF_e12Tvh_loose1"))                m_evtTrigFlags |= triggerbits::TRIG_e12Tvh_loose1;
     if(m_trigTool->isPassed("EF_e12Tvh_medium1"))               m_evtTrigFlags |= triggerbits::TRIG_e12Tvh_medium1;
@@ -970,6 +966,7 @@ void XaodAnalysis::fillEventTriggers()
     if(m_trigTool->isPassed("EF_2mu8_EFxe40wMu_tclcw"))         m_evtTrigFlags |= triggerbits::TRIG_2mu8_EFxe40wMu_tclcw;
     if(m_trigTool->isPassed("EF_xe80_tclcw_loose"))             m_evtTrigFlags |= triggerbits::TRIG_xe80_tclcw_loose;
     if(m_trigTool->isPassed("EF_xe80T_tclcw_loose"))            m_evtTrigFlags |= triggerbits::TRIG_xe80T_tclcw_loose;
+
     
 
     
@@ -1042,6 +1039,45 @@ void XaodAnalysis::fillEventTriggers()
 void XaodAnalysis::matchElectronTriggers()
 {
     if(m_dbg>=5) cout << "matchElectronTriggers" << endl;
+    for ( uint i=0; i < m_preElectrons.size(); i++ ) {
+        int iEl = m_preElectrons[i];
+        xAOD::ElectronContainer* nom_electrons = xaodElectrons(systInfoList[0]);
+        const xAOD::Electron* electron = nom_electrons->at(iEl);
+        long long flags = 0;
+        TLorentzVector* ele_tlv;
+        ele_tlv->SetPtEtaPhiM(electron->pt(), electron->eta(), electron->phi(), 0);
+        if(matchElectronTrigger(ele_tlv, "EF_e7_medium1"))     flags |= TRIG_e7_medium1;
+        if(matchElectronTrigger(ele_tlv, "EF_e12Tvh_loose1"))  flags |= TRIG_e12Tvh_loose1;
+        if(matchElectronTrigger(ele_tlv, "EF_e12Tvh_medium1")) flags |= TRIG_e12Tvh_medium1;
+
+        m_eleTrigFlags[iEl] = flags;
+    }
+}
+
+/*--------------------------------------------------------------------------------*/
+bool XaodAnalysis::matchElectronTrigger(const TLorentzVector* lv, string chain)
+{
+    // get chain group representing the requesting trigger 
+    bool ele_ismatch = false;
+    auto cg = m_trigTool->getChainGroup(chain);
+    auto fc = cg->features();
+    auto eleFeatureContainers = fc.containerFeature<xAOD::TrigElectronContainer>();
+//    for(auto &econt : eleFeatureContainers) {
+//        for ( auto trige : *econt.cptr() ) {
+//            TLorentzVector* trig_tlv;
+//            trig_tlv->SetPtEtaPhiM( trige->pt(), trige->eta(), trige->phi(), 0);
+//            float dR = lv->DeltaR(*trig_tlv); 
+//            if ( dR < 0.15 ) ele_ismatch = true;
+//        } // trige
+//    } // econt
+    return ele_ismatch;
+}
+        
+        
+
+
+
+
 //-DG--  for(uint i=0; i<m_preElectrons.size(); i++){
 //-DG--    int iEl = m_preElectrons[i];
 //-DG--    const TLorentzVector &lv = m_susyObj[m_eleIDDefault]->GetElecTLV(iEl);
@@ -1063,17 +1099,17 @@ void XaodAnalysis::matchElectronTriggers()
 //-DG--    if(matchElectronTrigger(lv, m_event.trig_EF_el.EF_e24vh_medium1_EFxe35_tclcw())){ flags |= TRIG_e24vh_medium1_EFxe35_tclcw; }
 //-DG--    m_eleTrigFlags[iEl] = flags;
 //-DG--  }
-}
+//}
 /*--------------------------------------------------------------------------------*/
-bool XaodAnalysis::matchElectronTrigger(const TLorentzVector &lv, vector<int>* trigBools)
-{
-    // matched trigger index - not used
-    //static int indexEF = -1;
-    // Use function defined in egammaAnalysisUtils/egammaTriggerMatching.h
-    // return PassedTriggerEF(lv.Eta(), lv.Phi(), trigBools, indexEF, m_event.trig_EF_el.n(),
-    //                        m_event.trig_EF_el.eta(), m_event.trig_EF_el.phi());
-    return false;
-}
+//bool XaodAnalysis::matchElectronTrigger(const TLorentzVector &lv, vector<int>* trigBools)
+//{
+//    // matched trigger index - not used
+//    //static int indexEF = -1;
+//    // Use function defined in egammaAnalysisUtils/egammaTriggerMatching.h
+//    // return PassedTriggerEF(lv.Eta(), lv.Phi(), trigBools, indexEF, m_event.trig_EF_el.n(),
+//    //                        m_event.trig_EF_el.eta(), m_event.trig_EF_el.phi());
+//    return false;
+//}
 
 /*--------------------------------------------------------------------------------*/
 // Muon trigger matching
