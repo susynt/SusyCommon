@@ -76,8 +76,8 @@ XaodAnalysis::XaodAnalysis() :
 	m_tauTruthTrackMatchingTool(0),
         //dantrim trig
         m_evtTrigBits(m_nTriggerBits),
-        m_configTool(0),
-        m_trigTool(0)
+        m_configTool(NULL),
+        m_trigTool(NULL)
 {
     clearContainerPointers();
     clearOutputObjects();
@@ -909,10 +909,8 @@ void XaodAnalysis::fillEventTriggers()
    
 
     m_evtTrigBits.ResetAllBits();
-//    for ( auto &bits : TriggerMap::triggermap ) {
-    for (unsigned int iTrig = 0; iTrig < TriggerMap::triggermap.size(); iTrig++) {
-        if(m_trigTool->isPassed(TriggerMap::triggermap[iTrig]))  m_evtTrigBits.SetBitNumber(iTrig, true);
-       // if(m_trigTool->isPassed(bits.first))            m_evtTrigBits.SetBitNumber(bits.second, true);
+    for (unsigned int iTrig = 0; iTrig < triggerNames.size(); iTrig++) {
+        if(m_trigTool->isPassed(triggerNames[iTrig]))  m_evtTrigBits.SetBitNumber(iTrig, true);
     }
 /*    
     m_evtTrigFlags = 0; 

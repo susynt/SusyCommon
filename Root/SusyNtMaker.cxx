@@ -1446,13 +1446,9 @@ SusyNtMaker& SusyNtMaker::initializeCutflowHistograms()
 {
     h_rawCutFlow = makeCutFlow("rawCutFlow", "rawCutFlow;Cuts;Events");
     h_genCutFlow = makeCutFlow("genCutFlow", "genCutFlow;Cuts;Events");
-    h_passTrigLevel = new TH1F("trig", "Event Level Triggers Fired", TriggerMap::triggermap.size()+1, 0.0, TriggerMap::triggermap.size()+1); // dantrim trig
- //   int bin_index = 1;
-//    for ( auto &i : TriggerMap::triggermap ) {
-    for ( unsigned int iTrig = 0; iTrig < TriggerMap::triggermap.size(); iTrig++) {
-        h_passTrigLevel->GetXaxis()->SetBinLabel(iTrig+1, TriggerMap::triggermap[iTrig].c_str());
- //       h_passTrigLevel->GetXaxis()->SetBinLabel(i.second+1, i.first.c_str());
-     //   bin_index++;
+    h_passTrigLevel = new TH1F("trig", "Event Level Triggers Fired", triggerNames.size()+1, 0.0, triggerNames.size()+1); // dantrim trig
+    for ( unsigned int iTrig = 0; iTrig < triggerNames.size(); iTrig++) {
+        h_passTrigLevel->GetXaxis()->SetBinLabel(iTrig+1, triggerNames[iTrig].c_str());
     }
     
     return *this;
@@ -1549,11 +1545,8 @@ struct FillCutFlow { ///< local function object to fill the cutflow histograms
 //----------------------------------------------------------
 void SusyNtMaker::fillTriggerHisto() // dantrim trig
 {
- //   for ( auto &i : TriggerMap::triggermap ) {
-    for ( unsigned int iTrig = 0; iTrig < TriggerMap::triggermap.size(); iTrig++ ) {
-        if(m_trigTool->isPassed(TriggerMap::triggermap[iTrig]))         h_passTrigLevel->Fill(iTrig+0.5);
-   //     if(m_trigTool->isPassed(i.first))       h_passTrigLevel->Fill(i.second+0.5);
-      //  bin++;
+    for ( unsigned int iTrig = 0; iTrig < triggerNames.size(); iTrig++ ) {
+        if(m_trigTool->isPassed(triggerNames[iTrig]))         h_passTrigLevel->Fill(iTrig+0.5);
     }
 
     
