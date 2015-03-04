@@ -52,8 +52,8 @@ SusyNtMaker::SusyNtMaker() :
     m_hasSusyProp(false),
     h_rawCutFlow(NULL),
     h_genCutFlow(NULL),
-    h_passTrigLevel(NULL), // dantrim trig
-    m_cutstageCounters(SusyNtMaker::cutflowLabels().size(), 0)
+    m_cutstageCounters(SusyNtMaker::cutflowLabels().size(), 0),
+    h_passTrigLevel(NULL) // dantrim trig
 {
     n_base_ele=0;
     n_base_muo=0;
@@ -263,11 +263,8 @@ void SusyNtMaker::fillEventVars()
     evt->eventWithSusyProp= m_hasSusyProp;
     
     evt->trigFlags        = m_evtTrigFlags;
-//    evt->m_TrigBits       = m_evtTriggerBits; // dantrim trig
+    evt->trigBits         = m_evtTrigBits;  // dantrim trig
     
-
-  //  evt->m_evtTrigFlags_safe.Set(m_nTriggerBits, &m_evtTrigFlags);  // dantrim trig
-  //  evt->trigFlags        = m_evtTrigFlags_safe.Set(m_nTriggerBits, &m_evtTrigFlags);  // dantrim trig
 
     evt->wPileup          = m_isMC? getPileupWeight(eventinfo) : 1;
     evt->wPileup_up       = m_isMC? getPileupWeightUp() : 1;
@@ -314,7 +311,7 @@ void SusyNtMaker::fillJetVars()
     if(m_dbg>=5) cout<<"fillJetVars"<<endl;
     xAOD::JetContainer* jets = XaodAnalysis::xaodJets(systInfoList[0]);
     for(auto &i : m_preJets){
-        storeJet(*(jets->at(i)));
+            storeJet(*(jets->at(i)));
     }
 }
 //----------------------------------------------------------
@@ -590,11 +587,12 @@ void SusyNtMaker::storeJet(const xAOD::Jet &in)
     out.phi = phi;
     out.m   = m;
     bool all_available=true;
+    
 
     // JVF 
     // ASM-2014-11-04 :: Remember JVT is gonna replace JVF in Run-II but not yet available
     vector<float> jetJVF;
-//    in.getAttribute(xAOD::JetAttribute::JVF,jetJVF); // JVF returns a vector that holds jvf per vertex
+    in.getAttribute(xAOD::JetAttribute::JVF,jetJVF); // JVF returns a vector that holds jvf per vertex
     const xAOD::Vertex* PV = getPV();                // Need to know the PV
     out.jvf = (PV) ? jetJVF.at(PV->index()) : 0.;    // Upon discussion w/ TJ (2014-12-11)   
 
@@ -630,7 +628,6 @@ void SusyNtMaker::storeJet(const xAOD::Jet &in)
                                                          fracSamplingMax,
                                                          samplingMax,
                                                          eta, phi); 
-
     // // BCH cleaning flags - ASM-2014-11-04 :: Obsolete???
     // uint bchRun = m_isMC? m_mcRun : m_event.eventinfo.RunNumber();
     // uint bchLB = m_isMC? m_mcLB : m_event.eventinfo.lbn();
@@ -1449,10 +1446,13 @@ SusyNtMaker& SusyNtMaker::initializeCutflowHistograms()
 {
     h_rawCutFlow = makeCutFlow("rawCutFlow", "rawCutFlow;Cuts;Events");
     h_genCutFlow = makeCutFlow("genCutFlow", "genCutFlow;Cuts;Events");
-    h_passTrigLevel = new TH1F("trig", "Event Level Triggers Fired", triggerbits::N_TRIG+1, 0.0, triggerbits::N_TRIG+1); // dantrim trig
-    for ( int i = 1; i < triggerbits::N_TRIG; i++ ) {
-        const char* label = triggerbits::trigger_names[i-1].c_str();
-        h_passTrigLevel->GetXaxis()->SetBinLabel(i, label);
+    h_passTrigLevel = new TH1F("trig", "Event Level Triggers Fired", TriggerMap::triggermap.size()+1, 0.0, TriggerMap::triggermap.size()+1); // dantrim trig
+ //   int bin_index = 1;
+//    for ( auto &i : TriggerMap::triggermap ) {
+    for ( unsigned int iTrig = 0; iTrig < TriggerMap::triggermap.size(); iTrig++) {
+        h_passTrigLevel->GetXaxis()->SetBinLabel(iTrig+1, TriggerMap::triggermap[iTrig].c_str());
+ //       h_passTrigLevel->GetXaxis()->SetBinLabel(i.second+1, i.first.c_str());
+     //   bin_index++;
     }
     
     return *this;
@@ -1549,8 +1549,11 @@ struct FillCutFlow { ///< local function object to fill the cutflow histograms
 //----------------------------------------------------------
 void SusyNtMaker::fillTriggerHisto() // dantrim trig
 {
-    for (int i = 0; i < triggerbits::N_TRIG; i++) {
-        if(m_trigTool->isPassed(triggerbits::trigger_names[i])) h_passTrigLevel->Fill(i+0.5);
+ //   for ( auto &i : TriggerMap::triggermap ) {
+    for ( unsigned int iTrig = 0; iTrig < TriggerMap::triggermap.size(); iTrig++ ) {
+        if(m_trigTool->isPassed(TriggerMap::triggermap[iTrig]))         h_passTrigLevel->Fill(iTrig+0.5);
+   //     if(m_trigTool->isPassed(i.first))       h_passTrigLevel->Fill(i.second+0.5);
+      //  bin++;
     }
 
     

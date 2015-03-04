@@ -66,7 +66,7 @@ XaodAnalysis::XaodAnalysis() :
     m_flagsAreConsistent(false),
     m_flagsHaveBeenChecked(false),
     m_event(xAOD::TEvent::kClassAccess),
-    //m_event(xAOD::TEvent::kBranchAccess),
+   // m_event(xAOD::TEvent::kBranchAccess),
     m_store(),
 	m_eleIDDefault(Medium),
 	m_electronEfficiencySFTool(0),
@@ -75,10 +75,9 @@ XaodAnalysis::XaodAnalysis() :
 	m_tauTruthMatchingTool(0),
 	m_tauTruthTrackMatchingTool(0),
         //dantrim trig
+        m_evtTrigBits(m_nTriggerBits),
         m_configTool(0),
-        m_trigTool(0),
-        hLevelPassed(NULL),
-        m_evtTriggerBits(m_nTriggerBits)
+        m_trigTool(0)
 {
     clearContainerPointers();
     clearOutputObjects();
@@ -113,6 +112,7 @@ void XaodAnalysis::SlaveBegin(TTree *tree)
 {
 
 //    getTriggerMap(); // dantrim trig
+//    std::map<std::string, int> moop = triggerbits::create_trigger_map_abc();
 
     if(m_dbg) cout << "XaodAnalysis::SlaveBegin" << endl;
     bool isData(!m_isMC);
@@ -229,31 +229,12 @@ XaodAnalysis& XaodAnalysis::initLocalTools()
     initTauTools();
 
     // dantrim trig
-   // if(!m_trigTool) {
-//        m_trigTool = new Trig::TrigDecisionTool( "TrigDecisionTool");
-//   // }
-//  //  if(!m_configTool) {
-//        m_configTool = new TrigConf::xAODConfigTool("xAODConfigTool");
-//  //  }
-//    CHECK( m_configTool->initialize() );
-//    ToolHandle< TrigConf::ITrigConfigTool > configHandle( m_configTool );
-//    m_trigTool->setProperty("ConfigTool", configHandle );
-//    m_trigTool->setProperty("TrigDecisionKey", "xTrigDecision");
-//    CHECK( m_trigTool->initialize() );
-
 
 //    // dantrim trig
     m_configTool = new TrigConf::xAODConfigTool("TrigConf::xAODConfigTool");
-    
-//    TrigConf::xAODConfigTool configTool("xAODConfigTool");
- //   ToolHandle<TrigConf::ITrigConfigTool> configHandle(&configTool);
     ToolHandle<TrigConf::ITrigConfigTool> configHandle(m_configTool);
     CHECK( configHandle->initialize() );
 
-//   Trig::TrigDecisionTool m_trigTool("TrigDecTool");
-     
-
-    //m_trigTool = new Trig::TrigDecisionTool("TrigDecTool");
     m_trigTool = new Trig::TrigDecisionTool("TrigDecTool");
     m_trigTool->setProperty("ConfigTool", configHandle);
     m_trigTool->setProperty("TrigDecisionKey", "xTrigDecision");
@@ -780,6 +761,7 @@ void XaodAnalysis::selectSignalObjects(SusyNtSys sys, ST::SystInfo sysInfo)
         iPh++;
     }
     if(m_dbg) cout<<"m_sigPhotons["<<m_sigPhotons.size()<<"]"<<endl;
+
 }
 
 /*--------------------------------------------------------------------------------*/
@@ -925,7 +907,16 @@ void XaodAnalysis::fillEventTriggers()
 {
     if(m_dbg>=5) cout << "fillEventTriggers" << endl;
    
+
+    m_evtTrigBits.ResetAllBits();
+//    for ( auto &bits : TriggerMap::triggermap ) {
+    for (unsigned int iTrig = 0; iTrig < TriggerMap::triggermap.size(); iTrig++) {
+        if(m_trigTool->isPassed(TriggerMap::triggermap[iTrig]))  m_evtTrigBits.SetBitNumber(iTrig, true);
+       // if(m_trigTool->isPassed(bits.first))            m_evtTrigBits.SetBitNumber(bits.second, true);
+    }
+/*    
     m_evtTrigFlags = 0; 
+    
 
     if(m_trigTool->isPassed("EF_e7_medium1"))                   m_evtTrigFlags |= triggerbits::TRIG_e7_medium1;
     if(m_trigTool->isPassed("EF_e12Tvh_loose1"))                m_evtTrigFlags |= triggerbits::TRIG_e12Tvh_loose1;
@@ -966,102 +957,41 @@ void XaodAnalysis::fillEventTriggers()
     if(m_trigTool->isPassed("EF_2mu8_EFxe40wMu_tclcw"))         m_evtTrigFlags |= triggerbits::TRIG_2mu8_EFxe40wMu_tclcw;
     if(m_trigTool->isPassed("EF_xe80_tclcw_loose"))             m_evtTrigFlags |= triggerbits::TRIG_xe80_tclcw_loose;
     if(m_trigTool->isPassed("EF_xe80T_tclcw_loose"))            m_evtTrigFlags |= triggerbits::TRIG_xe80T_tclcw_loose;
+*/
 
-    
-
-    
-
-//    m_evtTriggerBits.ResetAllBits(); // dantrim trig
-//    
-//    if(m_trigTool->isPassed("EF_e7T_medium1"))                  m_evtTriggerBits.SetBitNumber(triggerbits::BIT_e7_medium1, true);
-//    if(m_trigTool->isPassed("EF_e7T_medium1"))                  m_evtTrigFlags |= triggerbits::TRIG_e7_medium1;
-
-//    m_evtTrigFlags = 0;
-//-DG--  if(m_event.triggerbits.EF_e7T_medium1())                m_evtTrigFlags |= TRIG_e7_medium1;
-//-DG--  if(m_event.triggerbits.EF_e12Tvh_loose1())              m_evtTrigFlags |= TRIG_e12Tvh_loose1;
-//-DG--  if(m_event.triggerbits.EF_e12Tvh_medium1())             m_evtTrigFlags |= TRIG_e12Tvh_medium1;
-//-DG--  if(m_event.triggerbits.EF_e24vh_medium1())              m_evtTrigFlags |= TRIG_e24vh_medium1;
-//-DG--  if(m_event.triggerbits.EF_e24vhi_medium1())             m_evtTrigFlags |= TRIG_e24vhi_medium1;
-//-DG--  if(m_event.triggerbits.EF_2e12Tvh_loose1())             m_evtTrigFlags |= TRIG_2e12Tvh_loose1;
-//-DG--  if(m_event.triggerbits.EF_e24vh_medium1_e7_medium1())   m_evtTrigFlags |= TRIG_e24vh_medium1_e7_medium1;
-//-DG--  if(m_event.triggerbits.EF_mu8())                        m_evtTrigFlags |= TRIG_mu8;
-//-DG--  if(m_event.triggerbits.EF_mu13())                       m_evtTrigFlags |= TRIG_mu13;
-//-DG--  if(m_event.triggerbits.EF_mu18_tight())                 m_evtTrigFlags |= TRIG_mu18_tight;
-//-DG--  if(m_event.triggerbits.EF_mu24i_tight())                m_evtTrigFlags |= TRIG_mu24i_tight;
-//-DG--  if(m_event.triggerbits.EF_2mu13())                      m_evtTrigFlags |= TRIG_2mu13;
-//-DG--  if(m_event.triggerbits.EF_mu18_tight_mu8_EFFS())        m_evtTrigFlags |= TRIG_mu18_tight_mu8_EFFS;
-//-DG--  if(m_event.triggerbits.EF_e12Tvh_medium1_mu8())         m_evtTrigFlags |= TRIG_e12Tvh_medium1_mu8;
-//-DG--  if(m_event.triggerbits.EF_mu18_tight_e7_medium1())      m_evtTrigFlags |= TRIG_mu18_tight_e7_medium1;
-//-DG--
-//-DG--  if(m_event.triggerbits.EF_tau20_medium1())                   m_evtTrigFlags |= TRIG_tau20_medium1;
-//-DG--  if(m_event.triggerbits.EF_tau20Ti_medium1())                 m_evtTrigFlags |= TRIG_tau20Ti_medium1;
-//-DG--  if(m_event.triggerbits.EF_tau29Ti_medium1())                 m_evtTrigFlags |= TRIG_tau29Ti_medium1;
-//-DG--  if(m_event.triggerbits.EF_tau29Ti_medium1_tau20Ti_medium1()) m_evtTrigFlags |= TRIG_tau29Ti_medium1_tau20Ti_medium1;
-//-DG--  if(m_event.triggerbits.EF_tau20Ti_medium1_e18vh_medium1())   m_evtTrigFlags |= TRIG_tau20Ti_medium1_e18vh_medium1;
-//-DG--  if(m_event.triggerbits.EF_tau20_medium1_mu15())              m_evtTrigFlags |= TRIG_tau20_medium1_mu15;
-//-DG--
-//-DG--  if(m_event.triggerbits.EF_e18vh_medium1())              m_evtTrigFlags |= TRIG_e18vh_medium1;
-//-DG--  if(m_event.triggerbits.EF_mu15())                       m_evtTrigFlags |= TRIG_mu15;
-//-DG--
-//-DG--  // EF_2mu8_EFxe40wMu_tclcw trigger only available for data, in periods > B
-//-DG--  if(!m_isMC && m_event.eventinfo.RunNumber()>=206248 && m_event.triggerbits.EF_2mu8_EFxe40wMu_tclcw())
-//-DG--    m_evtTrigFlags |= TRIG_2mu8_EFxe40wMu_tclcw;
-//-DG--
-//-DG--  // Triggers requested fro the ISR analysis studies
-//-DG--  if(m_event.triggerbits.EF_mu6())                                m_evtTrigFlags |= TRIG_mu6;
-//-DG--  if(m_event.triggerbits.EF_2mu6())                               m_evtTrigFlags |= TRIG_2mu6;
-//-DG--  if(m_event.triggerbits.EF_e18vh_medium1_2e7T_medium1())         m_evtTrigFlags |= TRIG_e18vh_medium1_2e7T_medium1;
-//-DG--  if(m_event.triggerbits.EF_3mu6())                               m_evtTrigFlags |= TRIG_3mu6;
-//-DG--  if(m_event.triggerbits.EF_mu18_tight_2mu4_EFFS())               m_evtTrigFlags |= TRIG_mu18_tight_2mu4_EFFS;
-//-DG--  if(m_event.triggerbits.EF_2e7T_medium1_mu6())                   m_evtTrigFlags |= TRIG_2e7T_medium1_mu6;
-//-DG--  if(m_event.triggerbits.EF_e7T_medium1_2mu6())                   m_evtTrigFlags |= TRIG_e7T_medium1_2mu6;
-//-DG--  if(m_event.triggerbits.EF_xe80_tclcw_loose())                   m_evtTrigFlags |= TRIG_xe80_tclcw_loose;
-//-DG--  if(m_event.triggerbits.EF_j110_a4tchad_xe90_tclcw_loose())      m_evtTrigFlags |= TRIG_j110_a4tchad_xe90_tclcw_loose;
-//-DG--  if(m_event.triggerbits.EF_j80_a4tchad_xe100_tclcw_loose())      m_evtTrigFlags |= TRIG_j80_a4tchad_xe100_tclcw_loose;
-//-DG--  if(m_event.triggerbits.EF_j80_a4tchad_xe70_tclcw_dphi2j45xe10())m_evtTrigFlags |= TRIG_j80_a4tchad_xe70_tclcw_dphi2j45xe10;
-//-DG--
-//-DG--  // Not sure about the availability of these, so just adding some protection
-//-DG--  if(m_event.triggerbits.EF_mu4T())                               m_evtTrigFlags |= TRIG_mu4T;
-//-DG--  if(m_event.triggerbits.EF_mu24())                               m_evtTrigFlags |= TRIG_mu24;
-//-DG--  if(m_event.triggerbits.EF_mu4T_j65_a4tchad_xe70_tclcw_veryloose()) m_evtTrigFlags |= TRIG_mu4T_j65_a4tchad_xe70_tclcw_veryloose;
-//-DG--  if(m_event.triggerbits.EF_2mu4T_xe60_tclcw())                   m_evtTrigFlags |= TRIG_2mu4T_xe60_tclcw;
-//-DG--  if(m_event.triggerbits.EF_2mu8_EFxe40_tclcw.IsAvailable() && m_event.triggerbits.EF_2mu8_EFxe40_tclcw())
-//-DG--    m_evtTrigFlags |= TRIG_2mu8_EFxe40_tclcw;
-//-DG--  if(m_event.triggerbits.EF_e24vh_medium1_EFxe35_tclcw())         m_evtTrigFlags |= TRIG_e24vh_medium1_EFxe35_tclcw;
-//-DG--  if(m_event.triggerbits.EF_mu24_j65_a4tchad_EFxe40_tclcw())      m_evtTrigFlags |= TRIG_mu24_j65_a4tchad_EFxe40_tclcw;
-//-DG--  if(m_event.triggerbits.EF_mu24_j65_a4tchad_EFxe40wMu_tclcw.IsAvailable() && m_event.triggerbits.EF_mu24_j65_a4tchad_EFxe40wMu_tclcw())
-//-DG--    m_evtTrigFlags |= TRIG_mu24_j65_a4tchad_EFxe40wMu_tclcw;
 }
 
 /*--------------------------------------------------------------------------------*/
 // Electron trigger matching
 /*--------------------------------------------------------------------------------*/
-void XaodAnalysis::matchElectronTriggers()
-{
-    if(m_dbg>=5) cout << "matchElectronTriggers" << endl;
-    for ( uint i=0; i < m_preElectrons.size(); i++ ) {
-        int iEl = m_preElectrons[i];
-        xAOD::ElectronContainer* nom_electrons = xaodElectrons(systInfoList[0]);
-        const xAOD::Electron* electron = nom_electrons->at(iEl);
-        long long flags = 0;
-        TLorentzVector* ele_tlv;
-        ele_tlv->SetPtEtaPhiM(electron->pt(), electron->eta(), electron->phi(), 0);
-        if(matchElectronTrigger(ele_tlv, "EF_e7_medium1"))     flags |= TRIG_e7_medium1;
-        if(matchElectronTrigger(ele_tlv, "EF_e12Tvh_loose1"))  flags |= TRIG_e12Tvh_loose1;
-        if(matchElectronTrigger(ele_tlv, "EF_e12Tvh_medium1")) flags |= TRIG_e12Tvh_medium1;
-
-        m_eleTrigFlags[iEl] = flags;
-    }
-}
+//void XaodAnalysis::matchElectronTriggers()
+//{
+//    if(m_dbg>=5) cout << "matchElectronTriggers" << endl;
+//    for ( uint i=0; i < m_preElectrons.size(); i++ ) {
+//        int iEl = m_preElectrons[i];
+//        xAOD::ElectronContainer* nom_electrons = xaodElectrons(systInfoList[0]);
+//        const xAOD::Electron* electron = nom_electrons->at(iEl);
+//        long long flags = 0;
+//        TLorentzVector* ele_tlv;
+//        ele_tlv->SetPtEtaPhiM(electron->pt(), electron->eta(), electron->phi(), 0);
+//        if(matchElectronTrigger(ele_tlv, "EF_e7_medium1"))     flags |= TRIG_e7_medium1;
+//        if(matchElectronTrigger(ele_tlv, "EF_e12Tvh_loose1"))  flags |= TRIG_e12Tvh_loose1;
+//        if(matchElectronTrigger(ele_tlv, "EF_e12Tvh_medium1")) flags |= TRIG_e12Tvh_medium1;
+//
+//        m_eleTrigFlags[iEl] = flags;
+//    }
+//}
 
 /*--------------------------------------------------------------------------------*/
-bool XaodAnalysis::matchElectronTrigger(const TLorentzVector* lv, string chain)
-{
-    // get chain group representing the requesting trigger 
-    bool ele_ismatch = false;
-    auto cg = m_trigTool->getChainGroup(chain);
-    auto fc = cg->features();
-    auto eleFeatureContainers = fc.containerFeature<xAOD::TrigElectronContainer>();
+//bool XaodAnalysis::matchElectronTrigger(const TLorentzVector* lv, string chain)
+//{
+//    // TODO : figure out why they have software releases that do not have correctly updated aligned dependencies....
+//
+//    // get chain group representing the requesting trigger 
+//    bool ele_ismatch = false;
+//    auto cg = m_trigTool->getChainGroup(chain);
+//    auto fc = cg->features();
+//    auto eleFeatureContainers = fc.containerFeature<xAOD::TrigElectronContainer>();
 //    for(auto &econt : eleFeatureContainers) {
 //        for ( auto trige : *econt.cptr() ) {
 //            TLorentzVector* trig_tlv;
@@ -1070,8 +1000,8 @@ bool XaodAnalysis::matchElectronTrigger(const TLorentzVector* lv, string chain)
 //            if ( dR < 0.15 ) ele_ismatch = true;
 //        } // trige
 //    } // econt
-    return ele_ismatch;
-}
+//    return ele_ismatch;
+//}
         
         
 

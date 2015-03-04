@@ -207,20 +207,19 @@ namespace susy {
     // Trigger - check matching for all baseline leptons
     //
     void resetTriggers(){
+     m_evtTrigBits.ResetAllBits();  // dantrim trig
       m_evtTrigFlags = 0;
-  //    m_evtTrigFlags.ResetAllBits();    // dantrim trig
       m_eleTrigFlags.clear();
       m_muoTrigFlags.clear();
       m_tauTrigFlags.clear();
     }
     void matchTriggers(){
       fillEventTriggers();
-      matchElectronTriggers();
+//      matchElectronTriggers();
 //      matchMuonTriggers();
 //      matchTauTriggers();
     }
     
-//    void getTriggerMap(); // dantrim trig
     void fillEventTriggers();
     void matchElectronTriggers();
     bool matchElectronTrigger(const TLorentzVector* lv, std::string chain);
@@ -406,10 +405,7 @@ namespace susy {
     TLorentzVector              m_truMet;       // Truth MET
 
     long long                   m_evtTrigFlags; // Event trigger flags
-    TBits                       m_evtTriggerBits;   // dantrim trig
-    static const size_t         m_nTriggerBits=64;
-    TH1F* hLevelPassed;
-    
+
 
     // Trigger object matching maps
     // Key: d3pd index, Val: trig bit word
@@ -553,9 +549,11 @@ namespace susy {
     TauAnalysisTools::TauTruthTrackMatchingTool  *m_tauTruthTrackMatchingTool;
 
     // dantrim trig
+    TBits                       m_evtTrigBits; // dantrim trig 
+    static const size_t         m_nTriggerBits=64;
+    TH1F* hLevelPassed;
     TrigConf::xAODConfigTool*      m_configTool;
     Trig::TrigDecisionTool*    m_trigTool;
- //   std::map<std::string, long long> bitmap;
     
   };
 
