@@ -228,8 +228,6 @@ XaodAnalysis& XaodAnalysis::initLocalTools()
     initMuonTools();
     initTauTools();
 
-    // dantrim trig
-
 //    // dantrim trig
     m_configTool = new TrigConf::xAODConfigTool("TrigConf::xAODConfigTool");
     ToolHandle<TrigConf::ITrigConfigTool> configHandle(m_configTool);

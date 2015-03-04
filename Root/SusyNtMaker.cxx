@@ -262,7 +262,6 @@ void SusyNtMaker::fillEventVars()
     evt->hDecay           = m_hDecay;
     evt->eventWithSusyProp= m_hasSusyProp;
     
-    evt->trigFlags        = m_evtTrigFlags;
     evt->trigBits         = m_evtTrigBits;  // dantrim trig
     
 
@@ -1549,16 +1548,6 @@ void SusyNtMaker::fillTriggerHisto() // dantrim trig
         if(m_trigTool->isPassed(triggerNames[iTrig]))         h_passTrigLevel->Fill(iTrig+0.5);
     }
 
-    
-/*    if(m_trigTool->isPassed("EF_mu8"))                          h_passTrigLevel->Fill(0.5);
-    if(m_trigTool->isPassed("EF_mu13"))                         h_passTrigLevel->Fill(1.5);
-    if(m_trigTool->isPassed("EF_mu18_tight"))                   h_passTrigLevel->Fill(2.5);
-    if(m_trigTool->isPassed("EF_mu24i_tight"))                  h_passTrigLevel->Fill(3.5);
-    if(m_trigTool->isPassed("EF_2mu13"))                        h_passTrigLevel->Fill(4.5);
-    if(m_trigTool->isPassed("EF_mu18_tight_mu8_EFFS"))          h_passTrigLevel->Fill(5.5);
-    if(m_trigTool->isPassed("EF_e12Tvh_medium1_mu8"))           h_passTrigLevel->Fill(6.5);
-    if(m_trigTool->isPassed("EF_mu18_tight_e7_medium1"))        h_passTrigLevel->Fill(7.5);
-*/
 }
     
 //----------------------------------------------------------
