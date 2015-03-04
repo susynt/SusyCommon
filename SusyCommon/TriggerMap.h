@@ -1,12 +1,7 @@
 #ifndef SusyCommon_TriggerMap_h
 #define SusyCommon_TriggerMap_h
 
-#include <iostream>
 #include <string>
-#include <map>
-
-
-#include "TBits.h"
 
 
 // --------------------------------------------------
