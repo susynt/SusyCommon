@@ -20,13 +20,18 @@
 // Amg include
 #include "EventPrimitives/EventPrimitivesHelpers.h"
 
+// trigger 
+#include "SusyCommon/TriggerMap.h"
+
 
 #include <algorithm> // max_element
 #include <iomanip> // setw
 #include <sstream> // std::ostringstream
+#include <fstream> // dumping cosmic veto events -- dantrim
 
 using namespace std;
 namespace smc =susy::mc;
+
 
 using susy::SusyNtMaker;
 
@@ -48,7 +53,8 @@ SusyNtMaker::SusyNtMaker() :
     m_hasSusyProp(false),
     h_rawCutFlow(NULL),
     h_genCutFlow(NULL),
-    m_cutstageCounters(SusyNtMaker::cutflowLabels().size(), 0)
+    m_cutstageCounters(SusyNtMaker::cutflowLabels().size(), 0),
+    h_passTrigLevel(NULL) // dantrim trig
 {
     n_base_ele=0;
     n_base_muo=0;
@@ -72,7 +78,7 @@ void SusyNtMaker::SlaveBegin(TTree* tree)
     XaodAnalysis::SlaveBegin(tree);
     if(m_dbg)
         cout<<"SusyNtMaker::SlaveBegin"<<endl;
-    if(m_fillNt)
+    if(m_fillNt || true)
         initializeOuputTree();
     m_isWhSample = guessWhetherIsWhSample(m_sample);
     initializeCutflowHistograms();
@@ -84,21 +90,31 @@ const std::vector< std::string > SusyNtMaker::cutflowLabels()
 {
     vector<string> labels;
     labels.push_back("Initial"        );
-    labels.push_back("SusyProp Veto"  );
     labels.push_back("GRL"            );
-    labels.push_back("LAr Error"      );
-    labels.push_back("Tile Error"     );
-    labels.push_back("TTC Veto"       );
-    labels.push_back("Good Vertex"    );
-    labels.push_back("Buggy WWSherpa" );
-    labels.push_back("Hot Spot"       );
-    labels.push_back("Bad Jet"        );
-    labels.push_back("Bad Muon"       );
-    labels.push_back("Cosmic"         );
-    labels.push_back(">=1 lep"        );
-    labels.push_back(">=2 base lep"   );
-    labels.push_back(">=2 lep"        );
-    labels.push_back("==3 lep"        );
+    labels.push_back("error flags"    );
+    labels.push_back("bad muon"       );
+    labels.push_back("jet cleaning"   );
+    labels.push_back("good pvx"       );
+    labels.push_back("pass cosmic"    );
+    labels.push_back("1 == base lepton"   );
+    labels.push_back("1 == sig. lepton"   );
+    labels.push_back("1 == base jet"  );
+    labels.push_back("1 == sig. jet"  );
+  //  labels.push_back("SusyProp Veto"  );
+  //  labels.push_back("GRL"            );
+  //  labels.push_back("LAr Error"      );
+  //  labels.push_back("Tile Error"     );
+  //  labels.push_back("TTC Veto"       );
+  //  labels.push_back("Good Vertex"    );
+  //  labels.push_back("Buggy WWSherpa" );
+  //  labels.push_back("Hot Spot"       );
+  //  labels.push_back("Bad Jet"        );
+  //  labels.push_back("Bad Muon"       );
+  //  labels.push_back("Cosmic"         );
+  //  labels.push_back(">=1 lep"        );
+  //  labels.push_back(">=2 base lep"   );
+  //  labels.push_back(">=2 lep"        );
+  //  labels.push_back("==3 lep"        );
     return labels;
 }
 //----------------------------------------------------------
@@ -157,7 +173,9 @@ Bool_t SusyNtMaker::Process(Long64_t entry)
             cout << "***********************************************************" << endl;
         }
 
+//    fillTriggerHisto(); // dantrim trig
     if(selectEvent() && m_fillNt){
+    //    matchTriggers();
         fillNtVars();
         if(m_isMC && m_sys) doSystematic();
         int bytes = m_outTree->Fill();
@@ -249,6 +267,8 @@ void SusyNtMaker::fillEventVars()
     evt->hDecay           = m_hDecay;
     evt->eventWithSusyProp= m_hasSusyProp;
     evt->trigFlags        = m_evtTrigFlags;
+    
+    evt->trigBits         = m_evtTrigBits; // dantrim trig
 
     evt->wPileup          = m_isMC? getPileupWeight(eventinfo) : 1;
     evt->wPileup_up       = m_isMC? getPileupWeightUp() : 1;
@@ -360,17 +380,13 @@ void SusyNtMaker::storeElectron(const xAOD::Electron &in)
     all_available &= in.passSelection(out.tightPP,"Tight"); 
     all_available &= in.passSelection(out.looseLLH,"LooseLLH");
     all_available &= in.passSelection(out.mediumLLH,"MediumLLH");
-    all_available &= in.passSelection(out.veryTightLLH,"VeryTightLLH");
+    all_available &= in.passSelection(out.veryTightLLH,"TightLLH");
 
     //Isolations
-    all_available &= in.isolationValue(out.etcone20, xAOD::Iso::etcone20); 
-    all_available &= in.isolationValue(out.topoEtcone30Corr, xAOD::Iso::topoetcone30); 
-    all_available &= in.isolationValue(out.ptcone20, xAOD::Iso::ptcone20);
-    all_available &= in.isolationValue(out.ptcone30, xAOD::Iso::ptcone30);
-    out.etcone20 *= MeV2GeV;
-    out.topoEtcone30Corr *= MeV2GeV;
-    out.ptcone20 *= MeV2GeV;
-    out.ptcone30 *= MeV2GeV;
+    all_available &= in.isolationValue(out.etcone20, xAOD::Iso::etcone20);              out.etcone20 *= MeV2GeV;
+    all_available &= in.isolationValue(out.topoEtcone30Corr, xAOD::Iso::topoetcone30);  out.topoEtcone30Corr *= MeV2GeV;
+    all_available &= in.isolationValue(out.ptcone20, xAOD::Iso::ptcone20);              out.ptcone20 *= MeV2GeV;
+    all_available &= in.isolationValue(out.ptcone30, xAOD::Iso::ptcone30);              out.ptcone30 *= MeV2GeV;
 
     if(m_isMC){
         //Store the SF of the tightest ID
@@ -383,20 +399,22 @@ void SusyNtMaker::storeElectron(const xAOD::Electron &in)
         else if(eleIsOfType(in, Medium))
             out.effSF = m_susyObj[Medium]->GetSignalElecSF(in, recoSF, idSF, trigSF);
       
-        if(eleIsOfType(in, VeryTightLLH))
-            out.effSF_LLH = m_susyObj[VeryTightLLH]->GetSignalElecSF(in, recoSF, idSF, trigSF);
+        if(eleIsOfType(in, TightLLH))
+            out.effSF_LLH = m_susyObj[TightLLH]->GetSignalElecSF(in, recoSF, idSF, trigSF);
         else if(eleIsOfType(in, MediumLLH))
             out.effSF_LLH = m_susyObj[MediumLLH]->GetSignalElecSF(in, recoSF, idSF, trigSF);	 
         else if(eleIsOfType(in, LooseLLH))
             out.effSF_LLH = m_susyObj[LooseLLH]->GetSignalElecSF(in, recoSF, idSF, trigSF);
 
         if(m_dbg>=10) cout << "AT: susyTool electron SF " << out.effSF << " LLH " << out.effSF_LLH << endl;
-        /*
+       /* 
+        >>> dantrim March 2 2015 -- calling AsgElectronEfficiencyTool causes seg-fault?
+
           const Root::TResult &result =  m_electronEfficiencySFTool->calculate(in);
           out.effSF    = result.getScaleFactor();
           out.errEffSF = result.getTotalUncertainty();
           if(m_dbg) cout << "AT: electron SF " << out.effSF << " " << out.errEffSF << endl;
-        */
+      */  
     
         out.mcType   = xAOD::EgammaHelpers::getParticleTruthType(&in);
         out.mcOrigin = xAOD::EgammaHelpers::getParticleTruthOrigin(&in);    
@@ -1430,6 +1448,11 @@ SusyNtMaker& SusyNtMaker::initializeCutflowHistograms()
 {
     h_rawCutFlow = makeCutFlow("rawCutFlow", "rawCutFlow;Cuts;Events");
     h_genCutFlow = makeCutFlow("genCutFlow", "genCutFlow;Cuts;Events");
+    h_passTrigLevel = new TH1F("trig", "Event Level Triggers Fired", triggerNames.size()+1, 0.0, triggerNames.size()+1); // dantrim trig
+    for ( unsigned int iTrig = 0; iTrig < triggerNames.size(); iTrig++) {
+        h_passTrigLevel->GetXaxis()->SetBinLabel(iTrig+1, triggerNames[iTrig].c_str());
+    }
+    
     return *this;
 }
 //----------------------------------------------------------
@@ -1522,6 +1545,14 @@ struct FillCutFlow { ///< local function object to fill the cutflow histograms
     FillCutFlow& enableFilterNextCuts() { includeThisCut_ = true; return *this; }
 };
 //----------------------------------------------------------
+void SusyNtMaker::fillTriggerHisto() // dantrim trig
+{
+    for ( unsigned int iTrig = 0; iTrig < triggerNames.size(); iTrig++ ) {
+        if(m_trigTool->isPassed(triggerNames[iTrig]))         h_passTrigLevel->Fill(iTrig+0.5);
+    }
+
+}
+//----------------------------------------------------------
 bool SusyNtMaker::passEventlevelSelection()
 {
     TH1F* h_procCutFlow = getProcCutFlow(m_susyFinalState);
@@ -1531,7 +1562,25 @@ bool SusyNtMaker::passEventlevelSelection()
 
     assignEventCleaningFlags();
     bool keep_all_events(!m_filter);
-    bool pass_susyprop(!m_hasSusyProp);
+
+    // cutflow comparison with Ximo, et al.
+    bool pass_grl(m_cutFlags & ECut_GRL);
+    
+    const xAOD::EventInfo* eventinfo = XaodAnalysis::xaodEventInfo();
+    bool pass_errorFlags = true;
+    if( (eventinfo->errorState(xAOD::EventInfo::LAr)==xAOD::EventInfo::Error) ||
+        (eventinfo->errorState(xAOD::EventInfo::Tile)==xAOD::EventInfo::Error) ||
+        (eventinfo->isEventFlagBitSet(xAOD::EventInfo::Core, 18) )  ) { pass_errorFlags = false; }
+
+
+    fillCutFlow(true, w); // initial bin (total read-in)
+    fillCutFlow(pass_grl, w);
+    fillCutFlow(pass_errorFlags, w);
+ //   fillCutFlow(pass_JetCleaning, w);
+ //   fillCutFlow(pass_goodpv, w);
+
+
+/*    bool pass_susyprop(!m_hasSusyProp);
     bool pass_grl(m_cutFlags & ECut_GRL), pass_lar(m_cutFlags & ECut_LarErr), pass_tile(m_cutFlags & ECut_TileErr);
     bool pass_ttc(m_cutFlags & ECut_TTC), pass_goodpv(m_cutFlags & ECut_GoodVtx), pass_tiletrip(m_cutFlags & ECut_TileTrip);
     bool pass_wwfix(true); //(!m_isMC || (m_susyObj[m_eleIDDefault]->Sherpa_WW_veto())); // DG-2014-08-16 sherpa ww bugfix probably obsolete
@@ -1544,6 +1593,7 @@ bool SusyNtMaker::passEventlevelSelection()
     fillCutFlow(pass_ttc, w);
     fillCutFlow(pass_goodpv, w);
     fillCutFlow(pass_wwfix, w);
+*/
     if(m_dbg>=5 &&  !(keep_all_events || fillCutFlow.passAll) ) 
         cout << "SusyNtMaker fail passEventlevelSelection " 
              << keep_all_events << " " << fillCutFlow.passAll <<  endl;
@@ -1556,7 +1606,8 @@ bool SusyNtMaker::passObjectlevelSelection()
     ST::SystInfo sysInfo =  systInfoList[0];//nominal
     selectObjects(sys,sysInfo);
     // buildMet(sys);  //AT: 12/16/14: Should retreive Met be called so that can add cut on met as event filter ?
-    // assignObjectCleaningFlags(); //AT 12/16/14: why is this commented out
+    
+    assignObjectCleaningFlags(sysInfo, sys); //AT 12/16/14: why is this commented out // TODO: dantrim -- check this
 
     n_base_ele += m_baseElectrons.size();
     n_base_muo += m_baseMuons.size();
@@ -1566,24 +1617,64 @@ bool SusyNtMaker::passObjectlevelSelection()
     n_sig_muo += m_sigMuons.size();
     n_sig_tau += m_sigTaus.size();
     n_sig_jet += m_sigJets.size();
+
     TH1F* h_procCutFlow = getProcCutFlow(m_susyFinalState);
     FillCutFlow fillCutFlow(h_rawCutFlow, h_genCutFlow, h_procCutFlow, &m_cutstageCounters);
-    fillCutFlow.iCut = 8; // we've filled up to 'Buggy WWSherpa' in passEventlevelSelection
-    bool pass_hotspot(true), pass_basdjet(true), pass_badmuon(true), pass_cosmic(true); // dummy values, todo
-    bool pass_ge1l(1<=(m_sigElectrons.size()+m_sigMuons.size()));
-    bool pass_ge2bl(2<=(m_baseElectrons.size()+m_baseMuons.size()));
-    bool pass_ge2l(2<=(m_sigElectrons.size()+m_sigMuons.size()));
-    bool pass_eq3l(3==(m_sigElectrons.size()+m_sigMuons.size()));
+    fillCutFlow.iCut = 3; // we've filled up to 'Primary vertex' in passEvent...
+
+    bool pass_ge2bl(2>=(m_baseElectrons.size()+m_baseMuons.size()));
+
+    // cutflow comparison with Ximo, et al.
+    // LAST UPDATED March 2 2015 -- dantrim
+    xAOD::JetContainer* jets = XaodAnalysis::xaodJets(sysInfo); 
+    bool pass_JetCleaning = true;
+    for(auto &i : m_preJets) {
+        if(jets->at(i)->auxdata<bool>("bad")) { pass_JetCleaning = false; }
+    }
+
+  // ------------------ DEBUG -------- DEBUG ------------- DEBUG -------------------//      
+  // ------------------ BEGIN -------- BEGIN ------------- BEGIN -------------------//      
+  // ------------------ DEBUG -------- DEBUG ------------- DEBUG -------------------//      
+  //
+    const xAOD::EventInfo* eventinfo = XaodAnalysis::xaodEventInfo();
+    bool pass_goodpv(m_cutFlags & ECut_GoodVtx);
+    xAOD::MuonContainer* muons = XaodAnalysis::xaodMuons(sysInfo);
+    bool pass_bad_muon = true;
+    bool pass_cosmic = true;
+//    cutflow_debug.open(debug_name.c_str(), ios::app | ios::out);
+    for(auto &i : m_baseMuons) {
+        if(m_susyObj[m_eleIDDefault]->IsBadMuon(*muons->at(i))) { pass_bad_muon = false; }
+        if(muons->at(i)->auxdata<bool>("passOR") && muons->at(i)->auxdata<bool>("cosmic")) { pass_cosmic = false; }
+    } // muon loop
+ //   cutflow_debug.close(); 
+    
+  // ------------------ DEBUG -------- DEBUG ------------- DEBUG -------------------//      
+  // ------------------  END  --------  END  -------------  END  -------------------//      
+  // ------------------ DEBUG -------- DEBUG ------------- DEBUG -------------------//      
+
+    bool pass_exactly1sig(1==(m_sigElectrons.size()+m_sigMuons.size()));
+    bool pass_exactly1base(1==(m_baseElectrons.size()+m_baseMuons.size()));
+    
+   // bool pass_cosmic(m_cutFlags & ECut_Cosmic);
+    bool pass_e1j(1==(m_baseJets.size()));
+    bool pass_e1sj(1==(m_sigJets.size()));
+
     float w = m_susyNt.evt()->w;
-    fillCutFlow(pass_hotspot, w);
-    fillCutFlow(pass_basdjet, w);
-    fillCutFlow(pass_badmuon, w);
+    fillCutFlow(pass_bad_muon, w);
+    fillCutFlow(pass_JetCleaning, w);
+    fillCutFlow(pass_goodpv, w);
     fillCutFlow(pass_cosmic, w);
-    fillCutFlow.disableFilterNextCuts()(pass_ge1l, w).enableFilterNextCuts();
-    fillCutFlow(pass_ge2bl, w);
-    fillCutFlow(pass_ge2l, w);
-    fillCutFlow(pass_eq3l, w);
-    bool has_at_least_one_lepton = pass_ge1l;
+    fillCutFlow.disableFilterNextCuts()(pass_exactly1base,w).enableFilterNextCuts();
+    //fillCutFlow(pass_exactly1base, w);
+    fillCutFlow(pass_exactly1sig, w);
+    fillCutFlow(pass_e1j, w);
+    fillCutFlow(pass_e1sj, w);
+
+
+//    fillCutFlow.disableFilterNextCuts()(pass_ge1l, w).enableFilterNextCuts();
+//    fillCutFlow(pass_ge2bl, w);
+//    fillCutFlow(pass_ge2l, w);
+//    fillCutFlow(pass_eq3l, w);
     bool has_at_least_two_base_leptons = pass_ge2bl;
     if(m_dbg>=5 && !has_at_least_two_base_leptons)
         cout << "SusyNtMaker: fail passObjectlevelSelection " << endl;

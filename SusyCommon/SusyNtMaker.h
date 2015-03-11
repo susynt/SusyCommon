@@ -21,6 +21,7 @@
 
 namespace Root { class TElectronEfficiencyCorrectionTool; }
 
+
 namespace susy {
 class SusyNtMaker : public XaodAnalysis
 {
@@ -39,6 +40,9 @@ class SusyNtMaker : public XaodAnalysis
     // Terminate is called after looping is finished
     virtual void    Terminate();
 
+    /// fill histogram of event-level triggers that this event triggered
+    virtual void fillTriggerHisto(); //dantrim trig
+
     /// whether this event should be written to the output
     /**
        This selection includes the event-level criteria and the
@@ -52,6 +56,7 @@ class SusyNtMaker : public XaodAnalysis
        bookkeeping and normalization.
      */
     virtual bool passEventlevelSelection();
+    
     /// whether this event passes the object-level criteria
     /**
        These are the criteria that depend on the reconstructed
@@ -59,6 +64,7 @@ class SusyNtMaker : public XaodAnalysis
        bookkeeping and normalization.
      */
     virtual bool passObjectlevelSelection();
+    
     /// labels of the cut stages used in the selection
     /**
        They are used to book the histograms and the counters.
@@ -144,6 +150,11 @@ class SusyNtMaker : public XaodAnalysis
     static bool guessWhetherIsWhSample(const TString &samplename);
     std::string timerSummary();
     std::string counterSummary() const;
+
+    // debugging txt file for dumping information -- dantrim Mar 4 2015
+    std::fstream cutflow_debug;
+    std::string debug_name = "cutflow_debug.txt";
+
  protected:
     SusyNtMaker& initializeOuputTree();
     SusyNtMaker& saveOutputTree();
@@ -196,8 +207,11 @@ class SusyNtMaker : public XaodAnalysis
     std::map<int,TH1F*> m_procCutFlows;         // cutflows, one for each subprocess
     std::vector< size_t > m_cutstageCounters; ///< used to print the summary cutflow table
 
+    TH1F*               h_passTrigLevel;        // histogram storing event-level fired triggers // dantrim trig
+
     // Timer
     TStopwatch          m_timer;
+
 
 };
 

@@ -44,8 +44,17 @@
 #include "ElectronEfficiencyCorrection/AsgElectronEfficiencyCorrectionTool.h"
 #include "PileupReweighting/PileupReweightingTool.h"
 #include "MuonEfficiencyCorrections/MuonEfficiencyScaleFactors.h"
+#include "EventShapeTools/EventShapeCopier.h"
+
+//Trigger
+#include "TBits.h"
+#include "TrigConfxAOD/xAODConfigTool.h"
+#include "TrigDecisionTool/TrigDecisionTool.h"
+#include "xAODTrigEgamma/TrigElectron.h"
+#include "xAODTrigEgamma/TrigElectronContainer.h"
 
 #include "SusyCommon/XaodAnalysis_types.h"
+
 
 #include "TSelector.h"
 #include "TTree.h"
@@ -54,6 +63,16 @@
 
 using namespace Susy;
 using namespace NtSys;
+
+//dantrim trig (this needed?)
+namespace TrigConf {
+    class xAODConfigTool;
+}
+namespace Trig {
+    class TrigDecisionTool;
+    class FeatureContainer;
+}
+
 
 namespace susy {
   
@@ -64,7 +83,7 @@ namespace susy {
     ,Tight
     ,LooseLLH
     ,MediumLLH
-    ,VeryTightLLH
+    ,TightLLH
     ,eleIDInvalid
   };
   
@@ -73,7 +92,7 @@ namespace susy {
     ,"Tight"
     ,"LooseLLH"
     ,"MediumLLH"
-    ,"VeryTightLLH"
+    ,"TightLLH"
     ,"eleIDInvalid"
   };
 
@@ -187,6 +206,7 @@ namespace susy {
     // Trigger - check matching for all baseline leptons
     //
     void resetTriggers(){
+      m_evtTrigBits.ResetAllBits(); // dantrim trig
       m_evtTrigFlags = 0;
       m_eleTrigFlags.clear();
       m_muoTrigFlags.clear();
@@ -307,12 +327,15 @@ namespace susy {
     static DataStream streamFromSamplename(const TString &s, bool isdata); ///< guess data stream from sample name
     static bool isDataFromSamplename(const TString &s); ///< guess from sample name whether it's data sample
     static bool isSimuFromSamplename(const TString &s); ///< guess from sample name whether it's a simulated sample
+    static bool isDerivationFromSamplename(const TString &sample); ///< guess from sample name whether it's a DxAOD
 
 
   protected:
 
+
     TString                     m_sample;       // sample name
     DataStream                  m_stream;       // data stream enum, taken from sample name
+    bool                        m_isDerivation; // flag for derived xAOD (DxAOD)
     bool                        m_isAF2;        // flag for ATLFastII samples
     MCProduction                m_mcProd;       // MC production campaign
 
@@ -522,6 +545,17 @@ namespace susy {
     //Tau truth matchong tools
     TauAnalysisTools::TauTruthMatchingTool       *m_tauTruthMatchingTool;
     TauAnalysisTools::TauTruthTrackMatchingTool  *m_tauTruthTrackMatchingTool;
+
+
+    // dantrim trig
+    TBits                       m_evtTrigBits;
+    static const size_t         m_nTriggerBits=64;
+    TH1F*                       hLevelPassed;
+    TrigConf::xAODConfigTool*   m_configTool;
+    Trig::TrigDecisionTool*     m_trigTool;
+
+    // event shape copier
+    EventShapeCopier*           m_escopier;
 
   };
 
