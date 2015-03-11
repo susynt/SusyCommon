@@ -560,9 +560,10 @@ void SusyNtMaker::storeMuon(const xAOD::Muon &in)
         float value = 0.;
         CP::CorrectionCode result = m_muonEfficiencySFTool->getEfficiencyScaleFactor( in, value );
 
-        if( result == CP::CorrectionCode::OutOfValidityRange ) {
+   /*     if( result == CP::CorrectionCode::OutOfValidityRange ) {
             cout << "ASM :: getEfficiencyScaleFactor out of validity range " << endl;
         }
+   */
         else {
             out.effSF    = value; 
             out.errEffSF = 0.;  // ASM-2014-11-02 0. for the time being
@@ -1632,26 +1633,81 @@ bool SusyNtMaker::passObjectlevelSelection()
         if(jets->at(i)->auxdata<bool>("bad")) { pass_JetCleaning = false; }
     }
 
-  // ------------------ DEBUG -------- DEBUG ------------- DEBUG -------------------//      
-  // ------------------ BEGIN -------- BEGIN ------------- BEGIN -------------------//      
-  // ------------------ DEBUG -------- DEBUG ------------- DEBUG -------------------//      
-  //
     const xAOD::EventInfo* eventinfo = XaodAnalysis::xaodEventInfo();
     bool pass_goodpv(m_cutFlags & ECut_GoodVtx);
     xAOD::MuonContainer* muons = XaodAnalysis::xaodMuons(sysInfo);
+    xAOD::ElectronContainer* electrons = XaodAnalysis::xaodElectrons(sysInfo);
     bool pass_bad_muon = true;
     bool pass_cosmic = true;
-//    cutflow_debug.open(debug_name.c_str(), ios::app | ios::out);
     for(auto &i : m_baseMuons) {
         if(m_susyObj[m_eleIDDefault]->IsBadMuon(*muons->at(i))) { pass_bad_muon = false; }
         if(muons->at(i)->auxdata<bool>("passOR") && muons->at(i)->auxdata<bool>("cosmic")) { pass_cosmic = false; }
     } // muon loop
- //   cutflow_debug.close(); 
+  // ------------------ DEBUG -------- DEBUG ------------- DEBUG -------------------//      
+  // ------------------ BEGIN -------- BEGIN ------------- BEGIN -------------------//      
+  // ------------------ DEBUG -------- DEBUG ------------- DEBUG -------------------//      
+    cutflow_debug.open(debug_name.c_str(), ios::app | ios::out);
+    if(m_baseElectrons.size()==1 && m_baseMuons.size()==0) {
+        for(auto &i : m_baseElectrons) {
+            
+
+            int eventNumber = eventinfo->eventNumber();
+            xAOD::Electron* el = electrons->at(i);
+            const xAOD::TrackParticle* track = el->trackParticle();
+            float d0 = fabs(track->d0());
+            float d0sig = fabs(track->d0()) / Amg::error(track->definingParametersCovMatrix(), 0);
+            
+            const xAOD::Vertex* PV = getPV();
+            float primvertex_z = (PV) ? PV->z() : -999;
+            float z0 = track->z0() + track->vz() - primvertex_z; 
+            float z0sinTheta = z0*TMath::Sin(el->p4().Theta());
+            
+            float ptcone30(0.);
+            el->isolationValue(ptcone30,xAOD::Iso::ptcone30);
+            float pt_iso = ptcone30/el->pt();
+
+            float etcone30(0.);
+            el->isolationValue(etcone30, xAOD::Iso::etcone30);
+            float et_iso = etcone30/el->pt();
+
+            int eleTightLLH = m_susyObj[m_eleIDDefault]->IsSignalElectronExp(*el, ST::SignalIsoExp::TightIso) ? 1 : 0;
+
+            cutflow_debug << eventNumber << " Basline electron " << " pt: " << el->pt()*MeV2GeV << "  ptcone30/pt: " << pt_iso
+                          << "  etcone30/pt: " << et_iso << "  eleTightLLH? " << eleTightLLH << "  d0: " << d0 << "  d0sig: " << d0sig << "  z0SinTheta: " << z0sinTheta << "\n";
+
+        }
+     }
+    if(m_baseMuons.size()==1 && m_baseElectrons.size()==0) {
+        for(auto &i : m_baseMuons) {
+            
+
+            int eventNumber = eventinfo->eventNumber();
+            xAOD::Muon* mu = muons->at(i);
+            const xAOD::TrackParticle* track = mu->primaryTrackParticle();
+            float d0 = fabs(track->d0());
+            float d0sig = fabs(track->d0()) / Amg::error(track->definingParametersCovMatrix(), 0);
+            
+            const xAOD::Vertex* PV = getPV();
+            float primvertex_z = (PV) ? PV->z() : -999;
+            float z0 = track->z0() + track->vz() - primvertex_z; 
+            float z0sinTheta = z0*TMath::Sin(mu->p4().Theta());
+            
+            float ptcone30 = mu->auxdata<float>("ptcone30");
+            float pt_iso = ptcone30/mu->pt();
+            float etcone30 = mu->auxdata<float>("etcone30");
+            float et_iso = etcone30/mu->pt();
+
+            cutflow_debug << eventNumber << " Baseline muon " << " pt: " << mu->pt()*MeV2GeV << "  ptcone30/pt: " << pt_iso
+                          << "  etcone30/pt: " << et_iso << "  eleTightLLH? -1 " << "  d0: " << d0 << "  d0sig: " << d0sig << "  z0SinTheta: " << z0sinTheta << "\n";
+        }
+    }
+     cutflow_debug.close(); 
     
   // ------------------ DEBUG -------- DEBUG ------------- DEBUG -------------------//      
   // ------------------  END  --------  END  -------------  END  -------------------//      
   // ------------------ DEBUG -------- DEBUG ------------- DEBUG -------------------//      
 
+    
     bool pass_exactly1sig(1==(m_sigElectrons.size()+m_sigMuons.size()));
     bool pass_exactly1base(1==(m_baseElectrons.size()+m_baseMuons.size()));
     
@@ -1664,8 +1720,7 @@ bool SusyNtMaker::passObjectlevelSelection()
     fillCutFlow(pass_JetCleaning, w);
     fillCutFlow(pass_goodpv, w);
     fillCutFlow(pass_cosmic, w);
-    fillCutFlow.disableFilterNextCuts()(pass_exactly1base,w).enableFilterNextCuts();
-    //fillCutFlow(pass_exactly1base, w);
+    fillCutFlow(pass_exactly1base, w);
     fillCutFlow(pass_exactly1sig, w);
     fillCutFlow(pass_e1j, w);
     fillCutFlow(pass_e1sj, w);

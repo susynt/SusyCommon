@@ -72,7 +72,7 @@ XaodAnalysis::XaodAnalysis() :
     m_event(xAOD::TEvent::kBranchAccess),
     m_store(),
 //	m_eleIDDefault(Medium), ///> not likelihood
-        m_eleIDDefault(Medium),
+        m_eleIDDefault(TightLLH),
 	m_electronEfficiencySFTool(0),
 	m_pileupReweightingTool(0),
 	m_muonEfficiencySFTool(0),
@@ -333,7 +333,7 @@ const xAOD::EventInfo* XaodAnalysis::xaodEventInfo()
 //----------------------------------------------------------
 xAOD::MuonContainer* XaodAnalysis::xaodMuons(ST::SystInfo sysInfo, SusyNtSys sys)
 {
-    const float minPt=10000;
+    const float minPt=20000;
     bool syst_affectsMuons     = ST::testAffectsObject(xAOD::Type::Muon, sysInfo.affectsType);
     if(sys!=NtSys::NOM && syst_affectsMuons){
         if(m_xaodMuons==NULL){
@@ -345,8 +345,8 @@ xAOD::MuonContainer* XaodAnalysis::xaodMuons(ST::SystInfo sysInfo, SusyNtSys sys
     }
     else{
         if(m_xaodMuons_nom==NULL){
-            m_susyObj[m_eleIDDefault]->GetMuons(m_xaodMuons_nom, m_xaodMuonsAux_nom, false, minPt);
-           // m_susyObj[m_eleIDDefault]->GetMuons(m_xaodMuons_nom, m_xaodMuonsAux_nom);
+            //m_susyObj[m_eleIDDefault]->GetMuons(m_xaodMuons_nom, m_xaodMuonsAux_nom, false, minPt);
+            m_susyObj[m_eleIDDefault]->GetMuons(m_xaodMuons_nom, m_xaodMuonsAux_nom);
         }
         if(m_dbg>=5) cout << "xaodMuo_nom " << m_xaodMuons_nom->size() << endl;
         return m_xaodMuons_nom;
@@ -356,20 +356,20 @@ xAOD::MuonContainer* XaodAnalysis::xaodMuons(ST::SystInfo sysInfo, SusyNtSys sys
 //----------------------------------------------------------
 xAOD::ElectronContainer* XaodAnalysis::xaodElectrons(ST::SystInfo sysInfo, SusyNtSys sys)
 {
-    const float minPt=10000;
+    const float minPt=20000;
     bool syst_affectsElectrons = ST::testAffectsObject(xAOD::Type::Electron, sysInfo.affectsType);
     if(sys!=NtSys::NOM && syst_affectsElectrons){
         if(m_xaodElectrons==NULL){
             //m_susyObj[m_eleIDDefault]->GetElectrons(m_xaodElectrons, m_xaodElectronsAux, false, minPt);
-            m_susyObj[m_eleIDDefault]->GetElectrons(m_xaodElectrons, m_xaodElectronsAux, false, minPt);
+            m_susyObj[m_eleIDDefault]->GetElectrons(m_xaodElectrons, m_xaodElectronsAux);
         }
         if(m_dbg>=5) cout << "xaodEle " << m_xaodElectrons->size() << endl;
         return m_xaodElectrons;
     }
     else{
         if(m_xaodElectrons_nom==NULL){
-            m_susyObj[m_eleIDDefault]->GetElectrons(m_xaodElectrons_nom, m_xaodElectronsAux_nom, false, minPt);
-            //m_susyObj[m_eleIDDefault]->GetElectrons(m_xaodElectrons_nom, m_xaodElectronsAux_nom);
+            //m_susyObj[m_eleIDDefault]->GetElectrons(m_xaodElectrons_nom, m_xaodElectronsAux_nom, false, minPt);
+            m_susyObj[m_eleIDDefault]->GetElectrons(m_xaodElectrons_nom, m_xaodElectronsAux_nom);
         }
         if(m_dbg>=5) cout << "xaodEle_nom " << m_xaodElectrons_nom->size() << endl;
         return m_xaodElectrons_nom;
@@ -734,8 +734,7 @@ void XaodAnalysis::selectSignalObjects(SusyNtSys sys, ST::SystInfo sysInfo)
     xAOD::ElectronContainer* electrons = xaodElectrons(sysInfo,sys);
     for(const auto& el : *electrons) {
         if( el->auxdata< bool >("signal") &&
-            el->auxdata< bool >("passOR") &&
-            el->pt()*MeV2GeV>20 )   m_sigElectrons.push_back(iEl);
+            el->auxdata< bool >("passOR") )   m_sigElectrons.push_back(iEl);
             iEl++;
     }
     if(m_dbg) cout<<"m_sigElectrons["<<m_sigElectrons.size()<<"]"<<endl;
@@ -744,8 +743,7 @@ void XaodAnalysis::selectSignalObjects(SusyNtSys sys, ST::SystInfo sysInfo)
     xAOD::MuonContainer* muons = xaodMuons(sysInfo,sys);
     for(const auto& mu : *muons){
         if( mu->auxdata< bool >("signal") &&
-            mu->auxdata< bool >("passOR") &&
-            mu->pt()*MeV2GeV>20 )  m_sigMuons.push_back(iMu);
+            mu->auxdata< bool >("passOR") )  m_sigMuons.push_back(iMu);
             iMu++;
     }
     if(m_dbg) cout<<"m_sigMuons["<<m_sigMuons.size()<<"]"<<endl;
