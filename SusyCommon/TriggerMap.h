@@ -9,6 +9,7 @@
 //
 // A little home for the triggers used in SusyNt
 // 
+<<<<<<< HEAD
 //  TODO: dantrim Mar 17 2015 :
 //     (1) implement a function that takes arguments
 //          based (potentially) on metadata stored
@@ -25,10 +26,13 @@
 //          can then call triggers by name, regardless
 //          of how bits may have shifted.
 //
+=======
+>>>>>>> b1f048e3635a948c587eac2573a9ade39ed9eec3
 // --------------------------------------------------
 
 
 namespace susy {
+<<<<<<< HEAD
 //
 // a pseudo-random set of triggers used for testing the code
 // trigger naming found in :
@@ -78,6 +82,17 @@ namespace susy {
                 "_e24vh_medium1",                    
                 "_e24vhi_medium1",                   
                 "_e24vh_medium1_e7_medium1",      
+=======
+
+    const std::vector<std::string> triggerNames = {
+       // electron triggers 
+                "EF_e7_medium1",                       
+                "EF_e12Tvh_loose1",                    
+                "EF_e12Tvh_medium1",                   
+                "EF_e24vh_medium1",                    
+                "EF_e24vhi_medium1",                   
+                "EF_e24vh_medium1_e7_medium1",         
+>>>>>>> b1f048e3635a948c587eac2573a9ade39ed9eec3
 
         // muon triggers
                 "EF_mu8",                              
@@ -112,10 +127,17 @@ namespace susy {
         // MET triggers
                 "EF_2mu8_EFxe40wMu_tclcw",             
                 "EF_xe80_tclcw_loose", 
+<<<<<<< HEAD
                 "EF_xe80T_tclcw_loose" 
             };
         
 */
+=======
+                "EF_xe80T_tclcw_loose"
+            };
+        
+
+>>>>>>> b1f048e3635a948c587eac2573a9ade39ed9eec3
 
 }; // end namespace susy
 

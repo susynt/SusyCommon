@@ -20,14 +20,14 @@
 // Amg include
 #include "EventPrimitives/EventPrimitivesHelpers.h"
 
-// trigger 
 #include "SusyCommon/TriggerMap.h"
 
 
 #include <algorithm> // max_element
 #include <iomanip> // setw
 #include <sstream> // std::ostringstream
-#include <fstream> // dumping cosmic veto events -- dantrim
+#include <string>
+#include <iostream>
 
 using namespace std;
 namespace smc =susy::mc;
@@ -265,9 +265,9 @@ void SusyNtMaker::fillEventVars()
     evt->passMllForAlpgen = m_isMC ? (mZ < mZtruthMax) : true;
     evt->hDecay           = m_hDecay;
     evt->eventWithSusyProp= m_hasSusyProp;
-    evt->trigFlags        = m_evtTrigFlags;
     
     evt->trigBits         = m_evtTrigBits; // dantrim trig
+    
 
     evt->wPileup          = m_isMC? getPileupWeight(eventinfo) : 1;
     evt->wPileup_up       = m_isMC? getPileupWeightUp() : 1;
@@ -314,7 +314,7 @@ void SusyNtMaker::fillJetVars()
     if(m_dbg>=5) cout<<"fillJetVars"<<endl;
     xAOD::JetContainer* jets = XaodAnalysis::xaodJets(systInfoList[0]);
     for(auto &i : m_preJets){
-        storeJet(*(jets->at(i)));
+            storeJet(*(jets->at(i)));
     }
 }
 //----------------------------------------------------------
@@ -586,6 +586,7 @@ void SusyNtMaker::storeJet(const xAOD::Jet &in)
     out.phi = phi;
     out.m   = m;
     bool all_available=true;
+    
 
     // JVF 
     // ASM-2014-11-04 :: Remember JVT is gonna replace JVF in Run-II but not yet available
@@ -599,8 +600,8 @@ void SusyNtMaker::storeJet(const xAOD::Jet &in)
     // jetOut->matchTruth    = m_isMC? matchTruthJet(jetIdx) : false;
 
     // B-tagging 
-    out.mv1           = (in.btagging())->MV1_discriminant();
-    out.sv1plusip3d   = (in.btagging())->SV1plusIP3D_discriminant();
+//    out.mv1           = (in.btagging())->MV1_discriminant();                   // dantrim - Feb 25 2015 - still causing seg-faults
+//    out.sv1plusip3d   = (in.btagging())->SV1plusIP3D_discriminant();           // dantrim - Feb 25 2015 - still causing seg-faults
     // Most of these are not available in DC14 samples, some obselete (ASM)
     // jetOut->sv0           = element->flavor_weight_SV0();
     // jetOut->combNN        = element->flavor_weight_JetFitterCOMBNN();
@@ -626,7 +627,6 @@ void SusyNtMaker::storeJet(const xAOD::Jet &in)
                                                          fracSamplingMax,
                                                          samplingMax,
                                                          eta, phi); 
-
     // // BCH cleaning flags - ASM-2014-11-04 :: Obsolete???
     // uint bchRun = m_isMC? m_mcRun : m_event.eventinfo.RunNumber();
     // uint bchLB = m_isMC? m_mcLB : m_event.eventinfo.lbn();
@@ -1545,12 +1545,11 @@ struct FillCutFlow { ///< local function object to fill the cutflow histograms
 void SusyNtMaker::fillTriggerHisto() // dantrim trig
 {
     for ( unsigned int iTrig = 0; iTrig < triggerNames.size(); iTrig++ ) {
-        if(m_trigTool->isPassed(triggerNames[iTrig])) {
-            h_passTrigLevel->Fill(iTrig+0.5);
-        }
+        if(m_trigTool->isPassed(triggerNames[iTrig]))         h_passTrigLevel->Fill(iTrig+0.5);
     }
-
 }
+    
+>>>>>>> b1f048e3635a948c587eac2573a9ade39ed9eec3
 //----------------------------------------------------------
 bool SusyNtMaker::passEventlevelSelection()
 {
