@@ -151,9 +151,8 @@ Bool_t SusyNtMaker::Process(Long64_t entry)
     static Long64_t chainEntry = -1;
     chainEntry++;
     m_event.getEntry(chainEntry); // DG 2014-09-19 TEvent wants the chain entry, not the tree entry (?)
-    retrieveCollections();
-  
     const xAOD::EventInfo* eventinfo = XaodAnalysis::xaodEventInfo();
+    retrieveCollections();
 
     if(!m_flagsHaveBeenChecked) {
         m_flagsAreConsistent = runningOptionsAreValid();
@@ -173,9 +172,9 @@ Bool_t SusyNtMaker::Process(Long64_t entry)
             cout << "***********************************************************" << endl;
         }
 
-//    fillTriggerHisto(); // dantrim trig
+    fillTriggerHisto(); // dantrim trig
     if(selectEvent() && m_fillNt){
-    //    matchTriggers();
+        matchTriggers();
         fillNtVars();
         if(m_isMC && m_sys) doSystematic();
         int bytes = m_outTree->Fill();
@@ -394,10 +393,11 @@ void SusyNtMaker::storeElectron(const xAOD::Electron &in)
         bool idSF=true;
         bool trigSF=false;
         //AT 2014-10-29: To be updated once SusyTools function return also the error.
-        if(eleIsOfType(in, Tight))
-            out.effSF = m_susyObj[Tight]->GetSignalElecSF(in, recoSF, idSF, trigSF);
-        else if(eleIsOfType(in, Medium))
-            out.effSF = m_susyObj[Medium]->GetSignalElecSF(in, recoSF, idSF, trigSF);
+        // dantrim Mar 16 2016 -- ElectronEFficiencyTool is complaining about these two all of a sudden ?
+//        if(eleIsOfType(in, Tight))
+//            out.effSF = m_susyObj[Tight]->GetSignalElecSF(in, recoSF, idSF, trigSF);
+//        else if(eleIsOfType(in, Medium))
+//            out.effSF = m_susyObj[Medium]->GetSignalElecSF(in, recoSF, idSF, trigSF);
       
         if(eleIsOfType(in, TightLLH))
             out.effSF_LLH = m_susyObj[TightLLH]->GetSignalElecSF(in, recoSF, idSF, trigSF);
@@ -415,7 +415,7 @@ void SusyNtMaker::storeElectron(const xAOD::Electron &in)
           out.errEffSF = result.getTotalUncertainty();
           if(m_dbg) cout << "AT: electron SF " << out.effSF << " " << out.errEffSF << endl;
       */  
-    
+   
         out.mcType   = xAOD::EgammaHelpers::getParticleTruthType(&in);
         out.mcOrigin = xAOD::EgammaHelpers::getParticleTruthOrigin(&in);    
         const xAOD::TruthParticle* truthEle = xAOD::EgammaHelpers::getTruthParticle(&in); //AT 10/12/14: Always false ????
@@ -560,10 +560,9 @@ void SusyNtMaker::storeMuon(const xAOD::Muon &in)
         float value = 0.;
         CP::CorrectionCode result = m_muonEfficiencySFTool->getEfficiencyScaleFactor( in, value );
 
-   /*     if( result == CP::CorrectionCode::OutOfValidityRange ) {
+        if( result == CP::CorrectionCode::OutOfValidityRange ) {
             cout << "ASM :: getEfficiencyScaleFactor out of validity range " << endl;
         }
-   */
         else {
             out.effSF    = value; 
             out.errEffSF = 0.;  // ASM-2014-11-02 0. for the time being
@@ -1549,7 +1548,9 @@ struct FillCutFlow { ///< local function object to fill the cutflow histograms
 void SusyNtMaker::fillTriggerHisto() // dantrim trig
 {
     for ( unsigned int iTrig = 0; iTrig < triggerNames.size(); iTrig++ ) {
-        if(m_trigTool->isPassed(triggerNames[iTrig]))         h_passTrigLevel->Fill(iTrig+0.5);
+        if(m_trigTool->isPassed(triggerNames[iTrig])) {
+            h_passTrigLevel->Fill(iTrig+0.5);
+        }
     }
 
 }
@@ -1564,37 +1565,16 @@ bool SusyNtMaker::passEventlevelSelection()
     assignEventCleaningFlags();
     bool keep_all_events(!m_filter);
 
-    // cutflow comparison with Ximo, et al.
     bool pass_grl(m_cutFlags & ECut_GRL);
-    
-    const xAOD::EventInfo* eventinfo = XaodAnalysis::xaodEventInfo();
-    bool pass_errorFlags = true;
-    if( (eventinfo->errorState(xAOD::EventInfo::LAr)==xAOD::EventInfo::Error) ||
-        (eventinfo->errorState(xAOD::EventInfo::Tile)==xAOD::EventInfo::Error) ||
-        (eventinfo->isEventFlagBitSet(xAOD::EventInfo::Core, 18) )  ) { pass_errorFlags = false; }
-
+    bool pass_lar(m_cutFlags & ECut_LarErr);
+    bool pass_tile(m_cutFlags & ECut_TileErr);
+    bool pass_TTC(m_cutFlags & ECut_TTC);
+    bool pass_errorFlags(pass_lar && pass_tile && pass_TTC);
 
     fillCutFlow(true, w); // initial bin (total read-in)
     fillCutFlow(pass_grl, w);
-    fillCutFlow(pass_errorFlags, w);
- //   fillCutFlow(pass_JetCleaning, w);
- //   fillCutFlow(pass_goodpv, w);
+    fillCutFlow(pass_errorFlags, w); ///< used in cutflow
 
-
-/*    bool pass_susyprop(!m_hasSusyProp);
-    bool pass_grl(m_cutFlags & ECut_GRL), pass_lar(m_cutFlags & ECut_LarErr), pass_tile(m_cutFlags & ECut_TileErr);
-    bool pass_ttc(m_cutFlags & ECut_TTC), pass_goodpv(m_cutFlags & ECut_GoodVtx), pass_tiletrip(m_cutFlags & ECut_TileTrip);
-    bool pass_wwfix(true); //(!m_isMC || (m_susyObj[m_eleIDDefault]->Sherpa_WW_veto())); // DG-2014-08-16 sherpa ww bugfix probably obsolete
-
-    fillCutFlow(true, w); // initial bin
-    fillCutFlow.disableFilterNextCuts()(pass_susyprop, w).enableFilterNextCuts();
-    fillCutFlow(pass_grl, w);
-    fillCutFlow(pass_lar, w);
-    fillCutFlow(pass_tile, w);
-    fillCutFlow(pass_ttc, w);
-    fillCutFlow(pass_goodpv, w);
-    fillCutFlow(pass_wwfix, w);
-*/
     if(m_dbg>=5 &&  !(keep_all_events || fillCutFlow.passAll) ) 
         cout << "SusyNtMaker fail passEventlevelSelection " 
              << keep_all_events << " " << fillCutFlow.passAll <<  endl;
@@ -1623,95 +1603,14 @@ bool SusyNtMaker::passObjectlevelSelection()
     FillCutFlow fillCutFlow(h_rawCutFlow, h_genCutFlow, h_procCutFlow, &m_cutstageCounters);
     fillCutFlow.iCut = 3; // we've filled up to 'Primary vertex' in passEvent...
 
-    bool pass_ge2bl(2>=(m_baseElectrons.size()+m_baseMuons.size()));
-
-    // cutflow comparison with Ximo, et al.
-    // LAST UPDATED March 2 2015 -- dantrim
-    xAOD::JetContainer* jets = XaodAnalysis::xaodJets(sysInfo); 
-    bool pass_JetCleaning = true;
-    for(auto &i : m_preJets) {
-        if(jets->at(i)->auxdata<bool>("bad")) { pass_JetCleaning = false; }
-    }
-
-    const xAOD::EventInfo* eventinfo = XaodAnalysis::xaodEventInfo();
+    bool pass_JetCleaning(m_cutFlags & ECut_BadJet);
     bool pass_goodpv(m_cutFlags & ECut_GoodVtx);
-    xAOD::MuonContainer* muons = XaodAnalysis::xaodMuons(sysInfo);
-    xAOD::ElectronContainer* electrons = XaodAnalysis::xaodElectrons(sysInfo);
-    bool pass_bad_muon = true;
-    bool pass_cosmic = true;
-    for(auto &i : m_baseMuons) {
-        if(m_susyObj[m_eleIDDefault]->IsBadMuon(*muons->at(i))) { pass_bad_muon = false; }
-        if(muons->at(i)->auxdata<bool>("passOR") && muons->at(i)->auxdata<bool>("cosmic")) { pass_cosmic = false; }
-    } // muon loop
-  // ------------------ DEBUG -------- DEBUG ------------- DEBUG -------------------//      
-  // ------------------ BEGIN -------- BEGIN ------------- BEGIN -------------------//      
-  // ------------------ DEBUG -------- DEBUG ------------- DEBUG -------------------//      
-    cutflow_debug.open(debug_name.c_str(), ios::app | ios::out);
-    if(m_baseElectrons.size()==1 && m_baseMuons.size()==0) {
-        for(auto &i : m_baseElectrons) {
-            
-
-            int eventNumber = eventinfo->eventNumber();
-            xAOD::Electron* el = electrons->at(i);
-            const xAOD::TrackParticle* track = el->trackParticle();
-            float d0 = fabs(track->d0());
-            float d0sig = fabs(track->d0()) / Amg::error(track->definingParametersCovMatrix(), 0);
-            
-            const xAOD::Vertex* PV = getPV();
-            float primvertex_z = (PV) ? PV->z() : -999;
-            float z0 = track->z0() + track->vz() - primvertex_z; 
-            float z0sinTheta = z0*TMath::Sin(el->p4().Theta());
-            
-            float ptcone30(0.);
-            el->isolationValue(ptcone30,xAOD::Iso::ptcone30);
-            float pt_iso = ptcone30/el->pt();
-
-            float etcone30(0.);
-            el->isolationValue(etcone30, xAOD::Iso::etcone30);
-            float et_iso = etcone30/el->pt();
-
-            int eleTightLLH = m_susyObj[m_eleIDDefault]->IsSignalElectronExp(*el, ST::SignalIsoExp::TightIso) ? 1 : 0;
-
-            cutflow_debug << eventNumber << " Basline electron " << " pt: " << el->pt()*MeV2GeV << "  ptcone30/pt: " << pt_iso
-                          << "  etcone30/pt: " << et_iso << "  eleTightLLH? " << eleTightLLH << "  d0: " << d0 << "  d0sig: " << d0sig << "  z0SinTheta: " << z0sinTheta << "\n";
-
-        }
-     }
-    if(m_baseMuons.size()==1 && m_baseElectrons.size()==0) {
-        for(auto &i : m_baseMuons) {
-            
-
-            int eventNumber = eventinfo->eventNumber();
-            xAOD::Muon* mu = muons->at(i);
-            const xAOD::TrackParticle* track = mu->primaryTrackParticle();
-            float d0 = fabs(track->d0());
-            float d0sig = fabs(track->d0()) / Amg::error(track->definingParametersCovMatrix(), 0);
-            
-            const xAOD::Vertex* PV = getPV();
-            float primvertex_z = (PV) ? PV->z() : -999;
-            float z0 = track->z0() + track->vz() - primvertex_z; 
-            float z0sinTheta = z0*TMath::Sin(mu->p4().Theta());
-            
-            float ptcone30 = mu->auxdata<float>("ptcone30");
-            float pt_iso = ptcone30/mu->pt();
-            float etcone30 = mu->auxdata<float>("etcone30");
-            float et_iso = etcone30/mu->pt();
-
-            cutflow_debug << eventNumber << " Baseline muon " << " pt: " << mu->pt()*MeV2GeV << "  ptcone30/pt: " << pt_iso
-                          << "  etcone30/pt: " << et_iso << "  eleTightLLH? -1 " << "  d0: " << d0 << "  d0sig: " << d0sig << "  z0SinTheta: " << z0sinTheta << "\n";
-        }
-    }
-     cutflow_debug.close(); 
+    bool pass_bad_muon(m_cutFlags & ECut_BadMuon);
+    bool pass_cosmic(m_cutFlags & ECut_Cosmic);
     
-  // ------------------ DEBUG -------- DEBUG ------------- DEBUG -------------------//      
-  // ------------------  END  --------  END  -------------  END  -------------------//      
-  // ------------------ DEBUG -------- DEBUG ------------- DEBUG -------------------//      
-
-    
+    bool pass_ge2bl(2>=(m_baseElectrons.size()+m_baseMuons.size()));
     bool pass_exactly1sig(1==(m_sigElectrons.size()+m_sigMuons.size()));
     bool pass_exactly1base(1==(m_baseElectrons.size()+m_baseMuons.size()));
-    
-   // bool pass_cosmic(m_cutFlags & ECut_Cosmic);
     bool pass_e1j(1==(m_baseJets.size()));
     bool pass_e1sj(1==(m_sigJets.size()));
 

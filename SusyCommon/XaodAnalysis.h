@@ -50,6 +50,8 @@
 #include "TBits.h"
 #include "TrigConfxAOD/xAODConfigTool.h"
 #include "TrigDecisionTool/TrigDecisionTool.h"
+#include "xAODTrigger/TrigNavigation.h"
+#include "TrigConfHLTData/HLTTriggerElement.h"
 #include "xAODTrigEgamma/TrigElectron.h"
 #include "xAODTrigEgamma/TrigElectronContainer.h"
 
@@ -124,6 +126,7 @@ namespace susy {
     void          initPileupTool();
     void          initMuonTools(); 
     void          initTauTools(); 
+    void          initTrigger();
     
     // Systematic Methods
     void getSystematicList();
@@ -237,13 +240,13 @@ namespace susy {
     static std::string defauldGrlFile();
     bool initGrlTool();
     bool passGRL(const xAOD::EventInfo* eventinfo); ///< good run list
-    bool passTTCVeto(); ///< incomplete TTC event veto
+    bool passTTCVeto(const xAOD::EventInfo* eventinfo); ///< incomplete event 
     bool passTileErr(const xAOD::EventInfo* eventinfo); ///< Tile error
-    bool passLarErr(); ///< lar error
+    bool passLarErr(const xAOD::EventInfo* eventinfo); ///< lar error
 
     bool passLarHoleVeto(); ///< lar hole veto
     bool passTileHotSpot(); ///< tile hot spot
-    bool passBadJet(); ///< bad jet
+    bool passBadJet(ST::SystInfo sysInfo, SusyNtSys sys = NtSys::NOM); ///< bad jet
     bool passGoodVtx(); ///< good vertex
     bool passTileTrip(); ///< tile trip
     bool passBadMuon(ST::SystInfo sysInfo, SusyNtSys sys = NtSys::NOM); ///< bad muon veto
