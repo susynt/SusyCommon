@@ -58,8 +58,6 @@
 
 #include "SusyCommon/XaodAnalysis_types.h"
 
-<<<<<<< HEAD
-=======
 // Trigger
 #include "TrigConfxAOD/xAODConfigTool.h"
 #include "TrigDecisionTool/TrigDecisionTool.h"
@@ -68,7 +66,6 @@
 
 
 #include "TBits.h"
->>>>>>> b1f048e3635a948c587eac2573a9ade39ed9eec3
 
 #include "TSelector.h"
 #include "TTree.h"
@@ -78,11 +75,7 @@
 using namespace Susy;
 using namespace NtSys;
 
-<<<<<<< HEAD
-//dantrim trig (this needed?)
-=======
 // dantrim trig
->>>>>>> b1f048e3635a948c587eac2573a9ade39ed9eec3
 namespace TrigConf {
     class xAODConfigTool;
 }
@@ -225,11 +218,7 @@ namespace susy {
     // Trigger - check matching for all baseline leptons
     //
     void resetTriggers(){
-<<<<<<< HEAD
       m_evtTrigBits.ResetAllBits(); // dantrim trig
-=======
-     m_evtTrigBits.ResetAllBits();  // dantrim trig
->>>>>>> b1f048e3635a948c587eac2573a9ade39ed9eec3
       m_evtTrigFlags = 0;
       m_eleTrigFlags.clear();
       m_muoTrigFlags.clear();
@@ -572,8 +561,6 @@ namespace susy {
     TauAnalysisTools::TauTruthMatchingTool       *m_tauTruthMatchingTool;
     TauAnalysisTools::TauTruthTrackMatchingTool  *m_tauTruthTrackMatchingTool;
 
-<<<<<<< HEAD
-
     // dantrim trig
     TBits                       m_evtTrigBits;
     static const size_t         m_nTriggerBits=64;
@@ -584,15 +571,6 @@ namespace susy {
     // event shape copier
     EventShapeCopier*           m_escopier;
 
-=======
-    // dantrim trig
-    TBits                       m_evtTrigBits; // dantrim trig 
-    static const size_t         m_nTriggerBits=64;
-    TH1F* hLevelPassed;
-    TrigConf::xAODConfigTool*      m_configTool;
-    Trig::TrigDecisionTool*    m_trigTool;
-    
->>>>>>> b1f048e3635a948c587eac2573a9ade39ed9eec3
   };
 
 } // susy

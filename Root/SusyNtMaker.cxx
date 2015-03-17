@@ -1548,8 +1548,6 @@ void SusyNtMaker::fillTriggerHisto() // dantrim trig
         if(m_trigTool->isPassed(triggerNames[iTrig]))         h_passTrigLevel->Fill(iTrig+0.5);
     }
 }
-    
->>>>>>> b1f048e3635a948c587eac2573a9ade39ed9eec3
 //----------------------------------------------------------
 bool SusyNtMaker::passEventlevelSelection()
 {

@@ -56,11 +56,7 @@ class SusyNtMaker : public XaodAnalysis
        bookkeeping and normalization.
      */
     virtual bool passEventlevelSelection();
-<<<<<<< HEAD
-    
-=======
-    virtual void fillTriggerHisto(); // dantrim trig
->>>>>>> b1f048e3635a948c587eac2573a9ade39ed9eec3
+
     /// whether this event passes the object-level criteria
     /**
        These are the criteria that depend on the reconstructed
@@ -211,11 +207,7 @@ class SusyNtMaker : public XaodAnalysis
     std::map<int,TH1F*> m_procCutFlows;         // cutflows, one for each subprocess
     std::vector< size_t > m_cutstageCounters; ///< used to print the summary cutflow table
 
-<<<<<<< HEAD
     TH1F*               h_passTrigLevel;        // histogram storing event-level fired triggers // dantrim trig
-=======
-    TH1F*               h_passTrigLevel;        // dantrim trig
->>>>>>> b1f048e3635a948c587eac2573a9ade39ed9eec3
 
     // Timer
     TStopwatch          m_timer;
