@@ -189,10 +189,6 @@ void XaodAnalysis::Terminate()
     delete m_trigTool;
     delete m_configTool;
 
-    // dantrim trig
-    delete m_trigTool;
-    delete m_configTool;
-
     delete m_escopier;
     
     
