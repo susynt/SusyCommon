@@ -556,21 +556,18 @@ void SusyNtMaker::storeMuon(const xAOD::Muon &in)
 
     // Scale Factors
     // ASM-2014-11-02 :: How to get the uncertatinty?
-    if(m_isMC) {
-        float value = 0.;
-        CP::CorrectionCode result = m_muonEfficiencySFTool->getEfficiencyScaleFactor( in, value );
-
-        if( result == CP::CorrectionCode::OutOfValidityRange ) {
-            cout << "ASM :: getEfficiencyScaleFactor out of validity range " << endl;
+    {
+        float value = 1.0;
+        float value_err = 0.0; // ASM-2014-11-02 0. for the time being
+        if(m_isMC) {
+            CP::CorrectionCode result = m_muonEfficiencySFTool->getEfficiencyScaleFactor( in, value );
+            if( result == CP::CorrectionCode::OutOfValidityRange ) {
+                // cout << "ASM :: getEfficiencyScaleFactor out of validity range " << endl;
+                value = 0.0;
+            }
         }
-        else {
-            out.effSF    = value; 
-            out.errEffSF = 0.;  // ASM-2014-11-02 0. for the time being
-        }
-    }
-    else {
-        out.effSF    = 1.; 
-        out.errEffSF = 0.; 
+        out.effSF    = value;
+        out.errEffSF = value_err;
     }
 
     // ASM-2014-11-02 :: Store to be true at the moment
