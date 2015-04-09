@@ -153,9 +153,6 @@ class SusyNtMaker : public XaodAnalysis
     std::string timerSummary();
     std::string counterSummary() const;
 
-    // debugging txt file for dumping information -- dantrim Mar 4 2015
-    std::fstream cutflow_debug;
-    std::string debug_name = "cutflow_debug.txt";
 
  protected:
     SusyNtMaker& initializeOuputTree();

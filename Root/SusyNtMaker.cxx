@@ -600,8 +600,8 @@ void SusyNtMaker::storeJet(const xAOD::Jet &in)
     // jetOut->matchTruth    = m_isMC? matchTruthJet(jetIdx) : false;
 
     // B-tagging 
-//    out.mv1           = (in.btagging())->MV1_discriminant();                   // dantrim - Feb 25 2015 - still causing seg-faults
-//    out.sv1plusip3d   = (in.btagging())->SV1plusIP3D_discriminant();           // dantrim - Feb 25 2015 - still causing seg-faults
+    out.mv1           = (in.btagging())->MV1_discriminant();                   // dantrim - Feb 25 2015 - still causing seg-faults
+    out.sv1plusip3d   = (in.btagging())->SV1plusIP3D_discriminant();           // dantrim - Feb 25 2015 - still causing seg-faults
     // Most of these are not available in DC14 samples, some obselete (ASM)
     // jetOut->sv0           = element->flavor_weight_SV0();
     // jetOut->combNN        = element->flavor_weight_JetFitterCOMBNN();
@@ -1583,7 +1583,7 @@ bool SusyNtMaker::passObjectlevelSelection()
     selectObjects(sys,sysInfo);
     // buildMet(sys);  //AT: 12/16/14: Should retreive Met be called so that can add cut on met as event filter ?
     
-    assignObjectCleaningFlags(sysInfo, sys); //AT 12/16/14: why is this commented out // TODO: dantrim -- check this
+    assignObjectCleaningFlags(sysInfo, sys);
 
     n_base_ele += m_baseElectrons.size();
     n_base_muo += m_baseMuons.size();

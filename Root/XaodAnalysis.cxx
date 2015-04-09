@@ -68,7 +68,7 @@ XaodAnalysis::XaodAnalysis() :
     m_flagsAreConsistent(false),
     m_flagsHaveBeenChecked(false),
     //m_event(xAOD::TEvent::kClassAccess),
-    m_event(xAOD::TEvent::kBranchAccess), ///> dantrim -- check what this does (in PAT threads, TDT is supposed to work with kBranchAccess option)
+    m_event(xAOD::TEvent::kBranchAccess), ///> dantrim -- (in PAT threads, TDT is supposed to work with kBranchAccess option)
     m_store(),
 //	m_eleIDDefault(Medium), ///> dantrim -- use likelihood as default ?
         m_eleIDDefault(TightLLH),
@@ -117,9 +117,6 @@ XaodAnalysis::~XaodAnalysis()
 /*--------------------------------------------------------------------------------*/
 void XaodAnalysis::SlaveBegin(TTree *tree)
 {
-
-//    getTriggerMap(); // dantrim trig
-//    std::map<std::string, int> moop = triggerbits::create_trigger_map_abc();
 
     if(m_dbg) cout << "XaodAnalysis::SlaveBegin" << endl;
     bool isData(!m_isMC);
@@ -615,7 +612,7 @@ void XaodAnalysis::selectBaselineObjects(SusyNtSys sys, ST::SystInfo sysInfo)
     for(const auto& jet : *jets){
         iJet++;
         m_preJets.push_back(iJet);
-//        m_susyObj[m_eleIDDefault]->IsBJet(*jet);              // dantrim - Feb 25 2015 - still causing seg-faults
+        m_susyObj[m_eleIDDefault]->IsBJet(*jet);              // dantrim - Feb 25 2015 - still causing seg-faults
         if(m_dbg>=5) cout<<"Jet passing"
                          <<" baseline? "<< bool(jet->auxdata< char >("baseline")==1)
                          <<" signal? "<<   bool(jet->auxdata< char >("signal")==1)
