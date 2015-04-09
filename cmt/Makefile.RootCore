@@ -3,7 +3,7 @@
 # edit with care
 
 PACKAGE          = SusyCommon
-PACKAGE_PRELOAD  = Tree
+PACKAGE_PRELOAD  = 
 PACKAGE_CXXFLAGS = 
 PACKAGE_LDFLAGS  = $(shell root-config --libs --glibs)
 PACKAGE_BINFLAGS = -lPyROOT -lXMLParser -lEG 

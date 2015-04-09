@@ -115,7 +115,6 @@ void help()
 
 int main(int argc, char** argv)
 {
-
   int nEvt        = -1;
   int nSkip       = 0;
   int dbg         = 0;

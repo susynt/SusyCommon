@@ -1,5 +1,10 @@
 # vim: set noexpandtab:
 
+2015-03-13 Serhan Mete <amete@cern.ch>
+	modified:   cmt/Makefile.RootCore
+	modified:   util/NtMaker.cxx
+	* Fix compilation errors
+
 2014-12-11 Serhan Mete <amete@cern.ch>
 	M Root/SusyNtMaker.cxx
 	* Updated muon z0 so that it's w.r.t. PV
