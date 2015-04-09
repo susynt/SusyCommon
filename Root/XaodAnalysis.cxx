@@ -612,7 +612,7 @@ void XaodAnalysis::selectBaselineObjects(SusyNtSys sys, ST::SystInfo sysInfo)
     for(const auto& jet : *jets){
         iJet++;
         m_preJets.push_back(iJet);
-        m_susyObj[m_eleIDDefault]->IsBJet(*jet);              // dantrim - Feb 25 2015 - still causing seg-faults
+        m_susyObj[m_eleIDDefault]->IsBJet(*jet);      
         if(m_dbg>=5) cout<<"Jet passing"
                          <<" baseline? "<< bool(jet->auxdata< char >("baseline")==1)
                          <<" signal? "<<   bool(jet->auxdata< char >("signal")==1)
