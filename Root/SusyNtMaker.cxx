@@ -20,7 +20,7 @@
 // Amg include
 #include "EventPrimitives/EventPrimitivesHelpers.h"
 
-#include "SusyCommon/TriggerMap.h"
+#include "SusyCommon/Trigger.h"
 
 
 #include <algorithm> // max_element
@@ -369,8 +369,8 @@ void SusyNtMaker::storeElectron(const xAOD::Electron &in)
     out.eta = eta;
     out.phi = phi;
     out.m   = m;
-    out.isBaseline = in.auxdata< bool >("baseline");
-    out.isSignal = in.auxdata< bool >("signal");
+    out.isBaseline = in.auxdata< char >("baseline");
+    out.isSignal   = in.auxdata< char >("signal");
     out.q   = in.charge();
     bool all_available=true;
     
@@ -485,10 +485,10 @@ void SusyNtMaker::storeMuon(const xAOD::Muon &in)
     out.phi = phi;
     out.m   = m;
     out.q   = in.charge();
-    out.isBaseline = in.auxdata< bool >("baseline");
-    out.isSignal   = in.auxdata< bool >("signal");
+    out.isBaseline = in.auxdata< char >("baseline");
+    out.isSignal   = in.auxdata< char >("signal");
     out.isCombined = in.muonType()==xAOD::Muon::Combined;
-    out.isCosmic   = in.auxdata< bool >("cosmic");
+    out.isCosmic   = in.auxdata< char >("cosmic");
     out.isBadMuon  = m_susyObj[m_eleIDDefault]->IsBadMuon(in); // Uses default qoverpcut of 0.2
 
     bool all_available=true;
@@ -1445,11 +1445,11 @@ SusyNtMaker& SusyNtMaker::initializeCutflowHistograms()
 {
     h_rawCutFlow = makeCutFlow("rawCutFlow", "rawCutFlow;Cuts;Events");
     h_genCutFlow = makeCutFlow("genCutFlow", "genCutFlow;Cuts;Events");
-    h_passTrigLevel = new TH1F("trig", "Event Level Triggers Fired", triggerNames.size()+1, 0.0, triggerNames.size()+1); // dantrim trig
-    for ( unsigned int iTrig = 0; iTrig < triggerNames.size(); iTrig++) {
-        h_passTrigLevel->GetXaxis()->SetBinLabel(iTrig+1, triggerNames[iTrig].c_str());
+    std::vector<std::string> trigs = XaodAnalysis::xaodTriggers();
+    h_passTrigLevel = new TH1F("trig", "Event Level Triggers Fired", trigs.size()+1, 0.0, trigs.size()+1); // dantrim trig
+    for ( unsigned int iTrig = 0; iTrig < trigs.size(); iTrig++) {
+        h_passTrigLevel->GetXaxis()->SetBinLabel(iTrig+1, trigs[iTrig].c_str());
     }
-    
     return *this;
 }
 //----------------------------------------------------------
@@ -1544,8 +1544,9 @@ struct FillCutFlow { ///< local function object to fill the cutflow histograms
 //----------------------------------------------------------
 void SusyNtMaker::fillTriggerHisto() // dantrim trig
 {
-    for ( unsigned int iTrig = 0; iTrig < triggerNames.size(); iTrig++ ) {
-        if(m_trigTool->isPassed(triggerNames[iTrig]))         h_passTrigLevel->Fill(iTrig+0.5);
+    std::vector<std::string> trigs = XaodAnalysis::xaodTriggers();
+    for ( unsigned int iTrig = 0; iTrig < trigs.size(); iTrig++ ) {
+        if(m_trigTool->isPassed(trigs[iTrig]))         h_passTrigLevel->Fill(iTrig+0.5);
     }
 }
 //----------------------------------------------------------
