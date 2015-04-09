@@ -3,12 +3,12 @@
 #include <string>
 
 #include "TChain.h"
-#include "Cintex/Cintex.h"
 #include "TSystem.h"
 
 #include "SusyCommon/SusyNtMaker.h"
 #include "SusyNtuple/SusyDefs.h"
 #include "SusyNtuple/ChainHelper.h"
+
 
 using namespace std;
 using namespace Susy;
@@ -105,13 +105,16 @@ void help()
   cout << "  --filterTrig turns on trigger"     << endl;
   cout << "     filtering."                     << endl;
 
+  cout << "  --trig set which triggers are  "   << endl;
+  cout << "    stored.                      "   << endl;
+  cout << "    Default: 1 (0: Run1, 1:Run2) "   << endl;
+
   cout << "  -h print this help"                << endl;
 }
 
 
 int main(int argc, char** argv)
 {
-  ROOT::Cintex::Cintex::Enable();
 
   int nEvt        = -1;
   int nSkip       = 0;
@@ -138,6 +141,7 @@ int main(int argc, char** argv)
   uint nLepFilter = 0;
   uint nLepTauFilter = 2;
   bool filterTrig = false;
+  int trigset     = 1;
 
   cout << "SusyNtMaker" << endl;
   cout << endl;
@@ -196,6 +200,8 @@ int main(int argc, char** argv)
       nLepTauFilter = atoi(argv[++i]);
     else if (strcmp(argv[i], "--filterTrig") == 0)
       filterTrig = true;
+    else if (strcmp(argv[i], "--trig") == 0)
+      trigset = atoi(argv[++i]);
     else
     {
       help();
@@ -227,7 +233,9 @@ int main(int argc, char** argv)
   cout << "  nLepFilter    " << nLepFilter    << endl;
   cout << "  nLepTauFilter " << nLepTauFilter << endl;
   cout << "  filterTrig    " << filterTrig    << endl;
+  cout << "  trigset       " << trigset       << endl;
   cout << endl;
+
 
   // Build the input chain
   TChain* chain = new TChain("CollectionTree");
@@ -239,6 +247,7 @@ int main(int argc, char** argv)
   // Build the TSelector
   SusyNtMaker* susyAna = new SusyNtMaker();
   susyAna->setDebug(dbg);
+  susyAna->setTriggerSet(trigset);
   susyAna->setSample(sample);
   susyAna->setLumi(lumi);
   susyAna->setSumw(sumw);

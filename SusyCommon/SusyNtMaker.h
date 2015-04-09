@@ -6,6 +6,8 @@
 #include "SusyCommon/SystematicMapping.h"
 
 
+#include "SusyCommon/Trigger.h"
+
 
 #include "TStopwatch.h"
 
@@ -20,6 +22,7 @@
 */
 
 namespace Root { class TElectronEfficiencyCorrectionTool; }
+
 
 namespace susy {
 class SusyNtMaker : public XaodAnalysis
@@ -39,6 +42,9 @@ class SusyNtMaker : public XaodAnalysis
     // Terminate is called after looping is finished
     virtual void    Terminate();
 
+    /// fill histogram of event-level triggers that this event triggered
+    virtual void fillTriggerHisto(); //dantrim trig
+
     /// whether this event should be written to the output
     /**
        This selection includes the event-level criteria and the
@@ -52,6 +58,7 @@ class SusyNtMaker : public XaodAnalysis
        bookkeeping and normalization.
      */
     virtual bool passEventlevelSelection();
+
     /// whether this event passes the object-level criteria
     /**
        These are the criteria that depend on the reconstructed
@@ -59,6 +66,7 @@ class SusyNtMaker : public XaodAnalysis
        bookkeeping and normalization.
      */
     virtual bool passObjectlevelSelection();
+    
     /// labels of the cut stages used in the selection
     /**
        They are used to book the histograms and the counters.
@@ -144,6 +152,8 @@ class SusyNtMaker : public XaodAnalysis
     static bool guessWhetherIsWhSample(const TString &samplename);
     std::string timerSummary();
     std::string counterSummary() const;
+
+
  protected:
     SusyNtMaker& initializeOuputTree();
     SusyNtMaker& saveOutputTree();
@@ -167,6 +177,8 @@ class SusyNtMaker : public XaodAnalysis
     uint                m_nLepFilter;   // Number of light leptons to filter on.
     uint                m_nLepTauFilter;// Number of leptons (light+tau) to filter on.
     bool                m_filterTrigger;// Only save events that pass any of our triggers
+    int                 m_triggerSet;   // Set which triggers are stored
+    std::vector<std::string> m_triggerNames;
     bool                m_saveContTaus; // Save container taus instead of selected taus
 
     // Some useful flags
@@ -196,8 +208,11 @@ class SusyNtMaker : public XaodAnalysis
     std::map<int,TH1F*> m_procCutFlows;         // cutflows, one for each subprocess
     std::vector< size_t > m_cutstageCounters; ///< used to print the summary cutflow table
 
+    TH1F*               h_passTrigLevel;        // histogram storing event-level fired triggers // dantrim trig
+
     // Timer
     TStopwatch          m_timer;
+
 
 };
 

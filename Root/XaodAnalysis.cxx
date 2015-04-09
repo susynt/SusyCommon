@@ -12,7 +12,11 @@
 #include <iterator> // back_inserter
 #include <numeric> // accumulate
 
+
+
+
 using namespace std;
+
 using susy::XaodAnalysis;
 
 
@@ -31,7 +35,9 @@ using susy::XaodAnalysis;
 //----------------------------------------------------------
 XaodAnalysis::XaodAnalysis() :
     m_sample(""),
+    m_triggerSet(1),
     m_stream(Stream_Unknown),
+    m_isDerivation(false), // dantrim event shape
     m_isAF2(false),
     m_mcProd(MCProd_Unknown),
     m_d3pdTag(D3PD_p1328),
@@ -61,14 +67,21 @@ XaodAnalysis::XaodAnalysis() :
     m_isMC(false),
     m_flagsAreConsistent(false),
     m_flagsHaveBeenChecked(false),
-    m_event(xAOD::TEvent::kClassAccess),
+    //m_event(xAOD::TEvent::kClassAccess),
+    m_event(xAOD::TEvent::kBranchAccess), ///> dantrim -- (in PAT threads, TDT is supposed to work with kBranchAccess option)
     m_store(),
-	m_eleIDDefault(Medium),
+//	m_eleIDDefault(Medium), ///> dantrim -- use likelihood as default ?
+        m_eleIDDefault(TightLLH),
 	m_electronEfficiencySFTool(0),
 	m_pileupReweightingTool(0),
 	m_muonEfficiencySFTool(0),
 	m_tauTruthMatchingTool(0),
-	m_tauTruthTrackMatchingTool(0)
+	m_tauTruthTrackMatchingTool(0),
+        //dantrim trig
+        m_evtTrigBits(m_nTriggerBits),
+        m_configTool(NULL),
+        m_trigTool(NULL),
+        m_escopier(NULL)
 {
     clearContainerPointers();
     clearOutputObjects();
@@ -78,8 +91,11 @@ XaodAnalysis::XaodAnalysis() :
 void XaodAnalysis::Init(TTree *tree)
 {
     xAOD::Init("susy::XaodAnalysis").ignore();
+
+
     m_event.readFrom(tree);
     m_isMC = XaodAnalysis::isSimuFromSamplename(m_sample);
+    m_isDerivation = XaodAnalysis::isDerivationFromSamplename(m_sample); // dantrim event shape
     bool isData = XaodAnalysis::isDataFromSamplename(m_sample);
     m_stream = XaodAnalysis::streamFromSamplename(m_sample, isData);
     initSusyTools();
@@ -101,6 +117,7 @@ XaodAnalysis::~XaodAnalysis()
 /*--------------------------------------------------------------------------------*/
 void XaodAnalysis::SlaveBegin(TTree *tree)
 {
+
     if(m_dbg) cout << "XaodAnalysis::SlaveBegin" << endl;
     bool isData(!m_isMC);
 
@@ -160,9 +177,17 @@ void XaodAnalysis::Terminate()
     delete m_tauTruthMatchingTool;
     delete m_tauTruthTrackMatchingTool;
 
+
     for(int i=Medium; i<eleIDInvalid; i++){
         delete m_susyObj[i];
     }
+    // dantrim trig
+    delete m_trigTool;
+    delete m_configTool;
+
+    delete m_escopier;
+    
+    
 
 }
 //----------------------------------------------------------
@@ -205,9 +230,20 @@ XaodAnalysis& XaodAnalysis::initLocalTools()
         exit(-1);
     }
 
+
     initPileupTool();
     initMuonTools();
     initTauTools();
+
+    // dantrim -- initialize trigger tool
+    initTrigger();
+
+    // dantrim -- Call EventShapeCopier tool when accessing jets (cluster objects).
+    //            Call "renameEventDensities". This is temporary? And only for
+    //            DxAODs. If running over DxAOD be sure to put "derived" in the sample
+    //            name '-s' option (case insensitive).
+    m_escopier = new EventShapeCopier("Kt4LCCopier");
+
 
     return *this;
 }
@@ -254,7 +290,21 @@ void XaodAnalysis::initTauTools()
 
 }
 
+//----------------------------------------------------------
+void XaodAnalysis::initTrigger()
+{
+    // dantrim trig
+    m_configTool = new TrigConf::xAODConfigTool("xAODConfigTool");
+    ToolHandle<TrigConf::ITrigConfigTool> configHandle(m_configTool);
+    CHECK( configHandle->initialize() );
+    
+    m_trigTool = new Trig::TrigDecisionTool("TrigDecTool");
+    m_trigTool->setProperty("ConfigTool", configHandle);
+    m_trigTool->setProperty("TrigDecisionKey", "xTrigDecision");
+    m_trigTool->setProperty("OutputLevel", MSG::ERROR).ignore(); // dantrim Mar 16 2015 -- tool outputs extraneous errors due to extraneous tool, ignore them
+    CHECK( m_trigTool->initialize() );
 
+}
 /*--------------------------------------------------------------------------------*/
 // Get the list of recommended systematics from CP
 /*--------------------------------------------------------------------------------*/
@@ -288,18 +338,20 @@ const xAOD::EventInfo* XaodAnalysis::xaodEventInfo()
 //----------------------------------------------------------
 xAOD::MuonContainer* XaodAnalysis::xaodMuons(ST::SystInfo sysInfo, SusyNtSys sys)
 {
-    const float minPt=6000;
+    const float minPt=20000;
     bool syst_affectsMuons     = ST::testAffectsObject(xAOD::Type::Muon, sysInfo.affectsType);
     if(sys!=NtSys::NOM && syst_affectsMuons){
         if(m_xaodMuons==NULL){
-            m_susyObj[m_eleIDDefault]->GetMuons(m_xaodMuons, m_xaodMuonsAux, false, minPt);
+            //m_susyObj[m_eleIDDefault]->GetMuons(m_xaodMuons, m_xaodMuonsAux, false, minPt);
+            m_susyObj[m_eleIDDefault]->GetMuons(m_xaodMuons, m_xaodMuonsAux);
         }
         if(m_dbg>=5) cout << "xaodMuo "<< m_xaodMuons->size() << endl;
         return m_xaodMuons;
     }
     else{
         if(m_xaodMuons_nom==NULL){
-            m_susyObj[m_eleIDDefault]->GetMuons(m_xaodMuons_nom, m_xaodMuonsAux_nom, false, minPt);
+            //m_susyObj[m_eleIDDefault]->GetMuons(m_xaodMuons_nom, m_xaodMuonsAux_nom, false, minPt);
+            m_susyObj[m_eleIDDefault]->GetMuons(m_xaodMuons_nom, m_xaodMuonsAux_nom);
         }
         if(m_dbg>=5) cout << "xaodMuo_nom " << m_xaodMuons_nom->size() << endl;
         return m_xaodMuons_nom;
@@ -309,18 +361,20 @@ xAOD::MuonContainer* XaodAnalysis::xaodMuons(ST::SystInfo sysInfo, SusyNtSys sys
 //----------------------------------------------------------
 xAOD::ElectronContainer* XaodAnalysis::xaodElectrons(ST::SystInfo sysInfo, SusyNtSys sys)
 {
-    const float minPt=7000;
+    const float minPt=20000;
     bool syst_affectsElectrons = ST::testAffectsObject(xAOD::Type::Electron, sysInfo.affectsType);
     if(sys!=NtSys::NOM && syst_affectsElectrons){
         if(m_xaodElectrons==NULL){
-            m_susyObj[m_eleIDDefault]->GetElectrons(m_xaodElectrons, m_xaodElectronsAux, false, minPt);
+            //m_susyObj[m_eleIDDefault]->GetElectrons(m_xaodElectrons, m_xaodElectronsAux, false, minPt);
+            m_susyObj[m_eleIDDefault]->GetElectrons(m_xaodElectrons, m_xaodElectronsAux);
         }
         if(m_dbg>=5) cout << "xaodEle " << m_xaodElectrons->size() << endl;
         return m_xaodElectrons;
     }
     else{
         if(m_xaodElectrons_nom==NULL){
-            m_susyObj[m_eleIDDefault]->GetElectrons(m_xaodElectrons_nom, m_xaodElectronsAux_nom, false, minPt);
+            //m_susyObj[m_eleIDDefault]->GetElectrons(m_xaodElectrons_nom, m_xaodElectronsAux_nom, false, minPt);
+            m_susyObj[m_eleIDDefault]->GetElectrons(m_xaodElectrons_nom, m_xaodElectronsAux_nom);
         }
         if(m_dbg>=5) cout << "xaodEle_nom " << m_xaodElectrons_nom->size() << endl;
         return m_xaodElectrons_nom;
@@ -354,6 +408,8 @@ xAOD::JetContainer* XaodAnalysis::xaodJets(ST::SystInfo sysInfo, SusyNtSys sys)
     bool syst_affectsJets      = ST::testAffectsObject(xAOD::Type::Jet, sysInfo.affectsType);
     if(sys!=NtSys::NOM && syst_affectsJets){
         if(m_xaodJets==NULL){
+            // dantrim event shape
+            if ( m_isDerivation ) m_escopier->renameEventDensities();
             m_susyObj[m_eleIDDefault]->GetJets(m_xaodJets, m_xaodJetsAux);
         }
         if(m_dbg>=5) cout << "xaodJets " << m_xaodJets->size() << endl;
@@ -361,6 +417,8 @@ xAOD::JetContainer* XaodAnalysis::xaodJets(ST::SystInfo sysInfo, SusyNtSys sys)
     }
     else{
         if(m_xaodJets_nom==NULL){
+            // dantrim event shape
+            if ( m_isDerivation ) m_escopier->renameEventDensities();
             m_susyObj[m_eleIDDefault]->GetJets(m_xaodJets_nom, m_xaodJetsAux_nom);
         }
         if(m_dbg>=5) cout << "xaodJets_nom " << m_xaodJets_nom->size() << endl;
@@ -383,7 +441,7 @@ xAOD::PhotonContainer* XaodAnalysis::xaodPhotons(ST::SystInfo sysInfo, SusyNtSys
         if(m_xaodPhotons_nom==NULL){
             m_susyObj[m_eleIDDefault]->GetPhotons(m_xaodPhotons_nom, m_xaodPhotonsAux_nom);
         }
-        if(m_dbg>=5) cout << "xaodPho_nom " << m_xaodPhotons_nom->size() << endl;
+        if(m_dbg>=5 && m_xaodPhotons_nom) cout << "xaodPho_nom " << m_xaodPhotons_nom->size() << endl;
         return m_xaodPhotons_nom;
     }
     return NULL;
@@ -497,66 +555,81 @@ void XaodAnalysis::selectBaselineObjects(SusyNtSys sys, ST::SystInfo sysInfo)
     if(m_dbg>=5) cout << "selectBaselineObjects with sys=" <<  SusyNtSysNames[sys] << endl;
 
     xAOD::ElectronContainer* electrons = xaodElectrons(sysInfo,sys);
+    xAOD::MuonContainer* muons =xaodMuons(sysInfo,sys);
+    xAOD::JetContainer* jets = xaodJets(sysInfo,sys);
+
+    // dantrim March 17 1015 -- call initially in case we want to check OR on baseline.
+    //                          For now, have set "doHarmonization=False"
+    m_susyObj[m_eleIDDefault]->OverlapRemoval(electrons, muons, jets, false); 
+  //  m_susyObj[m_eleIDDefault]->OverlapRemoval(xaodElectrons(sysInfo,sys), xaodMuons(sysInfo, sys), xaodJets(sysInfo, sys), false);
+  //  xAOD::ElectronContainer* electrons = xaodElectrons(sysInfo,sys);
     int iEl = -1;
     for(const auto& el : *electrons) {
         iEl++;
+       // m_susyObj[m_eleIDDefault]->IsSignalElectron(*el);
+        m_susyObj[m_eleIDDefault]->IsSignalElectronExp(*el, ST::SignalIsoExp::TightIso);
         if(m_dbg>=5) cout<<"El "
                          <<" pt " << el->pt()
                          <<" eta " << el->eta()
                          <<" phi " << el->phi()
                          <<endl;
-        m_susyObj[m_eleIDDefault]->IsSignalElectron(*el);
-        if(!el->auxdata< bool >("baseline")) continue;
-        m_preElectrons.push_back(iEl);
+      //  if(!el->auxdata< bool >("baseline")) continue;
         //AT:12/16/14 TO UPDATE Base Obj should be after overlap removal
-        if(el->auxdata< bool >("baseline"))  m_baseElectrons.push_back(iEl);
+        if( (bool)el->auxdata< char >("baseline")==1 &&
+            (bool)el->auxdata< char >("passOR")==1 ) m_baseElectrons.push_back(iEl); 
 
         if(m_dbg>=5) cout<<"\t El passing"
-                         <<" baseline? "<< bool(el->auxdata< bool >("baseline"))
-                         <<" signal? "<< bool(el->auxdata< bool >("signal"))
+                         <<" baseline? "<< (bool)(el->auxdata< char >("baseline"))
+                         <<" signal? "<<   (bool)(el->auxdata< char >("signal"))
                          <<endl;
+        m_preElectrons.push_back(iEl);
     }
     if(m_dbg) cout<<"preElectrons["<<m_preElectrons.size()<<"]"<<endl;
 
     int iMu = -1;
-    xAOD::MuonContainer* muons =xaodMuons(sysInfo,sys);
+ //   xAOD::MuonContainer* muons =xaodMuons(sysInfo,sys);
     for(const auto& mu : *muons){
         iMu++;
         m_preMuons.push_back(iMu);
-        m_susyObj[m_eleIDDefault]->IsSignalMuon(*mu);
+        //m_susyObj[m_eleIDDefault]->IsSignalMuon(*mu);
+        m_susyObj[m_eleIDDefault]->IsSignalMuonExp(*mu, ST::SignalIsoExp::TightIso);
         m_susyObj[m_eleIDDefault]->IsCosmicMuon(*mu);
         if(m_dbg>=5) cout<<"Mu passing"
-                         <<" baseline? "<< bool(mu->auxdata< bool >("baseline"))
-                         <<" signal? "<< bool(mu->auxdata< bool >("signal"))
+                         <<" baseline? "<< bool(mu->auxdata< char >("baseline"))
+                         <<" signal? "<<   bool(mu->auxdata< char >("signal"))
                          <<" pt " << mu->pt()
                          <<" eta " << mu->eta()
                          <<" phi " << mu->phi()
                          <<endl;
-        if(mu->auxdata< bool >("baseline")) m_baseMuons.push_back(iMu);
+        if( (bool)mu->auxdata< char >("baseline")==1 && 
+            (bool)mu->auxdata< char >("passOR")==1 ) m_baseMuons.push_back(iMu); 
         // if(signal) m_sigMuons.push_back(iMu);
     }
     if(m_dbg) cout<<"preMuons["<<m_preMuons.size()<<"]"<<endl;
 
     int iJet=-1;
-    xAOD::JetContainer* jets = xaodJets(sysInfo,sys);
+  //  xAOD::JetContainer* jets = xaodJets(sysInfo,sys);
     for(const auto& jet : *jets){
         iJet++;
         m_preJets.push_back(iJet);
-        m_susyObj[m_eleIDDefault]->IsBJet(*jet);
+        m_susyObj[m_eleIDDefault]->IsBJet(*jet);              // dantrim - Feb 25 2015 - still causing seg-faults
         if(m_dbg>=5) cout<<"Jet passing"
-                         <<" baseline? "<< bool(jet->auxdata< bool >("baseline"))
-                         <<" signal? "<< bool(jet->auxdata< bool >("signal"))
+                         <<" baseline? "<< bool(jet->auxdata< char >("baseline")==1)
+                         <<" signal? "<<   bool(jet->auxdata< char >("signal")==1)
                          <<" pt " << jet->pt()
                          <<" eta " << jet->eta()
                          <<" phi " << jet->phi()
                          <<endl;
-        if(jet->auxdata< bool >("baseline")) m_baseJets.push_back(iJet);
+        if((bool)jet->auxdata< char >("baseline")==1 &&
+           (bool)jet->auxdata< char >("passOR")==1 ) m_baseJets.push_back(iJet); 
     }
     if(m_dbg) cout<<"preJets["<<m_preJets.size()<<"]"<<endl;
 
     // overlap removal and met (need to build 'MyJet' coll?)
     //AT:: Depending of what container is affected by systematic, feed the correct set for the met computation
-    m_susyObj[m_eleIDDefault]->OverlapRemoval(xaodElectrons(sysInfo,sys), xaodMuons(sysInfo, sys), xaodJets(sysInfo, sys));
+    // dantrim March 2 2015 -- setting "doHarmonization" to False, in accord with Ximo & Fabio
+    //m_susyObj[m_eleIDDefault]->OverlapRemoval(xaodElectrons(sysInfo,sys), xaodMuons(sysInfo, sys), xaodJets(sysInfo, sys), false);
+
 
     int iTau=-1;
     xAOD::TauJetContainer* taus = xaodTaus(sysInfo,sys);
@@ -564,13 +637,13 @@ void XaodAnalysis::selectBaselineObjects(SusyNtSys sys, ST::SystInfo sysInfo)
         iTau++;
         m_susyObj[m_eleIDDefault]->IsSignalTau(*tau);
         if(m_dbg>=5) cout<<"Tau passing"
-                         <<" signal? "<< bool(tau->auxdata< bool >("signal"))
+                         <<" signal? "<< bool(tau->auxdata< char >("signal")==1)
                          <<" pt " << tau->pt()
                          <<" eta " << tau->eta()
                          <<" phi " << tau->phi()
                          <<endl;
 
-        if(tau->auxdata< bool >("baseline")) m_preTaus.push_back(iTau);
+        if((bool)tau->auxdata< char >("baseline")==1) m_preTaus.push_back(iTau);
         //tau->pt()>20*GeV && abs(tau->eta())<2.47
     }
     if(m_dbg) cout<<"m_preTaus["<<m_preTaus.size()<<"]"<<endl;
@@ -673,31 +746,27 @@ void XaodAnalysis::selectSignalObjects(SusyNtSys sys, ST::SystInfo sysInfo)
     int iEl = 0;
     xAOD::ElectronContainer* electrons = xaodElectrons(sysInfo,sys);
     for(const auto& el : *electrons) {
-        if(el->pt()>10*MeV2GeV &&
-           el->auxdata< bool >("signal") &&
-           el->auxdata< bool >("passOR") )
-            m_sigElectrons.push_back(iEl);
-        iEl++;
+        if( (bool)el->auxdata< char >("signal")==1 &&
+            (bool)el->auxdata< char >("passOR")==1 )   m_sigElectrons.push_back(iEl);
+            iEl++;
     }
     if(m_dbg) cout<<"m_sigElectrons["<<m_sigElectrons.size()<<"]"<<endl;
 
     int iMu = 0;
     xAOD::MuonContainer* muons = xaodMuons(sysInfo,sys);
     for(const auto& mu : *muons){
-        if(mu->pt()>10.0*MeV2GeV &&
-           mu->auxdata< bool >("signal") &&
-           mu->auxdata< bool >("passOR") &&
-           !mu->auxdata< bool >("cosmic"))
-            m_sigMuons.push_back(iMu);
+        if( (bool)mu->auxdata< char >("signal")==1 &&
+            (bool)mu->auxdata< char >("passOR")==1 )  m_sigMuons.push_back(iMu);
+            iMu++;
     }
     if(m_dbg) cout<<"m_sigMuons["<<m_sigMuons.size()<<"]"<<endl;
 
     int iJet=0;
     xAOD::JetContainer* jets = xaodJets(sysInfo,sys);
     for(const auto& jet : *jets){
-        if(jet->pt()>20.0*MeV2GeV &&
-           jet->auxdata< bool >("passOR") &&
-           !jet->auxdata< bool >("bad") //AT: Added 12/13/14
+        if(jet->pt()*MeV2GeV >20.0 &&
+            jet->auxdata< char >("passOR")==1 &&
+           !((bool)jet->auxdata< char >("bad")==1) //AT: Added 12/13/14
            // DG tmp-2014-11-02 (!jet->isAvailable("bad") || !jet->auxdata< bool >("bad"))
             )
             m_sigJets.push_back(iJet);
@@ -708,23 +777,26 @@ void XaodAnalysis::selectSignalObjects(SusyNtSys sys, ST::SystInfo sysInfo)
     int iTau=0;
     xAOD::TauJetContainer* taus = xaodTaus(sysInfo,sys);
     for(const auto& tau : *taus){
-        if(tau->pt()>20.0*MeV2GeV &&
-           tau->auxdata< bool >("signal"))
+        if(tau->pt() * MeV2GeV >20.0 &&
+           (bool)tau->auxdata< char >("signal")==1)
             // tau->auxdata< int >("passOR") && // tau not involved in OR?
             m_sigTaus.push_back(iTau);
+        }
         iTau++;
-    }
     if(m_dbg) cout<<"m_sigTaus["<<m_sigTaus.size()<<"]"<<endl;
 
     int iPh=0;
     xAOD::PhotonContainer* photons = xaodPhotons(sysInfo,sys);
+ //   if(photons) {
     for(const auto& ph : *photons){
         //m_susyObj[m_eleIDDefault]->FillPhoton(ph);
-        if(ph->auxdata< bool >("baseline"))
+        if((bool)ph->auxdata< char >("baseline")==1)
             m_sigPhotons.push_back(iPh);
         iPh++;
     }
-    if(m_dbg) cout<<"m_sigPhotons["<<m_sigPhotons.size()<<"]"<<endl;
+ //   }
+    if(m_dbg && photons) cout<<"m_sigPhotons["<<m_sigPhotons.size()<<"]"<<endl;
+
 }
 
 /*--------------------------------------------------------------------------------*/
@@ -864,75 +936,123 @@ bool XaodAnalysis::eleIsOfType(const xAOD::Electron &in, eleID id)
     return false;
 }
 /*--------------------------------------------------------------------------------*/
+// Get triggers
+/*--------------------------------------------------------------------------------*/
+std::vector<std::string> XaodAnalysis::xaodTriggers()
+{
+    if(m_triggerNames.size()==0){
+        m_triggerNames = getTrigNames(m_triggerSet);
+        return m_triggerNames;
+    }
+    else { return m_triggerNames; }
+}
+/*--------------------------------------------------------------------------------*/
 // Event trigger flags
 /*--------------------------------------------------------------------------------*/
 void XaodAnalysis::fillEventTriggers()
 {
     if(m_dbg>=5) cout << "fillEventTriggers" << endl;
+   
 
-    m_evtTrigFlags = 0;
-//-DG--  if(m_event.triggerbits.EF_e7T_medium1())                m_evtTrigFlags |= TRIG_e7_medium1;
-//-DG--  if(m_event.triggerbits.EF_e12Tvh_loose1())              m_evtTrigFlags |= TRIG_e12Tvh_loose1;
-//-DG--  if(m_event.triggerbits.EF_e12Tvh_medium1())             m_evtTrigFlags |= TRIG_e12Tvh_medium1;
-//-DG--  if(m_event.triggerbits.EF_e24vh_medium1())              m_evtTrigFlags |= TRIG_e24vh_medium1;
-//-DG--  if(m_event.triggerbits.EF_e24vhi_medium1())             m_evtTrigFlags |= TRIG_e24vhi_medium1;
-//-DG--  if(m_event.triggerbits.EF_2e12Tvh_loose1())             m_evtTrigFlags |= TRIG_2e12Tvh_loose1;
-//-DG--  if(m_event.triggerbits.EF_e24vh_medium1_e7_medium1())   m_evtTrigFlags |= TRIG_e24vh_medium1_e7_medium1;
-//-DG--  if(m_event.triggerbits.EF_mu8())                        m_evtTrigFlags |= TRIG_mu8;
-//-DG--  if(m_event.triggerbits.EF_mu13())                       m_evtTrigFlags |= TRIG_mu13;
-//-DG--  if(m_event.triggerbits.EF_mu18_tight())                 m_evtTrigFlags |= TRIG_mu18_tight;
-//-DG--  if(m_event.triggerbits.EF_mu24i_tight())                m_evtTrigFlags |= TRIG_mu24i_tight;
-//-DG--  if(m_event.triggerbits.EF_2mu13())                      m_evtTrigFlags |= TRIG_2mu13;
-//-DG--  if(m_event.triggerbits.EF_mu18_tight_mu8_EFFS())        m_evtTrigFlags |= TRIG_mu18_tight_mu8_EFFS;
-//-DG--  if(m_event.triggerbits.EF_e12Tvh_medium1_mu8())         m_evtTrigFlags |= TRIG_e12Tvh_medium1_mu8;
-//-DG--  if(m_event.triggerbits.EF_mu18_tight_e7_medium1())      m_evtTrigFlags |= TRIG_mu18_tight_e7_medium1;
-//-DG--
-//-DG--  if(m_event.triggerbits.EF_tau20_medium1())                   m_evtTrigFlags |= TRIG_tau20_medium1;
-//-DG--  if(m_event.triggerbits.EF_tau20Ti_medium1())                 m_evtTrigFlags |= TRIG_tau20Ti_medium1;
-//-DG--  if(m_event.triggerbits.EF_tau29Ti_medium1())                 m_evtTrigFlags |= TRIG_tau29Ti_medium1;
-//-DG--  if(m_event.triggerbits.EF_tau29Ti_medium1_tau20Ti_medium1()) m_evtTrigFlags |= TRIG_tau29Ti_medium1_tau20Ti_medium1;
-//-DG--  if(m_event.triggerbits.EF_tau20Ti_medium1_e18vh_medium1())   m_evtTrigFlags |= TRIG_tau20Ti_medium1_e18vh_medium1;
-//-DG--  if(m_event.triggerbits.EF_tau20_medium1_mu15())              m_evtTrigFlags |= TRIG_tau20_medium1_mu15;
-//-DG--
-//-DG--  if(m_event.triggerbits.EF_e18vh_medium1())              m_evtTrigFlags |= TRIG_e18vh_medium1;
-//-DG--  if(m_event.triggerbits.EF_mu15())                       m_evtTrigFlags |= TRIG_mu15;
-//-DG--
-//-DG--  // EF_2mu8_EFxe40wMu_tclcw trigger only available for data, in periods > B
-//-DG--  if(!m_isMC && m_event.eventinfo.RunNumber()>=206248 && m_event.triggerbits.EF_2mu8_EFxe40wMu_tclcw())
-//-DG--    m_evtTrigFlags |= TRIG_2mu8_EFxe40wMu_tclcw;
-//-DG--
-//-DG--  // Triggers requested fro the ISR analysis studies
-//-DG--  if(m_event.triggerbits.EF_mu6())                                m_evtTrigFlags |= TRIG_mu6;
-//-DG--  if(m_event.triggerbits.EF_2mu6())                               m_evtTrigFlags |= TRIG_2mu6;
-//-DG--  if(m_event.triggerbits.EF_e18vh_medium1_2e7T_medium1())         m_evtTrigFlags |= TRIG_e18vh_medium1_2e7T_medium1;
-//-DG--  if(m_event.triggerbits.EF_3mu6())                               m_evtTrigFlags |= TRIG_3mu6;
-//-DG--  if(m_event.triggerbits.EF_mu18_tight_2mu4_EFFS())               m_evtTrigFlags |= TRIG_mu18_tight_2mu4_EFFS;
-//-DG--  if(m_event.triggerbits.EF_2e7T_medium1_mu6())                   m_evtTrigFlags |= TRIG_2e7T_medium1_mu6;
-//-DG--  if(m_event.triggerbits.EF_e7T_medium1_2mu6())                   m_evtTrigFlags |= TRIG_e7T_medium1_2mu6;
-//-DG--  if(m_event.triggerbits.EF_xe80_tclcw_loose())                   m_evtTrigFlags |= TRIG_xe80_tclcw_loose;
-//-DG--  if(m_event.triggerbits.EF_j110_a4tchad_xe90_tclcw_loose())      m_evtTrigFlags |= TRIG_j110_a4tchad_xe90_tclcw_loose;
-//-DG--  if(m_event.triggerbits.EF_j80_a4tchad_xe100_tclcw_loose())      m_evtTrigFlags |= TRIG_j80_a4tchad_xe100_tclcw_loose;
-//-DG--  if(m_event.triggerbits.EF_j80_a4tchad_xe70_tclcw_dphi2j45xe10())m_evtTrigFlags |= TRIG_j80_a4tchad_xe70_tclcw_dphi2j45xe10;
-//-DG--
-//-DG--  // Not sure about the availability of these, so just adding some protection
-//-DG--  if(m_event.triggerbits.EF_mu4T())                               m_evtTrigFlags |= TRIG_mu4T;
-//-DG--  if(m_event.triggerbits.EF_mu24())                               m_evtTrigFlags |= TRIG_mu24;
-//-DG--  if(m_event.triggerbits.EF_mu4T_j65_a4tchad_xe70_tclcw_veryloose()) m_evtTrigFlags |= TRIG_mu4T_j65_a4tchad_xe70_tclcw_veryloose;
-//-DG--  if(m_event.triggerbits.EF_2mu4T_xe60_tclcw())                   m_evtTrigFlags |= TRIG_2mu4T_xe60_tclcw;
-//-DG--  if(m_event.triggerbits.EF_2mu8_EFxe40_tclcw.IsAvailable() && m_event.triggerbits.EF_2mu8_EFxe40_tclcw())
-//-DG--    m_evtTrigFlags |= TRIG_2mu8_EFxe40_tclcw;
-//-DG--  if(m_event.triggerbits.EF_e24vh_medium1_EFxe35_tclcw())         m_evtTrigFlags |= TRIG_e24vh_medium1_EFxe35_tclcw;
-//-DG--  if(m_event.triggerbits.EF_mu24_j65_a4tchad_EFxe40_tclcw())      m_evtTrigFlags |= TRIG_mu24_j65_a4tchad_EFxe40_tclcw;
-//-DG--  if(m_event.triggerbits.EF_mu24_j65_a4tchad_EFxe40wMu_tclcw.IsAvailable() && m_event.triggerbits.EF_mu24_j65_a4tchad_EFxe40wMu_tclcw())
-//-DG--    m_evtTrigFlags |= TRIG_mu24_j65_a4tchad_EFxe40wMu_tclcw;
+    m_evtTrigBits.ResetAllBits();
+    std::vector<std::string> trigs = XaodAnalysis::xaodTriggers();
+    for (unsigned int iTrig = 0; iTrig < trigs.size(); iTrig++) {
+        if(m_trigTool->isPassed(trigs[iTrig]))  m_evtTrigBits.SetBitNumber(iTrig, true);
+    }
+/*    
+    m_evtTrigFlags = 0; 
+    
+
+    if(m_trigTool->isPassed("EF_e7_medium1"))                   m_evtTrigFlags |= triggerbits::TRIG_e7_medium1;
+    if(m_trigTool->isPassed("EF_e12Tvh_loose1"))                m_evtTrigFlags |= triggerbits::TRIG_e12Tvh_loose1;
+    if(m_trigTool->isPassed("EF_e12Tvh_medium1"))               m_evtTrigFlags |= triggerbits::TRIG_e12Tvh_medium1;
+    if(m_trigTool->isPassed("EF_e24vh_medium1"))                m_evtTrigFlags |= triggerbits::TRIG_e24vh_medium1;
+    if(m_trigTool->isPassed("EF_2e12Tvh_loose1"))               m_evtTrigFlags |= triggerbits::TRIG_2e12Tvh_loose1;
+    if(m_trigTool->isPassed("EF_e24vh_medium1_e7_medium1"))     m_evtTrigFlags |= triggerbits::TRIG_e24vh_medium1_e7_medium1;
+    // move to muon triggers since validating on Muon stream
+    if(m_trigTool->isPassed("EF_mu8"))                          m_evtTrigFlags |= triggerbits::TRIG_mu8;
+    if(m_trigTool->isPassed("EF_mu13"))                         m_evtTrigFlags |= triggerbits::TRIG_mu18_tight;
+    if(m_trigTool->isPassed("EF_mu24i_tight"))                  m_evtTrigFlags |= triggerbits::TRIG_mu24i_tight;
+    if(m_trigTool->isPassed("EF_2mu13"))                        m_evtTrigFlags |= triggerbits::TRIG_2mu13;
+    if(m_trigTool->isPassed("EF_mu18_tight_mu8_EFFS"))          m_evtTrigFlags |= triggerbits::TRIG_mu18_tight_mu8_EFFS;
+    if(m_trigTool->isPassed("EF_e12Tvh_medium1_mu8"))           m_evtTrigFlags |= triggerbits::TRIG_e12Tvh_medium1_mu8;
+    if(m_trigTool->isPassed("EF_mu18_tight_e7_medium1"))        m_evtTrigFlags |= triggerbits::TRIG_mu18_tight_e7_medium1;
+
+    // photon trigger
+    if(m_trigTool->isPassed("EF_g20_loose"))                    m_evtTrigFlags |= triggerbits::TRIG_g20_loose;
+    if(m_trigTool->isPassed("EF_g40_loose"))                    m_evtTrigFlags |= triggerbits::TRIG_g40_loose;
+    if(m_trigTool->isPassed("EF_g60_loose"))                    m_evtTrigFlags |= triggerbits::TRIG_g60_loose;
+    if(m_trigTool->isPassed("EF_g80_loose"))                    m_evtTrigFlags |= triggerbits::TRIG_g80_loose;
+    if(m_trigTool->isPassed("EF_g100_loose"))                   m_evtTrigFlags |= triggerbits::TRIG_g100_loose;
+    if(m_trigTool->isPassed("EF_g120_loose"))                   m_evtTrigFlags |= triggerbits::TRIG_g120_loose;
+    
+    // tau trigger
+    if(m_trigTool->isPassed("EF_tau20_medium1"))                m_evtTrigFlags |= triggerbits::TRIG_tau20_medium1;
+    if(m_trigTool->isPassed("EF_tau20Ti_medium1"))              m_evtTrigFlags |= triggerbits::TRIG_tau20Ti_medium1;
+    if(m_trigTool->isPassed("EF_tau29Ti_medium1"))              m_evtTrigFlags |= triggerbits::TRIG_tau29Ti_medium1;
+    if(m_trigTool->isPassed("EF_tau29Ti_medium1_tau20Ti_medium1")) m_evtTrigFlags |= triggerbits::TRIG_tau29Ti_medium1_tau20Ti_medium1;
+    if(m_trigTool->isPassed("EF_tau20Ti_medium1_e18vh_medium1"))   m_evtTrigFlags |= triggerbits::TRIG_tau20Ti_medium1_e18vh_medium1;
+    if(m_trigTool->isPassed("EF_tau20_medium1_mu15"))           m_evtTrigFlags |= triggerbits::TRIG_tau20_medium1_mu15;
+    
+    // lep-tau matching trigger
+    if(m_trigTool->isPassed("EF_e18vh_medium1"))                m_evtTrigFlags |= triggerbits::TRIG_e18vh_medium1;
+    if(m_trigTool->isPassed("EF_mu15"))                         m_evtTrigFlags |= triggerbits::TRIG_mu15;
+    
+    // MET triggers
+    if(m_trigTool->isPassed("EF_2mu8_EFxe40wMu_tclcw"))         m_evtTrigFlags |= triggerbits::TRIG_2mu8_EFxe40wMu_tclcw;
+    if(m_trigTool->isPassed("EF_xe80_tclcw_loose"))             m_evtTrigFlags |= triggerbits::TRIG_xe80_tclcw_loose;
+    if(m_trigTool->isPassed("EF_xe80T_tclcw_loose"))            m_evtTrigFlags |= triggerbits::TRIG_xe80T_tclcw_loose;
+*/
+
 }
 
 /*--------------------------------------------------------------------------------*/
 // Electron trigger matching
 /*--------------------------------------------------------------------------------*/
-void XaodAnalysis::matchElectronTriggers()
-{
-    if(m_dbg>=5) cout << "matchElectronTriggers" << endl;
+//void XaodAnalysis::matchElectronTriggers()
+//{
+//    if(m_dbg>=5) cout << "matchElectronTriggers" << endl;
+//    for ( uint i=0; i < m_preElectrons.size(); i++ ) {
+//        int iEl = m_preElectrons[i];
+//        xAOD::ElectronContainer* nom_electrons = xaodElectrons(systInfoList[0]);
+//        const xAOD::Electron* electron = nom_electrons->at(iEl);
+//        long long flags = 0;
+//        TLorentzVector* ele_tlv;
+//        ele_tlv->SetPtEtaPhiM(electron->pt(), electron->eta(), electron->phi(), 0);
+//        if(matchElectronTrigger(ele_tlv, "EF_e7_medium1"))     flags |= TRIG_e7_medium1;
+//        if(matchElectronTrigger(ele_tlv, "EF_e12Tvh_loose1"))  flags |= TRIG_e12Tvh_loose1;
+//        if(matchElectronTrigger(ele_tlv, "EF_e12Tvh_medium1")) flags |= TRIG_e12Tvh_medium1;
+//
+//        m_eleTrigFlags[iEl] = flags;
+//    }
+//}
+
+/*--------------------------------------------------------------------------------*/
+//bool XaodAnalysis::matchElectronTrigger(const TLorentzVector* lv, string chain)
+//{
+//    // TODO : figure out why they have software releases that do not have correctly updated aligned dependencies....
+//
+//    // get chain group representing the requesting trigger 
+//    bool ele_ismatch = false;
+//    auto cg = m_trigTool->getChainGroup(chain);
+//    auto fc = cg->features();
+//    auto eleFeatureContainers = fc.containerFeature<xAOD::TrigElectronContainer>();
+//    for(auto &econt : eleFeatureContainers) {
+//        for ( auto trige : *econt.cptr() ) {
+//            TLorentzVector* trig_tlv;
+//            trig_tlv->SetPtEtaPhiM( trige->pt(), trige->eta(), trige->phi(), 0);
+//            float dR = lv->DeltaR(*trig_tlv); 
+//            if ( dR < 0.15 ) ele_ismatch = true;
+//        } // trige
+//    } // econt
+//    return ele_ismatch;
+//}
+        
+        
+
+
+
+
 //-DG--  for(uint i=0; i<m_preElectrons.size(); i++){
 //-DG--    int iEl = m_preElectrons[i];
 //-DG--    const TLorentzVector &lv = m_susyObj[m_eleIDDefault]->GetElecTLV(iEl);
@@ -954,17 +1074,17 @@ void XaodAnalysis::matchElectronTriggers()
 //-DG--    if(matchElectronTrigger(lv, m_event.trig_EF_el.EF_e24vh_medium1_EFxe35_tclcw())){ flags |= TRIG_e24vh_medium1_EFxe35_tclcw; }
 //-DG--    m_eleTrigFlags[iEl] = flags;
 //-DG--  }
-}
+//}
 /*--------------------------------------------------------------------------------*/
-bool XaodAnalysis::matchElectronTrigger(const TLorentzVector &lv, vector<int>* trigBools)
-{
-    // matched trigger index - not used
-    //static int indexEF = -1;
-    // Use function defined in egammaAnalysisUtils/egammaTriggerMatching.h
-    // return PassedTriggerEF(lv.Eta(), lv.Phi(), trigBools, indexEF, m_event.trig_EF_el.n(),
-    //                        m_event.trig_EF_el.eta(), m_event.trig_EF_el.phi());
-    return false;
-}
+//bool XaodAnalysis::matchElectronTrigger(const TLorentzVector &lv, vector<int>* trigBools)
+//{
+//    // matched trigger index - not used
+//    //static int indexEF = -1;
+//    // Use function defined in egammaAnalysisUtils/egammaTriggerMatching.h
+//    // return PassedTriggerEF(lv.Eta(), lv.Phi(), trigBools, indexEF, m_event.trig_EF_el.n(),
+//    //                        m_event.trig_EF_el.eta(), m_event.trig_EF_el.phi());
+//    return false;
+//}
 
 /*--------------------------------------------------------------------------------*/
 // Muon trigger matching
@@ -1107,22 +1227,26 @@ bool XaodAnalysis::passGRL(const xAOD::EventInfo* eventinfo)
             m_grl->passRunLB(eventinfo->runNumber(), eventinfo->lumiBlock()));
 }
 //----------------------------------------------------------
-bool XaodAnalysis::passTTCVeto()
+bool XaodAnalysis::passTTCVeto(const xAOD::EventInfo* eventinfo)
 {
-    return true; // DG-2014-08-16 \todo
+    bool eventPassesTTC = eventinfo->isEventFlagBitSet(xAOD::EventInfo::Core, 18) ? false : true;
+    return eventPassesTTC;
     //   return (m_event.eventinfo.coreFlags() & 0x40000) == 0;
 }
 //----------------------------------------------------------
 bool XaodAnalysis::passTileErr(const xAOD::EventInfo* eventinfo)
 {
-	bool eventPassesTileTrip = (m_isMC ||
-                                true); // SUSYToolsTester: move to xAOD tool
+    // dantrim - add check of MC? >> seems to catch this, MC set to true
+    bool eventPassesTileTrip = eventinfo->errorState(xAOD::EventInfo::Tile)==xAOD::EventInfo::Error ? false : true;
+//	bool eventPassesTileTrip = (m_isMC || true); // SUSYToolsTester: move to xAOD tool
     return eventPassesTileTrip;
 }
 //----------------------------------------------------------
-bool XaodAnalysis::passLarErr()
+bool XaodAnalysis::passLarErr(const xAOD::EventInfo* eventinfo)
 {
-    return true; // DG-2014-08-16 \todo
+    // dantrim - add check of MC? >> seems to catch this, MC set to true
+    bool eventPassesLarErr = eventinfo->errorState(xAOD::EventInfo::LAr)==xAOD::EventInfo::Error ? false : true;
+    return eventPassesLarErr;
 //    return m_isMC || (m_event.eventinfo.larError()!=2);
 }
 /*--------------------------------------------------------------------------------*/
@@ -1131,22 +1255,22 @@ bool XaodAnalysis::passLarErr()
 void XaodAnalysis::assignEventCleaningFlags()
 {
     const xAOD::EventInfo* eventinfo = xaodEventInfo();
-    if(passGRL(eventinfo))      m_cutFlags |= ECut_GRL;
-    if(passTTCVeto())           m_cutFlags |= ECut_TTC;
-    if(passLarErr())            m_cutFlags |= ECut_LarErr;
-    if(passTileErr(eventinfo))  m_cutFlags |= ECut_TileErr;
-    if(passGoodVtx())           m_cutFlags |= ECut_GoodVtx;
-    if(passTileTrip())          m_cutFlags |= ECut_TileTrip;
+    if(passGRL(eventinfo))            m_cutFlags |= ECut_GRL;
+    if(passTTCVeto(eventinfo))        m_cutFlags |= ECut_TTC;
+    if(passLarErr(eventinfo))         m_cutFlags |= ECut_LarErr; 
+    if(passTileErr(eventinfo))        m_cutFlags |= ECut_TileErr;
+    if(passGoodVtx())                 m_cutFlags |= ECut_GoodVtx;
+    if(passTileTrip())                m_cutFlags |= ECut_TileTrip;
 }
 //----------------------------------------------------------
 void XaodAnalysis::assignObjectCleaningFlags(ST::SystInfo sysInfo, SusyNtSys sys)
 {
     //AT check if m_cutFalgs save at each systematics ?
-    if(passTileHotSpot()) m_cutFlags |= ECut_HotSpot;
-    if(passBadJet())      m_cutFlags |= ECut_BadJet;
-    if(passBadMuon(sysInfo,sys))     m_cutFlags |= ECut_BadMuon;
-    if(passCosmic(sysInfo,sys))      m_cutFlags |= ECut_Cosmic;
-    if(passLarHoleVeto()) m_cutFlags |= ECut_SmartVeto;
+    if(passTileHotSpot())             m_cutFlags |= ECut_HotSpot;
+    if(passBadJet(sysInfo, sys))      m_cutFlags |= ECut_BadJet;
+    if(passBadMuon(sysInfo,sys))      m_cutFlags |= ECut_BadMuon;
+    if(passCosmic(sysInfo,sys))       m_cutFlags |= ECut_Cosmic;
+    if(passLarHoleVeto())             m_cutFlags |= ECut_SmartVeto;
 }
 //----------------------------------------------------------
 bool XaodAnalysis::passLarHoleVeto()
@@ -1162,16 +1286,28 @@ bool XaodAnalysis::passTileHotSpot()
 //-DG--  return !check_jet_tileHotSpot(jets, m_preJets, m_susyObj, !m_isMC, m_event.eventinfo.RunNumber());
 }
 //----------------------------------------------------------
-bool XaodAnalysis::passBadJet()
+bool XaodAnalysis::passBadJet(ST::SystInfo sysInfo, SusyNtSys sys)
 {
-    //const xAOD::JetContainer *jets =  xaodJets();
-    return false;
+    xAOD::JetContainer* jets = xaodJets(sysInfo, sys);
+    bool pass_jetCleaning = true;
+    for(auto &i : m_preJets) { 
+        if((bool)jets->at(i)->auxdata< char >("bad")==1) pass_jetCleaning = false;
+    } 
+    return pass_jetCleaning;
 //  return !IsBadJetEvent(jets, m_baseJets, 20.*GeV, m_susyObj);
 }
 //----------------------------------------------------------
 bool XaodAnalysis::passGoodVtx()
 {
-    return true; // DG-2014-08-16 \todo
+    // dantrim-2015-02-14 : following Ximo's method of checking if there is at least one fulfilling...
+    bool at_least_one = false;
+    for(auto it=m_xaodVertices->begin(), end=m_xaodVertices->end(); it!=end; ++it){
+        const xAOD::Vertex *vtx = *it;
+        if(vtx->vertexType() == xAOD::VxType::PriVtx) at_least_one = true;
+    }
+    return at_least_one;
+
+//    return true; // DG-2014-08-16 \todo
 //  return PrimaryVertexCut(m_susyObj, &m_event.vxp);
 }
 //----------------------------------------------------------
@@ -1184,24 +1320,33 @@ bool XaodAnalysis::passTileTrip()
 bool XaodAnalysis::passBadMuon(ST::SystInfo sysInfo, SusyNtSys sys)
 {
     xAOD::MuonContainer* muons = xaodMuons(sysInfo, sys);
-    for(auto it=muons->begin(), end=muons->end(); it!=end; ++it){
-        const xAOD::Muon &mu = **it;
-        //AT-2014-10-30  should be done only for preMuons ? any more cuts to applied ?
-        if(m_susyObj[m_eleIDDefault]->IsBadMuon(mu)) return false;
+    bool pass_bad_muon = true;
+    for(auto &i : m_baseMuons) {
+        if(m_susyObj[m_eleIDDefault]->IsBadMuon(*muons->at(i))) pass_bad_muon = false;
     }
-    return true;
+    return pass_bad_muon;
     //  return !IsBadMuonEvent(m_susyObj, xaodMuons(), m_preMuons, 0.2);
 }
 //----------------------------------------------------------
 bool XaodAnalysis::passCosmic(ST::SystInfo sysInfo, SusyNtSys sys)
 {
     xAOD::MuonContainer* muons = xaodMuons(sysInfo, sys);
-    for(auto it=muons->begin(), end=muons->end(); it!=end; ++it){
-        const xAOD::Muon &mu = **it;
-        if(!mu.auxdata< bool >("baseline")) continue;
-        if(m_susyObj[m_eleIDDefault]->IsCosmicMuon(mu)) return false;
+    bool pass_cosmic = true;
+    for(auto &i : m_baseMuons) {
+        if((bool)muons->at(i)->auxdata< char >("passOR")==1 && (bool)muons->at(i)->auxdata< char >("cosmic")==1) pass_cosmic = false;
     }
-    return true;
+    return pass_cosmic;
+
+
+//    for(auto it=muons->begin(), end=muons->end(); it!=end; ++it){
+//        const xAOD::Muon &mu = **it;
+//        if(!mu.auxdata< bool >("baseline")) continue; // dantrim -- removing this, cutflow is in line with Maria : Feb 14 2015
+//        if(!mu.auxdata< bool >("passOR")) continue; 
+//        if(m_susyObj[m_eleIDDefault]->IsCosmicMuon(mu)) return false;
+//
+//     //   return(mu.auxdata<bool>("baseline") && mu.auxdata<bool>("passOR") && !m_susyObj[m_eleIDDefault]->IsCosmicMuon(mu));
+//    }
+//     return true;
     //  return !IsCosmic(m_susyObj, xaodMuons(), m_baseMuons, 1., 0.2);
 }
 //----------------------------------------------------------
@@ -1570,6 +1715,17 @@ bool XaodAnalysis::isSimuFromSamplename(const TString &s)
     return !XaodAnalysis::isDataFromSamplename(s);
 }
 //----------------------------------------------------------
+bool XaodAnalysis::isDerivationFromSamplename(const TString &sample)
+{
+    bool is_derived = false;
+    if ( sample.Contains("derived", TString::kIgnoreCase) ) { 
+        is_derived = true; 
+        cout << "This file is a derivation" << endl;
+    }
+    
+    return is_derived;
+}
+//----------------------------------------------------------
 void XaodAnalysis::selectObjects(SusyNtSys sys, ST::SystInfo sysInfo)
 {
     selectBaselineObjects(sys, sysInfo);
@@ -1592,17 +1748,17 @@ XaodAnalysis& XaodAnalysis::deleteShallowCopies(bool deleteNominal)
     if(m_xaodPhotons      ) delete m_xaodPhotons;
     if(m_xaodPhotonsAux   ) delete m_xaodPhotonsAux;
 
-    cout << "Check delete shallowCopied mu " << m_xaodMuons
-         << " ele " << m_xaodElectrons
-         << " pho " << m_xaodPhotons
-         << " jets " << m_xaodJets
-         << " taus " << m_xaodTaus << endl;
+    if(m_dbg>5) cout << "Check delete shallowCopied mu " << m_xaodMuons
+                     << " ele " << m_xaodElectrons
+                     << " pho " << m_xaodPhotons
+                     << " jets " << m_xaodJets
+                     << " taus " << m_xaodTaus << endl;
 
 
     if(deleteNominal){
-        m_store.print();
+    //    m_store.print();  // annoying print out - dantrim : Feb 14 2015
         m_store.clear(); // this clears m_metContainer and the objs recorded with TStore - AT: 12/12/14- not needed anymore
-        m_store.print();
+    //    m_store.print();
 
         if(m_xaodMuons_nom       ) delete m_xaodMuons_nom;
         if(m_xaodMuonsAux_nom    ) delete m_xaodMuonsAux_nom;
