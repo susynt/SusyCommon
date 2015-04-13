@@ -1576,9 +1576,6 @@ void XaodAnalysis::dumpSignalObjects()
         xAOD::ElectronContainer* electrons = XaodAnalysis::xaodElectrons(sysInfo);
         cout << "Signal electrons" << endl;
         for(auto& iEl : m_sigElectrons) {
-            //int iEl = m_sigElectrons[i];
-            //const TLorentzVector &lv = m_susyObj[m_eleIDDefault]->GetElecTLV(iEl);
-            //const xAOD::ElectronD3PDObjectElement &ele = (*d3pdElectrons())[iEl];
             const xAOD::Electron* el = electrons->at(iEl); 
             cout << "  El : " << fixed
                  << " q " << setw(2) << (int) el->charge()
