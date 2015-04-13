@@ -6,6 +6,7 @@
 // #include "egammaAnalysisUtils/egammaTriggerMatching.h"
 // #include "D3PDReader/JetD3PDObject.h"
 #include "xAODBase/IParticleHelpers.h" // setOriginalObjectLink
+#include "xAODEgamma/EgammaxAODHelpers.h"
 
 #include <limits>
 #include <algorithm> // copy_if, transform
@@ -1500,116 +1501,134 @@ void XaodAnalysis::dumpEvent()
 //----------------------------------------------------------
 void XaodAnalysis::dumpBaselineObjects()
 {
-    //uint nEle = m_baseElectrons.size();
-    //uint nMu  = m_baseMuons.size();
-    //uint nTau = m_baseTaus.size();
-    //uint nJet = m_baseJets.size();
-
-#warning dumpBaselineObjects not implemented
-    // cout.precision(2);
-    // if(nEle){
-    //   cout << "Baseline electrons" << endl;
-    //   for(uint i=0; i < nEle; i++){
-    //     int iEl = m_baseElectrons[i];
-    //     const TLorentzVector &lv = m_susyObj[m_eleIDDefault]->GetElecTLV(iEl);
-    //     const xAOD::ElectronD3PDObjectElement &ele = (*d3pdElectrons())[iEl];
-    //     cout << "  El : " << fixed
-    //          << " q " << setw(2) << (int) ele.charge()
-    //          << " pt " << setw(6) << lv.Pt()/GeV
-    //          << " eta " << setw(5) << lv.Eta()
-    //          << " phi " << setw(5) << lv.Phi();
-    //     if(m_isMC) cout << " type " << setw(2) << ele.type() << " origin " << setw(2) << ele.origin();
-    //     cout << endl;
-    //   }
-    // }
-    // if(nMu){
-    //   cout << "Baseline muons" << endl;
-    //   for(uint i=0; i < nMu; i++){
-    //     int iMu = m_baseMuons[i];
-    //     const TLorentzVector &lv = m_susyObj[m_eleIDDefault]->GetMuonTLV(iMu);
-    //     const xAOD::MuonD3PDObjectElement &muo = (*d3pdMuons())[iMu];
-    //     cout << "  Mu : " << fixed
-    //          << " q " << setw(2) << (int) muo.charge()
-    //          << " pt " << setw(6) << lv.Pt()/GeV
-    //          << " eta " << setw(5) << lv.Eta()
-    //          << " phi " << setw(5) << lv.Phi();
-    //     if(m_isMC) cout << " type " << setw(2) << muo.type() << " origin " << setw(2) << muo.origin();
-    //     cout << endl;
-    //   }
-    // }
-    // if(nJet){
-    //   cout << "Baseline jets" << endl;
-    //   for(uint i=0; i < nJet; i++){
-    //     int iJet = m_baseJets[i];
-    //     const TLorentzVector &lv = m_susyObj[m_eleIDDefault]->GetJetTLV(iJet);
-    //     const xAOD::JetD3PDObjectElement &jet = (*d3pdJets())[iJet];
-    //     cout << "  Jet : " << fixed
-    //          << " pt " << setw(6) << lv.Pt()/GeV
-    //          << " eta " << setw(5) << lv.Eta()
-    //          << " phi " << setw(5) << lv.Phi()
-    //          << " mv1 " << jet.flavor_weight_MV1();
-    //     cout << endl;
-    //   }
-    // }
-    // cout.precision(6);
-    // cout.unsetf(ios_base::fixed);
+    uint nEle = m_baseElectrons.size();
+    uint nMu  = m_baseMuons.size();
+    uint nTau = m_baseTaus.size();
+    uint nJet = m_baseJets.size();
+    ST::SystInfo sysInfo = systInfoList[0]; // nominal
+    cout.precision(2);
+    if(nEle){
+        xAOD::ElectronContainer* electrons = XaodAnalysis::xaodElectrons(sysInfo);
+        cout << "Baseline electrons" << endl;
+        for(auto& iEl : m_baseElectrons){
+            const xAOD::Electron* el = electrons->at(iEl);
+            cout << "  El : " << fixed
+                 << " q " << setw(2) << (int) el->charge()
+                 << " pt " << setw(6) << el->p4().Pt()/1000. //lv.Pt()/GeV
+                 << " eta " << setw(5) << el->p4().Eta() //lv.Eta()
+                 << " phi " << setw(5) << el->p4().Phi(); //lv.Phi();
+            if(m_isMC) cout << " type " << setw(2) << xAOD::EgammaHelpers::getParticleTruthType(el)
+                         << " origin " << setw(2) << xAOD::EgammaHelpers::getParticleTruthOrigin(el);
+            cout << endl;
+        } // El
+    } // nEle
+    if(nMu){
+        xAOD::MuonContainer* muons = XaodAnalysis::xaodMuons(sysInfo);
+        cout << "Baseline muons" << endl;
+        for(auto& iMu : m_baseMuons){
+            const xAOD::Muon* mu = muons->at(iMu);
+            cout << "  Mu : " << fixed
+                 << " q " << setw(2) << (int) mu->charge() //(int) muo.charge()
+                 << " pt " << setw(6) << mu->p4().Pt()/1000. //lv.Pt()/GeV
+                 << " eta " << setw(5) << mu->p4().Eta() //lv.Eta()
+                 << " phi " << setw(5) << mu->p4().Phi(); //lv.Phi();
+            if(m_isMC) {
+                const xAOD::TrackParticle* trackParticle = mu->primaryTrackParticle();
+                if(trackParticle) {
+                    static SG::AuxElement::Accessor<int> acc_truthType("truthType");
+                    static SG::AuxElement::Accessor<int> acc_truthOrigin("truthOrigin");
+                    int truthType = -999999, truthOrigin = -999999;
+                    if(acc_truthType.isAvailable(*trackParticle)) truthType = acc_truthType(*trackParticle);
+                    if(acc_truthOrigin.isAvailable(*trackParticle)) truthOrigin = acc_truthOrigin(*trackParticle);
+                    cout << " type " << setw(2) << truthType << " origin " << setw(2) << truthOrigin;
+                    cout << endl;
+                } // if trackparticle
+            } // if is MC
+        } // iMu
+    } // nMu
+    if(nJet){
+        xAOD::JetContainer* jets = XaodAnalysis::xaodJets(sysInfo);
+        cout << "Baseline jets" << endl;
+        for(auto& iJ : m_baseJets) {
+            xAOD::Jet* jet = jets->at(iJ);
+            cout << "  Jet : " << fixed
+            << " pt " << setw(6) << jet->p4().Pt()/1000. //lv.Pt()/GeV
+            << " eta " << setw(5) << jet->p4().Eta() //lv.Eta()
+            << " phi " << setw(5) << jet->p4().Phi() //lv.Phi()
+            << " mv1 " << (jet->btagging())->MV1_discriminant(); //jet.flavor_weight_MV1();
+            cout << endl;
+        } // iJ
+    } // nJet
+cout.precision(6);
+cout.unsetf(ios_base::fixed);
 }
 //----------------------------------------------------------
 void XaodAnalysis::dumpSignalObjects()
 {
-#warning dumpSignalObjects not implemented
-    // uint nEle = m_sigElectrons.size();
-    // uint nMu  = m_sigMuons.size();
-    // //uint nTau = m_sigTaus.size();
-    // uint nJet = m_sigJets.size();
+    uint nEle = m_sigElectrons.size();
+    uint nMu  = m_sigMuons.size();
+    //uint nTau = m_sigTaus.size();
+    uint nJet = m_sigJets.size();
+    ST::SystInfo sysInfo = systInfoList[0]; // nominal
 
-    // cout.precision(2);
-    // if(nEle){
-    //   cout << "Signal electrons" << endl;
-    //   for(uint i=0; i < nEle; i++){
-    //     int iEl = m_sigElectrons[i];
-    //     const TLorentzVector &lv = m_susyObj[m_eleIDDefault]->GetElecTLV(iEl);
-    //     const xAOD::ElectronD3PDObjectElement &ele = (*d3pdElectrons())[iEl];
-    //     cout << "  El : " << fixed
-    //          << " q " << setw(2) << (int) ele.charge()
-    //          << " pt " << setw(6) << lv.Pt()/GeV
-    //          << " eta " << setw(5) << lv.Eta()
-    //          << " phi " << setw(5) << lv.Phi();
-    //     if(m_isMC) cout << " type " << setw(2) << ele.type() << " origin " << setw(2) << ele.origin();
-    //     cout << endl;
-    //   }
-    // }
-    // if(nMu){
-    //   cout << "Signal muons" << endl;
-    //   for(uint i=0; i < nMu; i++){
-    //     int iMu = m_sigMuons[i];
-    //     const TLorentzVector &lv = m_susyObj[m_eleIDDefault]->GetMuonTLV(iMu);
-    //     const xAOD::MuonD3PDObjectElement &muo = (*d3pdMuons())[iMu];
-    //     cout << "  Mu : " << fixed
-    //          << " q " << setw(2) << (int) muo.charge()
-    //          << " pt " << setw(6) << lv.Pt()/GeV
-    //          << " eta " << setw(5) << lv.Eta()
-    //          << " phi " << setw(5) << lv.Phi();
-    //     if(m_isMC) cout << " type " << setw(2) << muo.type() << " origin " << setw(2) << muo.origin();
-    //     cout << endl;
-    //   }
-    // }
-    // if(nJet){
-    //   cout << "Signal jets" << endl;
-    //   for(uint i=0; i < nJet; i++){
-    //     int iJet = m_sigJets[i];
-    //     const TLorentzVector &lv = m_susyObj[m_eleIDDefault]->GetJetTLV(iJet);
-    //     const xAOD::JetD3PDObjectElement &jet = (*d3pdJets())[iJet];
-    //     cout << "  Jet : " << fixed
-    //          << " pt " << setw(6) << lv.Pt()/GeV
-    //          << " eta " << setw(5) << lv.Eta()
-    //          << " phi " << setw(5) << lv.Phi()
-    //          << " mv1 " << jet.flavor_weight_MV1();
-    //     cout << endl;
-    //   }
-    // }
-    // cout.precision(6);
-    // cout.unsetf(ios_base::fixed);
+    cout.precision(2);
+    if(nEle){
+        xAOD::ElectronContainer* electrons = XaodAnalysis::xaodElectrons(sysInfo);
+        cout << "Signal electrons" << endl;
+        for(auto& iEl : m_sigElectrons) {
+            //int iEl = m_sigElectrons[i];
+            //const TLorentzVector &lv = m_susyObj[m_eleIDDefault]->GetElecTLV(iEl);
+            //const xAOD::ElectronD3PDObjectElement &ele = (*d3pdElectrons())[iEl];
+            const xAOD::Electron* el = electrons->at(iEl); 
+            cout << "  El : " << fixed
+                 << " q " << setw(2) << (int) el->charge()
+                 << " pt " << setw(6) << el->p4().Pt()/1000. //lv.Pt()/GeV
+                 << " eta " << setw(5) << el->p4().Eta() //lv.Eta()
+                 << " phi " << setw(5) << el->p4().Phi(); //lv.Phi();
+                if(m_isMC) cout << " type " << setw(2) << xAOD::EgammaHelpers::getParticleTruthType(el)
+                                << " origin " << setw(2) << xAOD::EgammaHelpers::getParticleTruthOrigin(el);
+            cout << endl;
+        } // iEl
+    }
+    if(nMu){
+        xAOD::MuonContainer* muons = XaodAnalysis::xaodMuons(sysInfo);
+        cout << "Signal muons" << endl;
+        for(auto& iMu : m_sigMuons){
+            const xAOD::Muon* mu = muons->at(iMu);
+            cout << "  Mu : " << fixed
+                 << " q " << setw(2) << (int) mu->charge() //(int) muo.charge()
+                 << " pt " << setw(6) << mu->p4().Pt()/1000. //lv.Pt()/GeV
+                 << " eta " << setw(5) << mu->p4().Eta() //lv.Eta()
+                 << " phi " << setw(5) << mu->p4().Phi(); //lv.Phi();
+            if(m_isMC) {
+                const xAOD::TrackParticle* trackParticle = mu->primaryTrackParticle();
+                if(trackParticle) {
+                    static SG::AuxElement::Accessor<int> acc_truthType("truthType");
+                    static SG::AuxElement::Accessor<int> acc_truthOrigin("truthOrigin");
+                    int truthType = -999999, truthOrigin = -999999;
+                    if(acc_truthType.isAvailable(*trackParticle)) truthType = acc_truthType(*trackParticle);
+                    if(acc_truthOrigin.isAvailable(*trackParticle)) truthOrigin = acc_truthOrigin(*trackParticle);
+                    cout << " type " << setw(2) << truthType << " origin " << setw(2) << truthOrigin;
+                    cout << endl;
+                } // if trackparticle
+            } // if is MC
+        } // iMu
+    } // nMu
+    if(nJet){
+        xAOD::JetContainer* jets = XaodAnalysis::xaodJets(sysInfo);
+        cout << "Signal jets" << endl;
+        for(auto& iJ : m_sigJets) {
+            xAOD::Jet* jet = jets->at(iJ);
+            cout << "  Jet : " << fixed
+            << " pt " << setw(6) << jet->p4().Pt()/1000. //lv.Pt()/GeV
+            << " eta " << setw(5) << jet->p4().Eta() //lv.Eta()
+            << " phi " << setw(5) << jet->p4().Phi() //lv.Phi()
+            << " mv1 " << (jet->btagging())->MV1_discriminant(); //jet.flavor_weight_MV1();
+            cout << endl;
+        } // iJ
+    } // nJet
+cout.precision(6);
+cout.unsetf(ios_base::fixed);
 }
 //----------------------------------------------------------
 bool XaodAnalysis::runningOptionsAreValid()
