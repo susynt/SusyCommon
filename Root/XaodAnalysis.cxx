@@ -431,7 +431,7 @@ xAOD::JetContainer* XaodAnalysis::xaodJets(ST::SystInfo sysInfo, SusyNtSys sys)
 xAOD::PhotonContainer* XaodAnalysis::xaodPhotons(ST::SystInfo sysInfo, SusyNtSys sys)
 {
     bool syst_affectsPhotons   = ST::testAffectsObject(xAOD::Type::Photon, sysInfo.affectsType);
-    if(sys!=NtSys::NOM && syst_affectsPhotons){
+ /*   if(sys!=NtSys::NOM && syst_affectsPhotons){
         if(m_xaodPhotons==NULL){
             m_susyObj[m_eleIDDefault]->GetPhotons(m_xaodPhotons, m_xaodPhotonsAux);
         }
@@ -445,6 +445,7 @@ xAOD::PhotonContainer* XaodAnalysis::xaodPhotons(ST::SystInfo sysInfo, SusyNtSys
         if(m_dbg>=5 && m_xaodPhotons_nom) cout << "xaodPho_nom " << m_xaodPhotons_nom->size() << endl;
         return m_xaodPhotons_nom;
     }
+*/
     return NULL;
 }
 //----------------------------------------------------------
@@ -613,7 +614,7 @@ void XaodAnalysis::selectBaselineObjects(SusyNtSys sys, ST::SystInfo sysInfo)
     for(const auto& jet : *jets){
         iJet++;
         m_preJets.push_back(iJet);
-        m_susyObj[m_eleIDDefault]->IsBJet(*jet);      
+    //    m_susyObj[m_eleIDDefault]->IsBJet(*jet);     // dantrim Apr 15 2015 -- Not available for DC14@8TeV 
         if(m_dbg>=5) cout<<"Jet passing"
                          <<" baseline? "<< bool(jet->auxdata< char >("baseline")==1)
                          <<" signal? "<<   bool(jet->auxdata< char >("signal")==1)
@@ -788,14 +789,14 @@ void XaodAnalysis::selectSignalObjects(SusyNtSys sys, ST::SystInfo sysInfo)
 
     int iPh=0;
     xAOD::PhotonContainer* photons = xaodPhotons(sysInfo,sys);
- //   if(photons) {
+    if(photons) {
     for(const auto& ph : *photons){
         //m_susyObj[m_eleIDDefault]->FillPhoton(ph);
         if((bool)ph->auxdata< char >("baseline")==1)
             m_sigPhotons.push_back(iPh);
         iPh++;
     }
- //   }
+    }
     if(m_dbg && photons) cout<<"m_sigPhotons["<<m_sigPhotons.size()<<"]"<<endl;
 
 }

@@ -494,8 +494,9 @@ void SusyNtMaker::storeMuon(const xAOD::Muon &in)
     bool all_available=true;
 
     // Isolation
-    all_available &= in.isolation(out.etcone20, xAOD::Iso::etcone20); out.etcone20 *= MeV2GeV;
-    all_available &= in.isolation(out.ptcone20, xAOD::Iso::ptcone20); out.ptcone20 *= MeV2GeV;
+    
+ //   all_available &= in.isolation(out.etcone20, xAOD::Iso::etcone20); out.etcone20 *= MeV2GeV;
+ //   all_available &= in.isolation(out.ptcone20, xAOD::Iso::ptcone20); out.ptcone20 *= MeV2GeV;
     all_available &= in.isolation(out.etcone30, xAOD::Iso::etcone30); out.etcone30 *= MeV2GeV;
     all_available &= in.isolation(out.ptcone30, xAOD::Iso::ptcone30); out.ptcone30 *= MeV2GeV;
 
@@ -528,7 +529,6 @@ void SusyNtMaker::storeMuon(const xAOD::Muon &in)
         out.ms_theta       = mstrack->theta();
         out.ms_phi         = mstrack->phi();
     }
-
     // Truth Flags 
     if(m_isMC) {
         //AT 09/12/14 added Type/Origin
@@ -600,8 +600,8 @@ void SusyNtMaker::storeJet(const xAOD::Jet &in)
     // jetOut->matchTruth    = m_isMC? matchTruthJet(jetIdx) : false;
 
     // B-tagging 
-    out.mv1           = (in.btagging())->MV1_discriminant();                   // dantrim - Feb 25 2015 - still causing seg-faults
-    out.sv1plusip3d   = (in.btagging())->SV1plusIP3D_discriminant();           // dantrim - Feb 25 2015 - still causing seg-faults
+  //  out.mv1           = (in.btagging())->MV1_discriminant();      // dantrim Apr 15 2015 -- Not available for DC14@8TeV              
+    out.sv1plusip3d   = (in.btagging())->SV1plusIP3D_discriminant();           
     // Most of these are not available in DC14 samples, some obselete (ASM)
     // jetOut->sv0           = element->flavor_weight_SV0();
     // jetOut->combNN        = element->flavor_weight_JetFitterCOMBNN();
