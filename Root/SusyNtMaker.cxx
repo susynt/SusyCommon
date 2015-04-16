@@ -1552,8 +1552,10 @@ void SusyNtMaker::fillTriggerHisto() // dantrim trig
 //----------------------------------------------------------
 bool SusyNtMaker::passEventlevelSelection()
 {
+    const xAOD::EventInfo* eventinfo = XaodAnalysis::xaodEventInfo();
+    float w = m_isMC ? eventinfo->mcEventWeight() : 1;
+
     TH1F* h_procCutFlow = getProcCutFlow(m_susyFinalState);
-    float w = m_susyNt.evt()->w;
 
     FillCutFlow fillCutFlow(h_rawCutFlow, h_genCutFlow, h_procCutFlow, &m_cutstageCounters);
 
@@ -1578,11 +1580,14 @@ bool SusyNtMaker::passEventlevelSelection()
 //----------------------------------------------------------
 bool SusyNtMaker::passObjectlevelSelection()
 {
+    const xAOD::EventInfo* eventinfo = XaodAnalysis::xaodEventInfo();
+    float w = m_isMC ? eventinfo->mcEventWeight() : 1; 
+
     SusyNtSys sys=NtSys::NOM;
     ST::SystInfo sysInfo =  systInfoList[0];//nominal
     selectObjects(sys,sysInfo);
     // buildMet(sys);  //AT: 12/16/14: Should retreive Met be called so that can add cut on met as event filter ?
-    
+     
     assignObjectCleaningFlags(sysInfo, sys);
 
     n_base_ele += m_baseElectrons.size();
@@ -1609,7 +1614,6 @@ bool SusyNtMaker::passObjectlevelSelection()
     bool pass_e1j(1==(m_baseJets.size()));
     bool pass_e1sj(1==(m_sigJets.size()));
 
-    float w = m_susyNt.evt()->w;
     fillCutFlow(pass_bad_muon, w);
     fillCutFlow(pass_JetCleaning, w);
     fillCutFlow(pass_goodpv, w);
