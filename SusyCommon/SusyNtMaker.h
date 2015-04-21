@@ -95,6 +95,7 @@ class SusyNtMaker : public XaodAnalysis
     void storePhoton(const xAOD::Photon &in);
     void storeTruthParticle(const xAOD::TruthParticle &in);
     void fillMetVars(SusyNtSys sys = NtSys::NOM);
+    void fillMetTrackVars(SusyNtSys sys = NtSys::NOM);
     void fillTruthJetVars();
     void fillTruthMetVars();
   

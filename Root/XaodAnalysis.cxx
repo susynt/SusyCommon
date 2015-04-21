@@ -285,10 +285,16 @@ void XaodAnalysis::initTauTools()
     m_tauTruthMatchingTool->msg().setLevel(m_dbg ? MSG::DEBUG : MSG::WARNING);
     CHECK(m_tauTruthMatchingTool->initialize());
 
-    m_tauTruthTrackMatchingTool = new TauAnalysisTools::TauTruthTrackMatchingTool("TauTruthTrackMatchingTool");
-    m_tauTruthTrackMatchingTool->msg().setLevel(m_dbg ? MSG::DEBUG : MSG::WARNING);
-    CHECK(m_tauTruthTrackMatchingTool->initialize());
+    CHECK(m_tauTruthMatchingTool->setTruthParticleContainer(m_xaodTruthParticles));
+    CHECK(m_tauTruthMatchingTool->createTruthTauContainer());
 
+    m_xaodTruthParticles = m_tauTruthMatchingTool->getTruthTauContainer();
+    m_xaodTruthParticlesAux = m_tauTruthMatchingTool->getTruthTauAuxContainer();
+
+    m_TauEffEleTool = new TauAnalysisTools::TauEfficiencyCorrectionsTool("TauEfficiencyEleTool");
+    m_TauEffEleTool->msg().setLevel(MSG::INFO);
+    CHECK(m_TauEffEleTool->setProperty("EfficiencyCorrectionType", (int) TauAnalysisTools::SFEleID));
+    CHECK(m_TauEffEleTool->initialize());
 }
 
 //----------------------------------------------------------
@@ -335,6 +341,27 @@ const xAOD::EventInfo* XaodAnalysis::xaodEventInfo()
         m_xaodEventInfo = retrieveEventInfo(m_event, m_dbg);
     }
     return m_xaodEventInfo;
+}
+//---------------------------------------------------------- MET_Track
+const xAOD::MissingETContainer* XaodAnalysis::retrieveMET_Track(xAOD::TEvent &e, bool dbg)
+{
+    const xAOD::MissingETContainer* met_track = NULL;
+    e.retrieve(met_track, "MET_Track");
+    if (dbg)
+    {
+        if (met_track) cout << "XaodAnalysis::retrieveMET_Track: retrieved" << endl;
+        else    cout << "XaodAnalysis::retrieveMET_Track: failed" << endl;
+    }
+    return met_track;
+}
+//----------------------------------------------------------
+const xAOD::MissingETContainer* XaodAnalysis::xaodMET_Track()
+{
+    if (m_metTrackContainer == NULL)
+    {
+        m_metTrackContainer = retrieveMET_Track(m_event, m_dbg);
+    }
+    return m_metTrackContainer;
 }
 //----------------------------------------------------------
 xAOD::MuonContainer* XaodAnalysis::xaodMuons(ST::SystInfo sysInfo, SusyNtSys sys)
@@ -1814,6 +1841,7 @@ XaodAnalysis& XaodAnalysis::clearContainerPointers(bool deleteNominal)
     m_metJets            = NULL;
     m_metJetsAux         = NULL;
     m_xaodVertices       = NULL;
+    m_metTrackContainer = NULL;
 
     if(deleteNominal){
         m_xaodMuons_nom          = NULL;
@@ -1850,6 +1878,7 @@ XaodAnalysis& XaodAnalysis::retrieveCollections()
     xaodPhotons(systInfoList[0]);
     xaodTruthEvent();
     xaodTruthParticles();
+    xaodMET_Track();
     retrieveXaodMet(systInfoList[0]);//nominal
     xaodVertices();
     return *this;
