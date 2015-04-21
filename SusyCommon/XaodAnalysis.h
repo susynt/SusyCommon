@@ -150,6 +150,8 @@ namespace susy {
     /// wrapper of retrieveEventInfo; store result as datamember ptrs
     virtual const xAOD::EventInfo* xaodEventInfo();
     /// access the default collection of muons from SUSYObjDef_xAOD
+    const xAOD::MissingETContainer* retrieveMET_Track(xAOD::TEvent &e, bool dbg);
+    const xAOD::MissingETContainer* xaodMET_Track();
     /**
        By default this function returns a pointer to
        mu_staco. However, if we always call this function (rather than
@@ -416,6 +418,7 @@ namespace susy {
 
     // MET
     TLorentzVector              m_met;          // fully corrected MET
+    TLorentzVector              m_met_track;          // track MET
 
     // Truth Objects
     std::vector<int>            m_truParticles; // selected truth particles
@@ -509,6 +512,8 @@ namespace susy {
     xAOD::ShallowAuxContainer*          m_xaodPhotonsAux; ///< photon aux info
     const xAOD::TruthEventContainer*    m_xaodTruthEvent;
     const xAOD::TruthParticleContainer* m_xaodTruthParticles;
+    xAOD::TruthParticleAuxContainer*    m_xaodTruthParticlesAux;
+    const xAOD::MissingETContainer*     m_metTrackContainer;
     /// met container
     /**
        DG, note to self: not clear whether this is needed also when we
@@ -565,6 +570,7 @@ namespace susy {
     //Tau truth matchong tools
     TauAnalysisTools::TauTruthMatchingTool       *m_tauTruthMatchingTool;
     TauAnalysisTools::TauTruthTrackMatchingTool  *m_tauTruthTrackMatchingTool;
+    TauAnalysisTools::TauEfficiencyCorrectionsTool *m_TauEffEleTool;
 
     // dantrim trig
     TBits                       m_evtTrigBits;

@@ -222,6 +222,7 @@ void SusyNtMaker::fillNtVars()
     fillTauVars();
     fillJetVars();
     fillMetVars();
+    fillMetTrackVars();
     fillPhotonVars();
     if(m_isMC && getSelectTruthObjects() ) {
         fillTruthParticleVars();
@@ -710,6 +711,37 @@ void SusyNtMaker::storeTau(const xAOD::TauJet &tau)
 
     out.muonVeto = tau.isTau(xAOD::TauJetParameters::MuonVeto);
 
+   if (m_isMC)
+    {
+        m_tauTruthMatchingTool->setTruthParticleContainer(m_xaodTruthParticles);
+        m_tauTruthMatchingTool->createTruthTauContainer();
+
+        m_tauTruthMatchingTool->applyTruthMatch(tau);
+        if (tau.auxdata<bool>("IsTruthMatched"))
+        {
+            out.trueTau = true;
+        }
+        else
+        {
+            out.trueTau = false;
+        }
+
+        m_TauEffEleTool->applyEfficiencyScaleFactor(tau);
+
+        out.looseEffSF = tau.auxdata<double>("TauScaleFactorEleID");
+        out.mediumEffSF = tau.auxdata<double>("TauScaleFactorEleID");
+        out.tightEffSF = tau.auxdata<double>("TauScaleFactorEleID");
+        // stat errors not supported
+        // systematics not included here
+        double EVetoSF = 0.0;
+        if (tau.nTracks() == 1)
+        {
+            m_TauEffEleTool->getEfficiencyScaleFactor(tau, EVetoSF);
+        }
+        out.looseEVetoSF = EVetoSF;
+        out.mediumEVetoSF = EVetoSF;
+
+    }
     // tauOut->trueTau               = m_isMC? element->trueTauAssoc_matched() : false;
     
     // tauOut->matched2TruthLepton   = m_isMC? m_recoTruthMatch.Matched2TruthLepton(*tauLV, true) : false;
@@ -936,6 +968,27 @@ void SusyNtMaker::fillMetVars(SusyNtSys sys)
     // //metOut->refGamma      = m_susyObj[m_eleIDDefault]->computeMETComponent(METUtil::RefGamma, metSys).Mod()/GeV;
     // //metOut->softJet       = m_susyObj[m_eleIDDefault]->computeMETComponent(METUtil::SoftJets, metSys).Mod()/GeV;
     // //metOut->refCell       = m_susyObj[m_eleIDDefault]->computeMETComponent(METUtil::CellOutEflow, metSys).Mod()/GeV;
+}
+//----------------------------------------------------------
+void SusyNtMaker::fillMetTrackVars(SusyNtSys sys)
+{
+    xAOD::MissingETContainer::const_iterator metTrack_it = m_metTrackContainer->find("Track");
+    
+    if (metTrack_it == m_metTrackContainer->end())
+    {
+        cout << "No Track inside METTrack container" << endl;
+        return;
+    }
+    
+    m_susyNt.mtk()->push_back(Susy::MetTrack());
+    Susy::MetTrack* metTrackOut = &m_susyNt.mtk()->back();
+    
+    metTrackOut->Et = (*metTrack_it)->met()*MeV2GeV;// m_met.Et();
+    metTrackOut->phi = (*metTrack_it)->phi();// m_met.Phi();
+    // metOut->sys = sys;
+    metTrackOut->sumet = (*metTrack_it)->sumet()*MeV2GeV;
+    
+    if (m_dbg) cout << " AT:fillMetTrackVars " << metTrackOut->Et << " " << metTrackOut->phi << " " << metTrackOut->lv().Pt() << endl;
 }
 //----------------------------------------------------------
 void SusyNtMaker::storeTruthParticle(const xAOD::TruthParticle &in)
