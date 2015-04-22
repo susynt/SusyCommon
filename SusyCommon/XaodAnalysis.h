@@ -86,7 +86,7 @@ namespace Trig {
 }
 
 
-namespace susy {
+namespace Susy {
   
   const double MeV2GeV=1.0e-3;
 

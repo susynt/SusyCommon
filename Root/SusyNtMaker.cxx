@@ -30,10 +30,10 @@
 #include <iostream>
 
 using namespace std;
-namespace smc =susy::mc;
+namespace smc =Susy::mc;
 
 
-using susy::SusyNtMaker;
+using Susy::SusyNtMaker;
 
 //const double MeV2GeV=1.0e-3;
 

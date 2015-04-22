@@ -24,7 +24,7 @@
 namespace Root { class TElectronEfficiencyCorrectionTool; }
 
 
-namespace susy {
+namespace Susy {
 class SusyNtMaker : public XaodAnalysis
 {
 

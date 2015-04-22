@@ -15,7 +15,7 @@
 
 #include <utility>
 
-namespace susy{
+namespace Susy{
   typedef std::pair<xAOD::MuonContainer*,     xAOD::ShallowAuxContainer*> MuonsWithAux_t;
   typedef std::pair<xAOD::ElectronContainer*, xAOD::ShallowAuxContainer*> ElectronsWithAux_t;
   typedef std::pair<xAOD::TauJetContainer*,   xAOD::ShallowAuxContainer*> TausWithAux_t;

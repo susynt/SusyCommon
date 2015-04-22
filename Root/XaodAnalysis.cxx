@@ -18,7 +18,7 @@
 
 using namespace std;
 
-using susy::XaodAnalysis;
+using Susy::XaodAnalysis;
 
 
 #undef CHECK
@@ -91,7 +91,7 @@ XaodAnalysis::XaodAnalysis() :
 //----------------------------------------------------------
 void XaodAnalysis::Init(TTree *tree)
 {
-    xAOD::Init("susy::XaodAnalysis").ignore();
+    xAOD::Init("Susy::XaodAnalysis").ignore();
 
 
     m_event.readFrom(tree);

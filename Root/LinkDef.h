@@ -9,8 +9,8 @@
 #pragma link C++ nestedclass;
 #pragma link C++ nestedtypedef;
 
-#pragma link C++ namespace susy;
-#pragma link C++ class susy::XaodAnalysis;
-#pragma link C++ class susy::SusyNtMaker;
+#pragma link C++ namespace Susy;
+#pragma link C++ class Susy::XaodAnalysis;
+#pragma link C++ class Susy::SusyNtMaker;
 
 #endif
