@@ -1,6 +1,0 @@
-<map id="G" name="G">
-<area shape="rect" id="node5" href="$classSusyD3PDSkimmer.html" title="SusyD3PDSkimmer &#45; a class for skimming/slimming SUSY D3PDs." alt="" coords="5,160,155,189"/>
-<area shape="rect" id="node9" href="$classSusyNtMaker.html" title="SusyNtMaker &#45; a class for making SusyNt from Susy D3PDs." alt="" coords="179,160,288,189"/>
-<area shape="rect" id="node2" href="$classSusyD3PDInterface.html" title="A class for reading SUSY D3PDs using the interfaces defined in the SUSY MultiLep..." alt="" coords="79,5,233,35"/>
-<area shape="rect" id="node7" href="$classSusyMetValidation.html" title="SusyMetValidation &#45; a class for validating the MET from SUSYTools." alt="" coords="8,237,152,267"/>
-</map>

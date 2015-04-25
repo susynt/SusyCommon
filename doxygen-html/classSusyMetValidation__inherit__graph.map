@@ -1,5 +1,0 @@
-<map id="G" name="G">
-<area shape="rect" id="node2" href="$classSusyD3PDSkimmer.html" title="SusyD3PDSkimmer &#45; a class for skimming/slimming SUSY D3PDs." alt="" coords="8,160,157,189"/>
-<area shape="rect" id="node4" href="$classSusyD3PDAna.html" title="a class for performing object selections and event cleaning on susy d3pds" alt="" coords="24,83,141,112"/>
-<area shape="rect" id="node6" href="$classSusyD3PDInterface.html" title="A class for reading SUSY D3PDs using the interfaces defined in the SUSY MultiLep..." alt="" coords="5,5,160,35"/>
-</map>
