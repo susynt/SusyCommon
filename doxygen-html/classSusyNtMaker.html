@@ -18,6 +18,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
   <div class="tabs">
     <ul>
       <li><a href="index.html"><span>Main&nbsp;Page</span></a></li>
+      <li><a href="pages.html"><span>Related&nbsp;Pages</span></a></li>
       <li class="current"><a href="annotated.html"><span>Classes</span></a></li>
       <li><a href="files.html"><span>Files</span></a></li>
       <li>
@@ -39,6 +40,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
     <ul>
       <li><a href="annotated.html"><span>Class&nbsp;List</span></a></li>
       <li><a href="hierarchy.html"><span>Class&nbsp;Hierarchy</span></a></li>
+      <li><a href="functions.html"><span>Class&nbsp;Members</span></a></li>
     </ul>
   </div>
 </div>
@@ -149,6 +151,14 @@ void&nbsp;</td><td class="memItemRight" valign="bottom"><b>setNLepTauFilter</b> 
 void&nbsp;</td><td class="memItemRight" valign="bottom"><b>setFilterTrigger</b> (bool filter=true)</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ace192daec8ca3f5a7f35aa6d2c00fa37"></a><!-- doxytag: member="SusyNtMaker::setSaveContTaus" ref="ace192daec8ca3f5a7f35aa6d2c00fa37" args="(bool saveContTaus=true)" -->
 void&nbsp;</td><td class="memItemRight" valign="bottom"><b>setSaveContTaus</b> (bool saveContTaus=true)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSusyNtMaker.html#ac093056e2fdd63399fa5eaeac153599e">computeHiggsPtUncertaintyParameters</a> (const vint_t &amp;h_children_indices, float &amp;h_pt, int &amp;n_truth_jets)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">compute the two parameters needed for the Higgs pT and Njets reweighing of Powheg ggF  <a href="#ac093056e2fdd63399fa5eaeac153599e"></a><br/></td></tr>
+<tr><td colspan="2"><h2>Static Public Member Functions</h2></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">static bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSusyNtMaker.html#a9615ad6f956f8e54c5ad1b0935a3957f">isPowhegLfvHiggsSignalSample</a> (const std::string &amp;samplename)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">whether this is one of our LFV higgs signal samples  <a href="#a9615ad6f956f8e54c5ad1b0935a3957f"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a79f835b50ad5b0def6284abf9d0eacc0"></a><!-- doxytag: member="SusyNtMaker::isHiggsSignalSample" ref="a79f835b50ad5b0def6284abf9d0eacc0" args="(const std::string &amp;samplename)" -->
+static bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSusyNtMaker.html#a79f835b50ad5b0def6284abf9d0eacc0">isHiggsSignalSample</a> (const std::string &amp;samplename)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">whether this is one of our higgs signal samples <br/></td></tr>
 <tr><td colspan="2"><h2>Protected Attributes</h2></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a1613d1260158735a78b647eedd742b48"></a><!-- doxytag: member="SusyNtMaker::m_outTreeFile" ref="a1613d1260158735a78b647eedd742b48" args="" -->
 TFile *&nbsp;</td><td class="memItemRight" valign="bottom"><b>m_outTreeFile</b></td></tr>
@@ -168,8 +178,9 @@ uint&nbsp;</td><td class="memItemRight" valign="bottom"><b>m_nLepTauFilter</b></
 bool&nbsp;</td><td class="memItemRight" valign="bottom"><b>m_filterTrigger</b></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a5fe85e6c9002c9e361eabfbfb3fc1d4a"></a><!-- doxytag: member="SusyNtMaker::m_saveContTaus" ref="a5fe85e6c9002c9e361eabfbfb3fc1d4a" args="" -->
 bool&nbsp;</td><td class="memItemRight" valign="bottom"><b>m_saveContTaus</b></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a467efba9fa22cc40db0da8856c9ba8b6"></a><!-- doxytag: member="SusyNtMaker::m_isWhSample" ref="a467efba9fa22cc40db0da8856c9ba8b6" args="" -->
-bool&nbsp;</td><td class="memItemRight" valign="bottom"><b>m_isWhSample</b></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a0f97027c62e71b5e86bfdaeb7a173529"></a><!-- doxytag: member="SusyNtMaker::m_isHsignalSample" ref="a0f97027c62e71b5e86bfdaeb7a173529" args="" -->
+bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSusyNtMaker.html#a0f97027c62e71b5e86bfdaeb7a173529">m_isHsignalSample</a></td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">either a WH signal sample, or an HLFV signal sample <br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ad8c1d3e78be63d7fa7d8d611ee3e0032"></a><!-- doxytag: member="SusyNtMaker::m_hDecay" ref="ad8c1d3e78be63d7fa7d8d611ee3e0032" args="" -->
 int&nbsp;</td><td class="memItemRight" valign="bottom"><b>m_hDecay</b></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="adf7bbfdeb065026e2bb67b96acda50af"></a><!-- doxytag: member="SusyNtMaker::m_hasSusyProp" ref="adf7bbfdeb065026e2bb67b96acda50af" args="" -->
@@ -237,6 +248,65 @@ TStopwatch&nbsp;</td><td class="memItemRight" valign="bottom"><b>m_timer</b></td
 </table>
 <hr/><a name="_details"></a><h2>Detailed Description</h2>
 <p><a class="el" href="classSusyNtMaker.html" title="SusyNtMaker - a class for making SusyNt from Susy D3PDs.">SusyNtMaker</a> - a class for making SusyNt from Susy D3PDs. </p>
+<hr/><h2>Member Function Documentation</h2>
+<a class="anchor" id="ac093056e2fdd63399fa5eaeac153599e"></a><!-- doxytag: member="SusyNtMaker::computeHiggsPtUncertaintyParameters" ref="ac093056e2fdd63399fa5eaeac153599e" args="(const vint_t &amp;h_children_indices, float &amp;h_pt, int &amp;n_truth_jets)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool SusyNtMaker::computeHiggsPtUncertaintyParameters </td>
+          <td>(</td>
+          <td class="paramtype">const vint_t &amp;&nbsp;</td>
+          <td class="paramname"> <em>h_children_indices</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float &amp;&nbsp;</td>
+          <td class="paramname"> <em>h_pt</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int &amp;&nbsp;</td>
+          <td class="paramname"> <em>n_truth_jets</em></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>compute the two parameters needed for the Higgs pT and Njets reweighing of Powheg ggF </p>
+<p>Implements the prescription described at <a href="https://dgillber.web.cern.ch/dgillber/Higgs_pT_reweigh/">https://dgillber.web.cern.ch/dgillber/Higgs_pT_reweigh/</a> and <a href="https://twiki.cern.ch/twiki/bin/view/AtlasProtected/HiggsCrossSection#3_Higgs_pT_and_associated_uncert">https://twiki.cern.ch/twiki/bin/view/AtlasProtected/HiggsCrossSection#3_Higgs_pT_and_associated_uncert</a> </p>
+
+</div>
+</div>
+<a class="anchor" id="a9615ad6f956f8e54c5ad1b0935a3957f"></a><!-- doxytag: member="SusyNtMaker::isPowhegLfvHiggsSignalSample" ref="a9615ad6f956f8e54c5ad1b0935a3957f" args="(const std::string &amp;samplename)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool SusyNtMaker::isPowhegLfvHiggsSignalSample </td>
+          <td>(</td>
+          <td class="paramtype">const std::string &amp;&nbsp;</td>
+          <td class="paramname"> <em>samplename</em></td>
+          <td>&nbsp;)&nbsp;</td>
+          <td><code> [static]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>whether this is one of our LFV higgs signal samples </p>
+<p>This is used for the uncertainty on the Higgs boson pT. </p>
+<dl class="todo"><dt><b><a class="el" href="todo.html#_todo000001">Todo:</a></b></dt><dd>should it be ggh only? </dd></dl>
+
+</div>
+</div>
 <hr/>The documentation for this class was generated from the following files:<ul>
 <li>SusyCommon/<a class="el" href="SusyNtMaker_8h_source.html">SusyNtMaker.h</a></li>
 <li>Root/SusyNtMaker.cxx</li>
@@ -247,7 +317,7 @@ TStopwatch&nbsp;</td><td class="memItemRight" valign="bottom"><b>m_timer</b></td
      onmouseover="return searchBox.OnSearchSelectShow()"
      onmouseout="return searchBox.OnSearchSelectHide()"
      onkeydown="return searchBox.OnSearchSelectKey(event)">
-<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&nbsp;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&nbsp;</span>Classes</a></div>
+<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&nbsp;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&nbsp;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&nbsp;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&nbsp;</span>Variables</a></div>
 
 <!-- iframe showing the search results (closed by default) -->
 <div id="MSearchResultsWindow">
@@ -256,7 +326,7 @@ TStopwatch&nbsp;</td><td class="memItemRight" valign="bottom"><b>m_timer</b></td
 </iframe>
 </div>
 
-<hr size="1"/><address style="text-align: right;"><small>Generated on 15 Aug 2014 for SusyCommon by&nbsp;
+<hr size="1"/><address style="text-align: right;"><small>Generated on 25 Apr 2015 for SusyCommon by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.6.1 </small></address>
 </body>
