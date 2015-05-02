@@ -35,8 +35,6 @@ namespace smc =Susy::mc;
 
 using Susy::SusyNtMaker;
 
-//const double MeV2GeV=1.0e-3;
-
 //----------------------------------------------------------
 SusyNtMaker::SusyNtMaker() :
     m_outTreeFile(NULL),
@@ -375,42 +373,53 @@ void SusyNtMaker::storeElectron(const xAOD::Electron &in)
     out.q   = in.charge();
     bool all_available=true;
     
-    // IsEM quality flags - no need to recalculate them
-    all_available &= in.passSelection(out.mediumPP,"Medium");
-    all_available &= in.passSelection(out.tightPP,"Tight"); 
-    all_available &= in.passSelection(out.looseLLH,"LooseLLH");
-    all_available &= in.passSelection(out.mediumLLH,"MediumLLH");
-    all_available &= in.passSelection(out.veryTightLLH,"TightLLH");
+    out.veryLooseLLH = eleIsOfType(in, VeryLooseLLH);
+    out.looseLLH = eleIsOfType(in, LooseLLH);
+    out.mediumLLH = eleIsOfType(in, MediumLLH);
+    out.tightLLH = eleIsOfType(in, TightLLH);
 
     //Isolations
-    all_available &= in.isolationValue(out.etcone20, xAOD::Iso::etcone20);              out.etcone20 *= MeV2GeV;
-    all_available &= in.isolationValue(out.topoEtcone30Corr, xAOD::Iso::topoetcone30);  out.topoEtcone30Corr *= MeV2GeV;
-    all_available &= in.isolationValue(out.ptcone20, xAOD::Iso::ptcone20);              out.ptcone20 *= MeV2GeV;
-    all_available &= in.isolationValue(out.ptcone30, xAOD::Iso::ptcone30);              out.ptcone30 *= MeV2GeV;
-
+    //AT: Will become obsolete in run-2
+    //Bug in code ptcorrected stores the correction!
+    //out.etcone20 = in.isolationValue(xAOD::Iso::etcone20) * MeV2GeV;
+    // in.isolationValue(xAOD::Iso::etcone20_ptcorrected)) * MeV2GeV;
+    out.etcone30 = in.isolationValue(xAOD::Iso::etcone30) *  MeV2GeV;
+    //in.isolationValue(xAOD::Iso::etcone30_ptcorrected)) * MeV2GeV;
+    out.etconetopo20 = in.isolationValue(xAOD::Iso::topoetcone20) * MeV2GeV;
+    out.etconetopo30 = in.isolationValue(xAOD::Iso::topoetcone30) * MeV2GeV;
+    out.ptcone20 = in.isolationValue(xAOD::Iso::ptcone20) * MeV2GeV;
+    out.ptcone30 = in.isolationValue(xAOD::Iso::ptcone30) * MeV2GeV;
+    out.ptvarcone20 = in.auxdataConst<float>("ptvarcone20") * MeV2GeV;
+    out.ptvarcone30 = in.auxdataConst<float>("ptvarcone30") * MeV2GeV;
+    //Update for Rel 20
+    //out.ptvarcone20 = in.isolationValue(xAOD::Iso::ptvarcone20) * MeV2GeV;
+    //out.ptvarcone30 = in.isolationValue(xAOD::Iso::ptvarcone30) * MeV2GeV;
+    
     if(m_isMC){
         //Store the SF of the tightest ID
         bool recoSF=true;
         bool idSF=true;
         bool trigSF=false;
-        //AT 2014-10-29: To be updated once SusyTools function return also the error.
-        // dantrim Mar 16 2016 -- ElectronEFficiencyTool is complaining about these two all of a sudden ?
-//        if(eleIsOfType(in, Tight))
-//            out.effSF = m_susyObj[Tight]->GetSignalElecSF(in, recoSF, idSF, trigSF);
-//        else if(eleIsOfType(in, Medium))
-//            out.effSF = m_susyObj[Medium]->GetSignalElecSF(in, recoSF, idSF, trigSF);
-      
-        if(eleIsOfType(in, TightLLH))
-            out.effSF_LLH = m_susyObj[TightLLH]->GetSignalElecSF(in, recoSF, idSF, trigSF);
+        if(eleIsOfType(in, TightLLH))           
+            out.effSF = m_susyObj[TightLLH]->GetSignalElecSF(in, recoSF, idSF, trigSF);
         else if(eleIsOfType(in, MediumLLH))
-            out.effSF_LLH = m_susyObj[MediumLLH]->GetSignalElecSF(in, recoSF, idSF, trigSF);	 
+            out.effSF = m_susyObj[MediumLLH]->GetSignalElecSF(in, recoSF, idSF, trigSF);	 
         else if(eleIsOfType(in, LooseLLH))
-            out.effSF_LLH = m_susyObj[LooseLLH]->GetSignalElecSF(in, recoSF, idSF, trigSF);
+            out.effSF = m_susyObj[LooseLLH]->GetSignalElecSF(in, recoSF, idSF, trigSF);
 
-        if(m_dbg>=10) cout << "AT: susyTool electron SF " << out.effSF << " LLH " << out.effSF_LLH << endl;
+        if(m_dbg>=10) 
+            cout << "AT: susyTool electron Et "
+                 << out.pt
+                 << " LLH type "
+                 << out.veryLooseLLH << " "  
+                 << out.looseLLH << " "  
+                 << out.mediumLLH << " "  
+                 << out.tightLLH 
+                 << " SF "  
+                 << out.effSF << endl;
        /* 
         >>> dantrim March 2 2015 -- calling AsgElectronEfficiencyTool causes seg-fault?
-
+        AT: Crash is in getting EventInfo L175 ???
           const Root::TResult &result =  m_electronEfficiencySFTool->calculate(in);
           out.effSF    = result.getScaleFactor();
           out.errEffSF = result.getTotalUncertainty();
@@ -419,13 +428,11 @@ void SusyNtMaker::storeElectron(const xAOD::Electron &in)
    
         out.mcType   = xAOD::EgammaHelpers::getParticleTruthType(&in);
         out.mcOrigin = xAOD::EgammaHelpers::getParticleTruthOrigin(&in);    
-        const xAOD::TruthParticle* truthEle = xAOD::EgammaHelpers::getTruthParticle(&in); //AT 10/12/14: Always false ????
+        const xAOD::TruthParticle* truthEle = xAOD::EgammaHelpers::getTruthParticle(&in);
         out.matched2TruthLepton   = truthEle ? true : false;
         int matchedPdgId = truthEle ? truthEle->pdgId() : -999;
         out.truthType  = isFakeLepton(out.mcOrigin, out.mcType, matchedPdgId); 
-      
-        //AT 12/09/14: Need to get this from eGamma - at some point
-        out.isChargeFlip          = m_isMC? m_recoTruthMatch.isChargeFlip(out, out.q) : false;
+        //out.isChargeFlip  = m_isMC ? isChargeFlip(in.charge(),truthElectronCharge(in)) : false;
     }
 
     if(const xAOD::CaloCluster* c = in.caloCluster()) {
@@ -495,11 +502,29 @@ void SusyNtMaker::storeMuon(const xAOD::Muon &in)
     bool all_available=true;
 
     // Isolation
-    
- //   all_available &= in.isolation(out.etcone20, xAOD::Iso::etcone20); out.etcone20 *= MeV2GeV;
- //   all_available &= in.isolation(out.ptcone20, xAOD::Iso::ptcone20); out.ptcone20 *= MeV2GeV;
+    //For Rel 20
+    /*
+    out.etcone20 = in.isolation(xAOD::Iso::etcone20) * MeV2GeV;
+    out.etcone30 = in.isolation(xAOD::Iso::etcone30) * MeV2GeV;
+    out.etconetopo20 = in.isolation(xAOD::Iso::topoetcone20) * MeV2GeV;
+    out.etconetopo30 = in.isolation(xAOD::Iso::topoetcone30) * MeV2GeV;
+    out.ptcone20 = in.isolation(xAOD::Iso::ptcone20) * MeV2GeV;
+    out.ptcone30 = in.isolation(xAOD::Iso::ptcone30) * MeV2GeV;
+    out.ptvarcone20 = in.auxdataConst<float>("ptvarcone20") * MeV2GeV;
+    out.ptvarcone30 = in.auxdataConst<float>("ptvarcone30") * MeV2GeV;
+    */
+    //Update for Rel 20
+    //out.ptvarcone20 = in.isolationValue(xAOD::Iso::ptvarcone20) * MeV2GeV;
+    //out.ptvarcone30 = in.isolationValue(xAOD::Iso::ptvarcone30) * MeV2GeV;
+
+    //all_available &= in.isolation(out.etcone20, xAOD::Iso::etcone20); out.etcone20 *= MeV2GeV;
     all_available &= in.isolation(out.etcone30, xAOD::Iso::etcone30); out.etcone30 *= MeV2GeV;
+    //all_available &= in.isolation(out.etconetopo20, xAOD::Iso::topoetcone20); out.etconetopo20 *= MeV2GeV;
+    //all_available &= in.isolation(out.etconetopo30, xAOD::Iso::topoetcone30); out.etconetopo30 *= MeV2GeV;
+    all_available &= in.isolation(out.ptcone20, xAOD::Iso::ptcone20); out.ptcone20 *= MeV2GeV;
     all_available &= in.isolation(out.ptcone30, xAOD::Iso::ptcone30); out.ptcone30 *= MeV2GeV;
+    out.ptvarcone20 = in.auxdataConst<float>("ptvarcone20") * MeV2GeV;
+    out.ptvarcone30 = in.auxdataConst<float>("ptvarcone30") * MeV2GeV;
 
     // ASM-2014-12-11 
     if(const xAOD::TrackParticle* t = in.primaryTrackParticle()){
@@ -516,9 +541,8 @@ void SusyNtMaker::storeMuon(const xAOD::Muon &in)
         out.idTrackEta     = idtrack->eta();  
         out.idTrackPhi     = idtrack->phi(); 
         out.idTrackQ       = idtrack->qOverP() < 0 ? -1 : 1;
-        out.id_qoverp      = idtrack->qOverP()*MeV2GeV;
-        out.id_theta       = idtrack->theta();
-        out.id_phi         = idtrack->phi();
+        out.idTrackQoverP  = idtrack->qOverP()*MeV2GeV;
+        out.idTrackTheta   = idtrack->theta();
     }
     // Muon Spectrometer Track - if exists
     if(const xAOD::TrackParticle* mstrack = in.trackParticle( xAOD::Muon::MuonSpectrometerTrackParticle )){
@@ -526,15 +550,14 @@ void SusyNtMaker::storeMuon(const xAOD::Muon &in)
         out.msTrackEta     = mstrack->eta();
         out.msTrackPhi     = mstrack->phi();
         out.msTrackQ       = mstrack->qOverP() < 0 ? -1 : 1;
-        out.ms_qoverp      = mstrack->qOverP()*MeV2GeV;
-        out.ms_theta       = mstrack->theta();
-        out.ms_phi         = mstrack->phi();
+        out.msTrackQoverP  = mstrack->qOverP()*MeV2GeV;
+        out.msTrackTheta   = mstrack->theta();
     }
     // Truth Flags 
     if(m_isMC) {
-        //AT 09/12/14 added Type/Origin
         const xAOD::TrackParticle* trackParticle = in.primaryTrackParticle();
-        if(trackParticle){
+        //AT 05/01/15: We should not have to do this on baseline only !!!
+        if(trackParticle && in.auxdata<char>("baseline")){
             static SG::AuxElement::Accessor<int> acc_truthType("truthType");
             static SG::AuxElement::Accessor<int> acc_truthOrigin("truthOrigin");
             if (acc_truthType.isAvailable(*trackParticle)  ) out.mcType    = acc_truthType(*trackParticle);
@@ -546,9 +569,6 @@ void SusyNtMaker::storeMuon(const xAOD::Muon &in)
             out.truthType  = isFakeLepton(out.mcOrigin, out.mcType, matchedPdgId); 
 
         }
-        //// Old method tried to loop over all truth particles and do the matching by hand if above two were zero.
-        //// ASM-2014-11-02, as as "AT 2014-10-29: Do not work... Need to know about all the truth particles in the event."
-        //out.matched2TruthLepton = m_recoTruthMatch.Matched2TruthLepton(out); 
     }
 
     // Trigger Flags 

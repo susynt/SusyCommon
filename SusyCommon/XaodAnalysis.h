@@ -43,6 +43,7 @@
 
 //Tools
 #include "ElectronEfficiencyCorrection/AsgElectronEfficiencyCorrectionTool.h"
+#include "ElectronPhotonSelectorTools/AsgElectronLikelihoodTool.h"
 #include "PileupReweighting/PileupReweightingTool.h"
 #include "MuonEfficiencyCorrections/MuonEfficiencyScaleFactors.h"
 #include "EventShapeTools/EventShapeCopier.h"
@@ -91,8 +92,7 @@ namespace Susy {
   const double MeV2GeV=1.0e-3;
 
   enum eleID{
-    Medium
-    ,Tight
+    VeryLooseLLH
     ,LooseLLH
     ,MediumLLH
     ,TightLLH
@@ -100,8 +100,7 @@ namespace Susy {
   };
   
   const std::string eleIDNames[] = {
-    "Medium"
-    ,"Tight"
+    "VeryLooseLLH"
     ,"LooseLLH"
     ,"MediumLLH"
     ,"TightLLH"
@@ -135,6 +134,7 @@ namespace Susy {
     **/
     XaodAnalysis& initLocalTools(); ///< initialize performance tools
     void          initPileupTool();
+    void          initElectronTools(); 
     void          initMuonTools(); 
     void          initTauTools(); 
     void          initTrigger();
@@ -245,8 +245,11 @@ namespace Susy {
     void matchTauTriggers();
     bool matchTauTrigger(const TLorentzVector &lv, std::vector<int>* trigBools);
 
-
-
+    //
+    //ID if electron is a charge-flip
+    //
+    int truthElectronCharge(const xAOD::Electron &in);
+    bool isChargeFlip(int recoCharge, int truthCharge);
     //
     // Event cleaning
     //
@@ -298,7 +301,7 @@ namespace Susy {
     uint getNumGoodVtx(); ///< Count number of good vertices
     bool matchTruthJet(int iJet); ///< Match a reco jet to a truth jet
 
-    bool eleIsOfType(const xAOD::Electron &in, eleID id=Medium);
+    bool eleIsOfType(const xAOD::Electron &in, eleID id=LooseLLH);
 
 
     // Running conditions
@@ -563,6 +566,11 @@ namespace Susy {
     std::string maindir;
 
     AsgElectronEfficiencyCorrectionTool *m_electronEfficiencySFTool;
+    AsgElectronLikelihoodTool *m_elecSelLikelihoodVeryLoose;
+    AsgElectronLikelihoodTool *m_elecSelLikelihoodLoose;
+    AsgElectronLikelihoodTool *m_elecSelLikelihoodMedium;
+    AsgElectronLikelihoodTool *m_elecSelLikelihoodTight;
+
     CP::PileupReweightingTool           *m_pileupReweightingTool;
 
     CP::MuonEfficiencyScaleFactors      *m_muonEfficiencySFTool; 

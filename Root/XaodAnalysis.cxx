@@ -8,6 +8,8 @@
 #include "xAODBase/IParticleHelpers.h" // setOriginalObjectLink
 #include "xAODEgamma/EgammaxAODHelpers.h"
 
+#include "SusyNtuple/RecoTruthClassification.h"
+
 #include <limits>
 #include <algorithm> // copy_if, transform
 #include <iterator> // back_inserter
@@ -71,9 +73,12 @@ XaodAnalysis::XaodAnalysis() :
     //m_event(xAOD::TEvent::kClassAccess),
     m_event(xAOD::TEvent::kBranchAccess), ///> dantrim -- (in PAT threads, TDT is supposed to work with kBranchAccess option)
     m_store(),
-//	m_eleIDDefault(Medium), ///> dantrim -- use likelihood as default ?
-        m_eleIDDefault(TightLLH),
+    m_eleIDDefault(TightLLH),
 	m_electronEfficiencySFTool(0),
+    m_elecSelLikelihoodVeryLoose(0),
+    m_elecSelLikelihoodLoose(0),
+    m_elecSelLikelihoodMedium(0),
+    m_elecSelLikelihoodTight(0),
 	m_pileupReweightingTool(0),
 	m_muonEfficiencySFTool(0),
 	m_tauTruthMatchingTool(0),
@@ -122,7 +127,7 @@ void XaodAnalysis::SlaveBegin(TTree *tree)
     if(m_dbg) cout << "XaodAnalysis::SlaveBegin" << endl;
     bool isData(!m_isMC);
 
-#warning TElectronEfficiencyCorrectionTool not initialized
+//#warning TElectronEfficiencyCorrectionTool not initialized
 #warning fakemet_est tool not initialized
     if(isData){ initGrlTool(); }
     if(m_isMC){
@@ -173,13 +178,18 @@ void XaodAnalysis::Terminate()
     }
 
     delete m_electronEfficiencySFTool;
+    delete m_elecSelLikelihoodVeryLoose;
+    delete m_elecSelLikelihoodLoose;
+    delete m_elecSelLikelihoodMedium;
+    delete m_elecSelLikelihoodTight;
+
     delete m_pileupReweightingTool;
     delete m_muonEfficiencySFTool;
     delete m_tauTruthMatchingTool;
     delete m_tauTruthTrackMatchingTool;
 
 
-    for(int i=Medium; i<eleIDInvalid; i++){
+    for(int i=LooseLLH; i<eleIDInvalid; i++){
         delete m_susyObj[i];
     }
     // dantrim trig
@@ -194,17 +204,21 @@ void XaodAnalysis::Terminate()
 //----------------------------------------------------------
 XaodAnalysis& XaodAnalysis::initSusyTools()
 {
-    for(int i=Medium; i<eleIDInvalid; i++){
+    for(int i=1 /*LooseLLH*/; i<eleIDInvalid; i++){
         string name = "SUSYObjDef_xAOD_" + eleIDNames[i];
         m_susyObj[i] = new ST::SUSYObjDef_xAOD(name);
-        cout << "---------------------------------------" << endl;
-        cout << "XaodAnalysis::initSusyTools:           " << name <<endl;
-        cout << "---------------------------------------" << endl;
+        cout << "------------------------------------------------------------" << endl;
+        cout << "XaodAnalysis::initSusyTools: " << name <<endl;
+        cout << "------------------------------------------------------------" << endl;
 
         m_susyObj[i]->msg().setLevel(m_dbg ? MSG::DEBUG : MSG::WARNING);
         m_susyObj[i]->setProperty("IsData",          static_cast<int>(!m_isMC));
         m_susyObj[i]->setProperty("IsAtlfast",       static_cast<int>(m_isAF2));
         m_susyObj[i]->setProperty("EleId", eleIDNames[i]);
+
+        //AT 05-01-15 For p1872 Need to use the AODfix version
+#warning p1872 need to use AODfix MET_RefinalFix and MET_TrackFix
+        m_susyObj[i]->setProperty("METInputCont", "MET_RefFinalFix");
 
         CHECK( m_susyObj[i]->SUSYToolsInit() );
     }
@@ -233,6 +247,7 @@ XaodAnalysis& XaodAnalysis::initLocalTools()
 
 
     initPileupTool();
+    initElectronTools();
     initMuonTools();
     initTauTools();
 
@@ -267,6 +282,36 @@ void XaodAnalysis::initPileupTool()
     //CHECK( m_pileupReweightingTool->setProperty("DataScaleFactors",1/1.11) );
     CHECK( m_pileupReweightingTool->initialize() );
 
+}
+//----------------------------------------------------------
+void XaodAnalysis::initElectronTools()
+{
+//    m_electronEfficiencySFTool = new AsgElectronEfficiencyCorrectionTool("AsgElectronEfficiencyCorrectionTool");
+
+
+    //AT:: LooseLLH & TightLLH are already define in SUSYTools but protected
+    std::string confDir = "ElectronPhotonSelectorTools/offline/mc15_20150408/";
+
+    m_elecSelLikelihoodVeryLoose = new AsgElectronLikelihoodTool("AsgElectronLikelihoodToolVeryLoose");
+    CHECK( m_elecSelLikelihoodVeryLoose->setProperty("primaryVertexContainer","PrimaryVertices") );
+    CHECK( m_elecSelLikelihoodVeryLoose->setProperty("ConfigFile",confDir+"ElectronLikelihoodVeryLooseOfflineConfig2015.conf"));
+    CHECK( m_elecSelLikelihoodVeryLoose->initialize() );
+
+    m_elecSelLikelihoodLoose = new AsgElectronLikelihoodTool("AsgElectronLikelihoodToolLoose");
+    CHECK( m_elecSelLikelihoodLoose->setProperty("primaryVertexContainer","PrimaryVertices") );
+    CHECK( m_elecSelLikelihoodLoose->setProperty("ConfigFile",confDir+"ElectronLikelihoodLooseOfflineConfig2015.conf"));
+    CHECK( m_elecSelLikelihoodLoose->initialize() );
+    
+    m_elecSelLikelihoodMedium = new AsgElectronLikelihoodTool("AsgElectronLikelihoodToolMedium");
+    CHECK( m_elecSelLikelihoodMedium->setProperty("primaryVertexContainer","PrimaryVertices") );
+    CHECK( m_elecSelLikelihoodMedium->setProperty("ConfigFile",confDir+"ElectronLikelihoodMediumOfflineConfig2015.conf") );
+    CHECK( m_elecSelLikelihoodMedium->initialize() );
+
+    m_elecSelLikelihoodTight = new AsgElectronLikelihoodTool("AsgElectronLikelihoodToolTight");
+    CHECK( m_elecSelLikelihoodTight->setProperty("primaryVertexContainer","PrimaryVertices") );
+    CHECK( m_elecSelLikelihoodTight->setProperty("ConfigFile",confDir+"ElectronLikelihoodTightOfflineConfig2015.conf") );
+    CHECK( m_elecSelLikelihoodTight->initialize() );
+    
 }
 //----------------------------------------------------------
 void XaodAnalysis::initMuonTools()
@@ -346,7 +391,8 @@ const xAOD::EventInfo* XaodAnalysis::xaodEventInfo()
 const xAOD::MissingETContainer* XaodAnalysis::retrieveMET_Track(xAOD::TEvent &e, bool dbg)
 {
     const xAOD::MissingETContainer* met_track = NULL;
-    e.retrieve(met_track, "MET_Track");
+#warning p1872 need to use AODfix MET_RefinalFix and MET_TrackFix
+    e.retrieve(met_track, "MET_TrackFix");
     if (dbg)
     {
         if (met_track) cout << "XaodAnalysis::retrieveMET_Track: retrieved" << endl;
@@ -611,7 +657,10 @@ void XaodAnalysis::selectBaselineObjects(SusyNtSys sys, ST::SystInfo sysInfo)
                          <<" baseline? "<< (bool)(el->auxdata< char >("baseline"))
                          <<" signal? "<<   (bool)(el->auxdata< char >("signal"))
                          <<endl;
-        m_preElectrons.push_back(iEl);
+        //AT 05-02-15: Minimum kinematic for electrons
+        if( el->pt() * MeV2GeV > 7 &&
+            fabs(el->eta()) < 2.47 )
+            m_preElectrons.push_back(iEl);
     }
     if(m_dbg) cout<<"preElectrons["<<m_preElectrons.size()<<"]"<<endl;
 
@@ -960,8 +1009,10 @@ bool XaodAnalysis::matchTruthJet(int iJet)
 /*--------------------------------------------------------------------------------*/
 bool XaodAnalysis::eleIsOfType(const xAOD::Electron &in, eleID id)
 {
-    bool type;
-    if(in.passSelection(type,eleIDNames[id])) return true;
+    if     (id==VeryLooseLLH  && m_elecSelLikelihoodVeryLoose->accept(in))  return true;
+    else if(id==LooseLLH  && m_elecSelLikelihoodLoose->accept(in))  return true;
+    else if(id==MediumLLH && m_elecSelLikelihoodMedium->accept(in)) return true;
+    else if(id==TightLLH  && m_elecSelLikelihoodTight->accept(in))  return true;
     return false;
 }
 /*--------------------------------------------------------------------------------*/
@@ -1244,6 +1295,47 @@ bool XaodAnalysis::matchTauTrigger(const TLorentzVector &lv, vector<int>* passTr
 //-DG--  // matching failed
     return false;
 }
+
+//----------------------------------------------------------
+int XaodAnalysis::truthElectronCharge(const xAOD::Electron &in)
+{
+    int type   = xAOD::EgammaHelpers::getParticleTruthType(&in);
+    int origin = xAOD::EgammaHelpers::getParticleTruthOrigin(&in);
+    if(isPromptElectron(type,origin)){
+        const xAOD::TruthParticle* truthEle = xAOD::EgammaHelpers::getTruthParticle(&in);
+        if (truthEle->pdgId()==11) return -1;
+        if (truthEle->pdgId()==-11) return 1;
+    }
+    else{
+        if(type==4 && origin==5 && in.nTrackParticles()>1){//Not sure if Type/Origin check really needed
+            for(int itrk=0; itrk < in.nTrackParticles(); itrk++){
+                int extraType=0;
+                int extraOrigin=0;
+                const xAOD::TrackParticle* trackParticle = in.trackParticle(itrk);
+                static SG::AuxElement::Accessor<int> acc_truthType("truthType");
+                static SG::AuxElement::Accessor<int> acc_truthOrigin("truthOrigin");
+                if(acc_truthType.isAvailable(*trackParticle)) 
+                    extraType   = acc_truthType(*trackParticle);
+                if(acc_truthOrigin.isAvailable(*trackParticle)) 
+                    extraOrigin = acc_truthOrigin(*trackParticle);
+                if (isPromptElectron(extraType,extraOrigin)) {
+                    const xAOD::TruthParticle* truthEle = xAOD::EgammaHelpers::getTruthParticle(trackParticle);
+                    if (truthEle->pdgId()==11) return -1;
+                    if (truthEle->pdgId()==-11) return 1;
+                }
+            }
+        }
+        return 0;
+    }
+    return 0;
+}
+
+//----------------------------------------------------------
+bool XaodAnalysis::isChargeFlip(int recoCharge, int truthCharge)
+{
+    return ( (recoCharge*truthCharge) > 0);
+}
+
 //----------------------------------------------------------
 XaodAnalysis& XaodAnalysis::setGRLFile(TString fileName)
 {
