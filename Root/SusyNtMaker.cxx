@@ -644,10 +644,13 @@ void SusyNtMaker::storeJet(const xAOD::Jet &in)
     in.getAttribute(xAOD::JetAttribute::SamplingMax, samplingMax);
     in.getAttribute(xAOD::JetAttribute::FracSamplingMax, fracSamplingMax);
     const xAOD::EventInfo* eventinfo = XaodAnalysis::xaodEventInfo();
+    //AT Removed in SUSYTools-00-005-00-29
+    /*
     out.isHotTile = m_susyObj[m_eleIDDefault]->isHotTile(eventinfo->runNumber(),
                                                          fracSamplingMax,
                                                          samplingMax,
                                                          eta, phi); 
+    */
     // // BCH cleaning flags - ASM-2014-11-04 :: Obsolete???
     // uint bchRun = m_isMC? m_mcRun : m_event.eventinfo.RunNumber();
     // uint bchLB = m_isMC? m_mcLB : m_event.eventinfo.lbn();

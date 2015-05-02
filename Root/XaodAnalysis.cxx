@@ -198,13 +198,11 @@ void XaodAnalysis::Terminate()
 
     delete m_escopier;
     
-    
-
 }
 //----------------------------------------------------------
 XaodAnalysis& XaodAnalysis::initSusyTools()
 {
-    for(int i=1 /*LooseLLH*/; i<eleIDInvalid; i++){
+    for(int i=LooseLLH; i<eleIDInvalid; i++){
         string name = "SUSYObjDef_xAOD_" + eleIDNames[i];
         m_susyObj[i] = new ST::SUSYObjDef_xAOD(name);
         cout << "------------------------------------------------------------" << endl;
@@ -215,6 +213,9 @@ XaodAnalysis& XaodAnalysis::initSusyTools()
         m_susyObj[i]->setProperty("IsData",          static_cast<int>(!m_isMC));
         m_susyObj[i]->setProperty("IsAtlfast",       static_cast<int>(m_isAF2));
         m_susyObj[i]->setProperty("EleId", eleIDNames[i]);
+        
+        int datasource = !m_isMC ? ST::Data : (m_isAF2 ? ST::AtlfastII : ST::FullSim);
+        m_susyObj[i]->setProperty("DataSource",datasource);
 
         //AT 05-01-15 For p1872 Need to use the AODfix version
 #warning p1872 need to use AODfix MET_RefinalFix and MET_TrackFix
