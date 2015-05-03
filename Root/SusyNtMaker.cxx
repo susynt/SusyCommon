@@ -373,10 +373,13 @@ void SusyNtMaker::storeElectron(const xAOD::Electron &in)
     out.q   = in.charge();
     bool all_available=true;
     
-    out.veryLooseLLH = eleIsOfType(in, VeryLooseLLH);
-    out.looseLLH = eleIsOfType(in, LooseLLH);
-    out.mediumLLH = eleIsOfType(in, MediumLLH);
-    out.tightLLH = eleIsOfType(in, TightLLH);
+    out.veryLooseLLH = eleIsOfType(in, eleID::VeryLooseLLH);
+    out.looseLLH = eleIsOfType(in, eleID::LooseLLH);
+    out.mediumLLH = eleIsOfType(in, eleID::MediumLLH);
+    out.tightLLH = eleIsOfType(in, eleID::TightLLH);
+    out.looseLLH_nod0 = eleIsOfType(in, eleID::LooseLLH_nod0);
+    out.mediumLLH_nod0 = eleIsOfType(in, eleID::MediumLLH_nod0);
+    out.tightLLH_nod0 = eleIsOfType(in, eleID::TightLLH_nod0);
 
     //Isolations
     //AT: Will become obsolete in run-2
@@ -400,12 +403,12 @@ void SusyNtMaker::storeElectron(const xAOD::Electron &in)
         bool recoSF=true;
         bool idSF=true;
         bool trigSF=false;
-        if(eleIsOfType(in, TightLLH))           
-            out.effSF = m_susyObj[TightLLH]->GetSignalElecSF(in, recoSF, idSF, trigSF);
-        else if(eleIsOfType(in, MediumLLH))
-            out.effSF = m_susyObj[MediumLLH]->GetSignalElecSF(in, recoSF, idSF, trigSF);	 
-        else if(eleIsOfType(in, LooseLLH))
-            out.effSF = m_susyObj[LooseLLH]->GetSignalElecSF(in, recoSF, idSF, trigSF);
+        if(eleIsOfType(in, eleID::TightLLH))           
+            out.effSF = m_susyObj[eleID::TightLLH]->GetSignalElecSF(in, recoSF, idSF, trigSF);
+        else if(eleIsOfType(in, eleID::MediumLLH))
+            out.effSF = m_susyObj[eleID::MediumLLH]->GetSignalElecSF(in, recoSF, idSF, trigSF);	 
+        else if(eleIsOfType(in, eleID::LooseLLH))
+            out.effSF = m_susyObj[eleID::LooseLLH]->GetSignalElecSF(in, recoSF, idSF, trigSF);
 
         if(m_dbg>=10) 
             cout << "AT: susyTool electron Et "
@@ -432,6 +435,7 @@ void SusyNtMaker::storeElectron(const xAOD::Electron &in)
         out.matched2TruthLepton   = truthEle ? true : false;
         int matchedPdgId = truthEle ? truthEle->pdgId() : -999;
         out.truthType  = isFakeLepton(out.mcOrigin, out.mcType, matchedPdgId); 
+        //AT: 05-02-15: Issue accessing Aux of trackParticle in truthElectronCharge. Info not in derived AOD ?
         //out.isChargeFlip  = m_isMC ? isChargeFlip(in.charge(),truthElectronCharge(in)) : false;
     }
 

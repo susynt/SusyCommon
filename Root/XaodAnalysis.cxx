@@ -79,8 +79,12 @@ XaodAnalysis::XaodAnalysis() :
     m_elecSelLikelihoodLoose(0),
     m_elecSelLikelihoodMedium(0),
     m_elecSelLikelihoodTight(0),
+    m_elecSelLikelihoodLoose_nod0(0),
+    m_elecSelLikelihoodMedium_nod0(0),
+    m_elecSelLikelihoodTight_nod0(0),
 	m_pileupReweightingTool(0),
 	m_muonEfficiencySFTool(0),
+    m_muonSelectionTool(0),
 	m_tauTruthMatchingTool(0),
 	m_tauTruthTrackMatchingTool(0),
         //dantrim trig
@@ -182,14 +186,18 @@ void XaodAnalysis::Terminate()
     delete m_elecSelLikelihoodLoose;
     delete m_elecSelLikelihoodMedium;
     delete m_elecSelLikelihoodTight;
+    delete m_elecSelLikelihoodLoose_nod0;
+    delete m_elecSelLikelihoodMedium_nod0;
+    delete m_elecSelLikelihoodTight_nod0;
 
     delete m_pileupReweightingTool;
     delete m_muonEfficiencySFTool;
+    delete m_muonSelectionTool;
     delete m_tauTruthMatchingTool;
     delete m_tauTruthTrackMatchingTool;
 
 
-    for(int i=LooseLLH; i<eleIDInvalid; i++){
+    for(int i=LooseLLH; i<=TightLLH; i++){
         delete m_susyObj[i];
     }
     // dantrim trig
@@ -202,7 +210,7 @@ void XaodAnalysis::Terminate()
 //----------------------------------------------------------
 XaodAnalysis& XaodAnalysis::initSusyTools()
 {
-    for(int i=LooseLLH; i<eleIDInvalid; i++){
+    for(int i=LooseLLH; i<=TightLLH; i++){
         string name = "SUSYObjDef_xAOD_" + eleIDNames[i];
         m_susyObj[i] = new ST::SUSYObjDef_xAOD(name);
         cout << "------------------------------------------------------------" << endl;
@@ -312,6 +320,22 @@ void XaodAnalysis::initElectronTools()
     CHECK( m_elecSelLikelihoodTight->setProperty("primaryVertexContainer","PrimaryVertices") );
     CHECK( m_elecSelLikelihoodTight->setProperty("ConfigFile",confDir+"ElectronLikelihoodTightOfflineConfig2015.conf") );
     CHECK( m_elecSelLikelihoodTight->initialize() );
+
+    m_elecSelLikelihoodLoose_nod0 = new AsgElectronLikelihoodTool("AsgElectronLikelihoodToolLoose_nod0");
+    CHECK( m_elecSelLikelihoodLoose_nod0->setProperty("primaryVertexContainer","PrimaryVertices") );
+    CHECK( m_elecSelLikelihoodLoose_nod0->setProperty("ConfigFile",confDir+"ElectronLikelihoodLooseNoD0OfflineConfig2015.conf"));
+    CHECK( m_elecSelLikelihoodLoose_nod0->initialize() );
+    
+    m_elecSelLikelihoodMedium_nod0 = new AsgElectronLikelihoodTool("AsgElectronLikelihoodToolMedium_nod0");
+    CHECK( m_elecSelLikelihoodMedium_nod0->setProperty("primaryVertexContainer","PrimaryVertices") );
+    CHECK( m_elecSelLikelihoodMedium_nod0->setProperty("ConfigFile",confDir+"ElectronLikelihoodMediumNoD0OfflineConfig2015.conf") );
+    CHECK( m_elecSelLikelihoodMedium_nod0->initialize() );
+
+    m_elecSelLikelihoodTight_nod0 = new AsgElectronLikelihoodTool("AsgElectronLikelihoodToolTight_nod0");
+    CHECK( m_elecSelLikelihoodTight_nod0->setProperty("primaryVertexContainer","PrimaryVertices") );
+    CHECK( m_elecSelLikelihoodTight_nod0->setProperty("ConfigFile",confDir+"ElectronLikelihoodTightNoD0OfflineConfig2015.conf") );
+    CHECK( m_elecSelLikelihoodTight_nod0->initialize() );
+
     
 }
 //----------------------------------------------------------
@@ -322,7 +346,11 @@ void XaodAnalysis::initMuonTools()
     CHECK( m_muonEfficiencySFTool->setProperty("DataPeriod","2012") );
     CHECK( m_muonEfficiencySFTool->initialize() );
 
-    cout << "ASM :: MuonEffTool is initialized correctly..." << endl;
+    m_muonSelectionTool = new CP::MuonSelectionTool("MuonSelectionTool_VeryLoose");
+    CHECK( m_muonSelectionTool->setProperty( "MaxEta", 2.5 ) );
+    CHECK( m_muonSelectionTool->setProperty( "MuQuality", int(xAOD::Muon::VeryLoose) ));// Warning: includes bad muons!
+    CHECK( m_muonSelectionTool->initialize() );
+
 }
 //----------------------------------------------------------
 void XaodAnalysis::initTauTools()
@@ -669,7 +697,8 @@ void XaodAnalysis::selectBaselineObjects(SusyNtSys sys, ST::SystInfo sysInfo)
  //   xAOD::MuonContainer* muons =xaodMuons(sysInfo,sys);
     for(const auto& mu : *muons){
         iMu++;
-        m_preMuons.push_back(iMu);
+        if(mu->pt()* MeV2GeV > 3 && 
+           m_muonSelectionTool->accept(mu)) m_preMuons.push_back(iMu); //AT: Save VeryLoose pt>3 muon only
         //m_susyObj[m_eleIDDefault]->IsSignalMuon(*mu);
         m_susyObj[m_eleIDDefault]->IsSignalMuonExp(*mu, ST::SignalIsoExp::TightIso);
         m_susyObj[m_eleIDDefault]->IsCosmicMuon(*mu);
@@ -690,7 +719,7 @@ void XaodAnalysis::selectBaselineObjects(SusyNtSys sys, ST::SystInfo sysInfo)
   //  xAOD::JetContainer* jets = xaodJets(sysInfo,sys);
     for(const auto& jet : *jets){
         iJet++;
-        m_preJets.push_back(iJet);
+        if((bool)jet->auxdata< char >("baseline")==1 ) m_preJets.push_back(iJet);//AT: save baseline pT>20GeV only
     //    m_susyObj[m_eleIDDefault]->IsBJet(*jet);     // dantrim Apr 15 2015 -- Not available for DC14@8TeV 
         if(m_dbg>=5) cout<<"Jet passing"
                          <<" baseline? "<< bool(jet->auxdata< char >("baseline")==1)
@@ -1010,10 +1039,14 @@ bool XaodAnalysis::matchTruthJet(int iJet)
 /*--------------------------------------------------------------------------------*/
 bool XaodAnalysis::eleIsOfType(const xAOD::Electron &in, eleID id)
 {
-    if     (id==VeryLooseLLH  && m_elecSelLikelihoodVeryLoose->accept(in))  return true;
-    else if(id==LooseLLH  && m_elecSelLikelihoodLoose->accept(in))  return true;
-    else if(id==MediumLLH && m_elecSelLikelihoodMedium->accept(in)) return true;
-    else if(id==TightLLH  && m_elecSelLikelihoodTight->accept(in))  return true;
+    if     (id==eleID::VeryLooseLLH  && m_elecSelLikelihoodVeryLoose->accept(in))  return true;
+    else if(id==eleID::LooseLLH  && m_elecSelLikelihoodLoose->accept(in))  return true;
+    else if(id==eleID::MediumLLH && m_elecSelLikelihoodMedium->accept(in)) return true;
+    else if(id==eleID::TightLLH  && m_elecSelLikelihoodTight->accept(in))  return true;
+
+    else if(id==eleID::LooseLLH_nod0  && m_elecSelLikelihoodLoose_nod0->accept(in))  return true;
+    else if(id==eleID::MediumLLH_nod0 && m_elecSelLikelihoodMedium_nod0->accept(in)) return true;
+    else if(id==eleID::TightLLH_nod0  && m_elecSelLikelihoodTight_nod0->accept(in))  return true;
     return false;
 }
 /*--------------------------------------------------------------------------------*/
@@ -1308,6 +1341,7 @@ int XaodAnalysis::truthElectronCharge(const xAOD::Electron &in)
         if (truthEle->pdgId()==-11) return 1;
     }
     else{
+        
         if(type==4 && origin==5 && in.nTrackParticles()>1){//Not sure if Type/Origin check really needed
             for(int itrk=0; itrk < in.nTrackParticles(); itrk++){
                 int extraType=0;

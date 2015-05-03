@@ -46,6 +46,7 @@
 #include "ElectronPhotonSelectorTools/AsgElectronLikelihoodTool.h"
 #include "PileupReweighting/PileupReweightingTool.h"
 #include "MuonEfficiencyCorrections/MuonEfficiencyScaleFactors.h"
+#include "MuonSelectorTools/MuonSelectionTool.h"
 #include "EventShapeTools/EventShapeCopier.h"
 
 //Trigger
@@ -92,10 +93,13 @@ namespace Susy {
   const double MeV2GeV=1.0e-3;
 
   enum eleID{
-    VeryLooseLLH
+    VeryLooseLLH=0
     ,LooseLLH
     ,MediumLLH
     ,TightLLH
+    ,LooseLLH_nod0
+    ,MediumLLH_nod0
+    ,TightLLH_nod0
     ,eleIDInvalid
   };
   
@@ -104,6 +108,9 @@ namespace Susy {
     ,"LooseLLH"
     ,"MediumLLH"
     ,"TightLLH"
+    ,"LooseLLH_nod0"
+    ,"MediumLLH_nod0"
+    ,"TightLLH_nod0"
     ,"eleIDInvalid"
   };
 
@@ -301,7 +308,7 @@ namespace Susy {
     uint getNumGoodVtx(); ///< Count number of good vertices
     bool matchTruthJet(int iJet); ///< Match a reco jet to a truth jet
 
-    bool eleIsOfType(const xAOD::Electron &in, eleID id=LooseLLH);
+    bool eleIsOfType(const xAOD::Electron &in, eleID id=eleID::LooseLLH);
 
 
     // Running conditions
@@ -482,7 +489,8 @@ namespace Susy {
 
     xAOD::TEvent m_event;
     xAOD::TStore m_store;
-    ST::SUSYObjDef_xAOD* m_susyObj[eleIDInvalid];      // SUSY object definitions
+
+    ST::SUSYObjDef_xAOD* m_susyObj[eleID::eleIDInvalid];      // SUSY object definitions
     eleID m_eleIDDefault;
 
     std::vector<CP::SystematicSet> sysList;  //CP Systematic list
@@ -571,9 +579,14 @@ namespace Susy {
     AsgElectronLikelihoodTool *m_elecSelLikelihoodMedium;
     AsgElectronLikelihoodTool *m_elecSelLikelihoodTight;
 
+    AsgElectronLikelihoodTool *m_elecSelLikelihoodLoose_nod0;
+    AsgElectronLikelihoodTool *m_elecSelLikelihoodMedium_nod0;
+    AsgElectronLikelihoodTool *m_elecSelLikelihoodTight_nod0;
+
     CP::PileupReweightingTool           *m_pileupReweightingTool;
 
     CP::MuonEfficiencyScaleFactors      *m_muonEfficiencySFTool; 
+    CP::MuonSelectionTool               *m_muonSelectionTool;
 
     //Tau truth matchong tools
     TauAnalysisTools::TauTruthMatchingTool       *m_tauTruthMatchingTool;
