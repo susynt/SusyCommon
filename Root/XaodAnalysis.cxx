@@ -1459,7 +1459,6 @@ bool XaodAnalysis::passGoodVtx()
 {
     for(auto it=xaodVertices()->begin(), end=xaodVertices()->end(); it!=end; ++it){
         const xAOD::Vertex *vtx = *it;
-        std::cout << "Vertex z " << vtx->z() << " type " << vtx->vertexType() << std::endl;
         if(vtx->vertexType() == xAOD::VxType::PriVtx) return true;
     }
     return false;
