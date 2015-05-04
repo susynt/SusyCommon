@@ -150,8 +150,17 @@ Bool_t SusyNtMaker::Process(Long64_t entry)
     chainEntry++;
     m_event.getEntry(chainEntry); // DG 2014-09-19 TEvent wants the chain entry, not the tree entry (?)
     const xAOD::EventInfo* eventinfo = XaodAnalysis::xaodEventInfo();
-    retrieveCollections();
 
+    if(m_dbg || chainEntry%5000==0){
+        cout << "***********************************************************" << endl;
+        cout << "**** Processing entry " << setw(6) << chainEntry
+             << " run " << setw(6) << eventinfo->runNumber()
+             << " event " << setw(7) << eventinfo->eventNumber() << " ****" << endl;
+        cout << "***********************************************************" << endl;
+    }
+    
+    retrieveCollections();
+    
     if(!m_flagsHaveBeenChecked) {
         m_flagsAreConsistent = runningOptionsAreValid();
         m_flagsHaveBeenChecked=true;
@@ -161,14 +170,7 @@ Bool_t SusyNtMaker::Process(Long64_t entry)
         }
     }
 
-    if(m_dbg || chainEntry%5000==0)
-        {
-            cout << "***********************************************************" << endl;
-            cout << "**** Processing entry " << setw(6) << chainEntry
-                 << " run " << setw(6) << eventinfo->runNumber()
-                 << " event " << setw(7) << eventinfo->eventNumber() << " ****" << endl;
-            cout << "***********************************************************" << endl;
-        }
+    
 
     fillTriggerHisto(); // dantrim trig
     if(selectEvent() && m_fillNt){
@@ -411,7 +413,7 @@ void SusyNtMaker::storeElectron(const xAOD::Electron &in)
             out.effSF = m_susyObj[eleID::LooseLLH]->GetSignalElecSF(in, recoSF, idSF, trigSF);
 
         if(m_dbg>=10) 
-            cout << "AT: susyTool electron Et "
+            cout << "AT: storing in susyNt electron Et "
                  << out.pt
                  << " LLH type "
                  << out.veryLooseLLH << " "  
@@ -740,7 +742,7 @@ void SusyNtMaker::storeTau(const xAOD::TauJet &tau)
 
    if (m_isMC)
     {
-        m_tauTruthMatchingTool->setTruthParticleContainer(m_xaodTruthParticles);
+        m_tauTruthMatchingTool->setTruthParticleContainer(xaodTruthParticles());
         m_tauTruthMatchingTool->createTruthTauContainer();
 
         m_tauTruthMatchingTool->applyTruthMatch(tau);
@@ -1112,15 +1114,15 @@ void SusyNtMaker::doSystematic()
 
       
         /*
-          Recheck the event selection and save objects scale varition
+          Recheck the event selection and save objects scale variation
         */
         deleteShallowCopies(false);//Don't clear the nominal containers
         clearContainerPointers(false);
         clearOutputObjects(false);
         selectObjects(ourSys, sysInfo);
         retrieveXaodMet(sysInfo,ourSys);
-        assignEventCleaningFlags(); //AT really needed fro each systematic ?
-        assignObjectCleaningFlags(sysInfo, ourSys);//AT really needed fro each systematic ?
+        assignEventCleaningFlags(); //AT really needed for each systematic ? CHECK
+        assignObjectCleaningFlags(sysInfo, ourSys);//AT really needed fro each systematic ? CHECK
 
         saveElectronSF(sysInfo,ourSys);
         saveMuonSF(sysInfo,ourSys);
@@ -1513,6 +1515,7 @@ void SusyNtMaker::addMissingTau(int index, SusyNtSys sys)
 SusyNtMaker& SusyNtMaker::initializeOuputTree()
 {
     m_outTreeFile = new TFile("susyNt.root", "recreate");
+    //m_outTreeFile->SetCompressionLevel(9); //Default =1, 9 is max AT:05-02-15
     m_outTree = new TTree("susyNt", "susyNt");
     m_outTree->SetAutoSave(10000000); // DG-2014-08-15 magic numbers, ask Steve
     m_outTree->SetMaxTreeSize(3000000000u);

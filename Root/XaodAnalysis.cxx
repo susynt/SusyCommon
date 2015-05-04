@@ -432,6 +432,7 @@ const xAOD::MissingETContainer* XaodAnalysis::retrieveMET_Track(xAOD::TEvent &e,
 //----------------------------------------------------------
 const xAOD::MissingETContainer* XaodAnalysis::xaodMET_Track()
 {
+
     if (m_metTrackContainer == NULL)
     {
         m_metTrackContainer = retrieveMET_Track(m_event, m_dbg);
@@ -988,6 +989,7 @@ void XaodAnalysis::clearOutputObjects(bool deleteNominal)
 /*--------------------------------------------------------------------------------*/
 uint XaodAnalysis::getNumGoodVtx()
 {
+/*
     xAOD::VertexContainer::const_iterator pv_itr = m_xaodVertices->begin();
     //AT-2014-10-31: Run2 harmonisation - we don't need to cut on nTrack for run@
     //https://cds.cern.ch/record/1700874/files/ATL-COM-PHYS-2014-451.pdf
@@ -998,9 +1000,9 @@ uint XaodAnalysis::getNumGoodVtx()
         if(vtx.nTrackParticles() >=5 ) nVtx++;
     }
     return nVtx;
-
+*/
     //AT:2014-10-31: To be change to this for run2 : 2
-    //return  m_xaodVertices-size();
+    return  xaodVertices()->size();
 
 }
 
@@ -1343,7 +1345,7 @@ int XaodAnalysis::truthElectronCharge(const xAOD::Electron &in)
     else{
         
         if(type==4 && origin==5 && in.nTrackParticles()>1){//Not sure if Type/Origin check really needed
-            for(int itrk=0; itrk < in.nTrackParticles(); itrk++){
+            for(auto itrk=0; itrk< in.nTrackParticles(); itrk++ ){
                 int extraType=0;
                 int extraOrigin=0;
                 const xAOD::TrackParticle* trackParticle = in.trackParticle(itrk);
@@ -1455,16 +1457,12 @@ bool XaodAnalysis::passBadJet(ST::SystInfo sysInfo, SusyNtSys sys)
 //----------------------------------------------------------
 bool XaodAnalysis::passGoodVtx()
 {
-    // dantrim-2015-02-14 : following Ximo's method of checking if there is at least one fulfilling...
-    bool at_least_one = false;
-    for(auto it=m_xaodVertices->begin(), end=m_xaodVertices->end(); it!=end; ++it){
+    for(auto it=xaodVertices()->begin(), end=xaodVertices()->end(); it!=end; ++it){
         const xAOD::Vertex *vtx = *it;
-        if(vtx->vertexType() == xAOD::VxType::PriVtx) at_least_one = true;
+        std::cout << "Vertex z " << vtx->z() << " type " << vtx->vertexType() << std::endl;
+        if(vtx->vertexType() == xAOD::VxType::PriVtx) return true;
     }
-    return at_least_one;
-
-//    return true; // DG-2014-08-16 \todo
-//  return PrimaryVertexCut(m_susyObj, &m_event.vxp);
+    return false;
 }
 //----------------------------------------------------------
 bool XaodAnalysis::passTileTrip()
@@ -1924,12 +1922,9 @@ XaodAnalysis& XaodAnalysis::deleteShallowCopies(bool deleteNominal)
                      << " pho " << m_xaodPhotons
                      << " jets " << m_xaodJets
                      << " taus " << m_xaodTaus << endl;
-
-
     if(deleteNominal){
     //    m_store.print();  // annoying print out - dantrim : Feb 14 2015
         m_store.clear(); // this clears m_metContainer and the objs recorded with TStore - AT: 12/12/14- not needed anymore
-    //    m_store.print();
 
         if(m_xaodMuons_nom       ) delete m_xaodMuons_nom;
         if(m_xaodMuonsAux_nom    ) delete m_xaodMuonsAux_nom;
@@ -1942,17 +1937,24 @@ XaodAnalysis& XaodAnalysis::deleteShallowCopies(bool deleteNominal)
         if(m_xaodPhotons_nom     ) delete m_xaodPhotons_nom;
         if(m_xaodPhotonsAux_nom  ) delete m_xaodPhotonsAux_nom;
 
-        if(m_metContainer    ) delete m_metContainer;
-        if(m_metAuxContainer ) delete m_metAuxContainer;
+        if(m_metContainer        ) delete m_metContainer;
+        if(m_metAuxContainer     ) delete m_metAuxContainer;
+
+        //if(m_metTrackContainer   ) delete m_metTrackContainer;
+
+        //if(m_xaodTruthEvent        ) delete m_xaodTruthEvent;
+        // if(m_xaodTruthParticles    ) delete m_xaodTruthParticles;
+        //if(m_xaodTruthParticlesAux ) delete m_xaodTruthParticlesAux;
+
+        // if(m_xaodVertices          ) delete m_xaodVertices;
     }
-
-
     return *this;
 }
 //----------------------------------------------------------
 XaodAnalysis& XaodAnalysis::clearContainerPointers(bool deleteNominal)
 {
-    m_xaodEventInfo      = NULL;
+    m_xaodEventInfo          = NULL;
+
     m_xaodMuons          = NULL;
     m_xaodMuonsAux       = NULL;
     m_xaodElectrons      = NULL;
@@ -1963,14 +1965,16 @@ XaodAnalysis& XaodAnalysis::clearContainerPointers(bool deleteNominal)
     m_xaodJetsAux        = NULL;
     m_xaodPhotons        = NULL;
     m_xaodPhotonsAux     = NULL;
-    m_xaodTruthEvent     = NULL;
-    m_xaodTruthParticles = NULL;
-    m_metJets            = NULL;
-    m_metJetsAux         = NULL;
-    m_xaodVertices       = NULL;
-    m_metTrackContainer = NULL;
+
+        m_xaodTruthEvent     = NULL;
+        m_xaodTruthParticles = NULL;
+        m_xaodVertices           = NULL;
+        m_metTrackContainer      = NULL;
 
     if(deleteNominal){
+        //m_xaodEventInfo          = NULL;
+        //m_xaodVertices           = NULL;
+
         m_xaodMuons_nom          = NULL;
         m_xaodMuonsAux_nom       = NULL;
         m_xaodElectrons_nom      = NULL;
@@ -1981,8 +1985,13 @@ XaodAnalysis& XaodAnalysis::clearContainerPointers(bool deleteNominal)
         m_xaodJetsAux_nom        = NULL;
         m_xaodPhotons_nom        = NULL;
         m_xaodPhotonsAux_nom     = NULL;
+
         m_metContainer           = NULL;
         m_metAuxContainer        = NULL;
+        //m_metTrackContainer      = NULL;
+
+        //m_xaodTruthEvent     = NULL;
+        //m_xaodTruthParticles = NULL;
     }
 
 
@@ -1992,10 +2001,8 @@ XaodAnalysis& XaodAnalysis::clearContainerPointers(bool deleteNominal)
 XaodAnalysis& XaodAnalysis::retrieveCollections()
 {
     if(m_dbg) cout << "XaodAnalysis::retrieveCollections " << endl;
-    xaodEventInfo();
-    const xAOD::EventInfo* eventinfo = XaodAnalysis::xaodEventInfo();
-    if(m_dbg) cout << " run " << setw(6) << eventinfo->runNumber()
-                   << " event " << setw(7) << eventinfo->eventNumber() << endl;
+
+    xaodVertices();
 
     //Retrieve containers at nominal scale
     xaodElectrons(systInfoList[0]);
@@ -2003,10 +2010,11 @@ XaodAnalysis& XaodAnalysis::retrieveCollections()
     xaodJets(systInfoList[0]);
     xaodTaus(systInfoList[0]);
     xaodPhotons(systInfoList[0]);
+    retrieveXaodMet(systInfoList[0]);//nominal
+    xaodMET_Track();
+
     xaodTruthEvent();
     xaodTruthParticles();
-    xaodMET_Track();
-    retrieveXaodMet(systInfoList[0]);//nominal
-    xaodVertices();
+
     return *this;
 }
