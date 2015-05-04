@@ -1,41 +1,56 @@
-#------------------------------------------------------------------------------------
 #  SusyCommon
-#
-#  A RootCore package for common UCI SUSY analysis
-#------------------------------------------------------------------------------------
+A RootCore package for common UCI SUSY analysis
 
-# For useful information on using these packages, please consult the TWiki:
+To set up and area to write the ntuples, follow the instructions in gerbaudo/susynt-write
+To set up and area to read the ntuples, follow the instructions in gerbaudo/susynt-read
+
+After compiling, you can run with
+```
+cd SusyCommon/run
+NtMaker -s [mc12_dummy,data_muons,data_egamma] -f xaod_filelist.txt
+```
+
+### Overview of the package
+For an overview of the classes, see the doxygen documentation at [this
+link](http://gerbaudo.github.io/SusyCommon/doxygen-html/)
+
+## Old links and obsolete instructions
+For useful information on using these packages, please consult the TWiki:
 https://twiki.cern.ch/twiki/bin/viewauth/AtlasProtected/UCISusyNtuples
 
-# Link to code in SVN browser
-https://svnweb.cern.ch/trac/atlasinst/browser/Institutes/UCIrvine/SUSYAnalysis/SusyCommon
+Link to code in [SVN browser](https://svnweb.cern.ch/trac/atlasinst/browser/Institutes/UCIrvine/SUSYAnalysis/SusyCommon)
 
-# To checkout the package trunk
+To checkout the package trunk
+```
 svn co svn+ssh://svn.cern.ch/reps/atlasinst/Institutes/UCIrvine/SUSYAnalysis/SusyCommon/trunk SusyCommon
+```
 
-# For the currently recommended tag, please see the TWiki
+For the currently recommended tag, please see the TWiki
+```
 svn co svn+ssh://svn.cern.ch/reps/atlasinst/Institutes/UCIrvine/SUSYAnalysis/SusyCommon/tags/SusyCommon-XX-YY-ZZ SusyCommon
+```
 
-# To make a tag, use the script/makeTag.sh script (only for developers)
+To make a tag, use the script/makeTag.sh script (only for developers)
+```
 ./scripts/makeTag.sh SusyCommon-XX-YY-ZZ "Some message"
+```
 
-
-# To install, check out SusyNtuple, the MultiLep Common code, and run the MultiLep install script 
-# NOTE that this snippet will checkout the trunks of each code.  If you need to use specific tags, use the appropriate svn commands
-# It is recommended that you do this installation in a clean workarea, to avoid conflicts with other package tags.
+To install, check out SusyNtuple, the MultiLep Common code, and run the MultiLep install script 
+**NOTE** that this snippet will checkout the trunks of each code.  If you need to use specific tags, use the appropriate svn commands
+It is recommended that you do this installation in a clean workarea, to avoid conflicts with other package tags.
+```
 svn co svn+ssh://svn.cern.ch/reps/atlasinst/Institutes/UCIrvine/SUSYAnalysis/SusyNtuple/trunk SusyNtuple
 svn co svn+ssh://svn.cern.ch/reps/atlasphys/Physics/SUSY/Analyses/WeakProduction/MultiLep/trunk MultiLep
 source MultiLep/installscripts/install_script.sh
-# Or, for convenience, these commands have been put in one script (kinit first):
-source SusyCommon/scripts/install.sh
+```
+Or, for convenience, these commands have been put in one script (kinit first):
+`source SusyCommon/scripts/install.sh`
 
-# for examples, here is my analysis code which depends on this package
-https://svnweb.cern.ch/trac/atlasinst/browser/Institutes/UCIrvine/sfarrell/SusyAna
+ for examples, here is my analysis code which depends on this package
+`https://svnweb.cern.ch/trac/atlasinst/browser/Institutes/UCIrvine/sfarrell/SusyAna`
 
+### Overview of the package
 
-#------------------------------------------------------------------------------------
-# Overview of the package
-#------------------------------------------------------------------------------------
 
 SusyD3PDInterface
   - TSelector for processing Susy D3PDs
