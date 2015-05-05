@@ -612,7 +612,12 @@ void SusyNtMaker::storeJet(const xAOD::Jet &in)
     out.phi = phi;
     out.m   = m;
     bool all_available=true;
-    
+
+    // number of associated tracks
+    vector<int> nTrkVec;
+    in.getAttribute(xAOD::JetAttribute::NumTrkPt500, nTrkVec);
+    int jet_nTrk = nTrkVec[0];
+    out.nTracks = jet_nTrk;
 
     // JVF 
     // ASM-2014-11-04 :: Remember JVT is gonna replace JVF in Run-II but not yet available
