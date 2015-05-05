@@ -149,8 +149,8 @@ Bool_t SusyNtMaker::Process(Long64_t entry)
     static Long64_t chainEntry = -1;
     chainEntry++;
     m_event.getEntry(chainEntry); // DG 2014-09-19 TEvent wants the chain entry, not the tree entry (?)
+    retrieveCollections();
     const xAOD::EventInfo* eventinfo = XaodAnalysis::xaodEventInfo();
-
     if(m_dbg || chainEntry%5000==0){
         cout << "***********************************************************" << endl;
         cout << "**** Processing entry " << setw(6) << chainEntry
@@ -159,7 +159,7 @@ Bool_t SusyNtMaker::Process(Long64_t entry)
         cout << "***********************************************************" << endl;
     }
     
-    retrieveCollections();
+
     
     if(!m_flagsHaveBeenChecked) {
         m_flagsAreConsistent = runningOptionsAreValid();
@@ -183,9 +183,8 @@ Bool_t SusyNtMaker::Process(Long64_t entry)
             abort();
         }
     }
-    deleteShallowCopies();
     clearOutputObjects();
-    clearContainerPointers();
+    deleteShallowCopies();
     return kTRUE;
 }
 //----------------------------------------------------------
@@ -627,7 +626,7 @@ void SusyNtMaker::storeJet(const xAOD::Jet &in)
     // jetOut->matchTruth    = m_isMC? matchTruthJet(jetIdx) : false;
 
     // B-tagging 
-  //  out.mv1           = (in.btagging())->MV1_discriminant();      // dantrim Apr 15 2015 -- Not available for DC14@8TeV              
+    //out.mv1           = (in.btagging())->MV1_discriminant();      // dantrim Apr 15 2015 -- Not available for DC14@8TeV              
     out.sv1plusip3d   = (in.btagging())->SV1plusIP3D_discriminant();           
     // Most of these are not available in DC14 samples, some obselete (ASM)
     // jetOut->sv0           = element->flavor_weight_SV0();
@@ -1116,9 +1115,8 @@ void SusyNtMaker::doSystematic()
         /*
           Recheck the event selection and save objects scale variation
         */
-        deleteShallowCopies(false);//Don't clear the nominal containers
-        clearContainerPointers(false);
         clearOutputObjects(false);
+        deleteShallowCopies(false);//Don't clear the nominal containers
         selectObjects(ourSys, sysInfo);
         retrieveXaodMet(sysInfo,ourSys);
         assignEventCleaningFlags(); //AT really needed for each systematic ? CHECK
