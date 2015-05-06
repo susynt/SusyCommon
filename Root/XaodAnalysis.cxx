@@ -687,7 +687,10 @@ void XaodAnalysis::selectBaselineObjects(SusyNtSys sys, ST::SystInfo sysInfo)
                          <<" signal? "<<   (bool)(el->auxdata< char >("signal"))
                          <<endl;
         //AT 05-02-15: Minimum kinematic for electrons
-        if( el->pt() * MeV2GeV > 7 &&
+        //dantrim May 5 2015 - thresholds a la ElectronEfficiencyCorrection
+        const xAOD::CaloCluster* cluster = el->caloCluster();
+        double et = cluster->e()/cosh(cluster->eta());
+        if( et * MeV2GeV > 7 &&
             fabs(el->eta()) < 2.47 )
             m_preElectrons.push_back(iEl);
     }
