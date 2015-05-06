@@ -140,7 +140,7 @@ const std::vector<std::string> triggerNames_Run2 = {
     // dielectron triggers
     "HLT_2e12_loose1",
     "HLT_2e12_loose_L12EM10VH",
-    "HLT_2e17_loose",
+    "HLT_2e17_loose1",
     "HLT_2e17_lhloose",
 
     // muon triggers
@@ -163,9 +163,14 @@ const std::vector<std::string> triggerNames_Run2 = {
     "HLT_2mu6",
     "HLT_2mu10",
     "HLT_2mu14",
+    "HLT_mu24_mu8noL1",
+    "HLT_mu14_iloose_mu14",
+    "HLT_mu20_imedium_mu8noL1",
+    "HLT_mu20_iloose_mu8noL1",
 
     // el/mu triggers
     "HLT_e17_loose_mu14",
+    "HLT_e17_medium_mu12",
     
     // multi-lepton triggers
     "HLT_3mu6",
@@ -182,6 +187,7 @@ const std::vector<std::string> triggerNames_Run2 = {
     "HLT_tau35_medium1_calo_tau25_medium1_calo",
 
     // met triggers
+    "HLT_xe50_cell",
     "HLT_xe60",
     "HLT_xe70",
     "HLT_xe100",
