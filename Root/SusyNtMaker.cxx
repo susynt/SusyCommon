@@ -631,7 +631,7 @@ void SusyNtMaker::storeJet(const xAOD::Jet &in)
     // jetOut->matchTruth    = m_isMC? matchTruthJet(jetIdx) : false;
 
     // B-tagging 
-    //out.mv1           = (in.btagging())->MV1_discriminant();      // dantrim Apr 15 2015 -- Not available for DC14@8TeV              
+    out.mv1           = (in.btagging())->MV1_discriminant();      // dantrim Apr 15 2015 -- Not available for DC14@8TeV              
     out.sv1plusip3d   = (in.btagging())->SV1plusIP3D_discriminant();           
     // Most of these are not available in DC14 samples, some obselete (ASM)
     // jetOut->sv0           = element->flavor_weight_SV0();
@@ -1150,7 +1150,7 @@ void SusyNtMaker::saveElectronSF(ST::SystInfo sysInfo, SusyNtSys sys)
     xAOD::ElectronContainer* electrons_nom = xaodElectrons(sysInfo,NtSys::NOM);
 
     if(m_dbg>=5) cout << "saveElectronSF " << NtSys::SusyNtSysNames[sys]  << endl;
-    for(const auto &iEl : m_preElectrons){
+    for(const auto &iEl : m_preElectrons){ //loop over array containing the xAOD electron idx
         const xAOD::Electron* ele = electrons->at(iEl);
         if(m_dbg>=5) cout << "This ele pt " << ele->pt() << " eta " << ele->eta() << " phi " << ele->phi() << endl; 
         
@@ -1168,6 +1168,8 @@ void SusyNtMaker::saveElectronSF(ST::SystInfo sysInfo, SusyNtSys sys)
                     cout << "\t ele_nom pt " << ele_nom->pt() << " eta " << ele_nom->eta() << " phi " << ele_nom->phi() << endl; 
                     ele_susyNt->print();
                 }
+                if( fabs(ele_nom->eta() - ele->eta())>0.001 || fabs(ele_nom->phi() - ele->phi())>0.001)
+                    cout << "WARNING SusyNtMaker::saveElectronSF index mis-match " << endl;
                 break;
             }
         }
@@ -1251,7 +1253,7 @@ void SusyNtMaker::saveMuonSF(ST::SystInfo sysInfo, SusyNtSys sys)
     xAOD::MuonContainer* muons_nom = xaodMuons(sysInfo, NtSys::NOM);
   
     if(m_dbg>=5) cout << "saveMuonSF "  << NtSys::SusyNtSysNames[sys] << endl;
-    for(const auto &iMu : m_preMuons){
+    for(const auto &iMu : m_preMuons){//loop over array containing the xAOD muon idx
         const xAOD::Muon* mu = muons->at(iMu);
         if(m_dbg>=5) cout << "This mu pt " << mu->pt() << " eta " << mu->eta() << " phi " << mu->phi() << endl; 
         
@@ -1269,6 +1271,8 @@ void SusyNtMaker::saveMuonSF(ST::SystInfo sysInfo, SusyNtSys sys)
                     cout << "mu_nom pt " << mu_nom->pt() << " eta " << mu_nom->eta() << " phi " << mu_nom->phi() << endl; 
                     mu_susyNt->print();
                 }
+                if( fabs(mu_nom->eta() - mu->eta())>0.001 || fabs(mu_nom->phi() - mu->phi())>0.001)
+                    cout << "WARNING SusyNtMaker::saveMuonSF index mis-match " << endl;
                 break;
             }
         }
@@ -1303,7 +1307,7 @@ void SusyNtMaker::saveJetSF(ST::SystInfo sysInfo, SusyNtSys sys)
     xAOD::JetContainer* jets_nom = xaodJets(sysInfo,NtSys::NOM);
   
     if(m_dbg>=5) cout << "saveJetSF "  << NtSys::SusyNtSysNames[sys] << endl;
-    for(const auto &iJ : m_preJets){
+    for(const auto &iJ : m_preJets){ //loop over array containing the xAOD electron idx
         const xAOD::Jet* jet = jets->at(iJ);
         if(m_dbg>=5) cout << "This jet pt " << jet->pt() << " eta " << jet->eta() << " phi " << jet->phi() << endl; 
     
@@ -1321,6 +1325,8 @@ void SusyNtMaker::saveJetSF(ST::SystInfo sysInfo, SusyNtSys sys)
                     cout << "jet_nom pt " << jet_nom->pt() << " eta " << jet_nom->eta() << " phi " << jet_nom->phi() << endl; 
                     jet_susyNt->print();
                 }
+                if( fabs(jet_nom->eta() - jet->eta())>0.001 || fabs(jet_nom->phi() - jet->phi())>0.001)
+                    cout << "WARNING SusyNtMaker::savJetSF index mis-match " << endl;
                 break;
             }
         }
@@ -1388,7 +1394,7 @@ void SusyNtMaker::saveTauSF(ST::SystInfo sysInfo, SusyNtSys sys)
     xAOD::TauJetContainer* taus_nom = xaodTaus(sysInfo,NtSys::NOM);
 
     if(m_dbg>=5) cout << "saveTauSF " << NtSys::SusyNtSysNames[sys]  << endl;
-    for(const auto &iTau : m_preTaus){
+    for(const auto &iTau : m_preTaus){ //loop over array containing the xAOD tau idx
         const xAOD::TauJet* tau = taus->at(iTau);
         if(m_dbg>=5)  cout << "This tau pt " << tau->pt() << " eta " << tau->eta() << " phi " << tau->phi() << endl; 
     
@@ -1406,6 +1412,8 @@ void SusyNtMaker::saveTauSF(ST::SystInfo sysInfo, SusyNtSys sys)
                     cout << "tau_nom pt " << tau_nom->pt() << " eta " << tau_nom->eta() << " phi " << tau_nom->phi() << endl; 
                     tau_susyNt->print();
                 }
+                if( fabs(tau_nom->eta() - tau->eta())>0.001 || fabs(tau_nom->phi() - tau->phi())>0.001)
+                    cout << "WARNING SusyNtMaker::saveTauSF index mis-match " << endl;
                 break;
             }
         }
