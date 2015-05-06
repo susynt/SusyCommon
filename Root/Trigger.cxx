@@ -115,29 +115,61 @@ const std::vector<std::string> triggerNames_Run1 = {
 const std::vector<std::string> triggerNames_Run2 = {
     // DC14
     // electron triggers
+    "HLT_e5_etcut",
+    "HLT_e5_lhtight",
+    "HLT_e9_etcut",
+    "HLT_e9_lhtight",
+    "HLT_e14_etcut",
+    "HLT_e14_lhtight",
+    "HLT_e20_medium",
     "HLT_e24_medium1_iloose",
     "HLT_e24_loose1",
+    "HLT_e24_tight_iloose",
+    "HLT_e25_lhvloose_L1EM15",
+    "HLT_e25_etcut_L1EM15",
+    "HLT_e26_tight_iloose",
     "HLT_e26_lhtight_iloose",
     "HLT_e28_tight1_iloose",
+    "HLT_e30_etcut_L1EM15",
+    "HLT_e40_etcut_L1EM15",
+    "HLT_e60_medium",
     "HLT_e60_loose1",
     "HLT_e60_medium1",
     "HLT_e60_lhmedium",
 
     // dielectron triggers
+    "HLT_2e12_loose1",
+    "HLT_2e12_loose_L12EM10VH",
+    "HLT_2e17_loose",
     "HLT_2e17_lhloose",
 
     // muon triggers
+    "HLT_mu4",
+    "HLT_mu6",
+    "HLT_mu10",
+    "HLT_mu14",
+    "HLT_mu18",
+    "HLT_mu20",
+    "HLT_mu22",
+    "HLT_mu24",
+    "HLT_mu24_imedium",
+    "HLT_mu26",
     "HLT_mu26_imedium",
     "HLT_mu50",
     "HLT_mu60_0eta105_msonly",
+    
+    // dimuon triggers
     "HLT_2mu4",
     "HLT_2mu6",
     "HLT_2mu10",
     "HLT_2mu14",
-    "HLT_3mu6",
+
+    // el/mu triggers
+    "HLT_e17_loose_mu14",
     
-    // dimuon triggers
-    "HLT_2mu14",
+    // multi-lepton triggers
+    "HLT_3mu6",
+    "HLT_e12loose_2mu10",
 
     // photon triggers
     "HLT_g120_loose1",
@@ -150,7 +182,10 @@ const std::vector<std::string> triggerNames_Run2 = {
     "HLT_tau35_medium1_calo_tau25_medium1_calo",
 
     // met triggers
+    "HLT_xe60",
+    "HLT_xe70",
     "HLT_xe100",
+    "HLT_xe100_cell",
 
     // jet triggers
     "HLT_j400",
