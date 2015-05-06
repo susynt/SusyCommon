@@ -72,6 +72,8 @@
 
 #include "TSelector.h"
 #include "TTree.h"
+#include "TChain.h"
+#include "TTreeFormula.h"
 
 #include <iostream>
 
@@ -356,7 +358,7 @@ namespace Susy {
     static DataStream streamFromSamplename(const TString &s, bool isdata); ///< guess data stream from sample name
     static bool isDataFromSamplename(const TString &s); ///< guess from sample name whether it's data sample
     static bool isSimuFromSamplename(const TString &s); ///< guess from sample name whether it's a simulated sample
-    static bool isDerivationFromSamplename(const TString &sample); ///< guess from sample name whether it's a DxAOD
+    static bool isDerivationFromMetaData(TTree* tree); ///< From sample MetaData, determine if sample is a derivation
 
 
   protected:
