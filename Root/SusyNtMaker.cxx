@@ -1444,6 +1444,33 @@ SusyNtMaker& SusyNtMaker::initializeCutflowHistograms()
     return *this;
 }
 //----------------------------------------------------------
+SusyNtMaker& SusyNtMaker::writeMetadata()
+{
+    struct {
+        string operator()(const string &s) { return (s.size()==0 ? " Warning, empty string!" : ""); }
+    } warn_if_empty;
+    if(m_dbg){
+        cout<<"Writing the following info to file:"<<endl
+            <<"m_inputContainerName: '"<<m_inputContainerName<<"'"<<warn_if_empty(m_inputContainerName)<<endl
+            <<"m_outputContainerName: '"<<m_outputContainerName<<"'"<<warn_if_empty(m_inputContainerName)<<endl
+            <<"m_productionTag: '"<<m_productionTag<<"'"<<warn_if_empty(m_productionTag)<<endl;
+    }
+    if(m_outTreeFile){
+        TDirectory *current_directory = gROOT->CurrentDirectory();
+        m_outTreeFile->cd();
+        TNamed inputContainerName("inputContainerName", m_inputContainerName.c_str());
+        TNamed outputContainerName("outputContainerName", m_outputContainerName.c_str());
+        TNamed productionTag("productionTag", m_productionTag.c_str());
+        inputContainerName.Write();
+        outputContainerName.Write();
+        productionTag.Write();
+        current_directory->cd();
+    } else {
+        cout<<"SusyNtMaker::writeMetadata: missing output file, cannot write"<<endl;
+    }
+    return *this;
+}
+//----------------------------------------------------------
 bool SusyNtMaker::guessWhetherIsWhSample(const TString &samplename)
 {
     return (samplename.Contains("simplifiedModel_wA_noslep_WH") ||
@@ -1455,6 +1482,7 @@ SusyNtMaker& SusyNtMaker::saveOutputTree()
     m_outTreeFile = m_outTree->GetCurrentFile();
     m_outTreeFile->Write(0, TObject::kOverwrite);
     cout<<"susyNt tree saved to "<<m_outTreeFile->GetName()<<endl;
+    writeMetadata();
     m_outTreeFile->Close();
     return *this;
 }
