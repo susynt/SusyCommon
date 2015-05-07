@@ -1894,19 +1894,20 @@ bool XaodAnalysis::isDerivationFromMetaData(TTree* intree)
 {
     // Following implementation in SUSYToolsTester
     bool is_derived = false;
-    TDirectory* treeDir = intree->GetDirectory();
-    TTree* MetaData = dynamic_cast<TTree*>(treeDir->Get("MetaData"));
- //   TTree* MetaData = dynamic_cast<TTree*>(intree->GetFile()->Get("MetaData"));
-    if(MetaData) {
-        TTreeFormula* streamAOD = new TTreeFormula("StreamAOD","StreamAOD",MetaData);
-        if(streamAOD->GetNcodes() < 1) {
-            // This is a derivation
-            is_derived = true;
-            cout << "This file is a derivation" << endl;
-        }
-        else{
-            cout << "This file is NOT a derivation" << endl;
-        }
+    TDirectory* treeDir = intree ? intree->GetDirectory() : nullptr;
+    TTree* metadata = nullptr;
+    if(treeDir){
+        if(TObject *obj = treeDir->Get("MetaData"))
+            metadata = static_cast<TTree*>(obj);
+    } else {
+        cout<<"XaodAnalysis::isDerivationFromMetaData: cannot get tree directory"<<endl;
+    }
+    if(metadata){
+        TTreeFormula streamAOD("StreamAOD", "StreamAOD", metadata);
+        is_derived = (streamAOD.GetNcodes() < 1); // DG don't understand the logic here, should clarify
+        cout<<"This file is "<<(is_derived ? "" : "NOT ")<<"a derivation"<<endl;
+    } else {
+        cout<<"XaodAnalysis::isDerivationFromMetaData: cannot get metadata tree"<<endl;
     }
     return is_derived;
 }
