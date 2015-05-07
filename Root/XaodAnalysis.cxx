@@ -106,7 +106,7 @@ void XaodAnalysis::Init(TTree *tree)
 
     m_event.readFrom(tree);
     m_isMC = XaodAnalysis::isSimuFromSamplename(m_sample);
-    m_isDerivation = XaodAnalysis::isDerivationFromSamplename(m_sample); // dantrim event shape
+    m_isDerivation = XaodAnalysis::isDerivationFromMetaData(tree); // dantrim event shape
     bool isData = XaodAnalysis::isDataFromSamplename(m_sample);
     m_stream = XaodAnalysis::streamFromSamplename(m_sample, isData);
     initSusyTools();
@@ -232,6 +232,11 @@ XaodAnalysis& XaodAnalysis::initSusyTools()
         m_susyObj[i]->setProperty("METInputCont", "MET_RefFinalFix");
         m_susyObj[i]->setProperty("METInputMap", "METMap_RefFinalFix");
 
+  // dantrim May 6 2015 - Jet calibration for derivations, and GSC
+        if(m_isDerivation) { m_susyObj[i]->setProperty("DoJetAreaCalib", true); }
+        else { m_susyObj[i]->setProperty("DoJetAreaCalib", false); }
+        m_susyObj[i]->setProperty("DoJetGSCCalib", true);
+
         if(m_susyObj[i]->SUSYToolsInit().isFailure() ) {
             cout << "XaodAnalysis: Failed to initialise tools in SUSYToolsInit()... Aborting" << endl;
             abort();
@@ -249,6 +254,9 @@ XaodAnalysis& XaodAnalysis::initSusyTools()
                 cout << " Property << " << x.first << ": " << foo << endl;
             }
         }
+        
+        CHECK( m_susyObj[i]->SUSYToolsInit() );
+
     }
 
     return *this;
@@ -531,7 +539,7 @@ xAOD::JetContainer* XaodAnalysis::xaodJets(ST::SystInfo sysInfo, SusyNtSys sys)
     if(sys!=NtSys::NOM && syst_affectsJets){
         if(m_xaodJets==NULL){
             // dantrim event shape
-            if ( m_isDerivation ) m_escopier->renameEventDensities();
+         //   if ( m_isDerivation ) m_escopier->renameEventDensities();
             m_susyObj[m_eleIDDefault]->GetJets(m_xaodJets, m_xaodJetsAux);
         }
         if(m_dbg>=5) cout << "xaodJets " << m_xaodJets->size() << endl;
@@ -540,7 +548,7 @@ xAOD::JetContainer* XaodAnalysis::xaodJets(ST::SystInfo sysInfo, SusyNtSys sys)
     else{
         if(m_xaodJets_nom==NULL){
             // dantrim event shape
-            if ( m_isDerivation ) m_escopier->renameEventDensities();
+         //   if ( m_isDerivation ) m_escopier->renameEventDensities();
             m_susyObj[m_eleIDDefault]->GetJets(m_xaodJets_nom, m_xaodJetsAux_nom);
             if(m_dbg>=5) cout << "xaodJets_nom " << m_xaodJets_nom->size() << endl;
         }
@@ -705,7 +713,10 @@ void XaodAnalysis::selectBaselineObjects(SusyNtSys sys, ST::SystInfo sysInfo)
                          <<" signal? "<<   (bool)(el->auxdata< char >("signal"))
                          <<endl;
         //AT 05-02-15: Minimum kinematic for electrons
-        if( el->pt() * MeV2GeV > 7 &&
+        //dantrim May 5 2015 - thresholds a la ElectronEfficiencyCorrection
+        const xAOD::CaloCluster* cluster = el->caloCluster();
+        double et = cluster->e()/cosh(cluster->eta());
+        if( et * MeV2GeV > 7 &&
             fabs(el->eta()) < 2.47 )
             m_preElectrons.push_back(iEl);
     }
@@ -1900,14 +1911,24 @@ bool XaodAnalysis::isSimuFromSamplename(const TString &s)
     return !XaodAnalysis::isDataFromSamplename(s);
 }
 //----------------------------------------------------------
-bool XaodAnalysis::isDerivationFromSamplename(const TString &sample)
+bool XaodAnalysis::isDerivationFromMetaData(TTree* intree)
 {
+    // Following implementation in SUSYToolsTester
     bool is_derived = false;
-    if ( sample.Contains("derived", TString::kIgnoreCase) ) { 
-        is_derived = true; 
-        cout << "This file is a derivation" << endl;
+    TDirectory* treeDir = intree->GetDirectory();
+    TTree* MetaData = dynamic_cast<TTree*>(treeDir->Get("MetaData"));
+ //   TTree* MetaData = dynamic_cast<TTree*>(intree->GetFile()->Get("MetaData"));
+    if(MetaData) {
+        TTreeFormula* streamAOD = new TTreeFormula("StreamAOD","StreamAOD",MetaData);
+        if(streamAOD->GetNcodes() < 1) {
+            // This is a derivation
+            is_derived = true;
+            cout << "This file is a derivation" << endl;
+        }
+        else{
+            cout << "This file is NOT a derivation" << endl;
+        }
     }
-    
     return is_derived;
 }
 //----------------------------------------------------------
