@@ -581,20 +581,8 @@ void SusyNtMaker::storeMuon(const xAOD::Muon &in)
     // muOut->trigFlags      = m_muoTrigFlags[ lepIn->idx() ];
 
     // Scale Factors
-    // ASM-2014-11-02 :: How to get the uncertatinty?
-    {
-        float value = 1.0;
-        float value_err = 0.0; // ASM-2014-11-02 0. for the time being
-        if(m_isMC) {
-            CP::CorrectionCode result = m_muonEfficiencySFTool->getEfficiencyScaleFactor( in, value );
-            if( result == CP::CorrectionCode::OutOfValidityRange ) {
-                // cout << "ASM :: getEfficiencyScaleFactor out of validity range " << endl;
-                value = 0.0;
-            }
-        }
-        out.effSF    = value;
-        out.errEffSF = value_err;
-    }
+    out.effSF    = m_isMC ? m_susyObj[m_eleIDDefault]->GetSignalMuonSF(in) : 1; 
+    out.errEffSF = 0; // ASM - 07/5/2015 - Pending implementation
 
     // ASM-2014-11-02 :: Store to be true at the moment
     all_available =  false;

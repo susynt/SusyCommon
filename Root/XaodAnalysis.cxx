@@ -83,7 +83,6 @@ XaodAnalysis::XaodAnalysis() :
     m_elecSelLikelihoodMedium_nod0(0),
     m_elecSelLikelihoodTight_nod0(0),
 	m_pileupReweightingTool(0),
-	m_muonEfficiencySFTool(0),
     m_muonSelectionTool(0),
 	m_tauTruthMatchingTool(0),
 	m_tauTruthTrackMatchingTool(0),
@@ -191,7 +190,6 @@ void XaodAnalysis::Terminate()
     delete m_elecSelLikelihoodTight_nod0;
 
     delete m_pileupReweightingTool;
-    delete m_muonEfficiencySFTool;
     delete m_muonSelectionTool;
     delete m_tauTruthMatchingTool;
     delete m_tauTruthTrackMatchingTool;
@@ -369,11 +367,6 @@ void XaodAnalysis::initElectronTools()
 //----------------------------------------------------------
 void XaodAnalysis::initMuonTools()
 {
-    m_muonEfficiencySFTool = new CP::MuonEfficiencyScaleFactors("MuonEfficiencyScaleFactors");
-    CHECK( m_muonEfficiencySFTool->setProperty("WorkingPoint","CBandST") );
-    CHECK( m_muonEfficiencySFTool->setProperty("DataPeriod","2012") );
-    CHECK( m_muonEfficiencySFTool->initialize() );
-
     m_muonSelectionTool = new CP::MuonSelectionTool("MuonSelectionTool_VeryLoose");
     CHECK( m_muonSelectionTool->setProperty( "MaxEta", 2.5 ) );
     CHECK( m_muonSelectionTool->setProperty( "MuQuality", int(xAOD::Muon::VeryLoose) ));// Warning: includes bad muons!

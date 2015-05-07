@@ -586,7 +586,6 @@ namespace Susy {
 
     CP::PileupReweightingTool           *m_pileupReweightingTool;
 
-    CP::MuonEfficiencyScaleFactors      *m_muonEfficiencySFTool; 
     CP::MuonSelectionTool               *m_muonSelectionTool;
 
     //Tau truth matchong tools
