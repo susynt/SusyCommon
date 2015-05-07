@@ -80,7 +80,8 @@
 using namespace Susy;
 using namespace NtSys;
 
-// dantrim trig
+// fw declarations
+// (dantrim trig)
 namespace TrigConf {
     class xAODConfigTool;
 }
@@ -89,6 +90,7 @@ namespace Trig {
     class FeatureContainer;
 }
 
+class TDirectory;
 
 namespace Susy {
   
@@ -358,7 +360,15 @@ namespace Susy {
     static DataStream streamFromSamplename(const TString &s, bool isdata); ///< guess data stream from sample name
     static bool isDataFromSamplename(const TString &s); ///< guess from sample name whether it's data sample
     static bool isSimuFromSamplename(const TString &s); ///< guess from sample name whether it's a simulated sample
-    static bool isDerivationFromMetaData(TTree* tree); ///< From sample MetaData, determine if sample is a derivation
+    static bool isDerivationFromMetaData(TTree* tree, bool verbose); ///< From sample MetaData, determine if sample is a derivation
+    /**
+       \brief Retrieve the file holding the tree; for a chain, get the files holding the first tree.
+
+       If you call TTree::GetDirectory on a TChain outside of the
+       event loop, the current file is undefined. This function does
+       some guesswork and picks up the first reasonable file.
+     */
+    static TDirectory* getDirectoryFromTreeOrChain(TTree* tree, bool verbose);
 
 
   protected:
