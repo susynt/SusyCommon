@@ -1452,7 +1452,7 @@ SusyNtMaker& SusyNtMaker::writeMetadata()
     if(m_dbg){
         cout<<"Writing the following info to file:"<<endl
             <<"m_inputContainerName: '"<<m_inputContainerName<<"'"<<warn_if_empty(m_inputContainerName)<<endl
-            <<"m_outputContainerName: '"<<m_outputContainerName<<"'"<<warn_if_empty(m_inputContainerName)<<endl
+            <<"m_outputContainerName: '"<<m_outputContainerName<<"'"<<warn_if_empty(m_outputContainerName)<<endl
             <<"m_productionTag: '"<<m_productionTag<<"'"<<warn_if_empty(m_productionTag)<<endl;
     }
     if(m_outTreeFile){
