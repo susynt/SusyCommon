@@ -95,24 +95,24 @@ namespace Susy {
   const double MeV2GeV=1.0e-3;
 
   enum eleID{
-    VeryLooseLLH=0
-    ,LooseLLH
+    TightLLH=0
     ,MediumLLH
-    ,TightLLH
-    ,LooseLLH_nod0
-    ,MediumLLH_nod0
+    ,LooseLLH
+    ,VeryLooseLLH
     ,TightLLH_nod0
+    ,MediumLLH_nod0
+    ,LooseLLH_nod0    
     ,eleIDInvalid
   };
   
   const std::string eleIDNames[] = {
-    "VeryLooseLLH"
-    ,"LooseLLH"
+    "TightLLH"
     ,"MediumLLH"
-    ,"TightLLH"
-    ,"LooseLLH_nod0"
-    ,"MediumLLH_nod0"
+    ,"LooseLLH"
+    ,"VeryLooseLLH"
     ,"TightLLH_nod0"
+    ,"MediumLLH_nod0"
+    ,"LooseLLH_nod0"
     ,"eleIDInvalid"
   };
 
@@ -496,7 +496,7 @@ namespace Susy {
     eleID m_eleIDDefault;
 
     std::vector<CP::SystematicSet> sysList;  //CP Systematic list
-    std::vector<ST::SystInfo> systInfoList;  //SUSYTools simplify version
+    std::vector<ST::SystInfo> systInfoList;  //SystInfo is a SUSYTools simplify version struct
 
     /// internal pointers to the xaod containers
     /**

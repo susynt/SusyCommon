@@ -37,9 +37,10 @@ function prepare_filelist {
 
     #AOD
     #input_files+="/gdata/atlas/dantrim/SusyAna/xaod/samples/mc14_13TeV.204422.Herwigpp_UEEE4_CTEQ6L1_Tt_T800_L1.merge.AOD.e3064_s1982_s2008_r5787_r5853/AOD.01604167._000001.pool.root.1"
-    input_files+="/data7/atlas/dantrim/SusyAna/xaod/samples/aod_p1872/mc14_13TeV.174830.MadGraphPythia_AUET2BCTEQ6L1_ttbarWjExcl.merge.AOD.e3214_s1982_s2008_r5787_r5853_tid01604171_00/AOD.01604171._000045.pool.root.1"
+    #input_files+="/data7/atlas/dantrim/SusyAna/xaod/samples/aod_p1872/mc14_13TeV.174830.MadGraphPythia_AUET2BCTEQ6L1_ttbarWjExcl.merge.AOD.e3214_s1982_s2008_r5787_r5853_tid01604171_00/AOD.01604171._000045.pool.root.1"
     #DOAD
     #input_files += "/data7/atlas/dantrim/SusyAna/xaod/samples/topApr30/mc14_8TeV.174830.MadGraphPythia_AUET2BCTEQ6L1_ttbarWjExcl.merge.DAOD_SUSY1.e1672_s1933_s1911_r5591_r5625_p1785_tid04554118_00/DAOD_SUSY1.04554118._000009.pool.root.1"
+    input_files += "/gdata/atlas/dantrim/SusyAna/xaod/samples/mc14_13TeV.167757.Sherpa_CT10_ZtautauMassiveCBPt0_CVetoBVeto.merge.DAOD_SUSY1.e2798_s1982_s2008_r5787_r5853_p1872/DAOD_SUSY1.05248867._000003.pool.root.1"
 
     #input_files+="/gdata/atlas/dantrim/SusyAna/xaod/samples/stop2L/mc14_13TeV.110401.PowhegPythia_P2012_ttbar_nonallhad.merge.DAOD_SUSY1.e2928_s1982_s2008_r5787_r5853_p1846/DAOD_SUSY1.04964196._000044.pool.root.1"
 
@@ -90,7 +91,7 @@ function main {
 	#to run on MC
         #NtMaker -f ${input_file} -p mc12a --saveContTau --savePh --nLepFilter 1 --nLepTauFilter 2 --filterTrig -d 0 --sys > ${tmp_detailed_log} 2>&1
 	#-- sys -- broken
-    NtMaker -f ${input_file} -p mc12a --savePh --nLepFilter 1 --nLepTauFilter 2 --filterTrig -d 10 -n 500 \
+    NtMaker -f ${input_file} -s mc14 --nLepFilter 1 -n 100 -d 10 -n 500 \
             2>&1 |tee ${tmp_detailed_log} 
 
 	more ${tmp_detailed_log} |head -n  ${nlines_head} > ${tmp_log} 

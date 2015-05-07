@@ -197,7 +197,7 @@ void XaodAnalysis::Terminate()
     delete m_tauTruthTrackMatchingTool;
 
 
-    for(int i=LooseLLH; i<=TightLLH; i++){
+    for(int i=TightLLH; i<=LooseLLH; i++){
         delete m_susyObj[i];
     }
     // dantrim trig
@@ -210,7 +210,7 @@ void XaodAnalysis::Terminate()
 //----------------------------------------------------------
 XaodAnalysis& XaodAnalysis::initSusyTools()
 {
-    for(int i=LooseLLH; i<=TightLLH; i++){
+    for(int i=TightLLH; i<=LooseLLH; i++){
         string name = "SUSYObjDef_xAOD_" + eleIDNames[i];
         m_susyObj[i] = new ST::SUSYObjDef_xAOD(name);
         cout << "------------------------------------------------------------" << endl;
@@ -218,26 +218,49 @@ XaodAnalysis& XaodAnalysis::initSusyTools()
         cout << "------------------------------------------------------------" << endl;
 
         m_susyObj[i]->msg().setLevel(m_dbg ? MSG::DEBUG : MSG::WARNING);
-        m_susyObj[i]->setProperty("IsData",          static_cast<int>(!m_isMC));
-        m_susyObj[i]->setProperty("IsAtlfast",       static_cast<int>(m_isAF2));
+        //m_susyObj[i]->msg().setLevel(m_dbg ? MSG::VERBOSE : MSG::WARNING);
         m_susyObj[i]->setProperty("EleId", eleIDNames[i]);
-        
         int datasource = !m_isMC ? ST::Data : (m_isAF2 ? ST::AtlfastII : ST::FullSim);
         m_susyObj[i]->setProperty("DataSource",datasource);
+
+        //Other parameter that are undefine in SUSYTools and that we should be setting here
+        //m_susyObj[i]->setProperty("IsDerived",isDerived);//Not used in SUSYTools yet
+        //m_susyObj[i]->setProperty("Is8TeV",is8TeV); <<-- this we should have
 
         //AT 05-01-15 For p1872 Need to use the AODfix version
 #warning p1872 need to use AODfix MET_RefinalFix and MET_TrackFix
         m_susyObj[i]->setProperty("METInputCont", "MET_RefFinalFix");
-        
-        // dantrim May 6 2015 - Jet calibration for derivations, and GSC
+        m_susyObj[i]->setProperty("METInputMap", "METMap_RefFinalFix");
+
+  // dantrim May 6 2015 - Jet calibration for derivations, and GSC
         if(m_isDerivation) { m_susyObj[i]->setProperty("DoJetAreaCalib", true); }
         else { m_susyObj[i]->setProperty("DoJetAreaCalib", false); }
         m_susyObj[i]->setProperty("DoJetGSCCalib", true);
 
+        if(m_susyObj[i]->SUSYToolsInit().isFailure() ) {
+            cout << "XaodAnalysis: Failed to initialise tools in SUSYToolsInit()... Aborting" << endl;
+            abort();
+        }       
+        if(m_susyObj[i]->initialize() != StatusCode::SUCCESS){
+            cout << "XaodAnalysis: Cannot intialize SUSYObjDef_xAOD...Aborting" << endl;
+            abort();
+        }
+        
+        std::cout << " INITIALIZED SUSYTOOLS with properties " << std::endl;
+        for(auto& x:m_susyObj[i]->getPropertyMgr()->getProperties()){
+            if(x.second->typeName()=="string"){
+                string foo;
+                m_susyObj[i]->getPropertyMgr()->getProperty(x.first, foo);
+                cout << " Property << " << x.first << ": " << foo << endl;
+            }
+        }
+        
         CHECK( m_susyObj[i]->SUSYToolsInit() );
+
     }
 
     return *this;
+
 }
 //----------------------------------------------------------
 XaodAnalysis& XaodAnalysis::initLocalTools()
@@ -304,7 +327,7 @@ void XaodAnalysis::initElectronTools()
 
 
     //AT:: LooseLLH & TightLLH are already define in SUSYTools but protected
-    std::string confDir = "ElectronPhotonSelectorTools/offline/mc15_20150408/";
+    std::string confDir = "ElectronPhotonSelectorTools/offline/mc15_20150429/";
 
     m_elecSelLikelihoodVeryLoose = new AsgElectronLikelihoodTool("AsgElectronLikelihoodToolVeryLoose");
     CHECK( m_elecSelLikelihoodVeryLoose->setProperty("primaryVertexContainer","PrimaryVertices") );
@@ -459,8 +482,8 @@ xAOD::MuonContainer* XaodAnalysis::xaodMuons(ST::SystInfo sysInfo, SusyNtSys sys
         if(m_xaodMuons_nom==NULL){
             //m_susyObj[m_eleIDDefault]->GetMuons(m_xaodMuons_nom, m_xaodMuonsAux_nom, false, minPt);
             m_susyObj[m_eleIDDefault]->GetMuons(m_xaodMuons_nom, m_xaodMuonsAux_nom);
+            if(m_dbg>=5) cout << "xaodMuo_nom " << m_xaodMuons_nom->size() << endl;
         }
-        if(m_dbg>=5) cout << "xaodMuo_nom " << m_xaodMuons_nom->size() << endl;
         return m_xaodMuons_nom;
     }
     return NULL;
@@ -482,8 +505,8 @@ xAOD::ElectronContainer* XaodAnalysis::xaodElectrons(ST::SystInfo sysInfo, SusyN
         if(m_xaodElectrons_nom==NULL){
             //m_susyObj[m_eleIDDefault]->GetElectrons(m_xaodElectrons_nom, m_xaodElectronsAux_nom, false, minPt);
             m_susyObj[m_eleIDDefault]->GetElectrons(m_xaodElectrons_nom, m_xaodElectronsAux_nom);
+            if(m_dbg>=5) cout << "xaodEle_nom " << m_xaodElectrons_nom->size() << endl;
         }
-        if(m_dbg>=5) cout << "xaodEle_nom " << m_xaodElectrons_nom->size() << endl;
         return m_xaodElectrons_nom;
     }
     return NULL;
@@ -502,8 +525,8 @@ xAOD::TauJetContainer* XaodAnalysis::xaodTaus(ST::SystInfo sysInfo, SusyNtSys sy
     else{
         if(m_xaodTaus_nom==NULL){
             m_susyObj[m_eleIDDefault]->GetTaus(m_xaodTaus_nom, m_xaodTausAux_nom);
+            if(m_dbg>=5) cout << "xaodTaus_nom " << m_xaodTaus_nom->size() << endl;
         }
-        if(m_dbg>=5) cout << "xaodTaus_nom " << m_xaodTaus_nom->size() << endl;
         return m_xaodTaus_nom;
     }
 
@@ -527,8 +550,8 @@ xAOD::JetContainer* XaodAnalysis::xaodJets(ST::SystInfo sysInfo, SusyNtSys sys)
             // dantrim event shape
          //   if ( m_isDerivation ) m_escopier->renameEventDensities();
             m_susyObj[m_eleIDDefault]->GetJets(m_xaodJets_nom, m_xaodJetsAux_nom);
+            if(m_dbg>=5) cout << "xaodJets_nom " << m_xaodJets_nom->size() << endl;
         }
-        if(m_dbg>=5) cout << "xaodJets_nom " << m_xaodJets_nom->size() << endl;
         return m_xaodJets_nom;
     }
     return NULL;
@@ -537,7 +560,7 @@ xAOD::JetContainer* XaodAnalysis::xaodJets(ST::SystInfo sysInfo, SusyNtSys sys)
 xAOD::PhotonContainer* XaodAnalysis::xaodPhotons(ST::SystInfo sysInfo, SusyNtSys sys)
 {
     bool syst_affectsPhotons   = ST::testAffectsObject(xAOD::Type::Photon, sysInfo.affectsType);
- /*   if(sys!=NtSys::NOM && syst_affectsPhotons){
+    if(sys!=NtSys::NOM && syst_affectsPhotons){
         if(m_xaodPhotons==NULL){
             m_susyObj[m_eleIDDefault]->GetPhotons(m_xaodPhotons, m_xaodPhotonsAux);
         }
@@ -547,11 +570,12 @@ xAOD::PhotonContainer* XaodAnalysis::xaodPhotons(ST::SystInfo sysInfo, SusyNtSys
     else{
         if(m_xaodPhotons_nom==NULL){
             m_susyObj[m_eleIDDefault]->GetPhotons(m_xaodPhotons_nom, m_xaodPhotonsAux_nom);
+            if(m_dbg>=5) cout << "xaodPho_nom " << m_xaodPhotons_nom->size() << endl;
         }
-        if(m_dbg>=5 && m_xaodPhotons_nom) cout << "xaodPho_nom " << m_xaodPhotons_nom->size() << endl;
+
         return m_xaodPhotons_nom;
     }
-*/
+
     return NULL;
 }
 //----------------------------------------------------------
@@ -608,16 +632,10 @@ void XaodAnalysis::retrieveXaodMet( ST::SystInfo sysInfo, SusyNtSys sys)
     if(m_dbg>=5) cout << "retrieveXaodMet " << SusyNtSysNames[sys] << endl;
 
     if(m_metContainer==NULL && sys == NtSys::NOM){
-        // DG 2014-09-01 : todo: define 'MySelJets' collection and use it to rebuild 'MET_MyRefFinal'.
-        // These placeholder labels are currently hardcoded in SUSYObjDef_xAOD::GetMET()
-        // std::pair< xAOD::JetContainer*, xAOD::ShallowAuxContainer* > jets_shallowCopy = xAOD::shallowCopyContainer( *jets );
-
-        m_metContainer = new xAOD::MissingETContainer();
-        m_metAuxContainer = new xAOD::MissingETAuxContainer();
+        m_metContainer = new xAOD::MissingETContainer;
+        m_metAuxContainer = new xAOD::MissingETAuxContainer;
         m_metContainer->setStore( m_metAuxContainer );
-        //AT 12/12/14: don't need these anymore
-        //m_store.record(m_metContainer, "MET_MyRefFinal");
-        //m_store.record(m_metAuxContainer, "MET_MyRefFinalAux.");
+        if(m_dbg>=5) cout << "Made metContainer pointers " << m_metContainer << " eleID " << m_eleIDDefault << endl; 
     }
 
     xAOD::ElectronContainer* electrons = xaodElectrons(sysInfo,sys);
@@ -626,10 +644,6 @@ void XaodAnalysis::retrieveXaodMet( ST::SystInfo sysInfo, SusyNtSys sys)
     xAOD::TauJetContainer*   taus      = xaodTaus(sysInfo,sys);
     xAOD::PhotonContainer*   photons   = xaodPhotons(sysInfo,sys);
 
-    //AT 12/16/14: obsolete - done in GetMet
-    //xAOD::MuonContainer muons_copy_met(SG::VIEW_ELEMENTS);
-    //std::copy_if(muons->begin(), muons->end(), std::back_inserter(muons_copy_met), muon_is_safe_for_met);
-
     m_susyObj[m_eleIDDefault]->GetMET(*m_metContainer,
                                       jets,
                                       electrons,
@@ -637,7 +651,14 @@ void XaodAnalysis::retrieveXaodMet( ST::SystInfo sysInfo, SusyNtSys sys)
                                       photons,
                                       taus);
     
-    if(m_dbg>=5) cout <<"Met rebuilt " << std::endl;
+    if(m_dbg>=5) cout <<"Rebuilt MET with " 
+                      << " ele size " << electrons->size()
+                      << " photons size " << photons->size()
+                      << " taus size " << taus->size()
+                      << " jets size " << jets->size()
+                      << " muons size " << muons->size()
+                      << std::endl;
+
 }
 //----------------------------------------------------------
 const xAOD::VertexContainer* XaodAnalysis::retrieveVertices(xAOD::TEvent &e, bool dbg)

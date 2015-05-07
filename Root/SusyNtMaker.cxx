@@ -706,12 +706,10 @@ void SusyNtMaker::storePhoton(const xAOD::Photon &in)
         all_available = false;
     }
     out.OQ = in.isGoodOQ(xAOD::EgammaParameters::BADCLUSPHOTON);
-    in.isolationValue(out.topoEtcone40,xAOD::Iso::topoetcone40);
-
+//    in.isolationValue(out.topoEtcone40,xAOD::Iso::topoetcone40);
+    out.topoEtcone40 = in.isolationValue(xAOD::Iso::topoetcone40) * MeV2GeV;
+    
     if(m_dbg) cout << "AT: storePhoton: " << out.pt << " " << out.tight << " " << out.isConv << endl;
-    // // Miscellaneous
-    // phoOut->idx    = phIdx;
-    // if(m_dbg>=5) cout << "fillPhotonVar" << endl;
     if(m_dbg && !all_available) cout<<"missing some photon variables"<<endl;
     m_susyNt.pho()->push_back(out);
 }
@@ -726,23 +724,27 @@ void SusyNtMaker::storeTau(const xAOD::TauJet &tau)
     out.eta = eta;
     out.phi = phi;
     out.m   = m;
-    bool all_available=true;
-    out.q = tau.charge();
-    
-    // tauOut->author                = element->author(); // suneet: there is no author flag anymore?
+    out.q = int(tau.charge());//0
+    out.author = 0;
+/*
+    if(tau.isTau(xAOD::TauJetParameters::tauRec))  out.author |= 1<<0;
+    if(tau.isTau(xAOD::TauJetParameters::tau1P3P)) out.author |= 1<<1;
+    if(tau.isTau(xAOD::TauJetParameters::PanTau))  out.author |= 1<<2;
+*/
+   
     out.nTrack = tau.nTracks();
     out.eleBDT = tau.discriminant(xAOD::TauJetParameters::BDTEleScore);
     out.jetBDT = tau.discriminant(xAOD::TauJetParameters::BDTJetScore);
 
-    out.jetBDTSigLoose = tau.isTau(xAOD::TauJetParameters::JetBDTSigLoose);
-    out.jetBDTSigMedium = tau.isTau(xAOD::TauJetParameters::JetBDTSigMedium);
-    out.jetBDTSigTight = tau.isTau(xAOD::TauJetParameters::JetBDTSigTight);
+    out.jetBDTSigLoose = tau.isTau(xAOD::TauJetParameters::JetBDTSigLoose);//0
+    out.jetBDTSigMedium = tau.isTau(xAOD::TauJetParameters::JetBDTSigMedium);//0
+    out.jetBDTSigTight = tau.isTau(xAOD::TauJetParameters::JetBDTSigTight);//0
 
-    out.eleBDTLoose = tau.isTau(xAOD::TauJetParameters::EleBDTLoose);
-    out.eleBDTMedium = tau.isTau(xAOD::TauJetParameters::EleBDTMedium);
-    out.eleBDTTight = tau.isTau(xAOD::TauJetParameters::EleBDTTight);
+    out.eleBDTLoose = tau.isTau(xAOD::TauJetParameters::EleBDTLoose);//0
+    out.eleBDTMedium = tau.isTau(xAOD::TauJetParameters::EleBDTMedium);//ok
+    out.eleBDTTight = tau.isTau(xAOD::TauJetParameters::EleBDTTight);//ok
 
-    out.muonVeto = tau.isTau(xAOD::TauJetParameters::MuonVeto);
+    out.muonVeto = tau.isTau(xAOD::TauJetParameters::MuonVeto);//0
 
    if (m_isMC)
     {
@@ -750,7 +752,7 @@ void SusyNtMaker::storeTau(const xAOD::TauJet &tau)
         m_tauTruthMatchingTool->createTruthTauContainer();
 
         m_tauTruthMatchingTool->applyTruthMatch(tau);
-        if (tau.auxdata<bool>("IsTruthMatched"))
+        if (tau.auxdata<bool>("IsTruthMatched"))//get false always
         {
             out.trueTau = true;
         }
@@ -761,9 +763,11 @@ void SusyNtMaker::storeTau(const xAOD::TauJet &tau)
 
         m_TauEffEleTool->applyEfficiencyScaleFactor(tau);
 
-        out.looseEffSF = tau.auxdata<double>("TauScaleFactorEleID");
-        out.mediumEffSF = tau.auxdata<double>("TauScaleFactorEleID");
-        out.tightEffSF = tau.auxdata<double>("TauScaleFactorEleID");
+        //AT: Add errors!
+        //How is the ID dealt with
+        out.looseEffSF = tau.auxdata<double>("TauScaleFactorEleID");//ok
+        out.mediumEffSF = tau.auxdata<double>("TauScaleFactorEleID");//ok
+        out.tightEffSF = tau.auxdata<double>("TauScaleFactorEleID");//ok
         // stat errors not supported
         // systematics not included here
         double EVetoSF = 0.0;
@@ -771,17 +775,19 @@ void SusyNtMaker::storeTau(const xAOD::TauJet &tau)
         {
             m_TauEffEleTool->getEfficiencyScaleFactor(tau, EVetoSF);
         }
+       //AT:: Add errors - what is store does not make sense. Save same thing.
         out.looseEVetoSF = EVetoSF;
         out.mediumEVetoSF = EVetoSF;
+        out.tightEVetoSF = EVetoSF;
 
     }
-    // tauOut->trueTau               = m_isMC? element->trueTauAssoc_matched() : false;
-    
+    //TO ADD
     // tauOut->matched2TruthLepton   = m_isMC? m_recoTruthMatch.Matched2TruthLepton(*tauLV, true) : false;
     // tauOut->detailedTruthType     = m_isMC? m_recoTruthMatch.TauDetailedFakeType(*tauLV) : -1;
     // tauOut->truthType             = m_isMC? m_recoTruthMatch.TauFakeType(tauOut->detailedTruthType) : -1;
     
-    // // ID efficiency scale factors
+   
+// // ID efficiency scale factors
     // if(m_isMC){
     //   #define TAU_ARGS TauCorrUncert::BDTLOOSE, tauLV->Eta(), element->numTrack()
     //   //TauCorrections* tauSF       = m_susyObj[m_eleIDDefault]->GetTauCorrectionsProvider();
@@ -814,9 +820,7 @@ void SusyNtMaker::storeTau(const xAOD::TauJet &tau)
     
     // tauOut->trigFlags             = m_tauTrigFlags[tauIdx];
     
-    // tauOut->idx   = tauIdx;
-    if(m_dbg && !all_available) cout<<"missing some tau variables"<<endl;
-    m_susyNt.tau()->push_back(out);
+   m_susyNt.tau()->push_back(out);
 }
 
 /*--------------------------------------------------------------------------------*/
@@ -824,127 +828,69 @@ void SusyNtMaker::storeTau(const xAOD::TauJet &tau)
 /*--------------------------------------------------------------------------------*/
 void SusyNtMaker::fillMetVars(SusyNtSys sys)
 {
-
     xAOD::MissingETContainer::const_iterator met_it = m_metContainer->find("Final");
-  
+    if(m_dbg>=15){
+        cout << "Dump MET container - SusyNtMaker " << endl;
+        for(auto it=m_metContainer->begin(), end=m_metContainer->end(); it!=end; ++it){
+            cout << "Met container name " << (*it)->name() << endl;
+        }
+    }
+
     if (met_it == m_metContainer->end()) {
-        cout<<"No RefFinal inside MET container"<<endl;
+        cout<<"WARNING: SusyNtMaker: No RefFinal inside MET container found"<<endl;
         return;
     }
   
     m_susyNt.met()->push_back( Susy::Met() );
     Susy::Met* metOut = & m_susyNt.met()->back();
-    
-    metOut->Et = (*met_it)->met()*MeV2GeV;// m_met.Et();
-    metOut->phi = (*met_it)->phi();// m_met.Phi();
-    metOut->sys = sys;
+    metOut->Et = (*met_it)->met()*MeV2GeV;
+    metOut->phi = (*met_it)->phi();
     metOut->sumet = (*met_it)->sumet()*MeV2GeV;
-    
-    if(m_dbg) cout << " AT:fillMetVars " << metOut->Et << " " << metOut->phi << " " << metOut->lv().Pt() << endl;
+    metOut->sys = sys;
+    if(m_dbg>=5) cout << " AT:fillMetVars " << metOut->Et << " " << metOut->phi << " " << metOut->lv().Pt() << endl;
     
     // RefEle
     xAOD::MissingETContainer::const_iterator met_find = m_metContainer->find("RefEle");
-    if (met_find == m_metContainer->end()) {
-        // cout << "No RefEle inside MET container" << endl;
-    }
-    else {
-        metOut->refEle = (*met_find)->met()*MeV2GeV;
-        metOut->refEle_etx = (*met_find)->mpx()*MeV2GeV;
-        metOut->refEle_ety = (*met_find)->mpy()*MeV2GeV;
+    if (met_find != m_metContainer->end()) {
+        metOut->refEle_et = (*met_find)->met()*MeV2GeV;
+        metOut->refEle_phi = (*met_find)->phi();
         metOut->refEle_sumet = (*met_find)->sumet()*MeV2GeV;
     }
-
-  
     // RefGamma
     met_find = m_metContainer->find("RefGamma");
-    if (met_find == m_metContainer->end()) {
-        // cout << "No RefGamma inside MET container" << endl;
-    }
-    else {
-        metOut->refGamma = (*met_find)->met()*MeV2GeV;
-        metOut->refGamma_etx = (*met_find)->mpx()*MeV2GeV;
-        metOut->refGamma_ety = (*met_find)->mpy()*MeV2GeV;
+    if (met_find != m_metContainer->end()) {
+        metOut->refGamma_et = (*met_find)->met()*MeV2GeV;
+        metOut->refGamma_phi = (*met_find)->phi();
         metOut->refGamma_sumet = (*met_find)->sumet()*MeV2GeV;
     }
-  
     // RefTau
     met_find = m_metContainer->find("RefTau");
-    if (met_find == m_metContainer->end()) {
-        // cout << "No RefTau inside MET container" << endl;
+    if (met_find != m_metContainer->end()) {
+        metOut->refTau_et = (*met_find)->met()*MeV2GeV;
+        metOut->refTau_phi = (*met_find)->phi();
+        metOut->refTau_sumet = (*met_find)->sumet()*MeV2GeV;
     }
-    else {
-        // cout << "Found RefTau inside MET container, not stored." << endl;
-    }
-
-    // Muons
-    met_find = m_metContainer->find("Muons");
-    if (met_find == m_metContainer->end()) {
-        // cout << "No Muons inside MET container" << endl;
-    }
-    else {
-        metOut->refMuo = (*met_find)->met()*MeV2GeV;
-        metOut->refMuo_etx = (*met_find)->mpx()*MeV2GeV;
-        metOut->refMuo_ety = (*met_find)->mpy()*MeV2GeV;
-        metOut->refMuo_sumet = (*met_find)->sumet()*MeV2GeV;
-    }
-
     // RefJet
     met_find = m_metContainer->find("RefJet");
-    if (met_find == m_metContainer->end()) {
-        // cout << "No RefJet inside MET container" << endl;
-    }
-    else {
-        metOut->refJet = (*met_find)->met()*MeV2GeV;
-        metOut->refJet_etx = (*met_find)->mpx()*MeV2GeV;
-        metOut->refJet_ety = (*met_find)->mpy()*MeV2GeV;
+    if (met_find != m_metContainer->end()) {
+        metOut->refJet_et = (*met_find)->met()*MeV2GeV;
+        metOut->refJet_phi = (*met_find)->phi();
         metOut->refJet_sumet = (*met_find)->sumet()*MeV2GeV;
     }
-
-    // SoftClus
-    met_find = m_metContainer->find("SoftClus");
-    if (met_find == m_metContainer->end()) {
-        // cout << "No SoftClus (softTerm) inside MET container" << endl;
-    }
-    else {
-        metOut->softTerm = (*met_find)->met()*MeV2GeV;
-        metOut->softTerm_etx = (*met_find)->mpx()*MeV2GeV;
-        metOut->softTerm_ety = (*met_find)->mpy()*MeV2GeV;
+    // SoftTerm
+    met_find = m_metContainer->find("SoftClus"); //Use GetMet default, so SoftClus is what we get. doTST=true would give SoftTrk
+    if (met_find != m_metContainer->end()) {
+        metOut->softTerm_et = (*met_find)->met()*MeV2GeV;
+        metOut->softTerm_phi = (*met_find)->phi();
         metOut->softTerm_sumet = (*met_find)->sumet()*MeV2GeV;
     }
-
-    // cout << "Done looking for MET terms!" << endl;
-
-#warning fillMetVars not implemented
-    // if(m_dbg>=5) cout << "fillMetVars: sys " << sys << endl;
-
-    // // Just fill the lv for now
-    // double Et  = m_met.Et()/GeV;
-    // double phi = m_met.Phi();
-
-    // //double px = m_met.Px()/GeV;
-    // //double py = m_met.Py()/GeV;
-    // //double pz = m_met.Pz()/GeV;
-    // //double E  = m_met.E()/GeV;
-
-    // // Need to get the metUtility in order to
-    // // get all the sumet terms.  In the future,
-    // // we could use the metUtility to get all the
-    // // comonents instead of the SUSYTools method
-    // // computeMetComponent, but that is up to Steve,
-    // // Lord of the Ntuples.
-    // METUtility* metUtil = m_susyObj[m_eleIDDefault]->GetMETUtility();
-
-    // m_susyNt.met()->push_back( Susy::Met() );
-    // Susy::Met* metOut = & m_susyNt.met()->back();
-    // metOut->Et    = Et;
-    // metOut->phi   = phi;
-    // metOut->sys   = sys;
-    // metOut->sumet = metUtil->getMissingET(METUtil::RefFinal, METUtil::None).sumet()/GeV;
-
-    // // MET comp terms
-    // // Need to save these for the MET systematics as well.
-    // // Use the sys enum to determine which argument to pass to SUSYTools
-    // METUtil::Systematics metSys = METUtil::None;
+    // RefMuons
+    met_find = m_metContainer->find("Muons");
+    if (met_find != m_metContainer->end()) {
+        metOut->refMuo_et = (*met_find)->met()*MeV2GeV;
+        metOut->refMuo_phi = (*met_find)->phi();
+        metOut->refMuo_sumet = (*met_find)->sumet()*MeV2GeV;
+    }
 
     // // I guess these are the only ones we need to specify, the ones specified in SUSYTools...
     // // All the rest should be automatic (I think), e.g. JES
@@ -952,55 +898,6 @@ void SusyNtMaker::fillMetVars(SusyNtSys sys)
     // else if(sys == NtSys_SCALEST_DN) metSys = METUtil::ScaleSoftTermsDown;
     // else if(sys == NtSys_RESOST) metSys = METUtil::ResoSoftTermsUp;
 
-    // // Save the MET terms
-    // TVector2 refEleV   = m_susyObj[m_eleIDDefault]->computeMETComponent(METUtil::RefEle, metSys);
-    // TVector2 refMuoV   = m_susyObj[m_eleIDDefault]->computeMETComponent(METUtil::MuonTotal, metSys);
-    // TVector2 refJetV   = m_susyObj[m_eleIDDefault]->computeMETComponent(METUtil::RefJet, metSys);
-    // TVector2 refGammaV = m_susyObj[m_eleIDDefault]->computeMETComponent(METUtil::RefGamma, metSys);
-    // //TVector2 softJetV  = m_susyObj[m_eleIDDefault]->computeMETComponent(METUtil::SoftJets, metSys);
-    // //TVector2 refCellV  = m_susyObj[m_eleIDDefault]->computeMETComponent(METUtil::CellOutEflow, metSys);
-    // TVector2 softTermV = m_susyObj[m_eleIDDefault]->computeMETComponent(METUtil::SoftTerms, metSys);
-    // //float sumet = m_susyObj[m_eleIDDefault]->_metUtility->getMissingET(METUtil::SoftTerms).sumet();
-
-    //migrated// metOut->refEle     = refEleV.Mod()/GeV;
-    //migrated// metOut->refEle_etx = refEleV.Px()/GeV;
-    //migrated// metOut->refEle_ety = refEleV.Py()/GeV;
-    //migrated// metOut->refEle_sumet = metUtil->getMissingET(METUtil::RefEle, metSys).sumet()/GeV;
-
-    //migrated// metOut->refMuo     = refMuoV.Mod()/GeV;
-    //migrated// metOut->refMuo_etx = refMuoV.Px()/GeV;
-    //migrated// metOut->refMuo_ety = refMuoV.Py()/GeV;
-    //migrated// metOut->refMuo_sumet = metUtil->getMissingET(METUtil::MuonTotal, metSys).sumet()/GeV;
-
-    //migrated// metOut->refJet     = refJetV.Mod()/GeV;
-    //migrated// metOut->refJet_etx = refJetV.Px()/GeV;
-    //migrated// metOut->refJet_ety = refJetV.Py()/GeV;
-    //migrated// metOut->refJet_sumet = metUtil->getMissingET(METUtil::RefJet, metSys).sumet()/GeV;
-
-    //migrated// metOut->refGamma     = refGammaV.Mod()/GeV;
-    //migrated// metOut->refGamma_etx = refGammaV.Px()/GeV;
-    //migrated// metOut->refGamma_ety = refGammaV.Py()/GeV;
-    //migrated// metOut->refGamma_sumet = metUtil->getMissingET(METUtil::RefGamma, metSys).sumet()/GeV;
-
-    // //metOut->softJet     = softJetV.Mod()/GeV;
-    // //metOut->softJet_etx = softJetV.Px()/GeV;
-    // //metOut->softJet_ety = softJetV.Py()/GeV;
-
-    // //metOut->refCell     = refCellV.Mod()/GeV;
-    // //metOut->refCell_etx = refCellV.Px()/GeV;
-    // //metOut->refCell_ety = refCellV.Py()/GeV;
-
-    //migrated// metOut->softTerm     = softTermV.Mod()/GeV;
-    //migrated// metOut->softTerm_etx = softTermV.Px()/GeV;
-    //migrated// metOut->softTerm_ety = softTermV.Py()/GeV;
-    //migrated// metOut->softTerm_sumet = metUtil->getMissingET(METUtil::SoftTerms, metSys).sumet()/GeV;
-
-    // //metOut->refEle        = m_susyObj[m_eleIDDefault]->computeMETComponent(METUtil::RefEle, metSys).Mod()/GeV;
-    // //metOut->refMuo        = m_susyObj[m_eleIDDefault]->computeMETComponent(METUtil::MuonTotal, metSys).Mod()/GeV;
-    // //metOut->refJet        = m_susyObj[m_eleIDDefault]->computeMETComponent(METUtil::RefJet, metSys).Mod()/GeV;
-    // //metOut->refGamma      = m_susyObj[m_eleIDDefault]->computeMETComponent(METUtil::RefGamma, metSys).Mod()/GeV;
-    // //metOut->softJet       = m_susyObj[m_eleIDDefault]->computeMETComponent(METUtil::SoftJets, metSys).Mod()/GeV;
-    // //metOut->refCell       = m_susyObj[m_eleIDDefault]->computeMETComponent(METUtil::CellOutEflow, metSys).Mod()/GeV;
 }
 //----------------------------------------------------------
 void SusyNtMaker::fillMetTrackVars(SusyNtSys sys)
