@@ -706,12 +706,10 @@ void SusyNtMaker::storePhoton(const xAOD::Photon &in)
         all_available = false;
     }
     out.OQ = in.isGoodOQ(xAOD::EgammaParameters::BADCLUSPHOTON);
-    in.isolationValue(out.topoEtcone40,xAOD::Iso::topoetcone40);
-
+//    in.isolationValue(out.topoEtcone40,xAOD::Iso::topoetcone40);
+    out.topoEtcone40 = in.isolationValue(xAOD::Iso::topoetcone40) * MeV2GeV;
+    
     if(m_dbg) cout << "AT: storePhoton: " << out.pt << " " << out.tight << " " << out.isConv << endl;
-    // // Miscellaneous
-    // phoOut->idx    = phIdx;
-    // if(m_dbg>=5) cout << "fillPhotonVar" << endl;
     if(m_dbg && !all_available) cout<<"missing some photon variables"<<endl;
     m_susyNt.pho()->push_back(out);
 }
@@ -726,23 +724,27 @@ void SusyNtMaker::storeTau(const xAOD::TauJet &tau)
     out.eta = eta;
     out.phi = phi;
     out.m   = m;
-    bool all_available=true;
-    out.q = tau.charge();
-    
-    // tauOut->author                = element->author(); // suneet: there is no author flag anymore?
+    out.q = int(tau.charge());//0
+    out.author = 0;
+/*
+    if(tau.isTau(xAOD::TauJetParameters::tauRec))  out.author |= 1<<0;
+    if(tau.isTau(xAOD::TauJetParameters::tau1P3P)) out.author |= 1<<1;
+    if(tau.isTau(xAOD::TauJetParameters::PanTau))  out.author |= 1<<2;
+*/
+   
     out.nTrack = tau.nTracks();
     out.eleBDT = tau.discriminant(xAOD::TauJetParameters::BDTEleScore);
     out.jetBDT = tau.discriminant(xAOD::TauJetParameters::BDTJetScore);
 
-    out.jetBDTSigLoose = tau.isTau(xAOD::TauJetParameters::JetBDTSigLoose);
-    out.jetBDTSigMedium = tau.isTau(xAOD::TauJetParameters::JetBDTSigMedium);
-    out.jetBDTSigTight = tau.isTau(xAOD::TauJetParameters::JetBDTSigTight);
+    out.jetBDTSigLoose = tau.isTau(xAOD::TauJetParameters::JetBDTSigLoose);//0
+    out.jetBDTSigMedium = tau.isTau(xAOD::TauJetParameters::JetBDTSigMedium);//0
+    out.jetBDTSigTight = tau.isTau(xAOD::TauJetParameters::JetBDTSigTight);//0
 
-    out.eleBDTLoose = tau.isTau(xAOD::TauJetParameters::EleBDTLoose);
-    out.eleBDTMedium = tau.isTau(xAOD::TauJetParameters::EleBDTMedium);
-    out.eleBDTTight = tau.isTau(xAOD::TauJetParameters::EleBDTTight);
+    out.eleBDTLoose = tau.isTau(xAOD::TauJetParameters::EleBDTLoose);//0
+    out.eleBDTMedium = tau.isTau(xAOD::TauJetParameters::EleBDTMedium);//ok
+    out.eleBDTTight = tau.isTau(xAOD::TauJetParameters::EleBDTTight);//ok
 
-    out.muonVeto = tau.isTau(xAOD::TauJetParameters::MuonVeto);
+    out.muonVeto = tau.isTau(xAOD::TauJetParameters::MuonVeto);//0
 
    if (m_isMC)
     {
@@ -750,7 +752,7 @@ void SusyNtMaker::storeTau(const xAOD::TauJet &tau)
         m_tauTruthMatchingTool->createTruthTauContainer();
 
         m_tauTruthMatchingTool->applyTruthMatch(tau);
-        if (tau.auxdata<bool>("IsTruthMatched"))
+        if (tau.auxdata<bool>("IsTruthMatched"))//get false always
         {
             out.trueTau = true;
         }
@@ -761,9 +763,11 @@ void SusyNtMaker::storeTau(const xAOD::TauJet &tau)
 
         m_TauEffEleTool->applyEfficiencyScaleFactor(tau);
 
-        out.looseEffSF = tau.auxdata<double>("TauScaleFactorEleID");
-        out.mediumEffSF = tau.auxdata<double>("TauScaleFactorEleID");
-        out.tightEffSF = tau.auxdata<double>("TauScaleFactorEleID");
+        //AT: Add errors!
+        //How is the ID dealt with
+        out.looseEffSF = tau.auxdata<double>("TauScaleFactorEleID");//ok
+        out.mediumEffSF = tau.auxdata<double>("TauScaleFactorEleID");//ok
+        out.tightEffSF = tau.auxdata<double>("TauScaleFactorEleID");//ok
         // stat errors not supported
         // systematics not included here
         double EVetoSF = 0.0;
@@ -771,17 +775,19 @@ void SusyNtMaker::storeTau(const xAOD::TauJet &tau)
         {
             m_TauEffEleTool->getEfficiencyScaleFactor(tau, EVetoSF);
         }
+       //AT:: Add errors - what is store does not make sense. Save same thing.
         out.looseEVetoSF = EVetoSF;
         out.mediumEVetoSF = EVetoSF;
+        out.tightEVetoSF = EVetoSF;
 
     }
-    // tauOut->trueTau               = m_isMC? element->trueTauAssoc_matched() : false;
-    
+    //TO ADD
     // tauOut->matched2TruthLepton   = m_isMC? m_recoTruthMatch.Matched2TruthLepton(*tauLV, true) : false;
     // tauOut->detailedTruthType     = m_isMC? m_recoTruthMatch.TauDetailedFakeType(*tauLV) : -1;
     // tauOut->truthType             = m_isMC? m_recoTruthMatch.TauFakeType(tauOut->detailedTruthType) : -1;
     
-    // // ID efficiency scale factors
+   
+// // ID efficiency scale factors
     // if(m_isMC){
     //   #define TAU_ARGS TauCorrUncert::BDTLOOSE, tauLV->Eta(), element->numTrack()
     //   //TauCorrections* tauSF       = m_susyObj[m_eleIDDefault]->GetTauCorrectionsProvider();
@@ -814,9 +820,7 @@ void SusyNtMaker::storeTau(const xAOD::TauJet &tau)
     
     // tauOut->trigFlags             = m_tauTrigFlags[tauIdx];
     
-    // tauOut->idx   = tauIdx;
-    if(m_dbg && !all_available) cout<<"missing some tau variables"<<endl;
-    m_susyNt.tau()->push_back(out);
+   m_susyNt.tau()->push_back(out);
 }
 
 /*--------------------------------------------------------------------------------*/
