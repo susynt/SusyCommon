@@ -12,7 +12,7 @@
 // Function to grab the trigger "container"           //
 //      Used only at stage of writing the SusyNt      //
 ////////////////////////////////////////////////////////
-std::vector<std::string> getTrigNames(int run);
+std::vector<std::string> getTrigNames(std::string set);
 
 
 ////////////////////////////////////////////////////////
