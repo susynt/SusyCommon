@@ -261,6 +261,27 @@ XaodAnalysis& XaodAnalysis::initSusyTools()
                 m_susyObj[i]->getPropertyMgr()->getProperty(x.first, foo);
                 cout << " Property << " << x.first << ": " << foo << endl;
             }
+            else if(x.second->typeName()=="int"){
+                int foo;
+                m_susyObj[i]->getPropertyMgr()->getProperty(x.first, foo);
+                cout << " Property << " << x.first << ": " << foo << endl;
+            }
+            else if(x.second->typeName()=="float"){
+                float foo;
+                m_susyObj[i]->getPropertyMgr()->getProperty(x.first, foo);
+                cout << " Property << " << x.first << ": " << foo << endl;
+            }
+            else if(x.second->typeName()=="double"){
+                double foo;
+                m_susyObj[i]->getPropertyMgr()->getProperty(x.first, foo);
+                cout << " Property << " << x.first << ": " << foo << endl;
+            }
+            else if(x.second->typeName()=="bool"){
+                bool foo;
+                m_susyObj[i]->getPropertyMgr()->getProperty(x.first, foo);
+                string value = foo ? "True" : "False";
+                cout << " Property << " << x.first << ": " << value << endl;
+            }
         }
         
         CHECK( m_susyObj[i]->SUSYToolsInit() );
