@@ -197,6 +197,10 @@ namespace Susy {
     /// wrapper of retrieveTruthParticles; store outputs as datamembers
     virtual const xAOD::TruthParticleContainer* xaodTruthParticles();
 
+    /// access truth tau particles
+    virtual const xAOD::TruthParticleContainer* xaodTruthTauParticles();
+    virtual const xAOD::TruthParticleAuxContainer* xaodTruthTauParticlesAux();
+
     /// retrieve & build met
     virtual void retrieveXaodMet(ST::SystInfo sysInfo, SusyNtSys sys = NtSys::NOM);
 
@@ -259,6 +263,14 @@ namespace Susy {
     //
     int truthElectronCharge(const xAOD::Electron &in);
     bool isChargeFlip(int recoCharge, int truthCharge);
+
+    //
+    //ID Tau origin
+    //
+    int classifyTau(const xAOD::TauJet &in);
+    
+
+
     //
     // Event cleaning
     //
@@ -524,6 +536,8 @@ namespace Susy {
     const xAOD::TruthEventContainer*    m_xaodTruthEvent;
     const xAOD::TruthParticleContainer* m_xaodTruthParticles;
     xAOD::TruthParticleAuxContainer*    m_xaodTruthParticlesAux;
+    const xAOD::TruthParticleContainer* m_xaodTruthTauParticles;
+    xAOD::TruthParticleAuxContainer*    m_xaodTruthTauParticlesAux;
 
     /// met container
     /**

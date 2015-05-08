@@ -386,16 +386,15 @@ void XaodAnalysis::initTauTools()
     m_tauTruthMatchingTool = new TauAnalysisTools::TauTruthMatchingTool("TauTruthMatchingTool");
     m_tauTruthMatchingTool->msg().setLevel(m_dbg ? MSG::DEBUG : MSG::WARNING);
     CHECK(m_tauTruthMatchingTool->initialize());
+    
+    //AT: 05-07-15: consider adding ?
+    //m_tauTruthMatchingTool->setProperty("SampleType", (int)TauAnalysisTools::SHERPA);
+    //m_tauTruthMatchingTool->setProperty("SampleType", (int)TauAnalysisTools::PYTHIA);//default
 
-    CHECK(m_tauTruthMatchingTool->setTruthParticleContainer(m_xaodTruthParticles));
-    CHECK(m_tauTruthMatchingTool->createTruthTauContainer());
-
-    m_xaodTruthParticles = m_tauTruthMatchingTool->getTruthTauContainer();
-    m_xaodTruthParticlesAux = m_tauTruthMatchingTool->getTruthTauAuxContainer();
-
-    m_TauEffEleTool = new TauAnalysisTools::TauEfficiencyCorrectionsTool("TauEfficiencyEleTool");
+    m_TauEffEleTool = new TauAnalysisTools::TauEfficiencyCorrectionsTool("TauEfficiencyTool");
     m_TauEffEleTool->msg().setLevel(MSG::INFO);
-    CHECK(m_TauEffEleTool->setProperty("EfficiencyCorrectionType", (int) TauAnalysisTools::SFEleID));
+
+    CHECK(m_TauEffEleTool->setProperty("EfficiencyCorrectionType", (int) TauAnalysisTools::SFContJetID));
     CHECK(m_TauEffEleTool->initialize());
 }
 
@@ -616,6 +615,18 @@ const xAOD::TruthParticleContainer* XaodAnalysis::xaodTruthParticles()
     }
     return m_xaodTruthParticles;
 }
+
+//----------------------------------------------------------
+const xAOD::TruthParticleContainer* XaodAnalysis::xaodTruthTauParticles()
+{
+    return m_tauTruthMatchingTool->getTruthTauContainer();
+}
+//----------------------------------------------------------
+const xAOD::TruthParticleAuxContainer* XaodAnalysis::xaodTruthTauParticlesAux()
+{
+    return m_tauTruthMatchingTool->getTruthTauAuxContainer();
+}
+
 //----------------------------------------------------------
 /// temporary patch, see SUSYToolsTester.cxx @ SUSYTools-00-05-00-14
 bool muon_is_safe_for_met(const xAOD::Muon_v1 *mu)
@@ -774,14 +785,21 @@ void XaodAnalysis::selectBaselineObjects(SusyNtSys sys, ST::SystInfo sysInfo)
         iTau++;
         m_susyObj[m_eleIDDefault]->IsSignalTau(*tau);
         if(m_dbg>=5) cout<<"Tau passing"
+                         <<" baseline? "<< bool(tau->auxdata< char >("baseline")==1)
                          <<" signal? "<< bool(tau->auxdata< char >("signal")==1)
                          <<" pt " << tau->pt()
                          <<" eta " << tau->eta()
                          <<" phi " << tau->phi()
+                         <<" q   " << tau->charge()
                          <<endl;
 
-        if((bool)tau->auxdata< char >("baseline")==1) m_preTaus.push_back(iTau);
-        //tau->pt()>20*GeV && abs(tau->eta())<2.47
+        //Container tau: tau->pt()>20*GeV && abs(tau->eta())<2.47 ???  //AT TO ADD
+        //if(tau->pt() * MeV2GeV > 20 && fabs(tau->eta())<2.47) m_preTaus.push_back(iTau);        
+        if((bool)tau->auxdata< char >("baseline")==1){
+            m_preTaus.push_back(iTau);
+            m_baseTaus.push_back(iTau);
+        }
+
     }
     if(m_dbg) cout<<"m_preTaus["<<m_preTaus.size()<<"]"<<endl;
 
@@ -1373,7 +1391,7 @@ int XaodAnalysis::truthElectronCharge(const xAOD::Electron &in)
     else{
         
         if(type==4 && origin==5 && in.nTrackParticles()>1){//Not sure if Type/Origin check really needed
-            for(auto itrk=0; itrk< in.nTrackParticles(); itrk++ ){
+            for(uint itrk=0; itrk< in.nTrackParticles(); itrk++ ){
                 int extraType=0;
                 int extraOrigin=0;
                 const xAOD::TrackParticle* trackParticle = in.trackParticle(itrk);
@@ -1399,6 +1417,45 @@ int XaodAnalysis::truthElectronCharge(const xAOD::Electron &in)
 bool XaodAnalysis::isChargeFlip(int recoCharge, int truthCharge)
 {
     return ( (recoCharge*truthCharge) > 0);
+}
+//----------------------------------------------------------
+int XaodAnalysis::classifyTau(const xAOD::TauJet &in)
+{
+    int type=-1; 
+    int origin=-1;
+    
+    for(uint itrk=0; itrk< in.nTracks(); itrk++){
+            const xAOD::TrackParticle* trackParticle = in.track( itrk );
+            static SG::AuxElement::Accessor<int> acc_truthType("truthType");
+            static SG::AuxElement::Accessor<int> acc_truthOrigin("truthOrigin");
+            if(acc_truthType.isAvailable(*trackParticle))   
+                type   = acc_truthType(*trackParticle);
+            if(acc_truthOrigin.isAvailable(*trackParticle)) 
+                origin = acc_truthOrigin(*trackParticle);
+            if(m_dbg>15) std::cout<<"Tau object. itrk= "<<itrk<<" trackParticle= "<<trackParticle
+                                  <<" Type= "<<type<<" Origin= "<<origin<<std::endl; 
+            // electron faking a tau // (do we need muon faking tau? never saw that)
+            if (isPromptElectron(type,origin)) return ELEC; 
+            // electron conversion faking a tau // maybe just origin==5 ?
+            else if (type==4&&(origin==5||origin==6||origin==7)) return CONV; 
+    }
+            
+// REL20
+/*
+   int JetPartonID = (in.jet())->auxdata< int >("PartonTruthLabelID"); // ghost association
+   int JetConeID   = (in.jet())->auxdata< int >("ConeTruthLabelID"); // cone association
+    
+   if (JetConeID ==15) return PROMPT; // 
+   if (JetConeID ==4 || JetConeID ==5 ) return HF;
+   if (JetPartonID ==1 || JetPartonID ==2 ||  JetPartonID ==3) return QJET; // Light Quark jet
+   if (JetPartonID ==21) return GJET; // Gluon Jet
+   return UK;
+*/        
+//REL19 -> can not separate Q and G, put everything in UK
+   int JetConeID = (in.jet())->auxdata< int >("TruthLabelID");
+   if (JetConeID ==15) return PROMPT; 
+   if (JetConeID ==4 || JetConeID ==5 ) return HF;
+   return UK;
 }
 
 //----------------------------------------------------------

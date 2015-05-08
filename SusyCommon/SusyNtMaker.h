@@ -188,6 +188,10 @@ class SusyNtMaker : public XaodAnalysis
     bool                m_hasSusyProp;  // whether this event is affected by the susy propagator bug (only for c1c1)
 
     // Some object counts
+    uint                n_pre_ele;
+    uint                n_pre_muo;
+    uint                n_pre_tau;
+    uint                n_pre_jet;
     uint                n_base_ele;
     uint                n_base_muo;
     uint                n_base_tau;
