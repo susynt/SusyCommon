@@ -1,5 +1,3 @@
-#include "TSystem.h"
-
 #include "SusyCommon/XaodAnalysis.h"
 //#include "SusyCommon/get_object_functions.h"
 
@@ -9,6 +7,11 @@
 #include "xAODEgamma/EgammaxAODHelpers.h"
 
 #include "SusyNtuple/RecoTruthClassification.h"
+
+#include "TChainElement.h"
+#include "TDirectory.h"
+#include "TFile.h"
+#include "TSystem.h"
 
 #include <limits>
 #include <algorithm> // copy_if, transform
@@ -38,7 +41,7 @@ using Susy::XaodAnalysis;
 //----------------------------------------------------------
 XaodAnalysis::XaodAnalysis() :
     m_sample(""),
-    m_triggerSet(1),
+    m_triggerSet("run2"),
     m_stream(Stream_Unknown),
     m_isDerivation(false), // dantrim event shape
     m_isAF2(false),
@@ -100,12 +103,11 @@ XaodAnalysis::XaodAnalysis() :
 //----------------------------------------------------------
 void XaodAnalysis::Init(TTree *tree)
 {
+    bool verbose = m_dbg>0;
     xAOD::Init("Susy::XaodAnalysis").ignore();
-
-
     m_event.readFrom(tree);
     m_isMC = XaodAnalysis::isSimuFromSamplename(m_sample);
-    m_isDerivation = XaodAnalysis::isDerivationFromMetaData(tree); // dantrim event shape
+    m_isDerivation = XaodAnalysis::isDerivationFromMetaData(tree, verbose); // dantrim event shape
     bool isData = XaodAnalysis::isDataFromSamplename(m_sample);
     m_stream = XaodAnalysis::streamFromSamplename(m_sample, isData);
     initSusyTools();
@@ -379,16 +381,15 @@ void XaodAnalysis::initTauTools()
     m_tauTruthMatchingTool = new TauAnalysisTools::TauTruthMatchingTool("TauTruthMatchingTool");
     m_tauTruthMatchingTool->msg().setLevel(m_dbg ? MSG::DEBUG : MSG::WARNING);
     CHECK(m_tauTruthMatchingTool->initialize());
+    
+    //AT: 05-07-15: consider adding ?
+    //m_tauTruthMatchingTool->setProperty("SampleType", (int)TauAnalysisTools::SHERPA);
+    //m_tauTruthMatchingTool->setProperty("SampleType", (int)TauAnalysisTools::PYTHIA);//default
 
-    CHECK(m_tauTruthMatchingTool->setTruthParticleContainer(m_xaodTruthParticles));
-    CHECK(m_tauTruthMatchingTool->createTruthTauContainer());
-
-    m_xaodTruthParticles = m_tauTruthMatchingTool->getTruthTauContainer();
-    m_xaodTruthParticlesAux = m_tauTruthMatchingTool->getTruthTauAuxContainer();
-
-    m_TauEffEleTool = new TauAnalysisTools::TauEfficiencyCorrectionsTool("TauEfficiencyEleTool");
+    m_TauEffEleTool = new TauAnalysisTools::TauEfficiencyCorrectionsTool("TauEfficiencyTool");
     m_TauEffEleTool->msg().setLevel(MSG::INFO);
-    CHECK(m_TauEffEleTool->setProperty("EfficiencyCorrectionType", (int) TauAnalysisTools::SFEleID));
+
+    CHECK(m_TauEffEleTool->setProperty("EfficiencyCorrectionType", (int) TauAnalysisTools::SFContJetID));
     CHECK(m_TauEffEleTool->initialize());
 }
 
@@ -609,6 +610,18 @@ const xAOD::TruthParticleContainer* XaodAnalysis::xaodTruthParticles()
     }
     return m_xaodTruthParticles;
 }
+
+//----------------------------------------------------------
+const xAOD::TruthParticleContainer* XaodAnalysis::xaodTruthTauParticles()
+{
+    return m_tauTruthMatchingTool->getTruthTauContainer();
+}
+//----------------------------------------------------------
+const xAOD::TruthParticleAuxContainer* XaodAnalysis::xaodTruthTauParticlesAux()
+{
+    return m_tauTruthMatchingTool->getTruthTauAuxContainer();
+}
+
 //----------------------------------------------------------
 /// temporary patch, see SUSYToolsTester.cxx @ SUSYTools-00-05-00-14
 bool muon_is_safe_for_met(const xAOD::Muon_v1 *mu)
@@ -767,14 +780,21 @@ void XaodAnalysis::selectBaselineObjects(SusyNtSys sys, ST::SystInfo sysInfo)
         iTau++;
         m_susyObj[m_eleIDDefault]->IsSignalTau(*tau);
         if(m_dbg>=5) cout<<"Tau passing"
+                         <<" baseline? "<< bool(tau->auxdata< char >("baseline")==1)
                          <<" signal? "<< bool(tau->auxdata< char >("signal")==1)
                          <<" pt " << tau->pt()
                          <<" eta " << tau->eta()
                          <<" phi " << tau->phi()
+                         <<" q   " << tau->charge()
                          <<endl;
 
-        if((bool)tau->auxdata< char >("baseline")==1) m_preTaus.push_back(iTau);
-        //tau->pt()>20*GeV && abs(tau->eta())<2.47
+        //Container tau: tau->pt()>20*GeV && abs(tau->eta())<2.47 ???  //AT TO ADD
+        //if(tau->pt() * MeV2GeV > 20 && fabs(tau->eta())<2.47) m_preTaus.push_back(iTau);        
+        if((bool)tau->auxdata< char >("baseline")==1){
+            m_preTaus.push_back(iTau);
+            m_baseTaus.push_back(iTau);
+        }
+
     }
     if(m_dbg) cout<<"m_preTaus["<<m_preTaus.size()<<"]"<<endl;
 
@@ -1366,7 +1386,7 @@ int XaodAnalysis::truthElectronCharge(const xAOD::Electron &in)
     else{
         
         if(type==4 && origin==5 && in.nTrackParticles()>1){//Not sure if Type/Origin check really needed
-            for(auto itrk=0; itrk< in.nTrackParticles(); itrk++ ){
+            for(uint itrk=0; itrk< in.nTrackParticles(); itrk++ ){
                 int extraType=0;
                 int extraOrigin=0;
                 const xAOD::TrackParticle* trackParticle = in.trackParticle(itrk);
@@ -1392,6 +1412,45 @@ int XaodAnalysis::truthElectronCharge(const xAOD::Electron &in)
 bool XaodAnalysis::isChargeFlip(int recoCharge, int truthCharge)
 {
     return ( (recoCharge*truthCharge) > 0);
+}
+//----------------------------------------------------------
+int XaodAnalysis::classifyTau(const xAOD::TauJet &in)
+{
+    int type=-1; 
+    int origin=-1;
+    
+    for(uint itrk=0; itrk< in.nTracks(); itrk++){
+            const xAOD::TrackParticle* trackParticle = in.track( itrk );
+            static SG::AuxElement::Accessor<int> acc_truthType("truthType");
+            static SG::AuxElement::Accessor<int> acc_truthOrigin("truthOrigin");
+            if(acc_truthType.isAvailable(*trackParticle))   
+                type   = acc_truthType(*trackParticle);
+            if(acc_truthOrigin.isAvailable(*trackParticle)) 
+                origin = acc_truthOrigin(*trackParticle);
+            if(m_dbg>15) std::cout<<"Tau object. itrk= "<<itrk<<" trackParticle= "<<trackParticle
+                                  <<" Type= "<<type<<" Origin= "<<origin<<std::endl; 
+            // electron faking a tau // (do we need muon faking tau? never saw that)
+            if (isPromptElectron(type,origin)) return ELEC; 
+            // electron conversion faking a tau // maybe just origin==5 ?
+            else if (type==4&&(origin==5||origin==6||origin==7)) return CONV; 
+    }
+            
+// REL20
+/*
+   int JetPartonID = (in.jet())->auxdata< int >("PartonTruthLabelID"); // ghost association
+   int JetConeID   = (in.jet())->auxdata< int >("ConeTruthLabelID"); // cone association
+    
+   if (JetConeID ==15) return PROMPT; // 
+   if (JetConeID ==4 || JetConeID ==5 ) return HF;
+   if (JetPartonID ==1 || JetPartonID ==2 ||  JetPartonID ==3) return QJET; // Light Quark jet
+   if (JetPartonID ==21) return GJET; // Gluon Jet
+   return UK;
+*/        
+//REL19 -> can not separate Q and G, put everything in UK
+   int JetConeID = (in.jet())->auxdata< int >("TruthLabelID");
+   if (JetConeID ==15) return PROMPT; 
+   if (JetConeID ==4 || JetConeID ==5 ) return HF;
+   return UK;
 }
 
 //----------------------------------------------------------
@@ -1904,25 +1963,49 @@ bool XaodAnalysis::isSimuFromSamplename(const TString &s)
     return !XaodAnalysis::isDataFromSamplename(s);
 }
 //----------------------------------------------------------
-bool XaodAnalysis::isDerivationFromMetaData(TTree* intree)
+bool XaodAnalysis::isDerivationFromMetaData(TTree* intree, bool verbose)
 {
     // Following implementation in SUSYToolsTester
     bool is_derived = false;
-    TDirectory* treeDir = intree->GetDirectory();
-    TTree* MetaData = dynamic_cast<TTree*>(treeDir->Get("MetaData"));
- //   TTree* MetaData = dynamic_cast<TTree*>(intree->GetFile()->Get("MetaData"));
-    if(MetaData) {
-        TTreeFormula* streamAOD = new TTreeFormula("StreamAOD","StreamAOD",MetaData);
-        if(streamAOD->GetNcodes() < 1) {
-            // This is a derivation
-            is_derived = true;
-            cout << "This file is a derivation" << endl;
-        }
-        else{
-            cout << "This file is NOT a derivation" << endl;
+    TTree* metadata = nullptr;
+    if(TDirectory* treeDir = getDirectoryFromTreeOrChain(intree, verbose)){
+        if(TObject *obj = treeDir->Get("MetaData")){
+            metadata = static_cast<TTree*>(obj);
         }
     }
+    if(metadata){
+        TTreeFormula streamAOD("StreamAOD", "StreamAOD", metadata);
+        // DG 2015-05-17 don't understand the logic here, should clarify...
+        // why using a TTreeFormula that will cause warning msgs? can
+        // we just check whether the branch is there?
+        is_derived = (streamAOD.GetNcodes() < 1);
+        if(verbose) cout<<"This file is "<<(is_derived ? "" : "NOT ")<<"a derivation"<<endl;
+    } else {
+        cout<<"XaodAnalysis::isDerivationFromMetaData: cannot get metadata tree"<<endl;
+    }
     return is_derived;
+}
+//----------------------------------------------------------
+TDirectory* XaodAnalysis::getDirectoryFromTreeOrChain(TTree* tree, bool verbose)
+{
+    TDirectory* dir = nullptr;
+    if(tree){
+        dir = tree->GetDirectory(); // probably a file
+        if(dir){
+            if(verbose) cout<<"got the directory from the tree : "<<dir->GetName()<<endl;
+        } else {
+            if(verbose) cout<<"trying to get the directory from a chain"<<endl;
+            if(TChain *c = dynamic_cast<TChain*>(tree)){
+                if(TChainElement* ce = static_cast<TChainElement*>(c->GetListOfFiles()->First())){
+                    TFile *firstFile = TFile::Open(ce->GetTitle()); // not owned (TChain will close it?), see TChain::GetListOfFiles
+                    dir = static_cast<TDirectory*>(firstFile);
+                }
+            }
+        }
+    }
+    if(verbose)
+        cout<<"getDirectoryFromTreeOrChain: got "<<(dir ? dir->GetName() : "NULL")<<endl;
+    return dir;
 }
 //----------------------------------------------------------
 void XaodAnalysis::selectObjects(SusyNtSys sys, ST::SystInfo sysInfo)

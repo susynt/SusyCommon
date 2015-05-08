@@ -80,7 +80,8 @@
 using namespace Susy;
 using namespace NtSys;
 
-// dantrim trig
+// fw declarations
+// (dantrim trig)
 namespace TrigConf {
     class xAODConfigTool;
 }
@@ -89,6 +90,7 @@ namespace Trig {
     class FeatureContainer;
 }
 
+class TDirectory;
 
 namespace Susy {
   
@@ -134,7 +136,7 @@ namespace Susy {
     /// Due to ROOT's stupid design, need to specify version >= 2 or the tree will not connect automatically
     virtual Int_t   Version() const { return 2; }
     virtual XaodAnalysis& setDebug(int debugLevel) { m_dbg = debugLevel; return *this; }
-    void setTriggerSet(int set) { m_triggerSet = set; }
+    void setTriggerSet(std::string set) { m_triggerSet = set; }
     XaodAnalysis& initSusyTools(); ///< initialize SUSYObjDef_xAOD
     bool processingMc12b() const { return m_mcProd == MCProd_MC12b; }
     
@@ -196,6 +198,10 @@ namespace Susy {
     static const xAOD::TruthParticleContainer* retrieveTruthParticles(xAOD::TEvent &e, bool dbg);
     /// wrapper of retrieveTruthParticles; store outputs as datamembers
     virtual const xAOD::TruthParticleContainer* xaodTruthParticles();
+
+    /// access truth tau particles
+    virtual const xAOD::TruthParticleContainer* xaodTruthTauParticles();
+    virtual const xAOD::TruthParticleAuxContainer* xaodTruthTauParticlesAux();
 
     /// retrieve & build met
     virtual void retrieveXaodMet(ST::SystInfo sysInfo, SusyNtSys sys = NtSys::NOM);
@@ -259,6 +265,14 @@ namespace Susy {
     //
     int truthElectronCharge(const xAOD::Electron &in);
     bool isChargeFlip(int recoCharge, int truthCharge);
+
+    //
+    //ID Tau origin
+    //
+    int classifyTau(const xAOD::TauJet &in);
+    
+
+
     //
     // Event cleaning
     //
@@ -358,14 +372,22 @@ namespace Susy {
     static DataStream streamFromSamplename(const TString &s, bool isdata); ///< guess data stream from sample name
     static bool isDataFromSamplename(const TString &s); ///< guess from sample name whether it's data sample
     static bool isSimuFromSamplename(const TString &s); ///< guess from sample name whether it's a simulated sample
-    static bool isDerivationFromMetaData(TTree* tree); ///< From sample MetaData, determine if sample is a derivation
+    static bool isDerivationFromMetaData(TTree* tree, bool verbose); ///< From sample MetaData, determine if sample is a derivation
+    /**
+       \brief Retrieve the file holding the tree; for a chain, get the files holding the first tree.
+
+       If you call TTree::GetDirectory on a TChain outside of the
+       event loop, the current file is undefined. This function does
+       some guesswork and picks up the first reasonable file.
+     */
+    static TDirectory* getDirectoryFromTreeOrChain(TTree* tree, bool verbose);
 
 
   protected:
 
 
     TString                     m_sample;       // sample name
-    int                         m_triggerSet;   // trigger set to store
+    std::string                 m_triggerSet;   // trigger set to store
     std::vector<std::string>    m_triggerNames; 
     DataStream                  m_stream;       // data stream enum, taken from sample name
     bool                        m_isDerivation; // flag for derived xAOD (DxAOD)
@@ -524,6 +546,8 @@ namespace Susy {
     const xAOD::TruthEventContainer*    m_xaodTruthEvent;
     const xAOD::TruthParticleContainer* m_xaodTruthParticles;
     xAOD::TruthParticleAuxContainer*    m_xaodTruthParticlesAux;
+    const xAOD::TruthParticleContainer* m_xaodTruthTauParticles;
+    xAOD::TruthParticleAuxContainer*    m_xaodTruthTauParticlesAux;
 
     /// met container
     /**

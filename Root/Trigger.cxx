@@ -32,16 +32,10 @@ using namespace std;
 /////////////////////////////////////////////////
 /////////////////////////////////////////////////
 
-
-enum trigger {
-    RUN_1=0,
-    RUN_2=1
-};
-
 ////////////
 // Run 1
 ////////////
-const std::vector<std::string> triggerNames_Run1 = {
+const std::vector<std::string> triggers_run1 = {
     // 2012
     // electron triggers
     "EF_e7_medium1",
@@ -112,7 +106,7 @@ const std::vector<std::string> triggerNames_Run1 = {
 ////////////
 // Run 2
 ////////////
-const std::vector<std::string> triggerNames_Run2 = {
+const std::vector<std::string> triggers_run2 = {
     // DC14
     // electron triggers
     "HLT_e5_etcut",
@@ -198,27 +192,27 @@ const std::vector<std::string> triggerNames_Run2 = {
     "HLT_3j175"
 };
 
-std::vector<std::string> getTrigNames(int run)
+std::vector<std::string> getTrigNames(string set)
 { 
-    if(run==0) { 
+    if(set.compare("run1")==0) { 
         std::cout << std::endl;
         std::cout << " ------------------------ " << std::endl;
         std::cout << " Storing Run1 trigger set " << std::endl;
         std::cout << " ------------------------ " << std::endl;
         std::cout << std::endl;
-        return triggerNames_Run1;
+        return triggers_run1;
     }
-    else if(run==1) {
+    else if(set.compare("run2")==0) {
         std::cout << std::endl;
         std::cout << " ------------------------ " << std::endl;
         std::cout << " Storing Run2 trigger set " << std::endl;
         std::cout << " ------------------------ " << std::endl;
         std::cout << std::endl;
-        return triggerNames_Run2;
+        return triggers_run2;
     }
     else {
-        std::cout << "getTrigNames -- Trigger names for requested run not available. Exitting." << std::endl;
-        exit(1);
+        std::cout << "getTrigNames error: Requested set of triggers ("<< set << ") not available. Storing Run-2 triggers instead." << std::endl;
+        return triggers_run2;
     }
 }
 

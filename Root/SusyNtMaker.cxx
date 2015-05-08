@@ -54,6 +54,10 @@ SusyNtMaker::SusyNtMaker() :
     m_cutstageCounters(SusyNtMaker::cutflowLabels().size(), 0),
     h_passTrigLevel(NULL) // dantrim trig
 {
+    n_pre_ele=0;
+    n_pre_muo=0;
+    n_pre_tau=0;
+    n_pre_jet=0;
     n_base_ele=0;
     n_base_muo=0;
     n_base_tau=0;
@@ -158,9 +162,7 @@ Bool_t SusyNtMaker::Process(Long64_t entry)
              << " event " << setw(7) << eventinfo->eventNumber() << " ****" << endl;
         cout << "***********************************************************" << endl;
     }
-    
-
-    
+        
     if(!m_flagsHaveBeenChecked) {
         m_flagsAreConsistent = runningOptionsAreValid();
         m_flagsHaveBeenChecked=true;
@@ -170,11 +172,13 @@ Bool_t SusyNtMaker::Process(Long64_t entry)
         }
     }
 
-    
-
     fillTriggerHisto(); // dantrim trig
     if(selectEvent() && m_fillNt){
         matchTriggers();
+        if(m_isMC){
+            m_tauTruthMatchingTool->setTruthParticleContainer(xaodTruthParticles());
+            m_tauTruthMatchingTool->createTruthTauContainer();
+        }
         fillNtVars();
         if(m_isMC && m_sys) doSystematic();
         int bytes = m_outTree->Fill();
@@ -399,6 +403,16 @@ void SusyNtMaker::storeElectron(const xAOD::Electron &in)
     //out.ptvarcone20 = in.isolationValue(xAOD::Iso::ptvarcone20) * MeV2GeV;
     //out.ptvarcone30 = in.isolationValue(xAOD::Iso::ptvarcone30) * MeV2GeV;
     
+    if(m_dbg>=10) 
+        cout << "AT: storing in susyNt electron Et "
+             << out.pt
+             << " LLH type "
+             << out.veryLooseLLH << " "  
+             << out.looseLLH << " "  
+             << out.mediumLLH << " "  
+             << out.tightLLH 
+             << endl;
+    
     if(m_isMC){
         //Store the SF of the tightest ID
         bool recoSF=true;
@@ -411,16 +425,7 @@ void SusyNtMaker::storeElectron(const xAOD::Electron &in)
         else if(eleIsOfType(in, eleID::LooseLLH))
             out.effSF = m_susyObj[eleID::LooseLLH]->GetSignalElecSF(in, recoSF, idSF, trigSF);
 
-        if(m_dbg>=10) 
-            cout << "AT: storing in susyNt electron Et "
-                 << out.pt
-                 << " LLH type "
-                 << out.veryLooseLLH << " "  
-                 << out.looseLLH << " "  
-                 << out.mediumLLH << " "  
-                 << out.tightLLH 
-                 << " SF "  
-                 << out.effSF << endl;
+      
        /* 
         >>> dantrim March 2 2015 -- calling AsgElectronEfficiencyTool causes seg-fault?
         AT: Crash is in getting EventInfo L175 ???
@@ -437,7 +442,8 @@ void SusyNtMaker::storeElectron(const xAOD::Electron &in)
         int matchedPdgId = truthEle ? truthEle->pdgId() : -999;
         out.truthType  = isFakeLepton(out.mcOrigin, out.mcType, matchedPdgId); 
         //AT: 05-02-15: Issue accessing Aux of trackParticle in truthElectronCharge. Info not in derived AOD ?
-        //out.isChargeFlip  = m_isMC ? isChargeFlip(in.charge(),truthElectronCharge(in)) : false;
+        //if(eleIsOfType(in, eleID::LooseLLH))
+        //    out.isChargeFlip  = m_isMC ? isChargeFlip(in.charge(),truthElectronCharge(in)) : false;
     }
 
     if(const xAOD::CaloCluster* c = in.caloCluster()) {
@@ -712,8 +718,8 @@ void SusyNtMaker::storeTau(const xAOD::TauJet &tau)
     out.eta = eta;
     out.phi = phi;
     out.m   = m;
-    out.q = int(tau.charge());//0
-    out.author = 0;
+    out.q = int(tau.charge());
+    out.author = 0;//remove ?
 /*
     if(tau.isTau(xAOD::TauJetParameters::tauRec))  out.author |= 1<<0;
     if(tau.isTau(xAOD::TauJetParameters::tau1P3P)) out.author |= 1<<1;
@@ -724,57 +730,62 @@ void SusyNtMaker::storeTau(const xAOD::TauJet &tau)
     out.eleBDT = tau.discriminant(xAOD::TauJetParameters::BDTEleScore);
     out.jetBDT = tau.discriminant(xAOD::TauJetParameters::BDTJetScore);
 
-    out.jetBDTSigLoose = tau.isTau(xAOD::TauJetParameters::JetBDTSigLoose);//0
-    out.jetBDTSigMedium = tau.isTau(xAOD::TauJetParameters::JetBDTSigMedium);//0
-    out.jetBDTSigTight = tau.isTau(xAOD::TauJetParameters::JetBDTSigTight);//0
+    out.jetBDTSigLoose = tau.isTau(xAOD::TauJetParameters::JetBDTSigLoose);
+    out.jetBDTSigMedium = tau.isTau(xAOD::TauJetParameters::JetBDTSigMedium);
+    out.jetBDTSigTight = tau.isTau(xAOD::TauJetParameters::JetBDTSigTight);
 
-    out.eleBDTLoose = tau.isTau(xAOD::TauJetParameters::EleBDTLoose);//0
-    out.eleBDTMedium = tau.isTau(xAOD::TauJetParameters::EleBDTMedium);//ok
-    out.eleBDTTight = tau.isTau(xAOD::TauJetParameters::EleBDTTight);//ok
+    out.eleBDTLoose = tau.isTau(xAOD::TauJetParameters::EleBDTLoose);
+    out.eleBDTMedium = tau.isTau(xAOD::TauJetParameters::EleBDTMedium);
+    out.eleBDTTight = tau.isTau(xAOD::TauJetParameters::EleBDTTight);
 
-    out.muonVeto = tau.isTau(xAOD::TauJetParameters::MuonVeto);//0
-
-   if (m_isMC)
-    {
-        m_tauTruthMatchingTool->setTruthParticleContainer(xaodTruthParticles());
-        m_tauTruthMatchingTool->createTruthTauContainer();
-
+    out.muonVeto = tau.isTau(xAOD::TauJetParameters::MuonVeto);
+    
+    if (m_isMC){
         m_tauTruthMatchingTool->applyTruthMatch(tau);
-        if (tau.auxdata<bool>("IsTruthMatched"))//get false always
-        {
-            out.trueTau = true;
-        }
-        else
-        {
-            out.trueTau = false;
-        }
+        if (tau.auxdata<bool>("IsTruthMatched")) out.trueTau = true;
+        else out.trueTau = false;
+        //tau.auxdata<size_t>("TruthProng");
+        //tau.auxdata<int>("TruthCharge");
+        //tau.auxdata<bool>("IsHadronicTau");
 
         m_TauEffEleTool->applyEfficiencyScaleFactor(tau);
 
-        //AT: Add errors!
+        //AT: Add errors!    
+        //m_TauEffEleTool->getEfficiencyScaleFactor(tau, out.looseEffS);
         //How is the ID dealt with
-        out.looseEffSF = tau.auxdata<double>("TauScaleFactorEleID");//ok
-        out.mediumEffSF = tau.auxdata<double>("TauScaleFactorEleID");//ok
-        out.tightEffSF = tau.auxdata<double>("TauScaleFactorEleID");//ok
+        //This is not correct... we need the tool initialize with various selection!
+        out.looseEffSF = tau.auxdata<double>("TauScaleFactorContJetID");//ok
+        out.mediumEffSF = tau.auxdata<double>("TauScaleFactorContJetID");//ok
+        out.tightEffSF = tau.auxdata<double>("TauScaleFactorContJetID");//ok
         // stat errors not supported
         // systematics not included here
         double EVetoSF = 0.0;
         if (tau.nTracks() == 1)
         {
-            m_TauEffEleTool->getEfficiencyScaleFactor(tau, EVetoSF);
+            m_TauEffEleTool->getEfficiencyScaleFactor(tau, EVetoSF); //?????
         }
        //AT:: Add errors - what is store does not make sense. Save same thing.
         out.looseEVetoSF = EVetoSF;
         out.mediumEVetoSF = EVetoSF;
         out.tightEVetoSF = EVetoSF;
 
+
+        out.truthType = classifyTau(tau);
+        if(m_dbg>10) std::cout << "TauClassifier: found Tau= "<< out.truthType << std::endl;
     }
+
+
     //TO ADD
     // tauOut->matched2TruthLepton   = m_isMC? m_recoTruthMatch.Matched2TruthLepton(*tauLV, true) : false;
     // tauOut->detailedTruthType     = m_isMC? m_recoTruthMatch.TauDetailedFakeType(*tauLV) : -1;
     // tauOut->truthType             = m_isMC? m_recoTruthMatch.TauFakeType(tauOut->detailedTruthType) : -1;
     
    
+   if(m_dbg>5) cout << "SusyNtMaker Filling Tau pt " << out.pt 
+                     << " eta " << out.eta << " phi " << out.phi << " q " << out.q << " " << int(tau.charge()) << endl;
+
+
+
 // // ID efficiency scale factors
     // if(m_isMC){
     //   #define TAU_ARGS TauCorrUncert::BDTLOOSE, tauLV->Eta(), element->numTrack()
@@ -1432,6 +1443,33 @@ SusyNtMaker& SusyNtMaker::initializeCutflowHistograms()
     return *this;
 }
 //----------------------------------------------------------
+SusyNtMaker& SusyNtMaker::writeMetadata()
+{
+    struct {
+        string operator()(const string &s) { return (s.size()==0 ? " Warning, empty string!" : ""); }
+    } warn_if_empty;
+    if(m_dbg){
+        cout<<"Writing the following info to file:"<<endl
+            <<"m_inputContainerName: '"<<m_inputContainerName<<"'"<<warn_if_empty(m_inputContainerName)<<endl
+            <<"m_outputContainerName: '"<<m_outputContainerName<<"'"<<warn_if_empty(m_outputContainerName)<<endl
+            <<"m_productionTag: '"<<m_productionTag<<"'"<<warn_if_empty(m_productionTag)<<endl;
+    }
+    if(m_outTreeFile){
+        TDirectory *current_directory = gROOT->CurrentDirectory();
+        m_outTreeFile->cd();
+        TNamed inputContainerName("inputContainerName", m_inputContainerName.c_str());
+        TNamed outputContainerName("outputContainerName", m_outputContainerName.c_str());
+        TNamed productionTag("productionTag", m_productionTag.c_str());
+        inputContainerName.Write();
+        outputContainerName.Write();
+        productionTag.Write();
+        current_directory->cd();
+    } else {
+        cout<<"SusyNtMaker::writeMetadata: missing output file, cannot write"<<endl;
+    }
+    return *this;
+}
+//----------------------------------------------------------
 bool SusyNtMaker::guessWhetherIsWhSample(const TString &samplename)
 {
     return (samplename.Contains("simplifiedModel_wA_noslep_WH") ||
@@ -1443,6 +1481,7 @@ SusyNtMaker& SusyNtMaker::saveOutputTree()
     m_outTreeFile = m_outTree->GetCurrentFile();
     m_outTreeFile->Write(0, TObject::kOverwrite);
     cout<<"susyNt tree saved to "<<m_outTreeFile->GetName()<<endl;
+    writeMetadata();
     m_outTreeFile->Close();
     return *this;
 }
@@ -1476,10 +1515,16 @@ std::string SusyNtMaker::counterSummary() const
 {
     ostringstream oss;
     oss<<"Object counter"<<endl
+       <<"  PreEle    "<<n_pre_ele   <<endl
+       <<"  PreMuo    "<<n_pre_muo   <<endl
+       <<"  PreTau    "<<n_pre_tau   <<endl
+       <<"  PreJet    "<<n_pre_jet   <<endl
+
        <<"  BaseEle   "<<n_base_ele   <<endl
        <<"  BaseMuo   "<<n_base_muo   <<endl
        <<"  BaseTau   "<<n_base_tau   <<endl
        <<"  BaseJet   "<<n_base_jet   <<endl
+
        <<"  SigEle    "<<n_sig_ele    <<endl
        <<"  SigMuo    "<<n_sig_muo    <<endl
        <<"  SigTau    "<<n_sig_tau    <<endl
@@ -1569,6 +1614,10 @@ bool SusyNtMaker::passObjectlevelSelection()
      
     assignObjectCleaningFlags(sysInfo, sys);
 
+    n_pre_ele += m_preElectrons.size();
+    n_pre_muo += m_preMuons.size();
+    n_pre_tau += m_preTaus.size();
+    n_pre_jet += m_preJets.size();
     n_base_ele += m_baseElectrons.size();
     n_base_muo += m_baseMuons.size();
     n_base_tau += m_baseTaus.size();
