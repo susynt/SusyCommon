@@ -1,5 +1,3 @@
-#include "TSystem.h"
-
 #include "SusyCommon/XaodAnalysis.h"
 //#include "SusyCommon/get_object_functions.h"
 
@@ -9,6 +7,11 @@
 #include "xAODEgamma/EgammaxAODHelpers.h"
 
 #include "SusyNtuple/RecoTruthClassification.h"
+
+#include "TChainElement.h"
+#include "TDirectory.h"
+#include "TFile.h"
+#include "TSystem.h"
 
 #include <limits>
 #include <algorithm> // copy_if, transform
@@ -101,12 +104,11 @@ XaodAnalysis::XaodAnalysis() :
 //----------------------------------------------------------
 void XaodAnalysis::Init(TTree *tree)
 {
+    bool verbose = m_dbg>0;
     xAOD::Init("Susy::XaodAnalysis").ignore();
-
-
     m_event.readFrom(tree);
     m_isMC = XaodAnalysis::isSimuFromSamplename(m_sample);
-    m_isDerivation = XaodAnalysis::isDerivationFromMetaData(tree); // dantrim event shape
+    m_isDerivation = XaodAnalysis::isDerivationFromMetaData(tree, verbose); // dantrim event shape
     bool isData = XaodAnalysis::isDataFromSamplename(m_sample);
     m_stream = XaodAnalysis::streamFromSamplename(m_sample, isData);
     initSusyTools();
@@ -1968,25 +1970,49 @@ bool XaodAnalysis::isSimuFromSamplename(const TString &s)
     return !XaodAnalysis::isDataFromSamplename(s);
 }
 //----------------------------------------------------------
-bool XaodAnalysis::isDerivationFromMetaData(TTree* intree)
+bool XaodAnalysis::isDerivationFromMetaData(TTree* intree, bool verbose)
 {
     // Following implementation in SUSYToolsTester
     bool is_derived = false;
-    TDirectory* treeDir = intree->GetDirectory();
-    TTree* MetaData = dynamic_cast<TTree*>(treeDir->Get("MetaData"));
- //   TTree* MetaData = dynamic_cast<TTree*>(intree->GetFile()->Get("MetaData"));
-    if(MetaData) {
-        TTreeFormula* streamAOD = new TTreeFormula("StreamAOD","StreamAOD",MetaData);
-        if(streamAOD->GetNcodes() < 1) {
-            // This is a derivation
-            is_derived = true;
-            cout << "This file is a derivation" << endl;
-        }
-        else{
-            cout << "This file is NOT a derivation" << endl;
+    TTree* metadata = nullptr;
+    if(TDirectory* treeDir = getDirectoryFromTreeOrChain(intree, verbose)){
+        if(TObject *obj = treeDir->Get("MetaData")){
+            metadata = static_cast<TTree*>(obj);
         }
     }
+    if(metadata){
+        TTreeFormula streamAOD("StreamAOD", "StreamAOD", metadata);
+        // DG 2015-05-17 don't understand the logic here, should clarify...
+        // why using a TTreeFormula that will cause warning msgs? can
+        // we just check whether the branch is there?
+        is_derived = (streamAOD.GetNcodes() < 1);
+        if(verbose) cout<<"This file is "<<(is_derived ? "" : "NOT ")<<"a derivation"<<endl;
+    } else {
+        cout<<"XaodAnalysis::isDerivationFromMetaData: cannot get metadata tree"<<endl;
+    }
     return is_derived;
+}
+//----------------------------------------------------------
+TDirectory* XaodAnalysis::getDirectoryFromTreeOrChain(TTree* tree, bool verbose)
+{
+    TDirectory* dir = nullptr;
+    if(tree){
+        dir = tree->GetDirectory(); // probably a file
+        if(dir){
+            if(verbose) cout<<"got the directory from the tree : "<<dir->GetName()<<endl;
+        } else {
+            if(verbose) cout<<"trying to get the directory from a chain"<<endl;
+            if(TChain *c = dynamic_cast<TChain*>(tree)){
+                if(TChainElement* ce = static_cast<TChainElement*>(c->GetListOfFiles()->First())){
+                    TFile *firstFile = TFile::Open(ce->GetTitle()); // not owned (TChain will close it?), see TChain::GetListOfFiles
+                    dir = static_cast<TDirectory*>(firstFile);
+                }
+            }
+        }
+    }
+    if(verbose)
+        cout<<"getDirectoryFromTreeOrChain: got "<<(dir ? dir->GetName() : "NULL")<<endl;
+    return dir;
 }
 //----------------------------------------------------------
 void XaodAnalysis::selectObjects(SusyNtSys sys, ST::SystInfo sysInfo)

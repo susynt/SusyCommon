@@ -1,3 +1,4 @@
+// Dear emacs, this is -*- c++ -*-
 #ifndef SusyCommon_SusyNtMaker_h
 #define SusyCommon_SusyNtMaker_h
 
@@ -153,12 +154,21 @@ class SusyNtMaker : public XaodAnalysis
     static bool guessWhetherIsWhSample(const TString &samplename);
     std::string timerSummary();
     std::string counterSummary() const;
-
+    /**
+     * \defgroup SusyNt-specific metadata. Must be specified before writing the output.
+     * @{
+     */
+    std::string         m_inputContainerName;  ///< name of the dq2 input container
+    std::string         m_outputContainerName; ///< name of the dq2 output container
+    std::string         m_productionTag;       ///< SusyNtuple production tag
+    /**@}*/
 
  protected:
     SusyNtMaker& initializeOuputTree();
     SusyNtMaker& saveOutputTree();
     SusyNtMaker& initializeCutflowHistograms();
+    /// write to the output file our SusyNt-specific metadata
+    SusyNtMaker& writeMetadata();
  private:
     //static bool isBuggyWwSherpaSample(const int &dsid); //!< see thread "Diboson MC Truth Discrepancy" atlas-phys-susy-d3pd.cern.ch, Mar2013
     //static bool hasRadiativeBquark(const vint_t *pdg, const vint_t *status);
@@ -217,8 +227,6 @@ class SusyNtMaker : public XaodAnalysis
 
     // Timer
     TStopwatch          m_timer;
-
-
 };
 
 } // susy
