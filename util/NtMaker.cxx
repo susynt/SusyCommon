@@ -142,7 +142,7 @@ int main(int argc, char** argv)
   uint nLepFilter = 0;
   uint nLepTauFilter = 2;
   bool filterTrig = false;
-  int trigset     = 1;
+  string trigset     = "run2";
   string inputContainer, outputContainer, ntTag;
 
   cout << "SusyNtMaker" << endl;
@@ -202,8 +202,8 @@ int main(int argc, char** argv)
       nLepTauFilter = atoi(argv[++i]);
     else if (strcmp(argv[i], "--filterTrig") == 0)
       filterTrig = true;
-    else if (strcmp(argv[i], "--trig") == 0)
-      trigset = atoi(argv[++i]);
+    else if (strcmp(argv[i], "--triggerSet") == 0)
+      trigset = argv[++i];
     else if (strcmp(argv[i], "--input") == 0) inputContainer = argv[++i];
     else if (strcmp(argv[i], "--output") == 0) outputContainer = argv[++i];
     else if (strcmp(argv[i], "--tag") == 0) ntTag = argv[++i];
@@ -238,7 +238,7 @@ int main(int argc, char** argv)
   cout << "  nLepFilter    " << nLepFilter    << endl;
   cout << "  nLepTauFilter " << nLepTauFilter << endl;
   cout << "  filterTrig    " << filterTrig    << endl;
-  cout << "  trigset       " << trigset       << endl;
+  cout << "  triggerSet    " << trigset       << endl;
   cout << "  input         " << inputContainer  << endl;
   cout << "  output        " << outputContainer << endl;
   cout << "  ntTag         " << ntTag           << endl;

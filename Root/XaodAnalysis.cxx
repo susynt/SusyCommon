@@ -41,7 +41,7 @@ using Susy::XaodAnalysis;
 //----------------------------------------------------------
 XaodAnalysis::XaodAnalysis() :
     m_sample(""),
-    m_triggerSet(1),
+    m_triggerSet("run2"),
     m_stream(Stream_Unknown),
     m_isDerivation(false), // dantrim event shape
     m_isAF2(false),

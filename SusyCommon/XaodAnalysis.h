@@ -136,7 +136,7 @@ namespace Susy {
     /// Due to ROOT's stupid design, need to specify version >= 2 or the tree will not connect automatically
     virtual Int_t   Version() const { return 2; }
     virtual XaodAnalysis& setDebug(int debugLevel) { m_dbg = debugLevel; return *this; }
-    void setTriggerSet(int set) { m_triggerSet = set; }
+    void setTriggerSet(std::string set) { m_triggerSet = set; }
     XaodAnalysis& initSusyTools(); ///< initialize SUSYObjDef_xAOD
     bool processingMc12b() const { return m_mcProd == MCProd_MC12b; }
     
@@ -387,7 +387,7 @@ namespace Susy {
 
 
     TString                     m_sample;       // sample name
-    int                         m_triggerSet;   // trigger set to store
+    std::string                 m_triggerSet;   // trigger set to store
     std::vector<std::string>    m_triggerNames; 
     DataStream                  m_stream;       // data stream enum, taken from sample name
     bool                        m_isDerivation; // flag for derived xAOD (DxAOD)
