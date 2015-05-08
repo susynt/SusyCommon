@@ -276,9 +276,6 @@ void SusyNtMaker::fillEventVars()
     evt->wPileup          = m_isMC? getPileupWeight(eventinfo) : 1;
     evt->wPileup_up       = m_isMC? getPileupWeightUp() : 1;
     evt->wPileup_dn       = m_isMC? getPileupWeightDown() : 1;
-    evt->xsec             = m_isMC? getXsecWeight() : 1;
-    evt->errXsec          = m_isMC? m_errXsec : 1;
-    evt->sumw             = m_isMC? m_sumw : 1;
 
     if(m_isMC){
         xAOD::TruthEventContainer::const_iterator truthE_itr = xaodTruthEvent()->begin();

@@ -305,11 +305,7 @@ namespace Susy {
     */
     float getEventWeight(float lumi = LUMI_A_E);
     float getXsecWeight(); ///< event weight (xsec*kfac)
-    float getLumiWeight(); ///< lumi weight (lumi/sumw) normalized to 4.7/fb
     void setLumi(float lumi) { m_lumi = lumi; } ///< luminosity to normalize to (in 1/pb)
-    void setSumw(float sumw) { m_sumw = sumw;  } ///< sum of mc weights for sample
-    void setXsec(float xsec) { m_xsec = xsec;  } ///< user cross section, overrides susy cross section
-    void setErrXsec(float err) { m_errXsec = err;  } ///< user cross section uncert
     float getPileupWeight(const xAOD::EventInfo* eventinfo); ///< pileup weight for full dataset: currently A-L
     float getPileupWeightUp();
     float getPileupWeightDown();
@@ -470,9 +466,6 @@ namespace Susy {
     //
 
     float                       m_lumi;         // normalized luminosity (defaults to 4.7/fb)
-    float                       m_sumw;         // sum of mc weights for normalization, must be set by user
-    float                       m_xsec;         // optional user cross section, to override susy xsec usage
-    float                       m_errXsec;      // user cross section uncertainty
 
     uint                        m_mcRun;        // Random run number for MC from pileup tool
     uint                        m_mcLB;         // Random lb number for MC from pileup tool

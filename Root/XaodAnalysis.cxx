@@ -53,9 +53,6 @@ XaodAnalysis::XaodAnalysis() :
     m_doMetMuCorr(false),
     m_doMetFix(false),
     m_lumi(LUMI_A_E),
-    m_sumw(1),
-    m_xsec(-1),
-    m_errXsec(-1),
     m_mcRun(0),
     m_mcLB(0),
     m_sys(false),
@@ -1611,9 +1608,6 @@ float XaodAnalysis::getXsecWeight()
     // }
     // return m_xsecMap[id].xsect() * m_xsecMap[id].kfactor() * m_xsecMap[id].efficiency();
 }
-//----------------------------------------------------------
-float XaodAnalysis::getLumiWeight()
-{ return m_lumi / m_sumw; }
 //----------------------------------------------------------
 float XaodAnalysis::getPileupWeight(const xAOD::EventInfo* eventinfo)
 {
