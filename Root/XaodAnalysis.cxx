@@ -45,7 +45,6 @@ XaodAnalysis::XaodAnalysis() :
     m_stream(Stream_Unknown),
     m_isDerivation(false), // dantrim event shape
     m_isAF2(false),
-    m_mcProd(MCProd_Unknown),
     m_d3pdTag(D3PD_p1328),
     m_selectPhotons(false),
     m_selectTaus(false),
@@ -1870,14 +1869,6 @@ cout.unsetf(ios_base::fixed);
 bool XaodAnalysis::runningOptionsAreValid()
 {
     bool valid=true;
-    if(m_isMC && m_mcProd==MCProd_Unknown){
-        valid=false;
-        if(m_dbg)
-            cout<<"XaodAnalysis::runningOptionsAreValid invalid production"
-                <<" 'MCProd_Unknown' is not a valid choice for simulated samples."
-                <<" You should call XaodAnalysis::setMCProduction()"
-                <<endl;
-    }
     bool isSimulation = xaodEventInfo()->eventType( xAOD::EventInfo::IS_SIMULATION );
     bool isData = !isSimulation;
     if(m_isMC != isSimulation) {
