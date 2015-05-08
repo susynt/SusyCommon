@@ -586,9 +586,36 @@ void SusyNtMaker::storeMuon(const xAOD::Muon &in)
     // ASM-2014-11-02 :: Trigger information in DC14 samples are problematic
     // muOut->trigFlags      = m_muoTrigFlags[ lepIn->idx() ];
 
-    // Scale Factors
-    out.effSF    = m_isMC ? m_susyObj[m_eleIDDefault]->GetSignalMuonSF(in) : 1; 
-    out.errEffSF = 0; // ASM - 07/5/2015 - Pending implementation
+    // Scale Factors and errors
+    out.effSF    = m_isMC ? m_susyObj[m_eleIDDefault]->GetSignalMuonSF(in) : 1; // Make sure this is configured for nominal!!!
+    //out.errEffSF = 0; // No longer using a single systematic
+    if(m_isMC && m_sys) {
+      for(const auto& sysInfo : systInfoList){
+        if(!(sysInfo.affectsType == ST::SystObjType::Muon && sysInfo.affectsWeights)) continue;
+        // Read information
+        const CP::SystematicSet& sys = sysInfo.systset;
+        SusyNtSys ourSys = CPsys2sys((sys.name()).c_str());
+        // Configure the tools
+        if ( m_susyObj[m_eleIDDefault]->applySystematicVariation(sys) != CP::SystematicCode::Ok){
+            cout << "SusyNtMaker::storeMuon - cannot configure SUSYTools for " << sys.name() << endl;
+            continue;
+        }
+        // Get and store the information
+        double scaleFactor = m_susyObj[m_eleIDDefault]->GetSignalMuonSF(in);
+        if(ourSys == NtSys::MUONSFSTAT_UP)      out.errEffSF_uncor_up = scaleFactor - out.effSF;
+        else if(ourSys == NtSys::MUONSFSTAT_DN) out.errEffSF_uncor_dn = scaleFactor - out.effSF;
+        else if(ourSys == NtSys::MUONSFSYS_UP ) out.errEffSF_cor_up   = scaleFactor - out.effSF;
+        else if(ourSys == NtSys::MUONSFSYS_DN ) out.errEffSF_cor_dn   = scaleFactor - out.effSF;
+      }
+      //m_susyObj[m_eleIDDefault]->applySystematicVariation(systInfoList[0]); // Switch back to nominal, necessary??
+    } else {
+      out.errEffSF_uncor_up = out.errEffSF_uncor_dn = out.errEffSF_cor_up = out.errEffSF_cor_dn = 0;
+    }
+    if(m_dbg > 5) cout << "ASM :: Muon scale factors " << out.effSF             << " "
+                                                       << out.errEffSF_uncor_up << " "
+                                                       << out.errEffSF_uncor_dn << " "
+                                                       << out.errEffSF_cor_up   << " "
+                                                       << out.errEffSF_cor_dn   << endl;
 
     // ASM-2014-11-02 :: Store to be true at the moment
     all_available =  false;
