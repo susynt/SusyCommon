@@ -282,11 +282,14 @@ void SusyNtMaker::fillEventVars()
 
     if(m_isMC){
         xAOD::TruthEventContainer::const_iterator truthE_itr = xaodTruthEvent()->begin();
-        // ( *truthE_itr )->pdfInfoParameter(evt->pdf_id1   , xAOD::TruthEvent::PDGID1); // not available for some samples
-        // ( *truthE_itr )->pdfInfoParameter(evt->pdf_id2   , xAOD::TruthEvent::PDGID2);
-        // ( *truthE_itr )->pdfInfoParameter(evt->pdf_x1    , xAOD::TruthEvent::X1);
-        // ( *truthE_itr )->pdfInfoParameter(evt->pdf_x2    , xAOD::TruthEvent::X2);
-        // ( *truthE_itr )->pdfInfoParameter(evt->pdf_scale , xAOD::TruthEvent::SCALE);
+/*
+  AT: test 05-08-15: still crashes
+        ( *truthE_itr )->pdfInfoParameter(evt->pdf_id1   , xAOD::TruthEvent::PDGID1); // not available for some samples
+        ( *truthE_itr )->pdfInfoParameter(evt->pdf_id2   , xAOD::TruthEvent::PDGID2);
+        ( *truthE_itr )->pdfInfoParameter(evt->pdf_x1    , xAOD::TruthEvent::X1);
+        ( *truthE_itr )->pdfInfoParameter(evt->pdf_x2    , xAOD::TruthEvent::X2);
+        ( *truthE_itr )->pdfInfoParameter(evt->pdf_scale , xAOD::TruthEvent::SCALE);
+*/
         // DG what are these two?
         //( *truthE_itr )->pdfInfoParameter(evt->pdf_x1   , xAOD::TruthEvent::x1);
         //( *truthE_itr )->pdfInfoParameter(evt->pdf_x2   , xAOD::TruthEvent::x2);
@@ -634,7 +637,11 @@ void SusyNtMaker::storeJet(const xAOD::Jet &in)
     out.jvf = (PV) ? jetJVF.at(PV->index()) : 0.;    // Upon discussion w/ TJ (2014-12-11)   
 
     // Truth Label/Matching 
-    if (m_isMC) in.getAttribute(xAOD::JetAttribute::JetLabel, out.truthLabel); 
+    if (m_isMC) in.getAttribute("TruthLabelID", out.truthLabel);
+//rel 20
+    //int JetPartonID = (in.jet())->auxdata< int >("PartonTruthLabelID"); // ghost association
+    //int JetConeID   = (in.jet())->auxdata< int >("ConeTruthLabelID"); // cone association
+
     // jetOut->matchTruth    = m_isMC? matchTruthJet(jetIdx) : false;
 
     // B-tagging 
@@ -685,8 +692,7 @@ void SusyNtMaker::storeJet(const xAOD::Jet &in)
     // // 0th element is what we care about
     // int sWord = jetMetEgamma10NoTau.statusWord().at(0);
     // bool passSWord = (MissingETTags::DEFAULT == sWord);       // Note assuming default met..
-    // jetOut->met_wpx = 0; passSWord ? jetMetEgamma10NoTau.wpx().at(0) : 0;
-    // jetOut->met_wpy = 0; passSWord ? jetMetEgamma10NoTau.wpy().at(0) : 0;
+
     if(m_dbg && !all_available) cout<<"missing some jet variables"<<endl;
     m_susyNt.jet()->push_back(out);
 }
