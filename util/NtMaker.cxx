@@ -8,6 +8,7 @@
 #include "SusyCommon/SusyNtMaker.h"
 #include "SusyNtuple/SusyDefs.h"
 #include "SusyNtuple/ChainHelper.h"
+#include "SusyNtuple/string_utils.h"
 
 
 using namespace std;
@@ -254,6 +255,7 @@ int main(int argc, char** argv)
   susyAna->m_inputContainerName = inputContainer;
   susyAna->m_outputContainerName = outputContainer;
   susyAna->m_productionTag = ntTag;
+  susyAna->m_productionCommand = Susy::utils::commandLineArguments(argc, argv);
   // GRL - default is set in SusyD3PDAna::Begin, but now we can override it here
   susyAna->setGRLFile(grl);
 

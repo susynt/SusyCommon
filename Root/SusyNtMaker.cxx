@@ -1461,7 +1461,8 @@ SusyNtMaker& SusyNtMaker::writeMetadata()
         cout<<"Writing the following info to file:"<<endl
             <<"m_inputContainerName: '"<<m_inputContainerName<<"'"<<warn_if_empty(m_inputContainerName)<<endl
             <<"m_outputContainerName: '"<<m_outputContainerName<<"'"<<warn_if_empty(m_outputContainerName)<<endl
-            <<"m_productionTag: '"<<m_productionTag<<"'"<<warn_if_empty(m_productionTag)<<endl;
+            <<"m_productionTag: '"<<m_productionTag<<"'"<<warn_if_empty(m_productionTag)<<endl
+            <<"m_productionCommand: '"<<m_productionCommand<<"'"<<warn_if_empty(m_productionCommand)<<endl;
     }
     if(m_outTreeFile){
         TDirectory *current_directory = gROOT->CurrentDirectory();
@@ -1469,9 +1470,11 @@ SusyNtMaker& SusyNtMaker::writeMetadata()
         TNamed inputContainerName("inputContainerName", m_inputContainerName.c_str());
         TNamed outputContainerName("outputContainerName", m_outputContainerName.c_str());
         TNamed productionTag("productionTag", m_productionTag.c_str());
+        TNamed productionCommand("productionCommand", m_productionCommand.c_str());
         inputContainerName.Write();
         outputContainerName.Write();
         productionTag.Write();
+        productionCommand.Write();
         current_directory->cd();
     } else {
         cout<<"SusyNtMaker::writeMetadata: missing output file, cannot write"<<endl;
