@@ -108,7 +108,9 @@ void help()
   cout << "  --trig set which triggers are  "   << endl;
   cout << "    stored.                      "   << endl;
   cout << "    Default: 1 (0: Run1, 1:Run2) "   << endl;
-
+  cout << "--input  name of the input container" <<endl;
+  cout << "--output name of the output container"<<endl;
+  cout << "--tag    SustNtuple production tag"   <<endl;
   cout << "  -h print this help"                << endl;
 }
 
@@ -141,6 +143,7 @@ int main(int argc, char** argv)
   uint nLepTauFilter = 2;
   bool filterTrig = false;
   int trigset     = 1;
+  string inputContainer, outputContainer, ntTag;
 
   cout << "SusyNtMaker" << endl;
   cout << endl;
@@ -201,6 +204,9 @@ int main(int argc, char** argv)
       filterTrig = true;
     else if (strcmp(argv[i], "--trig") == 0)
       trigset = atoi(argv[++i]);
+    else if (strcmp(argv[i], "--input") == 0) inputContainer = argv[++i];
+    else if (strcmp(argv[i], "--output") == 0) outputContainer = argv[++i];
+    else if (strcmp(argv[i], "--tag") == 0) ntTag = argv[++i];
     else
     {
       help();
@@ -214,7 +220,7 @@ int main(int argc, char** argv)
   cout << "  nEvt          " << nEvt     << endl;
   cout << "  nSkip         " << nSkip    << endl;
   cout << "  dbg           " << dbg      << endl;
-  cout << "  input         " << fileList << endl;
+  cout << "  fileList      " << fileList << endl;
   cout << "  sumw          " << sumw     << endl;
   cout << "  grl           " << grl      << endl;
   cout << "  sys           " << sysOn    << endl;
@@ -233,6 +239,9 @@ int main(int argc, char** argv)
   cout << "  nLepTauFilter " << nLepTauFilter << endl;
   cout << "  filterTrig    " << filterTrig    << endl;
   cout << "  trigset       " << trigset       << endl;
+  cout << "  input         " << inputContainer  << endl;
+  cout << "  output        " << outputContainer << endl;
+  cout << "  ntTag         " << ntTag           << endl;
   cout << endl;
 
 
@@ -266,7 +275,9 @@ int main(int argc, char** argv)
   susyAna->setNLepFilter(nLepFilter);
   susyAna->setNLepTauFilter(nLepTauFilter);
   susyAna->setFilterTrigger(filterTrig);
-
+  susyAna->m_inputContainerName = inputContainer;
+  susyAna->m_outputContainerName = outputContainer;
+  susyAna->m_productionTag = ntTag;
   // GRL - default is set in SusyD3PDAna::Begin, but now we can override it here
   susyAna->setGRLFile(grl);
 
