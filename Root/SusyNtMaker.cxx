@@ -443,7 +443,7 @@ void SusyNtMaker::storeElectron(const xAOD::Electron &in)
         out.truthType  = isFakeLepton(out.mcOrigin, out.mcType, matchedPdgId); 
         //AT: 05-02-15: Issue accessing Aux of trackParticle in truthElectronCharge. Info not in derived AOD ?
         //if(eleIsOfType(in, eleID::LooseLLH))
-        //    out.isChargeFlip  = m_isMC ? isChargeFlip(in.charge(),truthElectronCharge(in)) : false;
+        out.isChargeFlip  = m_isMC ? isChargeFlip(in.charge(),truthElectronCharge(in)) : false;
     }
 
     if(const xAOD::CaloCluster* c = in.caloCluster()) {
@@ -566,13 +566,14 @@ void SusyNtMaker::storeMuon(const xAOD::Muon &in)
     }
     // Truth Flags 
     if(m_isMC) {
-        const xAOD::TrackParticle* trackParticle = in.primaryTrackParticle();
-        //AT 05/01/15: We should not have to do this on baseline only !!!
-        if(trackParticle && in.auxdata<char>("baseline")){
+        const xAOD::TrackParticle* trackParticle = *(in.inDetTrackParticleLink());
+        if(trackParticle){
             static SG::AuxElement::Accessor<int> acc_truthType("truthType");
             static SG::AuxElement::Accessor<int> acc_truthOrigin("truthOrigin");
-            if (acc_truthType.isAvailable(*trackParticle)  ) out.mcType    = acc_truthType(*trackParticle);
-            if (acc_truthOrigin.isAvailable(*trackParticle)) out.mcOrigin  = acc_truthOrigin(*trackParticle);
+            if (acc_truthType.isAvailable(*trackParticle)) 
+                out.mcType    = acc_truthType(*trackParticle);
+            if (acc_truthOrigin.isAvailable(*trackParticle)) 
+                out.mcOrigin  = acc_truthOrigin(*trackParticle);
 
             const xAOD::TruthParticle* truthMu = xAOD::EgammaHelpers::getTruthParticle(trackParticle);
             out.matched2TruthLepton = truthMu ? true : false;

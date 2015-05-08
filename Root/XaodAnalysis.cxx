@@ -1385,33 +1385,45 @@ int XaodAnalysis::truthElectronCharge(const xAOD::Electron &in)
 {
     int type   = xAOD::EgammaHelpers::getParticleTruthType(&in);
     int origin = xAOD::EgammaHelpers::getParticleTruthOrigin(&in);
+
+    if(m_dbg>15) std::cout << "check Charge flip ele " << in.pt()*MeV2GeV 
+                           << " type " << type << " origin " << origin << " nTrk " << in.nTrackParticles() << endl;
+
     if(isPromptElectron(type,origin)){
         const xAOD::TruthParticle* truthEle = xAOD::EgammaHelpers::getTruthParticle(&in);
+        if(m_dbg>15) std::cout << "Truth Prompt ele " << truthEle->pdgId() << " " << in.charge()  << endl;
         if (truthEle->pdgId()==11) return -1;
         if (truthEle->pdgId()==-11) return 1;
     }
-    else{
-        
+    else{        
         if(type==4 && origin==5 && in.nTrackParticles()>1){//Not sure if Type/Origin check really needed
             for(uint itrk=0; itrk< in.nTrackParticles(); itrk++ ){
-                int extraType=0;
-                int extraOrigin=0;
                 const xAOD::TrackParticle* trackParticle = in.trackParticle(itrk);
                 static SG::AuxElement::Accessor<int> acc_truthType("truthType");
                 static SG::AuxElement::Accessor<int> acc_truthOrigin("truthOrigin");
-                if(acc_truthType.isAvailable(*trackParticle)) 
-                    extraType   = acc_truthType(*trackParticle);
-                if(acc_truthOrigin.isAvailable(*trackParticle)) 
-                    extraOrigin = acc_truthOrigin(*trackParticle);
-                if (isPromptElectron(extraType,extraOrigin)) {
-                    const xAOD::TruthParticle* truthEle = xAOD::EgammaHelpers::getTruthParticle(trackParticle);
-                    if (truthEle->pdgId()==11) return -1;
-                    if (truthEle->pdgId()==-11) return 1;
+                if(m_dbg>15) std::cout << "\tNon-prompt ele " << trackParticle << endl;
+                if(trackParticle){//Just in case track got lost in slimming.
+                    int extraType=0;
+                    int extraOrigin=0;
+                    if(acc_truthType.isAvailable(*trackParticle))   extraType   = acc_truthType(*trackParticle);
+                    if(acc_truthOrigin.isAvailable(*trackParticle)) extraOrigin = acc_truthOrigin(*trackParticle);
+                    if(m_dbg>15) std::cout << "\t\t pt " << trackParticle->pt()*MeV2GeV
+                                           << " type " << extraType << " & origin " << extraOrigin << endl;
+                    if(isPromptElectron(extraType,extraOrigin)) {
+                        const xAOD::TruthParticle* truthEle = xAOD::EgammaHelpers::getTruthParticle(trackParticle);
+                        if(m_dbg>15)
+                            std::cout << " \t\t Found charged flipped ?" << truthEle->pdgId() << " " << in.charge() << endl;
+                        if (truthEle->pdgId()==11) return -1;
+                        if (truthEle->pdgId()==-11) return 1;
+                    }
+                }
+                else {
+                    if(m_dbg>15) std::cout << "\t Don't have track " << endl;
                 }
             }
         }
-        return 0;
     }
+    if(m_dbg>15) std::cout << "Cannot determined charge " << std::endl;
     return 0;
 }
 
