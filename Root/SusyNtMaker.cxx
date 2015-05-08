@@ -1664,14 +1664,17 @@ bool SusyNtMaker::passObjectlevelSelection()
     fillCutFlow(pass_e1sj, w);
 
 
-
-//    fillCutFlow.disableFilterNextCuts()(pass_ge1l, w).enableFilterNextCuts();
-//    fillCutFlow(pass_ge2bl, w);
-//    fillCutFlow(pass_ge2l, w);
-//    fillCutFlow(pass_eq3l, w);
-    bool has_at_least_two_base_leptons = pass_ge2bl;
-    if(m_dbg>=5 && !has_at_least_two_base_leptons)
+    // filter
+    bool pass = true;
+    bool pass_nLepFilter( (m_preElectrons.size()+m_preMuons.size()) >= m_nLepFilter );
+    bool trig_has_fired( h_passTrigLevel->Integral(0,-1) > 0. ); // check if any of the triggers fired
+    if(m_filter) {
+        if(m_filterTrigger) { pass = (pass_nLepFilter && trig_has_fired); }
+        else { pass = pass_nLepFilter; }
+    }
+    if(m_dbg>=5 && !pass)
         cout << "SusyNtMaker: fail passObjectlevelSelection " << endl;
-    return has_at_least_two_base_leptons;
+    return pass;
+
 }
 //----------------------------------------------------------
