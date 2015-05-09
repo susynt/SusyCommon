@@ -378,13 +378,13 @@ void SusyNtMaker::storeElectron(const xAOD::Electron &in)
     out.q   = in.charge();
     bool all_available=true;
     
-    out.veryLooseLLH = eleIsOfType(in, eleID::VeryLooseLLH);
-    out.looseLLH = eleIsOfType(in, eleID::LooseLLH);
-    out.mediumLLH = eleIsOfType(in, eleID::MediumLLH);
-    out.tightLLH = eleIsOfType(in, eleID::TightLLH);
-    out.looseLLH_nod0 = eleIsOfType(in, eleID::LooseLLH_nod0);
-    out.mediumLLH_nod0 = eleIsOfType(in, eleID::MediumLLH_nod0);
-    out.tightLLH_nod0 = eleIsOfType(in, eleID::TightLLH_nod0);
+    out.veryLooseLLH = eleIsOfType(in, ElectronId::VeryLooseLLH);
+    out.looseLLH = eleIsOfType(in, ElectronId::LooseLLH);
+    out.mediumLLH = eleIsOfType(in, ElectronId::MediumLLH);
+    out.tightLLH = eleIsOfType(in, ElectronId::TightLLH);
+    out.looseLLH_nod0 = eleIsOfType(in, ElectronId::LooseLLH_nod0);
+    out.mediumLLH_nod0 = eleIsOfType(in, ElectronId::MediumLLH_nod0);
+    out.tightLLH_nod0 = eleIsOfType(in, ElectronId::TightLLH_nod0);
 
     //Isolations
     //AT: Will become obsolete in run-2
@@ -418,12 +418,12 @@ void SusyNtMaker::storeElectron(const xAOD::Electron &in)
         bool recoSF=true;
         bool idSF=true;
         bool trigSF=false;
-        if(eleIsOfType(in, eleID::TightLLH))           
-            out.effSF = m_susyObj[eleID::TightLLH]->GetSignalElecSF(in, recoSF, idSF, trigSF);
-        else if(eleIsOfType(in, eleID::MediumLLH))
-            out.effSF = m_susyObj[eleID::MediumLLH]->GetSignalElecSF(in, recoSF, idSF, trigSF);	 
-        else if(eleIsOfType(in, eleID::LooseLLH))
-            out.effSF = m_susyObj[eleID::LooseLLH]->GetSignalElecSF(in, recoSF, idSF, trigSF);
+        if(eleIsOfType(in, ElectronId::TightLLH))
+            out.effSF = m_susyObj[ElectronId::TightLLH]->GetSignalElecSF(in, recoSF, idSF, trigSF);
+        else if(eleIsOfType(in, ElectronId::MediumLLH))
+            out.effSF = m_susyObj[ElectronId::MediumLLH]->GetSignalElecSF(in, recoSF, idSF, trigSF);
+        else if(eleIsOfType(in, ElectronId::LooseLLH))
+            out.effSF = m_susyObj[ElectronId::LooseLLH]->GetSignalElecSF(in, recoSF, idSF, trigSF);
 
       
        /* 
@@ -442,7 +442,7 @@ void SusyNtMaker::storeElectron(const xAOD::Electron &in)
         int matchedPdgId = truthEle ? truthEle->pdgId() : -999;
         out.truthType  = isFakeLepton(out.mcOrigin, out.mcType, matchedPdgId); 
         //AT: 05-02-15: Issue accessing Aux of trackParticle in truthElectronCharge. Info not in derived AOD ?
-        //if(eleIsOfType(in, eleID::LooseLLH))
+        //if(eleIsOfType(in, ElectronId::LooseLLH))
         //    out.isChargeFlip  = m_isMC ? isChargeFlip(in.charge(),truthElectronCharge(in)) : false;
     }
 

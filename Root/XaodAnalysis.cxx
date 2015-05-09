@@ -219,7 +219,8 @@ void XaodAnalysis::Terminate()
 XaodAnalysis& XaodAnalysis::initSusyTools()
 {
     for(int i=TightLLH; i<=LooseLLH; i++){
-        string name = "SUSYObjDef_xAOD_" + eleIDNames[i];
+        string electronIdName = ElectronId2str(static_cast<ElectronId>(i));
+        string name = "SUSYObjDef_xAOD_" + electronIdName;
         m_susyObj[i] = new ST::SUSYObjDef_xAOD(name);
         cout << "------------------------------------------------------------" << endl;
         cout << "XaodAnalysis::initSusyTools: " << name <<endl;
@@ -227,7 +228,7 @@ XaodAnalysis& XaodAnalysis::initSusyTools()
 
         m_susyObj[i]->msg().setLevel(m_dbg ? MSG::DEBUG : MSG::WARNING);
         //m_susyObj[i]->msg().setLevel(m_dbg ? MSG::VERBOSE : MSG::WARNING);
-        m_susyObj[i]->setProperty("EleId", eleIDNames[i]);
+        m_susyObj[i]->setProperty("EleId", electronIdName);
         int datasource = !m_isMC ? ST::Data : (m_isAF2 ? ST::AtlfastII : ST::FullSim);
         m_susyObj[i]->setProperty("DataSource",datasource);
 
@@ -1107,16 +1108,16 @@ bool XaodAnalysis::matchTruthJet(int iJet)
 /*--------------------------------------------------------------------------------*/
 // Return electron type
 /*--------------------------------------------------------------------------------*/
-bool XaodAnalysis::eleIsOfType(const xAOD::Electron &in, eleID id)
+bool XaodAnalysis::eleIsOfType(const xAOD::Electron &in, ElectronId id)
 {
-    if     (id==eleID::VeryLooseLLH  && m_elecSelLikelihoodVeryLoose->accept(in))  return true;
-    else if(id==eleID::LooseLLH  && m_elecSelLikelihoodLoose->accept(in))  return true;
-    else if(id==eleID::MediumLLH && m_elecSelLikelihoodMedium->accept(in)) return true;
-    else if(id==eleID::TightLLH  && m_elecSelLikelihoodTight->accept(in))  return true;
+    if     (id==ElectronId::VeryLooseLLH  && m_elecSelLikelihoodVeryLoose->accept(in))  return true;
+    else if(id==ElectronId::LooseLLH  && m_elecSelLikelihoodLoose->accept(in))  return true;
+    else if(id==ElectronId::MediumLLH && m_elecSelLikelihoodMedium->accept(in)) return true;
+    else if(id==ElectronId::TightLLH  && m_elecSelLikelihoodTight->accept(in))  return true;
 
-    else if(id==eleID::LooseLLH_nod0  && m_elecSelLikelihoodLoose_nod0->accept(in))  return true;
-    else if(id==eleID::MediumLLH_nod0 && m_elecSelLikelihoodMedium_nod0->accept(in)) return true;
-    else if(id==eleID::TightLLH_nod0  && m_elecSelLikelihoodTight_nod0->accept(in))  return true;
+    else if(id==ElectronId::LooseLLH_nod0  && m_elecSelLikelihoodLoose_nod0->accept(in))  return true;
+    else if(id==ElectronId::MediumLLH_nod0 && m_elecSelLikelihoodMedium_nod0->accept(in)) return true;
+    else if(id==ElectronId::TightLLH_nod0  && m_elecSelLikelihoodTight_nod0->accept(in))  return true;
     return false;
 }
 /*--------------------------------------------------------------------------------*/

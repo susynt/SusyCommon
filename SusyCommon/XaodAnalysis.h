@@ -304,7 +304,7 @@ namespace Susy {
     uint getNumGoodVtx(); ///< Count number of good vertices
     bool matchTruthJet(int iJet); ///< Match a reco jet to a truth jet
 
-    bool eleIsOfType(const xAOD::Electron &in, eleID id);
+    bool eleIsOfType(const xAOD::Electron &in, ElectronId id);
     bool muIsOfType(const xAOD::Muon &in, muID id);
 
 
@@ -495,8 +495,8 @@ namespace Susy {
     xAOD::TEvent m_event;
     xAOD::TStore m_store;
 
-    ST::SUSYObjDef_xAOD* m_susyObj[eleID::eleIDInvalid];      // SUSY object definitions
-    eleID m_eleIDDefault;
+    ST::SUSYObjDef_xAOD* m_susyObj[ElectronId::ElectronIdInvalid];      // SUSY object definitions
+    ElectronId m_eleIDDefault;
 
     std::vector<CP::SystematicSet> sysList;  //CP Systematic list
     std::vector<ST::SystInfo> systInfoList;  //SystInfo is a SUSYTools simplify version struct
