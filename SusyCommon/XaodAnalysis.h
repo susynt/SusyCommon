@@ -340,8 +340,8 @@ namespace Susy {
     uint getNumGoodVtx(); ///< Count number of good vertices
     bool matchTruthJet(int iJet); ///< Match a reco jet to a truth jet
 
-    bool eleIsOfType(const xAOD::Electron &in, eleID id=eleID::LooseLLH);
-    bool muIsOfType(const xAOD::Muon &in, muID id=muID::Medium);
+    bool eleIsOfType(const xAOD::Electron &in, eleID id);
+    bool muIsOfType(const xAOD::Muon &in, muID id);
 
 
     // Running conditions
