@@ -83,6 +83,7 @@ void SusyNtMaker::SlaveBegin(TTree* tree)
     if(m_fillNt || true)
         initializeOuputTree();
     m_isWhSample = guessWhetherIsWhSample(m_sample);
+    checkIfInputIs13TeV();
     initializeCutflowHistograms();
 
     m_timer.Start();
@@ -273,9 +274,12 @@ void SusyNtMaker::fillEventVars()
     evt->trigBits         = m_evtTrigBits; // dantrim trig
     
 
-    evt->wPileup          = m_isMC? getPileupWeight(eventinfo) : 1;
-    evt->wPileup_up       = m_isMC? getPileupWeightUp() : 1;
-    evt->wPileup_dn       = m_isMC? getPileupWeightDown() : 1;
+    evt->wPileup          = is8TeV() ? getPileupWeight(eventinfo) : 1;
+    evt->wPileup_up       = is8TeV() ? getPileupWeightUp() : 1;
+    evt->wPileup_dn       = is8TeV() ? getPileupWeightDown() : 1;
+    //evt->wPileup          = m_isMC? getPileupWeight(eventinfo) : 1;
+    //evt->wPileup_up       = m_isMC? getPileupWeightUp() : 1;
+    //evt->wPileup_dn       = m_isMC? getPileupWeightDown() : 1;
 
     if(m_isMC){
         xAOD::TruthEventContainer::const_iterator truthE_itr = xaodTruthEvent()->begin();
@@ -642,7 +646,7 @@ void SusyNtMaker::storeJet(const xAOD::Jet &in)
     // jetOut->matchTruth    = m_isMC? matchTruthJet(jetIdx) : false;
 
     // B-tagging 
-    out.mv1           = (in.btagging())->MV1_discriminant();      // dantrim Apr 15 2015 -- Not available for DC14@8TeV              
+    if(!is8TeV()) out.mv1 = (in.btagging())->MV1_discriminant();
     out.sv1plusip3d   = (in.btagging())->SV1plusIP3D_discriminant();           
     // Most of these are not available in DC14 samples, some obselete (ASM)
     // jetOut->sv0           = element->flavor_weight_SV0();
@@ -1488,6 +1492,13 @@ SusyNtMaker& SusyNtMaker::writeMetadata()
     }
     return *this;
 }
+//----------------------------------------------------------
+void SusyNtMaker::checkIfInputIs13TeV()
+{
+    size_t found_mc14_13TeV = m_inputContainerName.find("mc14_13TeV");
+    if(found_mc14_13TeV != std::string::npos) { m_is8TeV = false; }
+    cout << "Treating input sample as " << (m_is8TeV ? "mc14_8TeV" : "mc14_13TeV") << endl;
+} 
 //----------------------------------------------------------
 bool SusyNtMaker::guessWhetherIsWhSample(const TString &samplename)
 {

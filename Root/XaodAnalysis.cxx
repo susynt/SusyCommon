@@ -45,6 +45,7 @@ XaodAnalysis::XaodAnalysis() :
     m_stream(Stream_Unknown),
     m_isDerivation(false), // dantrim event shape
     m_isAF2(false),
+    m_is8TeV(true),
     m_d3pdTag(D3PD_p1328),
     m_selectPhotons(false),
     m_selectTaus(false),
@@ -758,6 +759,7 @@ void XaodAnalysis::selectBaselineObjects(SusyNtSys sys, ST::SystInfo sysInfo)
     for(const auto& jet : *jets){
         iJet++;
         if((bool)jet->auxdata< char >("baseline")==1 ) m_preJets.push_back(iJet);//AT: save baseline pT>20GeV only
+        m_susyObj[m_eleIDDefault]->IsBJet(*jet, !is8TeV());
     //    m_susyObj[m_eleIDDefault]->IsBJet(*jet);     // dantrim Apr 15 2015 -- Not available for DC14@8TeV 
         if(m_dbg>=5) cout<<"Jet passing"
                          <<" baseline? "<< bool(jet->auxdata< char >("baseline")==1)
@@ -1624,7 +1626,7 @@ float XaodAnalysis::getXsecWeight()
 float XaodAnalysis::getPileupWeight(const xAOD::EventInfo* eventinfo)
 {
     if(!m_isMC) return 1;
-    if(eventinfo->runNumber() == 222222) return 1; //Cannot yet reweight mc14_13TeV
+    if(!is8TeV()) return 1;
 
     m_pileupReweightingTool->execute();
     return xaodEventInfo()->auxdata< double >( "PileupWeight" );

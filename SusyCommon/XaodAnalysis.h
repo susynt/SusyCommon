@@ -376,6 +376,9 @@ namespace Susy {
      */
     static TDirectory* getDirectoryFromTreeOrChain(TTree* tree, bool verbose);
 
+    // return the flag "m_is8TeV"
+    bool is8TeV() { return m_is8TeV; }
+
 
   protected:
 
@@ -386,6 +389,7 @@ namespace Susy {
     DataStream                  m_stream;       // data stream enum, taken from sample name
     bool                        m_isDerivation; // flag for derived xAOD (DxAOD)
     bool                        m_isAF2;        // flag for ATLFastII samples
+    bool                        m_is8TeV;       // flag for 8 TeV samples
 
     bool                        m_isSusySample; // is susy grid sample
     int                         m_susyFinalState;// susy subprocess
