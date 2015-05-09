@@ -45,7 +45,7 @@ XaodAnalysis::XaodAnalysis() :
     m_stream(Stream_Unknown),
     m_isDerivation(false), // dantrim event shape
     m_isAF2(false),
-    m_mcProd(MCProd_Unknown),
+    m_is8TeV(true),
     m_d3pdTag(D3PD_p1328),
     m_selectPhotons(false),
     m_selectTaus(false),
@@ -54,9 +54,6 @@ XaodAnalysis::XaodAnalysis() :
     m_doMetMuCorr(false),
     m_doMetFix(false),
     m_lumi(LUMI_A_E),
-    m_sumw(1),
-    m_xsec(-1),
-    m_errXsec(-1),
     m_mcRun(0),
     m_mcLB(0),
     m_sys(false),
@@ -261,6 +258,27 @@ XaodAnalysis& XaodAnalysis::initSusyTools()
                 string foo;
                 m_susyObj[i]->getPropertyMgr()->getProperty(x.first, foo);
                 cout << " Property << " << x.first << ": " << foo << endl;
+            }
+            else if(x.second->typeName()=="int"){
+                int foo;
+                m_susyObj[i]->getPropertyMgr()->getProperty(x.first, foo);
+                cout << " Property << " << x.first << ": " << foo << endl;
+            }
+            else if(x.second->typeName()=="float"){
+                float foo;
+                m_susyObj[i]->getPropertyMgr()->getProperty(x.first, foo);
+                cout << " Property << " << x.first << ": " << foo << endl;
+            }
+            else if(x.second->typeName()=="double"){
+                double foo;
+                m_susyObj[i]->getPropertyMgr()->getProperty(x.first, foo);
+                cout << " Property << " << x.first << ": " << foo << endl;
+            }
+            else if(x.second->typeName()=="bool"){
+                bool foo;
+                m_susyObj[i]->getPropertyMgr()->getProperty(x.first, foo);
+                string value = foo ? "True" : "False";
+                cout << " Property << " << x.first << ": " << value << endl;
             }
         }
         
@@ -783,6 +801,7 @@ void XaodAnalysis::selectBaselineObjects(SusyNtSys sys, ST::SystInfo sysInfo)
     for(const auto& jet : *jets){
         iJet++;
         if((bool)jet->auxdata< char >("baseline")==1 ) m_preJets.push_back(iJet);//AT: save baseline pT>20GeV only
+        m_susyObj[m_eleIDDefault]->IsBJet(*jet, !is8TeV());
     //    m_susyObj[m_eleIDDefault]->IsBJet(*jet);     // dantrim Apr 15 2015 -- Not available for DC14@8TeV 
         if(m_dbg>=5) cout<<"Jet passing"
                          <<" baseline? "<< bool(jet->auxdata< char >("baseline")==1)
@@ -1417,33 +1436,45 @@ int XaodAnalysis::truthElectronCharge(const xAOD::Electron &in)
 {
     int type   = xAOD::EgammaHelpers::getParticleTruthType(&in);
     int origin = xAOD::EgammaHelpers::getParticleTruthOrigin(&in);
+
+    if(m_dbg>15) std::cout << "check Charge flip ele " << in.pt()*MeV2GeV 
+                           << " type " << type << " origin " << origin << " nTrk " << in.nTrackParticles() << endl;
+
     if(isPromptElectron(type,origin)){
         const xAOD::TruthParticle* truthEle = xAOD::EgammaHelpers::getTruthParticle(&in);
+        if(m_dbg>15) std::cout << "Truth Prompt ele " << truthEle->pdgId() << " " << in.charge()  << endl;
         if (truthEle->pdgId()==11) return -1;
         if (truthEle->pdgId()==-11) return 1;
     }
-    else{
-        
+    else{        
         if(type==4 && origin==5 && in.nTrackParticles()>1){//Not sure if Type/Origin check really needed
             for(uint itrk=0; itrk< in.nTrackParticles(); itrk++ ){
-                int extraType=0;
-                int extraOrigin=0;
                 const xAOD::TrackParticle* trackParticle = in.trackParticle(itrk);
                 static SG::AuxElement::Accessor<int> acc_truthType("truthType");
                 static SG::AuxElement::Accessor<int> acc_truthOrigin("truthOrigin");
-                if(acc_truthType.isAvailable(*trackParticle)) 
-                    extraType   = acc_truthType(*trackParticle);
-                if(acc_truthOrigin.isAvailable(*trackParticle)) 
-                    extraOrigin = acc_truthOrigin(*trackParticle);
-                if (isPromptElectron(extraType,extraOrigin)) {
-                    const xAOD::TruthParticle* truthEle = xAOD::EgammaHelpers::getTruthParticle(trackParticle);
-                    if (truthEle->pdgId()==11) return -1;
-                    if (truthEle->pdgId()==-11) return 1;
+                if(m_dbg>15) std::cout << "\tNon-prompt ele " << trackParticle << endl;
+                if(trackParticle){//Just in case track got lost in slimming.
+                    int extraType=0;
+                    int extraOrigin=0;
+                    if(acc_truthType.isAvailable(*trackParticle))   extraType   = acc_truthType(*trackParticle);
+                    if(acc_truthOrigin.isAvailable(*trackParticle)) extraOrigin = acc_truthOrigin(*trackParticle);
+                    if(m_dbg>15) std::cout << "\t\t pt " << trackParticle->pt()*MeV2GeV
+                                           << " type " << extraType << " & origin " << extraOrigin << endl;
+                    if(isPromptElectron(extraType,extraOrigin)) {
+                        const xAOD::TruthParticle* truthEle = xAOD::EgammaHelpers::getTruthParticle(trackParticle);
+                        if(m_dbg>15)
+                            std::cout << " \t\t Found charged flipped ?" << truthEle->pdgId() << " " << in.charge() << endl;
+                        if (truthEle->pdgId()==11) return -1;
+                        if (truthEle->pdgId()==-11) return 1;
+                    }
+                }
+                else {
+                    if(m_dbg>15) std::cout << "\t Don't have track " << endl;
                 }
             }
         }
-        return 0;
     }
+    if(m_dbg>15) std::cout << "Cannot determined charge " << std::endl;
     return 0;
 }
 
@@ -1645,13 +1676,10 @@ float XaodAnalysis::getXsecWeight()
     // return m_xsecMap[id].xsect() * m_xsecMap[id].kfactor() * m_xsecMap[id].efficiency();
 }
 //----------------------------------------------------------
-float XaodAnalysis::getLumiWeight()
-{ return m_lumi / m_sumw; }
-//----------------------------------------------------------
 float XaodAnalysis::getPileupWeight(const xAOD::EventInfo* eventinfo)
 {
     if(!m_isMC) return 1;
-    if(eventinfo->runNumber() == 222222) return 1; //Cannot yet reweight mc14_13TeV
+    if(!is8TeV()) return 1;
 
     m_pileupReweightingTool->execute();
     return xaodEventInfo()->auxdata< double >( "PileupWeight" );
@@ -1902,14 +1930,6 @@ cout.unsetf(ios_base::fixed);
 bool XaodAnalysis::runningOptionsAreValid()
 {
     bool valid=true;
-    if(m_isMC && m_mcProd==MCProd_Unknown){
-        valid=false;
-        if(m_dbg)
-            cout<<"XaodAnalysis::runningOptionsAreValid invalid production"
-                <<" 'MCProd_Unknown' is not a valid choice for simulated samples."
-                <<" You should call XaodAnalysis::setMCProduction()"
-                <<endl;
-    }
     bool isSimulation = xaodEventInfo()->eventType( xAOD::EventInfo::IS_SIMULATION );
     bool isData = !isSimulation;
     if(m_isMC != isSimulation) {

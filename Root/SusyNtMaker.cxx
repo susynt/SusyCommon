@@ -83,6 +83,7 @@ void SusyNtMaker::SlaveBegin(TTree* tree)
     if(m_fillNt || true)
         initializeOuputTree();
     m_isWhSample = guessWhetherIsWhSample(m_sample);
+    checkIfInputIs13TeV();
     initializeCutflowHistograms();
 
     m_timer.Start();
@@ -273,20 +274,23 @@ void SusyNtMaker::fillEventVars()
     evt->trigBits         = m_evtTrigBits; // dantrim trig
     
 
-    evt->wPileup          = m_isMC? getPileupWeight(eventinfo) : 1;
-    evt->wPileup_up       = m_isMC? getPileupWeightUp() : 1;
-    evt->wPileup_dn       = m_isMC? getPileupWeightDown() : 1;
-    evt->xsec             = m_isMC? getXsecWeight() : 1;
-    evt->errXsec          = m_isMC? m_errXsec : 1;
-    evt->sumw             = m_isMC? m_sumw : 1;
+    evt->wPileup          = is8TeV() ? getPileupWeight(eventinfo) : 1;
+    evt->wPileup_up       = is8TeV() ? getPileupWeightUp() : 1;
+    evt->wPileup_dn       = is8TeV() ? getPileupWeightDown() : 1;
+    //evt->wPileup          = m_isMC? getPileupWeight(eventinfo) : 1;
+    //evt->wPileup_up       = m_isMC? getPileupWeightUp() : 1;
+    //evt->wPileup_dn       = m_isMC? getPileupWeightDown() : 1;
 
     if(m_isMC){
         xAOD::TruthEventContainer::const_iterator truthE_itr = xaodTruthEvent()->begin();
-        // ( *truthE_itr )->pdfInfoParameter(evt->pdf_id1   , xAOD::TruthEvent::PDGID1); // not available for some samples
-        // ( *truthE_itr )->pdfInfoParameter(evt->pdf_id2   , xAOD::TruthEvent::PDGID2);
-        // ( *truthE_itr )->pdfInfoParameter(evt->pdf_x1    , xAOD::TruthEvent::X1);
-        // ( *truthE_itr )->pdfInfoParameter(evt->pdf_x2    , xAOD::TruthEvent::X2);
-        // ( *truthE_itr )->pdfInfoParameter(evt->pdf_scale , xAOD::TruthEvent::SCALE);
+/*
+  AT: test 05-08-15: still crashes
+        ( *truthE_itr )->pdfInfoParameter(evt->pdf_id1   , xAOD::TruthEvent::PDGID1); // not available for some samples
+        ( *truthE_itr )->pdfInfoParameter(evt->pdf_id2   , xAOD::TruthEvent::PDGID2);
+        ( *truthE_itr )->pdfInfoParameter(evt->pdf_x1    , xAOD::TruthEvent::X1);
+        ( *truthE_itr )->pdfInfoParameter(evt->pdf_x2    , xAOD::TruthEvent::X2);
+        ( *truthE_itr )->pdfInfoParameter(evt->pdf_scale , xAOD::TruthEvent::SCALE);
+*/
         // DG what are these two?
         //( *truthE_itr )->pdfInfoParameter(evt->pdf_x1   , xAOD::TruthEvent::x1);
         //( *truthE_itr )->pdfInfoParameter(evt->pdf_x2   , xAOD::TruthEvent::x2);
@@ -442,8 +446,8 @@ void SusyNtMaker::storeElectron(const xAOD::Electron &in)
         int matchedPdgId = truthEle ? truthEle->pdgId() : -999;
         out.truthType  = isFakeLepton(out.mcOrigin, out.mcType, matchedPdgId); 
         //AT: 05-02-15: Issue accessing Aux of trackParticle in truthElectronCharge. Info not in derived AOD ?
-        //if(eleIsOfType(in, ElectronId::LooseLLH))
-        //    out.isChargeFlip  = m_isMC ? isChargeFlip(in.charge(),truthElectronCharge(in)) : false;
+        //if(eleIsOfType(in, eleID::LooseLLH))
+        out.isChargeFlip  = m_isMC ? isChargeFlip(in.charge(),truthElectronCharge(in)) : false;
     }
 
     if(const xAOD::CaloCluster* c = in.caloCluster()) {
@@ -571,14 +575,15 @@ void SusyNtMaker::storeMuon(const xAOD::Muon &in)
         out.msTrackTheta   = mstrack->theta();
     }
     // Truth Flags 
-    if(m_isMC) {
-        const xAOD::TrackParticle* trackParticle = in.primaryTrackParticle();
-        //AT 05/01/15: We should not have to do this on baseline only !!!
-        if(trackParticle && in.auxdata<char>("baseline")){
+    if(false) { // may 8 - comment out truthType accessor
+        const xAOD::TrackParticle* trackParticle = *(in.inDetTrackParticleLink());
+        if(trackParticle){
             static SG::AuxElement::Accessor<int> acc_truthType("truthType");
             static SG::AuxElement::Accessor<int> acc_truthOrigin("truthOrigin");
-            if (acc_truthType.isAvailable(*trackParticle)  ) out.mcType    = acc_truthType(*trackParticle);
-            if (acc_truthOrigin.isAvailable(*trackParticle)) out.mcOrigin  = acc_truthOrigin(*trackParticle);
+            if (acc_truthType.isAvailable(*trackParticle)) 
+                out.mcType    = acc_truthType(*trackParticle);
+            if (acc_truthOrigin.isAvailable(*trackParticle)) 
+                out.mcOrigin  = acc_truthOrigin(*trackParticle);
 
             const xAOD::TruthParticle* truthMu = xAOD::EgammaHelpers::getTruthParticle(trackParticle);
             out.matched2TruthLepton = truthMu ? true : false;
@@ -639,11 +644,15 @@ void SusyNtMaker::storeJet(const xAOD::Jet &in)
     out.jvf = (PV) ? jetJVF.at(PV->index()) : 0.;    // Upon discussion w/ TJ (2014-12-11)   
 
     // Truth Label/Matching 
-    if (m_isMC) in.getAttribute(xAOD::JetAttribute::JetLabel, out.truthLabel); 
+    if (m_isMC) in.getAttribute("TruthLabelID", out.truthLabel);
+//rel 20
+    //int JetPartonID = (in.jet())->auxdata< int >("PartonTruthLabelID"); // ghost association
+    //int JetConeID   = (in.jet())->auxdata< int >("ConeTruthLabelID"); // cone association
+
     // jetOut->matchTruth    = m_isMC? matchTruthJet(jetIdx) : false;
 
     // B-tagging 
-    out.mv1           = (in.btagging())->MV1_discriminant();      // dantrim Apr 15 2015 -- Not available for DC14@8TeV              
+    if(!is8TeV()) out.mv1 = (in.btagging())->MV1_discriminant();
     out.sv1plusip3d   = (in.btagging())->SV1plusIP3D_discriminant();           
     // Most of these are not available in DC14 samples, some obselete (ASM)
     // jetOut->sv0           = element->flavor_weight_SV0();
@@ -690,8 +699,7 @@ void SusyNtMaker::storeJet(const xAOD::Jet &in)
     // // 0th element is what we care about
     // int sWord = jetMetEgamma10NoTau.statusWord().at(0);
     // bool passSWord = (MissingETTags::DEFAULT == sWord);       // Note assuming default met..
-    // jetOut->met_wpx = 0; passSWord ? jetMetEgamma10NoTau.wpx().at(0) : 0;
-    // jetOut->met_wpy = 0; passSWord ? jetMetEgamma10NoTau.wpy().at(0) : 0;
+
     if(m_dbg && !all_available) cout<<"missing some jet variables"<<endl;
     m_susyNt.jet()->push_back(out);
 }
@@ -788,7 +796,7 @@ void SusyNtMaker::storeTau(const xAOD::TauJet &tau)
         out.tightEVetoSF = EVetoSF;
 
 
-        out.truthType = classifyTau(tau);
+ // may8 - comment out truthType accessor     out.truthType = classifyTau(tau);
         if(m_dbg>10) std::cout << "TauClassifier: found Tau= "<< out.truthType << std::endl;
     }
 
@@ -1470,7 +1478,8 @@ SusyNtMaker& SusyNtMaker::writeMetadata()
         cout<<"Writing the following info to file:"<<endl
             <<"m_inputContainerName: '"<<m_inputContainerName<<"'"<<warn_if_empty(m_inputContainerName)<<endl
             <<"m_outputContainerName: '"<<m_outputContainerName<<"'"<<warn_if_empty(m_outputContainerName)<<endl
-            <<"m_productionTag: '"<<m_productionTag<<"'"<<warn_if_empty(m_productionTag)<<endl;
+            <<"m_productionTag: '"<<m_productionTag<<"'"<<warn_if_empty(m_productionTag)<<endl
+            <<"m_productionCommand: '"<<m_productionCommand<<"'"<<warn_if_empty(m_productionCommand)<<endl;
     }
     if(m_outTreeFile){
         TDirectory *current_directory = gROOT->CurrentDirectory();
@@ -1478,15 +1487,24 @@ SusyNtMaker& SusyNtMaker::writeMetadata()
         TNamed inputContainerName("inputContainerName", m_inputContainerName.c_str());
         TNamed outputContainerName("outputContainerName", m_outputContainerName.c_str());
         TNamed productionTag("productionTag", m_productionTag.c_str());
+        TNamed productionCommand("productionCommand", m_productionCommand.c_str());
         inputContainerName.Write();
         outputContainerName.Write();
         productionTag.Write();
+        productionCommand.Write();
         current_directory->cd();
     } else {
         cout<<"SusyNtMaker::writeMetadata: missing output file, cannot write"<<endl;
     }
     return *this;
 }
+//----------------------------------------------------------
+void SusyNtMaker::checkIfInputIs13TeV()
+{
+    size_t found_mc14_13TeV = m_inputContainerName.find("mc14_13TeV");
+    if(found_mc14_13TeV != std::string::npos) { m_is8TeV = false; }
+    cout << "Treating input sample as " << (m_is8TeV ? "mc14_8TeV" : "mc14_13TeV") << endl;
+} 
 //----------------------------------------------------------
 bool SusyNtMaker::guessWhetherIsWhSample(const TString &samplename)
 {
@@ -1670,14 +1688,17 @@ bool SusyNtMaker::passObjectlevelSelection()
     fillCutFlow(pass_e1sj, w);
 
 
-
-//    fillCutFlow.disableFilterNextCuts()(pass_ge1l, w).enableFilterNextCuts();
-//    fillCutFlow(pass_ge2bl, w);
-//    fillCutFlow(pass_ge2l, w);
-//    fillCutFlow(pass_eq3l, w);
-    bool has_at_least_two_base_leptons = pass_ge2bl;
-    if(m_dbg>=5 && !has_at_least_two_base_leptons)
+    // filter
+    bool pass = true;
+    bool pass_nLepFilter( (m_preElectrons.size()+m_preMuons.size()) >= m_nLepFilter );
+    bool trig_has_fired( h_passTrigLevel->Integral(0,-1) > 0. ); // check if any of the triggers fired
+    if(m_filter) {
+        if(m_filterTrigger) { pass = (pass_nLepFilter && trig_has_fired); }
+        else { pass = pass_nLepFilter; }
+    }
+    if(m_dbg>=5 && !pass)
         cout << "SusyNtMaker: fail passObjectlevelSelection " << endl;
-    return has_at_least_two_base_leptons;
+    return pass;
+
 }
 //----------------------------------------------------------

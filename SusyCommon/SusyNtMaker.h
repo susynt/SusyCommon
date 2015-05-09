@@ -161,7 +161,13 @@ class SusyNtMaker : public XaodAnalysis
     std::string         m_inputContainerName;  ///< name of the dq2 input container
     std::string         m_outputContainerName; ///< name of the dq2 output container
     std::string         m_productionTag;       ///< SusyNtuple production tag
+    std::string         m_productionCommand;   ///< command used to create the ntuple (with all options and flags)
     /**@}*/
+    
+    // Check from the input container name if the sample is mc14_13TeV.
+    // If so sets flag "m_is8TeV" to false
+    void checkIfInputIs13TeV();
+    
 
  protected:
     SusyNtMaker& initializeOuputTree();
