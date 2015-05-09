@@ -447,7 +447,7 @@ void SusyNtMaker::storeElectron(const xAOD::Electron &in)
         out.truthType  = isFakeLepton(out.mcOrigin, out.mcType, matchedPdgId); 
         //AT: 05-02-15: Issue accessing Aux of trackParticle in truthElectronCharge. Info not in derived AOD ?
         //if(eleIsOfType(in, eleID::LooseLLH))
-        out.isChargeFlip  = m_isMC ? isChargeFlip(in.charge(),truthElectronCharge(in)) : false;
+        // crash p1874 out.isChargeFlip  = m_isMC ? isChargeFlip(in.charge(),truthElectronCharge(in)) : false;
     }
 
     if(const xAOD::CaloCluster* c = in.caloCluster()) {
