@@ -118,6 +118,22 @@ namespace Susy {
     ,"eleIDInvalid"
   };
 
+  enum muID{
+    VeryLoose=0
+    ,Loose
+    ,Medium
+    ,Tight
+    ,muIDInvalid
+  };
+
+  const std::string muIDNames[] = {
+    "VeryLoose"
+    ,"Loose"
+    ,"Medium"
+    ,"Tight"
+    ,"muIDInvalid"
+  };
+
   ///  a class for performing object selections and event cleaning on xaod
   class XaodAnalysis : public TSelector
   {
@@ -320,6 +336,7 @@ namespace Susy {
     bool matchTruthJet(int iJet); ///< Match a reco jet to a truth jet
 
     bool eleIsOfType(const xAOD::Electron &in, eleID id=eleID::LooseLLH);
+    bool muIsOfType(const xAOD::Muon &in, muID id=muID::Medium);
 
 
     // Running conditions
@@ -605,7 +622,10 @@ namespace Susy {
     CP::PileupReweightingTool           *m_pileupReweightingTool;
 
     CP::MuonEfficiencyScaleFactors      *m_muonEfficiencySFTool; 
-    CP::MuonSelectionTool               *m_muonSelectionTool;
+    CP::MuonSelectionTool               *m_muonSelectionToolVeryLoose;
+    CP::MuonSelectionTool               *m_muonSelectionToolLoose;
+    CP::MuonSelectionTool               *m_muonSelectionToolMedium;
+    CP::MuonSelectionTool               *m_muonSelectionToolTight;
 
     //Tau truth matchong tools
     TauAnalysisTools::TauTruthMatchingTool       *m_tauTruthMatchingTool;

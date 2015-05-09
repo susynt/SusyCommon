@@ -514,6 +514,12 @@ void SusyNtMaker::storeMuon(const xAOD::Muon &in)
     out.isCosmic   = in.auxdata< char >("cosmic");
     out.isBadMuon  = m_susyObj[m_eleIDDefault]->IsBadMuon(in); // Uses default qoverpcut of 0.2
 
+    // muon quality
+    out.veryLoose = muIsOfType(in, muID::VeryLoose);
+    out.loose = muIsOfType(in, muID::Loose);
+    out.medium = muIsOfType(in, muID::Medium);
+    out.tight = muIsOfType(in, muID::Tight);
+
     bool all_available=true;
 
     // Isolation
