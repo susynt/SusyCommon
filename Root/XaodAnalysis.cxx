@@ -383,7 +383,7 @@ void XaodAnalysis::initMuonTools()
 void XaodAnalysis::initTauTools()
 {
     m_tauTruthMatchingTool = new TauAnalysisTools::TauTruthMatchingTool("TauTruthMatchingTool");
-    m_tauTruthMatchingTool->msg().setLevel(m_dbg ? MSG::DEBUG : MSG::WARNING);
+    m_tauTruthMatchingTool->msg().setLevel(m_dbg ? MSG::DEBUG : MSG::ERROR);
     CHECK(m_tauTruthMatchingTool->initialize());
     
     //AT: 05-07-15: consider adding ?
