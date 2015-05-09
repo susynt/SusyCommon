@@ -276,9 +276,6 @@ void SusyNtMaker::fillEventVars()
     evt->wPileup          = m_isMC? getPileupWeight(eventinfo) : 1;
     evt->wPileup_up       = m_isMC? getPileupWeightUp() : 1;
     evt->wPileup_dn       = m_isMC? getPileupWeightDown() : 1;
-    evt->xsec             = m_isMC? getXsecWeight() : 1;
-    evt->errXsec          = m_isMC? m_errXsec : 1;
-    evt->sumw             = m_isMC? m_sumw : 1;
 
     if(m_isMC){
         xAOD::TruthEventContainer::const_iterator truthE_itr = xaodTruthEvent()->begin();
@@ -1471,7 +1468,8 @@ SusyNtMaker& SusyNtMaker::writeMetadata()
         cout<<"Writing the following info to file:"<<endl
             <<"m_inputContainerName: '"<<m_inputContainerName<<"'"<<warn_if_empty(m_inputContainerName)<<endl
             <<"m_outputContainerName: '"<<m_outputContainerName<<"'"<<warn_if_empty(m_outputContainerName)<<endl
-            <<"m_productionTag: '"<<m_productionTag<<"'"<<warn_if_empty(m_productionTag)<<endl;
+            <<"m_productionTag: '"<<m_productionTag<<"'"<<warn_if_empty(m_productionTag)<<endl
+            <<"m_productionCommand: '"<<m_productionCommand<<"'"<<warn_if_empty(m_productionCommand)<<endl;
     }
     if(m_outTreeFile){
         TDirectory *current_directory = gROOT->CurrentDirectory();
@@ -1479,9 +1477,11 @@ SusyNtMaker& SusyNtMaker::writeMetadata()
         TNamed inputContainerName("inputContainerName", m_inputContainerName.c_str());
         TNamed outputContainerName("outputContainerName", m_outputContainerName.c_str());
         TNamed productionTag("productionTag", m_productionTag.c_str());
+        TNamed productionCommand("productionCommand", m_productionCommand.c_str());
         inputContainerName.Write();
         outputContainerName.Write();
         productionTag.Write();
+        productionCommand.Write();
         current_directory->cd();
     } else {
         cout<<"SusyNtMaker::writeMetadata: missing output file, cannot write"<<endl;

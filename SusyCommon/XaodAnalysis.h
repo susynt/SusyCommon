@@ -138,7 +138,6 @@ namespace Susy {
     virtual XaodAnalysis& setDebug(int debugLevel) { m_dbg = debugLevel; return *this; }
     void setTriggerSet(std::string set) { m_triggerSet = set; }
     XaodAnalysis& initSusyTools(); ///< initialize SUSYObjDef_xAOD
-    bool processingMc12b() const { return m_mcProd == MCProd_MC12b; }
     
     /**
        Performance Tools 
@@ -306,11 +305,7 @@ namespace Susy {
     */
     float getEventWeight(float lumi = LUMI_A_E);
     float getXsecWeight(); ///< event weight (xsec*kfac)
-    float getLumiWeight(); ///< lumi weight (lumi/sumw) normalized to 4.7/fb
     void setLumi(float lumi) { m_lumi = lumi; } ///< luminosity to normalize to (in 1/pb)
-    void setSumw(float sumw) { m_sumw = sumw;  } ///< sum of mc weights for sample
-    void setXsec(float xsec) { m_xsec = xsec;  } ///< user cross section, overrides susy cross section
-    void setErrXsec(float err) { m_errXsec = err;  } ///< user cross section uncert
     float getPileupWeight(const xAOD::EventInfo* eventinfo); ///< pileup weight for full dataset: currently A-L
     float getPileupWeightUp();
     float getPileupWeightDown();
@@ -331,7 +326,6 @@ namespace Susy {
     TString sample() { return m_sample; } ///< Sample name - used to set isMC flag
     XaodAnalysis& setSample(TString s) { m_sample = s; return *this; }
     void setAF2(bool isAF2=true) { m_isAF2 = isAF2; } ///< AF2 flag
-    void setMCProduction(MCProduction prod) { m_mcProd = prod; } ///< Set MC Production flag
     void setD3PDTag(D3PDTag tag) { m_d3pdTag = tag; } ///< Set SUSY D3PD tag to know which branches are ok
     void setSys(bool sysOn){ m_sys = sysOn; }; ///< Set sys run
     void setSelectPhotons(bool doIt) { m_selectPhotons = doIt; } ///< Toggle photon selection
@@ -392,7 +386,6 @@ namespace Susy {
     DataStream                  m_stream;       // data stream enum, taken from sample name
     bool                        m_isDerivation; // flag for derived xAOD (DxAOD)
     bool                        m_isAF2;        // flag for ATLFastII samples
-    MCProduction                m_mcProd;       // MC production campaign
 
     bool                        m_isSusySample; // is susy grid sample
     int                         m_susyFinalState;// susy subprocess
@@ -473,9 +466,6 @@ namespace Susy {
     //
 
     float                       m_lumi;         // normalized luminosity (defaults to 4.7/fb)
-    float                       m_sumw;         // sum of mc weights for normalization, must be set by user
-    float                       m_xsec;         // optional user cross section, to override susy xsec usage
-    float                       m_errXsec;      // user cross section uncertainty
 
     uint                        m_mcRun;        // Random run number for MC from pileup tool
     uint                        m_mcLB;         // Random lb number for MC from pileup tool

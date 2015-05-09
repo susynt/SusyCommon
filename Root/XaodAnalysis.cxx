@@ -45,7 +45,6 @@ XaodAnalysis::XaodAnalysis() :
     m_stream(Stream_Unknown),
     m_isDerivation(false), // dantrim event shape
     m_isAF2(false),
-    m_mcProd(MCProd_Unknown),
     m_d3pdTag(D3PD_p1328),
     m_selectPhotons(false),
     m_selectTaus(false),
@@ -54,9 +53,6 @@ XaodAnalysis::XaodAnalysis() :
     m_doMetMuCorr(false),
     m_doMetFix(false),
     m_lumi(LUMI_A_E),
-    m_sumw(1),
-    m_xsec(-1),
-    m_errXsec(-1),
     m_mcRun(0),
     m_mcLB(0),
     m_sys(false),
@@ -1625,9 +1621,6 @@ float XaodAnalysis::getXsecWeight()
     // return m_xsecMap[id].xsect() * m_xsecMap[id].kfactor() * m_xsecMap[id].efficiency();
 }
 //----------------------------------------------------------
-float XaodAnalysis::getLumiWeight()
-{ return m_lumi / m_sumw; }
-//----------------------------------------------------------
 float XaodAnalysis::getPileupWeight(const xAOD::EventInfo* eventinfo)
 {
     if(!m_isMC) return 1;
@@ -1882,14 +1875,6 @@ cout.unsetf(ios_base::fixed);
 bool XaodAnalysis::runningOptionsAreValid()
 {
     bool valid=true;
-    if(m_isMC && m_mcProd==MCProd_Unknown){
-        valid=false;
-        if(m_dbg)
-            cout<<"XaodAnalysis::runningOptionsAreValid invalid production"
-                <<" 'MCProd_Unknown' is not a valid choice for simulated samples."
-                <<" You should call XaodAnalysis::setMCProduction()"
-                <<endl;
-    }
     bool isSimulation = xaodEventInfo()->eventType( xAOD::EventInfo::IS_SIMULATION );
     bool isData = !isSimulation;
     if(m_isMC != isSimulation) {
