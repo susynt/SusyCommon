@@ -569,7 +569,7 @@ void SusyNtMaker::storeMuon(const xAOD::Muon &in)
         out.msTrackTheta   = mstrack->theta();
     }
     // Truth Flags 
-    if(m_isMC) {
+    if(false) { // may 8 - comment out truthType accessor
         const xAOD::TrackParticle* trackParticle = *(in.inDetTrackParticleLink());
         if(trackParticle){
             static SG::AuxElement::Accessor<int> acc_truthType("truthType");
@@ -790,7 +790,7 @@ void SusyNtMaker::storeTau(const xAOD::TauJet &tau)
         out.tightEVetoSF = EVetoSF;
 
 
-        out.truthType = classifyTau(tau);
+ // may8 - comment out truthType accessor     out.truthType = classifyTau(tau);
         if(m_dbg>10) std::cout << "TauClassifier: found Tau= "<< out.truthType << std::endl;
     }
 
