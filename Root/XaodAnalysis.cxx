@@ -84,7 +84,10 @@ XaodAnalysis::XaodAnalysis() :
     m_elecSelLikelihoodTight_nod0(0),
 	m_pileupReweightingTool(0),
 	m_muonEfficiencySFTool(0),
-    m_muonSelectionTool(0),
+    m_muonSelectionToolVeryLoose(0),
+    m_muonSelectionToolLoose(0),
+    m_muonSelectionToolMedium(0),
+    m_muonSelectionToolTight(0),
 	m_tauTruthMatchingTool(0),
 	m_tauTruthTrackMatchingTool(0),
         //dantrim trig
@@ -191,7 +194,10 @@ void XaodAnalysis::Terminate()
 
     delete m_pileupReweightingTool;
     delete m_muonEfficiencySFTool;
-    delete m_muonSelectionTool;
+    delete m_muonSelectionToolVeryLoose;
+    delete m_muonSelectionToolLoose;
+    delete m_muonSelectionToolMedium;
+    delete m_muonSelectionToolTight;
     delete m_tauTruthMatchingTool;
     delete m_tauTruthTrackMatchingTool;
 
@@ -210,7 +216,8 @@ void XaodAnalysis::Terminate()
 XaodAnalysis& XaodAnalysis::initSusyTools()
 {
     for(int i=TightLLH; i<=LooseLLH; i++){
-        string name = "SUSYObjDef_xAOD_" + eleIDNames[i];
+        string electronIdName = ElectronId2str(static_cast<ElectronId>(i));
+        string name = "SUSYObjDef_xAOD_" + electronIdName;
         m_susyObj[i] = new ST::SUSYObjDef_xAOD(name);
         cout << "------------------------------------------------------------" << endl;
         cout << "XaodAnalysis::initSusyTools: " << name <<endl;
@@ -218,7 +225,7 @@ XaodAnalysis& XaodAnalysis::initSusyTools()
 
         m_susyObj[i]->msg().setLevel(m_dbg ? MSG::DEBUG : MSG::WARNING);
         //m_susyObj[i]->msg().setLevel(m_dbg ? MSG::VERBOSE : MSG::WARNING);
-        m_susyObj[i]->setProperty("EleId", eleIDNames[i]);
+        m_susyObj[i]->setProperty("EleId", electronIdName);
         int datasource = !m_isMC ? ST::Data : (m_isAF2 ? ST::AtlfastII : ST::FullSim);
         m_susyObj[i]->setProperty("DataSource",datasource);
 
@@ -251,6 +258,27 @@ XaodAnalysis& XaodAnalysis::initSusyTools()
                 string foo;
                 m_susyObj[i]->getPropertyMgr()->getProperty(x.first, foo);
                 cout << " Property << " << x.first << ": " << foo << endl;
+            }
+            else if(x.second->typeName()=="int"){
+                int foo;
+                m_susyObj[i]->getPropertyMgr()->getProperty(x.first, foo);
+                cout << " Property << " << x.first << ": " << foo << endl;
+            }
+            else if(x.second->typeName()=="float"){
+                float foo;
+                m_susyObj[i]->getPropertyMgr()->getProperty(x.first, foo);
+                cout << " Property << " << x.first << ": " << foo << endl;
+            }
+            else if(x.second->typeName()=="double"){
+                double foo;
+                m_susyObj[i]->getPropertyMgr()->getProperty(x.first, foo);
+                cout << " Property << " << x.first << ": " << foo << endl;
+            }
+            else if(x.second->typeName()=="bool"){
+                bool foo;
+                m_susyObj[i]->getPropertyMgr()->getProperty(x.first, foo);
+                string value = foo ? "True" : "False";
+                cout << " Property << " << x.first << ": " << value << endl;
             }
         }
         
@@ -373,11 +401,25 @@ void XaodAnalysis::initMuonTools()
     CHECK( m_muonEfficiencySFTool->setProperty("DataPeriod","2012") );
     CHECK( m_muonEfficiencySFTool->initialize() );
 
-    m_muonSelectionTool = new CP::MuonSelectionTool("MuonSelectionTool_VeryLoose");
-    CHECK( m_muonSelectionTool->setProperty( "MaxEta", 2.5 ) );
-    CHECK( m_muonSelectionTool->setProperty( "MuQuality", int(xAOD::Muon::VeryLoose) ));// Warning: includes bad muons!
-    CHECK( m_muonSelectionTool->initialize() );
+    m_muonSelectionToolVeryLoose = new CP::MuonSelectionTool("MuonSelectionTool_VeryLoose");
+    CHECK( m_muonSelectionToolVeryLoose->setProperty( "MaxEta", 2.5 ) );
+    CHECK( m_muonSelectionToolVeryLoose->setProperty( "MuQuality", int(xAOD::Muon::VeryLoose) ));// Warning: includes bad muons!
+    CHECK( m_muonSelectionToolVeryLoose->initialize() );
 
+    m_muonSelectionToolLoose = new CP::MuonSelectionTool("MuonSelectionTool_Loose");
+    CHECK( m_muonSelectionToolLoose->setProperty( "MaxEta", 2.5 ) );
+    CHECK( m_muonSelectionToolLoose->setProperty( "MuQuality", int(xAOD::Muon::Loose) ));
+    CHECK( m_muonSelectionToolLoose->initialize() );
+    
+    m_muonSelectionToolMedium = new CP::MuonSelectionTool("MuonSelectionTool_Medium");
+    CHECK( m_muonSelectionToolMedium->setProperty( "MaxEta", 2.5 ) );
+    CHECK( m_muonSelectionToolMedium->setProperty( "MuQuality", int(xAOD::Muon::Medium) ));
+    CHECK( m_muonSelectionToolMedium->initialize() );
+
+    m_muonSelectionToolTight = new CP::MuonSelectionTool("MuonSelectionTool_Tight");
+    CHECK( m_muonSelectionToolTight->setProperty( "MaxEta", 2.5 ) );
+    CHECK( m_muonSelectionToolTight->setProperty( "MuQuality", int(xAOD::Muon::Tight) ));
+    CHECK( m_muonSelectionToolTight->initialize() );
 }
 //----------------------------------------------------------
 void XaodAnalysis::initTauTools()
@@ -737,7 +779,7 @@ void XaodAnalysis::selectBaselineObjects(SusyNtSys sys, ST::SystInfo sysInfo)
     for(const auto& mu : *muons){
         iMu++;
         if(mu->pt()* MeV2GeV > 3 && 
-           m_muonSelectionTool->accept(mu)) m_preMuons.push_back(iMu); //AT: Save VeryLoose pt>3 muon only
+           m_muonSelectionToolVeryLoose->accept(mu)) m_preMuons.push_back(iMu); //AT: Save VeryLoose pt>3 muon only
         //m_susyObj[m_eleIDDefault]->IsSignalMuon(*mu);
         m_susyObj[m_eleIDDefault]->IsSignalMuonExp(*mu, ST::SignalIsoExp::TightIso);
         m_susyObj[m_eleIDDefault]->IsCosmicMuon(*mu);
@@ -1085,18 +1127,29 @@ bool XaodAnalysis::matchTruthJet(int iJet)
 /*--------------------------------------------------------------------------------*/
 // Return electron type
 /*--------------------------------------------------------------------------------*/
-bool XaodAnalysis::eleIsOfType(const xAOD::Electron &in, eleID id)
+bool XaodAnalysis::eleIsOfType(const xAOD::Electron &in, ElectronId id)
 {
-    if     (id==eleID::VeryLooseLLH  && m_elecSelLikelihoodVeryLoose->accept(in))  return true;
-    else if(id==eleID::LooseLLH  && m_elecSelLikelihoodLoose->accept(in))  return true;
-    else if(id==eleID::MediumLLH && m_elecSelLikelihoodMedium->accept(in)) return true;
-    else if(id==eleID::TightLLH  && m_elecSelLikelihoodTight->accept(in))  return true;
+    if     (id==ElectronId::VeryLooseLLH  && m_elecSelLikelihoodVeryLoose->accept(in))  return true;
+    else if(id==ElectronId::LooseLLH  && m_elecSelLikelihoodLoose->accept(in))  return true;
+    else if(id==ElectronId::MediumLLH && m_elecSelLikelihoodMedium->accept(in)) return true;
+    else if(id==ElectronId::TightLLH  && m_elecSelLikelihoodTight->accept(in))  return true;
 
-    else if(id==eleID::LooseLLH_nod0  && m_elecSelLikelihoodLoose_nod0->accept(in))  return true;
-    else if(id==eleID::MediumLLH_nod0 && m_elecSelLikelihoodMedium_nod0->accept(in)) return true;
-    else if(id==eleID::TightLLH_nod0  && m_elecSelLikelihoodTight_nod0->accept(in))  return true;
+    else if(id==ElectronId::LooseLLH_nod0  && m_elecSelLikelihoodLoose_nod0->accept(in))  return true;
+    else if(id==ElectronId::MediumLLH_nod0 && m_elecSelLikelihoodMedium_nod0->accept(in)) return true;
+    else if(id==ElectronId::TightLLH_nod0  && m_elecSelLikelihoodTight_nod0->accept(in))  return true;
     return false;
 }
+/*--------------------------------------------------------------------------------*/
+// Return muon type
+/*--------------------------------------------------------------------------------*/
+bool XaodAnalysis::muIsOfType(const xAOD::Muon &in, MuonId id)
+{
+    if     (id==MuonId::VeryLoose && m_muonSelectionToolVeryLoose->accept(in))  return true;
+    else if(id==MuonId::Loose     && m_muonSelectionToolLoose    ->accept(in))  return true;
+    else if(id==MuonId::Medium    && m_muonSelectionToolMedium   ->accept(in))  return true;
+    else if(id==MuonId::Tight     && m_muonSelectionToolTight    ->accept(in))  return true;
+    return false;
+} 
 /*--------------------------------------------------------------------------------*/
 // Get triggers
 /*--------------------------------------------------------------------------------*/
