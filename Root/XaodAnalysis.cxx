@@ -1123,12 +1123,12 @@ bool XaodAnalysis::eleIsOfType(const xAOD::Electron &in, ElectronId id)
 /*--------------------------------------------------------------------------------*/
 // Return muon type
 /*--------------------------------------------------------------------------------*/
-bool XaodAnalysis::muIsOfType(const xAOD::Muon &in, muID id)
+bool XaodAnalysis::muIsOfType(const xAOD::Muon &in, MuonId id)
 {
-    if     (id==muID::VeryLoose && m_muonSelectionToolVeryLoose->accept(in))  return true;
-    else if(id==muID::Loose     && m_muonSelectionToolLoose    ->accept(in))  return true;
-    else if(id==muID::Medium    && m_muonSelectionToolMedium   ->accept(in))  return true;
-    else if(id==muID::Tight     && m_muonSelectionToolTight    ->accept(in))  return true;
+    if     (id==MuonId::VeryLoose && m_muonSelectionToolVeryLoose->accept(in))  return true;
+    else if(id==MuonId::Loose     && m_muonSelectionToolLoose    ->accept(in))  return true;
+    else if(id==MuonId::Medium    && m_muonSelectionToolMedium   ->accept(in))  return true;
+    else if(id==MuonId::Tight     && m_muonSelectionToolTight    ->accept(in))  return true;
     return false;
 } 
 /*--------------------------------------------------------------------------------*/

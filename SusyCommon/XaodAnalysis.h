@@ -305,7 +305,7 @@ namespace Susy {
     bool matchTruthJet(int iJet); ///< Match a reco jet to a truth jet
 
     bool eleIsOfType(const xAOD::Electron &in, ElectronId id);
-    bool muIsOfType(const xAOD::Muon &in, muID id);
+    bool muIsOfType(const xAOD::Muon &in, MuonId id);
 
 
     // Running conditions
