@@ -12,9 +12,11 @@
 #include "SUSYTools/SUSYObjDef_xAOD.h"
 #include "LeptonTruthTools/RecoTauMatch.h"
 
+#include "SusyNtuple/ElectronId.h"
 #include "SusyCommon/LeptonInfo.h"
-#include "SusyNtuple/SusyNt.h"
+#include "SusyNtuple/MuonId.h"
 #include "SusyNtuple/SusyDefs.h"
+#include "SusyNtuple/SusyNt.h"
 #include "SusyNtuple/SusyNtSys.h"
 
 //xAOD
@@ -95,44 +97,6 @@ class TDirectory;
 namespace Susy {
   
   const double MeV2GeV=1.0e-3;
-
-  enum eleID{
-    TightLLH=0
-    ,MediumLLH
-    ,LooseLLH
-    ,VeryLooseLLH
-    ,TightLLH_nod0
-    ,MediumLLH_nod0
-    ,LooseLLH_nod0    
-    ,eleIDInvalid
-  };
-  
-  const std::string eleIDNames[] = {
-    "TightLLH"
-    ,"MediumLLH"
-    ,"LooseLLH"
-    ,"VeryLooseLLH"
-    ,"TightLLH_nod0"
-    ,"MediumLLH_nod0"
-    ,"LooseLLH_nod0"
-    ,"eleIDInvalid"
-  };
-
-  enum muID{
-    VeryLoose=0
-    ,Loose
-    ,Medium
-    ,Tight
-    ,muIDInvalid
-  };
-
-  const std::string muIDNames[] = {
-    "VeryLoose"
-    ,"Loose"
-    ,"Medium"
-    ,"Tight"
-    ,"muIDInvalid"
-  };
 
   ///  a class for performing object selections and event cleaning on xaod
   class XaodAnalysis : public TSelector
@@ -335,8 +299,8 @@ namespace Susy {
     uint getNumGoodVtx(); ///< Count number of good vertices
     bool matchTruthJet(int iJet); ///< Match a reco jet to a truth jet
 
-    bool eleIsOfType(const xAOD::Electron &in, eleID id=eleID::LooseLLH);
-    bool muIsOfType(const xAOD::Muon &in, muID id=muID::Medium);
+    bool eleIsOfType(const xAOD::Electron &in, ElectronId id);
+    bool muIsOfType(const xAOD::Muon &in, MuonId id);
 
 
     // Running conditions
@@ -525,8 +489,8 @@ namespace Susy {
     xAOD::TEvent m_event;
     xAOD::TStore m_store;
 
-    ST::SUSYObjDef_xAOD* m_susyObj[eleID::eleIDInvalid];      // SUSY object definitions
-    eleID m_eleIDDefault;
+    ST::SUSYObjDef_xAOD* m_susyObj[ElectronId::ElectronIdInvalid];      // SUSY object definitions
+    ElectronId m_eleIDDefault;
 
     std::vector<CP::SystematicSet> sysList;  //CP Systematic list
     std::vector<ST::SystInfo> systInfoList;  //SystInfo is a SUSYTools simplify version struct
