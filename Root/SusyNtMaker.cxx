@@ -1183,6 +1183,7 @@ void SusyNtMaker::saveElectronSF(ST::SystInfo sysInfo, SusyNtSys sys)
         if(m_dbg>=5) cout << "Ele SF " << sf << endl;
         if     ( sys == NtSys::EG_RESOLUTION_ALL_DN ) ele_susyNt->res_all_dn = sf;
         else if( sys == NtSys::EG_RESOLUTION_ALL_UP ) ele_susyNt->res_all_up = sf;
+/*
         else if( sys == NtSys::EG_RESOLUTION_MATERIALCALO_DN ) ele_susyNt->res_matCalo_dn = sf;
         else if( sys == NtSys::EG_RESOLUTION_MATERIALCALO_UP ) ele_susyNt->res_matCalo_up = sf;
         else if( sys == NtSys::EG_RESOLUTION_MATERIALCRYO_DN ) ele_susyNt->res_matCryo_dn = sf;
@@ -1199,8 +1200,10 @@ void SusyNtMaker::saveElectronSF(ST::SystInfo sysInfo, SusyNtSys sys)
         else if( sys == NtSys::EG_RESOLUTION_SAMPLINGTERM_UP ) ele_susyNt->res_sampTerm_up = sf;
         else if( sys == NtSys::EG_RESOLUTION_ZSMEARING_DN ) ele_susyNt->res_z_dn = sf;
         else if( sys == NtSys::EG_RESOLUTION_ZSMEARING_UP ) ele_susyNt->res_z_up = sf;
+*/
         else if( sys == NtSys::EG_SCALE_ALL_DN ) ele_susyNt->scale_all_dn = sf;
         else if( sys == NtSys::EG_SCALE_ALL_UP ) ele_susyNt->scale_all_up = sf;
+/*
         else if( sys == NtSys::EG_SCALE_G4_DN ) ele_susyNt->scale_G4_dn = sf;
         else if( sys == NtSys::EG_SCALE_G4_UP ) ele_susyNt->scale_G4_up = sf;
         else if( sys == NtSys::EG_SCALE_L1GAIN_DN ) ele_susyNt->scale_L1_dn = sf;
@@ -1236,6 +1239,12 @@ void SusyNtMaker::saveElectronSF(ST::SystInfo sysInfo, SusyNtSys sys)
         else if( sys == NtSys::EG_SCALE_ZEESYST_UP ) ele_susyNt->scale_ZeeSys_up = sf;
         else if( sys == NtSys::EL_SCALE_MOMENTUM_DN ) ele_susyNt->scale_mom_dn = sf;
         else if( sys == NtSys::EL_SCALE_MOMENTUM_UP ) ele_susyNt->scale_mom_up = sf;
+*/
+        else if( sys == NtSys::EL_EFF_CorrUncertainty_DN ) ele_susyNt->eff_corr_dn = sf;
+        else if( sys == NtSys::EL_EFF_CorrUncertainty_UP ) ele_susyNt->eff_corr_up = sf;
+        else if( sys == NtSys::EL_EFF_UncorrUncertainty_DN ) ele_susyNt->eff_uncorr_dn = sf;
+        else if( sys == NtSys::EL_EFF_UncorrUncertainty_UP ) ele_susyNt->eff_uncorr_dn = sf;
+
     }
 }
 
@@ -1368,8 +1377,8 @@ void SusyNtMaker::saveJetSF(ST::SystInfo sysInfo, SusyNtSys sys)
         else if( sys == NtSys::JET_Pileup_RhoTopology_UP) jet_susyNt-> pileup[7] = sf;
         else if( sys == NtSys::JET_PunchThrough_MC12_DN) jet_susyNt->punchThrough[0] = sf;
         else if( sys == NtSys::JET_PunchThrough_MC12_UP) jet_susyNt->punchThrough[1] = sf;
-        else if( sys == NtSys::JET_RelativeNonClosure_MC12_DN) jet_susyNt->relativeNC[0] = sf;
-        else if( sys == NtSys::JET_RelativeNonClosure_MC12_UP) jet_susyNt->relativeNC[1] = sf;
+        //else if( sys == NtSys::JET_RelativeNonClosure_MC12_DN) jet_susyNt->relativeNC[0] = sf;
+        //else if( sys == NtSys::JET_RelativeNonClosure_MC12_UP) jet_susyNt->relativeNC[1] = sf;
         else if( sys == NtSys::JET_SingleParticle_HighPt_DN) jet_susyNt->singlePart[0] = sf;
         else if( sys == NtSys::JET_SingleParticle_HighPt_UP) jet_susyNt->singlePart[1] = sf;
 

@@ -112,6 +112,8 @@ class SusyNtMaker : public XaodAnalysis
     void addMissingJet(int index, SusyNtSys sys);
     void addMissingTau(int index, SusyNtSys sys);
 
+    /*
+      //AT 05-09-15 obsolete
     // Systematic enum checks
     bool isElecSys(SusyNtSys s){
       return (s == NtSys::EES_Z_UP   || s == NtSys::EES_Z_DN ||
@@ -129,6 +131,7 @@ class SusyNtMaker : public XaodAnalysis
     bool isTauSys(SusyNtSys s){
       return (s == NtSys::TES_UP || s == NtSys::TES_DN);
     }
+    */
 
     //void addEventFlag(SusyNtSys s, int eventFlag){
       //m_susyNt.evt()->evtFlag[s] = eventFlag;
