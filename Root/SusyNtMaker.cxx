@@ -418,23 +418,46 @@ void SusyNtMaker::storeElectron(const xAOD::Electron &in)
         bool recoSF=true;
         bool idSF=true;
         bool trigSF=false;
-        if(eleIsOfType(in, eleID::TightLLH))           
-            out.effSF = m_susyObj[eleID::TightLLH]->GetSignalElecSF(in, recoSF, idSF, trigSF);
-        else if(eleIsOfType(in, eleID::MediumLLH))
-            out.effSF = m_susyObj[eleID::MediumLLH]->GetSignalElecSF(in, recoSF, idSF, trigSF);	 
-        else if(eleIsOfType(in, eleID::LooseLLH))
-            out.effSF = m_susyObj[eleID::LooseLLH]->GetSignalElecSF(in, recoSF, idSF, trigSF);
 
-      
-       /* 
-        >>> dantrim March 2 2015 -- calling AsgElectronEfficiencyTool causes seg-fault?
-        AT: Crash is in getting EventInfo L175 ???
-          const Root::TResult &result =  m_electronEfficiencySFTool->calculate(in);
-          out.effSF    = result.getScaleFactor();
-          out.errEffSF = result.getTotalUncertainty();
-          if(m_dbg) cout << "AT: electron SF " << out.effSF << " " << out.errEffSF << endl;
-      */  
-   
+        // Scale factors and uncertainties (store the tightest of Tight, Medium and Loose)
+        eleID elec_id = eleID::eleIDInvalid;
+        if(eleIsOfType(in, eleID::TightLLH ))      elec_id = eleID::TightLLH;
+        else if(eleIsOfType(in, eleID::MediumLLH)) elec_id = eleID::MediumLLH;
+        else if(eleIsOfType(in, eleID::LooseLLH )) elec_id = eleID::LooseLLH;
+
+        if(elec_id!=eleID::eleIDInvalid) {
+          // Nominal
+          out.effSF = m_susyObj[elec_id]->GetSignalElecSF(in, recoSF, idSF, trigSF);
+          // Uncertainties
+          if(m_sys) {
+            for(const auto& sysInfo : systInfoList){
+              if(!(sysInfo.affectsType == ST::SystObjType::Electron && sysInfo.affectsWeights)) continue;
+              // Read information
+              const CP::SystematicSet& sys = sysInfo.systset;
+              SusyNtSys ourSys = CPsys2sys((sys.name()).c_str());
+              // Configure the tools and retrieve the scale factors
+              if(m_susyObj[elec_id]->applySystematicVariation(sys) != CP::SystematicCode::Ok) {
+                cout << "SusyNtMaker::storeElectron - cannot configure SUSYTools for " << sys.name() << endl;
+                continue;
+              }
+              // Store the information
+              double scaleFactor = m_susyObj[elec_id]->GetSignalElecSF(in, recoSF, idSF, trigSF);
+              if(ourSys == NtSys::EL_EFF_UncorrUncertainty_UP)      out.errEffSF_uncorr_up = scaleFactor - out.effSF;
+              else if(ourSys == NtSys::EL_EFF_UncorrUncertainty_DN) out.errEffSF_uncorr_dn = scaleFactor - out.effSF;
+              else if(ourSys == NtSys::EL_EFF_CorrUncertainty_UP)   out.errEffSF_corr_up   = scaleFactor - out.effSF;
+              else if(ourSys == NtSys::EL_EFF_CorrUncertainty_DN)   out.errEffSF_corr_dn   = scaleFactor - out.effSF;
+            }
+            m_susyObj[elec_id]->resetSystematics(); // Make sure to reset SUSYTools not to goof up other stuff
+          } else {
+            out.errEffSF_uncorr_up = out.errEffSF_uncorr_dn = out.errEffSF_corr_up = out.errEffSF_corr_dn = 0;
+          }
+          if(m_dbg > 5) cout << "ASM :: Electron scale factors " << out.effSF             << " "
+                                                                 << out.errEffSF_uncorr_up << " "
+                                                                 << out.errEffSF_uncorr_dn << " "
+                                                                 << out.errEffSF_corr_up   << " "
+                                                                 << out.errEffSF_corr_dn   << endl;
+        } // end of elec_id validity check
+
         out.mcType   = xAOD::EgammaHelpers::getParticleTruthType(&in);
         out.mcOrigin = xAOD::EgammaHelpers::getParticleTruthOrigin(&in);    
         const xAOD::TruthParticle* truthEle = xAOD::EgammaHelpers::getTruthParticle(&in);
@@ -602,20 +625,20 @@ void SusyNtMaker::storeMuon(const xAOD::Muon &in)
         }
         // Get and store the information
         double scaleFactor = m_susyObj[m_eleIDDefault]->GetSignalMuonSF(in);
-        if(ourSys == NtSys::MUONSFSTAT_UP)      out.errEffSF_uncor_up = scaleFactor - out.effSF;
-        else if(ourSys == NtSys::MUONSFSTAT_DN) out.errEffSF_uncor_dn = scaleFactor - out.effSF;
-        else if(ourSys == NtSys::MUONSFSYS_UP ) out.errEffSF_cor_up   = scaleFactor - out.effSF;
-        else if(ourSys == NtSys::MUONSFSYS_DN ) out.errEffSF_cor_dn   = scaleFactor - out.effSF;
+        if(ourSys == NtSys::MUONSFSTAT_UP)      out.errEffSF_stat_up = scaleFactor - out.effSF;
+        else if(ourSys == NtSys::MUONSFSTAT_DN) out.errEffSF_stat_dn = scaleFactor - out.effSF;
+        else if(ourSys == NtSys::MUONSFSYS_UP ) out.errEffSF_syst_up = scaleFactor - out.effSF;
+        else if(ourSys == NtSys::MUONSFSYS_DN ) out.errEffSF_syst_dn = scaleFactor - out.effSF;
       }
-      //m_susyObj[m_eleIDDefault]->applySystematicVariation(systInfoList[0]); // Switch back to nominal, necessary??
+      m_susyObj[m_eleIDDefault]->resetSystematics(); // Make sure to reset SUSYTools not to goof up other stuff
     } else {
-      out.errEffSF_uncor_up = out.errEffSF_uncor_dn = out.errEffSF_cor_up = out.errEffSF_cor_dn = 0;
+      out.errEffSF_stat_up = out.errEffSF_stat_dn = out.errEffSF_syst_up = out.errEffSF_syst_dn = 0;
     }
     if(m_dbg > 5) cout << "ASM :: Muon scale factors " << out.effSF             << " "
-                                                       << out.errEffSF_uncor_up << " "
-                                                       << out.errEffSF_uncor_dn << " "
-                                                       << out.errEffSF_cor_up   << " "
-                                                       << out.errEffSF_cor_dn   << endl;
+                                                       << out.errEffSF_stat_up << " "
+                                                       << out.errEffSF_stat_dn << " "
+                                                       << out.errEffSF_syst_up   << " "
+                                                       << out.errEffSF_syst_dn   << endl;
 
     // ASM-2014-11-02 :: Store to be true at the moment
     all_available =  false;
