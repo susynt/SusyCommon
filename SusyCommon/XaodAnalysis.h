@@ -12,9 +12,11 @@
 #include "SUSYTools/SUSYObjDef_xAOD.h"
 #include "LeptonTruthTools/RecoTauMatch.h"
 
+#include "SusyNtuple/ElectronId.h"
 #include "SusyCommon/LeptonInfo.h"
-#include "SusyNtuple/SusyNt.h"
+#include "SusyNtuple/MuonId.h"
 #include "SusyNtuple/SusyDefs.h"
+#include "SusyNtuple/SusyNt.h"
 #include "SusyNtuple/SusyNtSys.h"
 
 //xAOD
@@ -72,13 +74,16 @@
 
 #include "TSelector.h"
 #include "TTree.h"
+#include "TChain.h"
+#include "TTreeFormula.h"
 
 #include <iostream>
 
 using namespace Susy;
 using namespace NtSys;
 
-// dantrim trig
+// fw declarations
+// (dantrim trig)
 namespace TrigConf {
     class xAODConfigTool;
 }
@@ -87,32 +92,11 @@ namespace Trig {
     class FeatureContainer;
 }
 
+class TDirectory;
 
 namespace Susy {
   
   const double MeV2GeV=1.0e-3;
-
-  enum eleID{
-    VeryLooseLLH=0
-    ,LooseLLH
-    ,MediumLLH
-    ,TightLLH
-    ,LooseLLH_nod0
-    ,MediumLLH_nod0
-    ,TightLLH_nod0
-    ,eleIDInvalid
-  };
-  
-  const std::string eleIDNames[] = {
-    "VeryLooseLLH"
-    ,"LooseLLH"
-    ,"MediumLLH"
-    ,"TightLLH"
-    ,"LooseLLH_nod0"
-    ,"MediumLLH_nod0"
-    ,"TightLLH_nod0"
-    ,"eleIDInvalid"
-  };
 
   ///  a class for performing object selections and event cleaning on xaod
   class XaodAnalysis : public TSelector
@@ -132,9 +116,8 @@ namespace Susy {
     /// Due to ROOT's stupid design, need to specify version >= 2 or the tree will not connect automatically
     virtual Int_t   Version() const { return 2; }
     virtual XaodAnalysis& setDebug(int debugLevel) { m_dbg = debugLevel; return *this; }
-    void setTriggerSet(int set) { m_triggerSet = set; }
+    void setTriggerSet(std::string set) { m_triggerSet = set; }
     XaodAnalysis& initSusyTools(); ///< initialize SUSYObjDef_xAOD
-    bool processingMc12b() const { return m_mcProd == MCProd_MC12b; }
     
     /**
        Performance Tools 
@@ -194,6 +177,10 @@ namespace Susy {
     static const xAOD::TruthParticleContainer* retrieveTruthParticles(xAOD::TEvent &e, bool dbg);
     /// wrapper of retrieveTruthParticles; store outputs as datamembers
     virtual const xAOD::TruthParticleContainer* xaodTruthParticles();
+
+    /// access truth tau particles
+    virtual const xAOD::TruthParticleContainer* xaodTruthTauParticles();
+    virtual const xAOD::TruthParticleAuxContainer* xaodTruthTauParticlesAux();
 
     /// retrieve & build met
     virtual void retrieveXaodMet(ST::SystInfo sysInfo, SusyNtSys sys = NtSys::NOM);
@@ -257,6 +244,14 @@ namespace Susy {
     //
     int truthElectronCharge(const xAOD::Electron &in);
     bool isChargeFlip(int recoCharge, int truthCharge);
+
+    //
+    //ID Tau origin
+    //
+    int classifyTau(const xAOD::TauJet &in);
+    
+
+
     //
     // Event cleaning
     //
@@ -290,11 +285,7 @@ namespace Susy {
     */
     float getEventWeight(float lumi = LUMI_A_E);
     float getXsecWeight(); ///< event weight (xsec*kfac)
-    float getLumiWeight(); ///< lumi weight (lumi/sumw) normalized to 4.7/fb
     void setLumi(float lumi) { m_lumi = lumi; } ///< luminosity to normalize to (in 1/pb)
-    void setSumw(float sumw) { m_sumw = sumw;  } ///< sum of mc weights for sample
-    void setXsec(float xsec) { m_xsec = xsec;  } ///< user cross section, overrides susy cross section
-    void setErrXsec(float err) { m_errXsec = err;  } ///< user cross section uncert
     float getPileupWeight(const xAOD::EventInfo* eventinfo); ///< pileup weight for full dataset: currently A-L
     float getPileupWeightUp();
     float getPileupWeightDown();
@@ -308,14 +299,14 @@ namespace Susy {
     uint getNumGoodVtx(); ///< Count number of good vertices
     bool matchTruthJet(int iJet); ///< Match a reco jet to a truth jet
 
-    bool eleIsOfType(const xAOD::Electron &in, eleID id=eleID::LooseLLH);
+    bool eleIsOfType(const xAOD::Electron &in, ElectronId id);
+    bool muIsOfType(const xAOD::Muon &in, MuonId id);
 
 
     // Running conditions
     TString sample() { return m_sample; } ///< Sample name - used to set isMC flag
     XaodAnalysis& setSample(TString s) { m_sample = s; return *this; }
     void setAF2(bool isAF2=true) { m_isAF2 = isAF2; } ///< AF2 flag
-    void setMCProduction(MCProduction prod) { m_mcProd = prod; } ///< Set MC Production flag
     void setD3PDTag(D3PDTag tag) { m_d3pdTag = tag; } ///< Set SUSY D3PD tag to know which branches are ok
     void setSys(bool sysOn){ m_sys = sysOn; }; ///< Set sys run
     void setSelectPhotons(bool doIt) { m_selectPhotons = doIt; } ///< Toggle photon selection
@@ -356,19 +347,30 @@ namespace Susy {
     static DataStream streamFromSamplename(const TString &s, bool isdata); ///< guess data stream from sample name
     static bool isDataFromSamplename(const TString &s); ///< guess from sample name whether it's data sample
     static bool isSimuFromSamplename(const TString &s); ///< guess from sample name whether it's a simulated sample
-    static bool isDerivationFromSamplename(const TString &sample); ///< guess from sample name whether it's a DxAOD
+    static bool isDerivationFromMetaData(TTree* tree, bool verbose); ///< From sample MetaData, determine if sample is a derivation
+    /**
+       \brief Retrieve the file holding the tree; for a chain, get the files holding the first tree.
+
+       If you call TTree::GetDirectory on a TChain outside of the
+       event loop, the current file is undefined. This function does
+       some guesswork and picks up the first reasonable file.
+     */
+    static TDirectory* getDirectoryFromTreeOrChain(TTree* tree, bool verbose);
+
+    // return the flag "m_is8TeV"
+    bool is8TeV() { return m_is8TeV; }
 
 
   protected:
 
 
     TString                     m_sample;       // sample name
-    int                         m_triggerSet;   // trigger set to store
+    std::string                 m_triggerSet;   // trigger set to store
     std::vector<std::string>    m_triggerNames; 
     DataStream                  m_stream;       // data stream enum, taken from sample name
     bool                        m_isDerivation; // flag for derived xAOD (DxAOD)
     bool                        m_isAF2;        // flag for ATLFastII samples
-    MCProduction                m_mcProd;       // MC production campaign
+    bool                        m_is8TeV;       // flag for 8 TeV samples
 
     bool                        m_isSusySample; // is susy grid sample
     int                         m_susyFinalState;// susy subprocess
@@ -449,9 +451,6 @@ namespace Susy {
     //
 
     float                       m_lumi;         // normalized luminosity (defaults to 4.7/fb)
-    float                       m_sumw;         // sum of mc weights for normalization, must be set by user
-    float                       m_xsec;         // optional user cross section, to override susy xsec usage
-    float                       m_errXsec;      // user cross section uncertainty
 
     uint                        m_mcRun;        // Random run number for MC from pileup tool
     uint                        m_mcLB;         // Random lb number for MC from pileup tool
@@ -490,11 +489,11 @@ namespace Susy {
     xAOD::TEvent m_event;
     xAOD::TStore m_store;
 
-    ST::SUSYObjDef_xAOD* m_susyObj[eleID::eleIDInvalid];      // SUSY object definitions
-    eleID m_eleIDDefault;
+    ST::SUSYObjDef_xAOD* m_susyObj[ElectronId::ElectronIdInvalid];      // SUSY object definitions
+    ElectronId m_eleIDDefault;
 
     std::vector<CP::SystematicSet> sysList;  //CP Systematic list
-    std::vector<ST::SystInfo> systInfoList;  //SUSYTools simplify version
+    std::vector<ST::SystInfo> systInfoList;  //SystInfo is a SUSYTools simplify version struct
 
     /// internal pointers to the xaod containers
     /**
@@ -522,6 +521,8 @@ namespace Susy {
     const xAOD::TruthEventContainer*    m_xaodTruthEvent;
     const xAOD::TruthParticleContainer* m_xaodTruthParticles;
     xAOD::TruthParticleAuxContainer*    m_xaodTruthParticlesAux;
+    const xAOD::TruthParticleContainer* m_xaodTruthTauParticles;
+    xAOD::TruthParticleAuxContainer*    m_xaodTruthTauParticlesAux;
 
     /// met container
     /**
@@ -585,7 +586,10 @@ namespace Susy {
     CP::PileupReweightingTool           *m_pileupReweightingTool;
 
     CP::MuonEfficiencyScaleFactors      *m_muonEfficiencySFTool; 
-    CP::MuonSelectionTool               *m_muonSelectionTool;
+    CP::MuonSelectionTool               *m_muonSelectionToolVeryLoose;
+    CP::MuonSelectionTool               *m_muonSelectionToolLoose;
+    CP::MuonSelectionTool               *m_muonSelectionToolMedium;
+    CP::MuonSelectionTool               *m_muonSelectionToolTight;
 
     //Tau truth matchong tools
     TauAnalysisTools::TauTruthMatchingTool       *m_tauTruthMatchingTool;

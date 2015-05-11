@@ -8,6 +8,7 @@
 #include "SusyCommon/SusyNtMaker.h"
 #include "SusyNtuple/SusyDefs.h"
 #include "SusyNtuple/ChainHelper.h"
+#include "SusyNtuple/string_utils.h"
 
 
 using namespace std;
@@ -39,9 +40,6 @@ void help()
   cout << "  -s sample name, sets isMC flag"    << endl;
   cout << "     use e.g. 'ttbar', 'DataG', etc" << endl;
 
-  cout << "  -p MC production, specify mc12a or mc12b" << endl;
-  cout << "     this arg is required for all MC"<< endl;
-
   cout << "  -w set sum of mc weights for norm" << endl;
   cout << "     default: 1"                     << endl;
 
@@ -59,9 +57,6 @@ void help()
 
   cout << "  --sys will turn on systematic run" << endl;
   cout << "     default: off"                   << endl;
-
-  cout << "  --errXsec set cross section uncert"<< endl;
-  cout << "     default: -1"                    << endl;
 
   cout << "  --savePh will save photons"        << endl;
   cout << "     default: off"                   << endl;
@@ -108,7 +103,9 @@ void help()
   cout << "  --trig set which triggers are  "   << endl;
   cout << "    stored.                      "   << endl;
   cout << "    Default: 1 (0: Run1, 1:Run2) "   << endl;
-
+  cout << "--input  name of the input container" <<endl;
+  cout << "--output name of the output container"<<endl;
+  cout << "--tag    SustNtuple production tag"   <<endl;
   cout << "  -h print this help"                << endl;
 }
 
@@ -119,12 +116,8 @@ int main(int argc, char** argv)
   int nSkip       = 0;
   int dbg         = 0;
   float lumi      = 5831;
-  float xsec      = -1;
-  float errXsec   = -1;
-  float sumw      = 1;
   string sample   = "";
   string fileList = "fileList.txt";
-  TString mcProdStr = "";
   string grl      = "";
   bool sysOn      = false;
   bool savePh     = false;
@@ -140,7 +133,8 @@ int main(int argc, char** argv)
   uint nLepFilter = 0;
   uint nLepTauFilter = 2;
   bool filterTrig = false;
-  int trigset     = 1;
+  string trigset     = "run2";
+  string inputContainer, outputContainer, ntTag;
 
   cout << "SusyNtMaker" << endl;
   cout << endl;
@@ -157,12 +151,6 @@ int main(int argc, char** argv)
       fileList = argv[++i];
     else if (strcmp(argv[i], "-s") == 0)
       sample = argv[++i];
-    else if (strcmp(argv[i], "-p") == 0)
-      mcProdStr = argv[++i];
-    else if (strcmp(argv[i], "-w") == 0)
-      sumw = atof(argv[++i]);
-    else if (strcmp(argv[i], "-x") == 0)
-      xsec = atof(argv[++i]);
     else if (strcmp(argv[i], "-l") == 0)
       lumi = atof(argv[++i]);
     else if (strcmp(argv[i], "-m") == 0)
@@ -171,8 +159,6 @@ int main(int argc, char** argv)
       grl = argv[++i];
     else if (strcmp(argv[i], "--sys") == 0)
       sysOn = true;
-    else if (strcmp(argv[i], "--errXsec") == 0)
-      errXsec = atof(argv[++i]);
     else if (strcmp(argv[i], "--savePh") == 0)
     savePh = true;
     else if (strcmp(argv[i], "--saveTau") == 0)
@@ -199,8 +185,11 @@ int main(int argc, char** argv)
       nLepTauFilter = atoi(argv[++i]);
     else if (strcmp(argv[i], "--filterTrig") == 0)
       filterTrig = true;
-    else if (strcmp(argv[i], "--trig") == 0)
-      trigset = atoi(argv[++i]);
+    else if (strcmp(argv[i], "--triggerSet") == 0)
+      trigset = argv[++i];
+    else if (strcmp(argv[i], "--input") == 0) inputContainer = argv[++i];
+    else if (strcmp(argv[i], "--output") == 0) outputContainer = argv[++i];
+    else if (strcmp(argv[i], "--tag") == 0) ntTag = argv[++i];
     else
     {
       help();
@@ -210,12 +199,10 @@ int main(int argc, char** argv)
 
   cout << "flags:" << endl;
   cout << "  sample        " << sample   << endl;
-  cout << "  mcProdStr     " << mcProdStr<< endl;
   cout << "  nEvt          " << nEvt     << endl;
   cout << "  nSkip         " << nSkip    << endl;
   cout << "  dbg           " << dbg      << endl;
-  cout << "  input         " << fileList << endl;
-  cout << "  sumw          " << sumw     << endl;
+  cout << "  fileList      " << fileList << endl;
   cout << "  grl           " << grl      << endl;
   cout << "  sys           " << sysOn    << endl;
   cout << "  savePh        " << savePh   << endl;
@@ -227,12 +214,14 @@ int main(int argc, char** argv)
   cout << "  metFlav       " << metFlav  << endl;
   //cout << "  doMetFix      " << doMetFix << endl;
   cout << "  lumi          " << lumi     << endl;
-  cout << "  xsec          " << xsec     << endl;
   cout << "  filter        " << filter   << endl;
   cout << "  nLepFilter    " << nLepFilter    << endl;
   cout << "  nLepTauFilter " << nLepTauFilter << endl;
   cout << "  filterTrig    " << filterTrig    << endl;
-  cout << "  trigset       " << trigset       << endl;
+  cout << "  triggerSet    " << trigset       << endl;
+  cout << "  input         " << inputContainer  << endl;
+  cout << "  output        " << outputContainer << endl;
+  cout << "  ntTag         " << ntTag           << endl;
   cout << endl;
 
 
@@ -249,14 +238,11 @@ int main(int argc, char** argv)
   susyAna->setTriggerSet(trigset);
   susyAna->setSample(sample);
   susyAna->setLumi(lumi);
-  susyAna->setSumw(sumw);
   susyAna->setSys(sysOn);
   susyAna->setSelectPhotons(savePh);
   susyAna->setSelectTaus(saveTau);
   susyAna->setSaveContTaus(saveContTau);
   susyAna->setAF2(isAF2);
-  susyAna->setXsec(xsec);
-  susyAna->setErrXsec(errXsec);
   susyAna->setFillNt(writeNt);
   susyAna->setD3PDTag(tag);
   susyAna->setMetFlavor(metFlav);
@@ -266,15 +252,12 @@ int main(int argc, char** argv)
   susyAna->setNLepFilter(nLepFilter);
   susyAna->setNLepTauFilter(nLepTauFilter);
   susyAna->setFilterTrigger(filterTrig);
-
+  susyAna->m_inputContainerName = inputContainer;
+  susyAna->m_outputContainerName = outputContainer;
+  susyAna->m_productionTag = ntTag;
+  susyAna->m_productionCommand = Susy::utils::commandLineArguments(argc, argv);
   // GRL - default is set in SusyD3PDAna::Begin, but now we can override it here
   susyAna->setGRLFile(grl);
-
-  // MC production campaign
-  MCProduction mcProd = MCProd_Unknown;
-  if(mcProdStr.CompareTo("mc12a", TString::kIgnoreCase)) mcProd = MCProd_MC12a;
-  else if(mcProdStr.CompareTo("mc12b", TString::kIgnoreCase)) mcProd = MCProd_MC12b;
-  susyAna->setMCProduction(mcProd);
 
   // Run the job
   if(nEvt<0) nEvt = nEntries;

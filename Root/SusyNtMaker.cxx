@@ -54,6 +54,10 @@ SusyNtMaker::SusyNtMaker() :
     m_cutstageCounters(SusyNtMaker::cutflowLabels().size(), 0),
     h_passTrigLevel(NULL) // dantrim trig
 {
+    n_pre_ele=0;
+    n_pre_muo=0;
+    n_pre_tau=0;
+    n_pre_jet=0;
     n_base_ele=0;
     n_base_muo=0;
     n_base_tau=0;
@@ -79,6 +83,7 @@ void SusyNtMaker::SlaveBegin(TTree* tree)
     if(m_fillNt || true)
         initializeOuputTree();
     m_isWhSample = guessWhetherIsWhSample(m_sample);
+    checkIfInputIs13TeV();
     initializeCutflowHistograms();
 
     m_timer.Start();
@@ -149,8 +154,8 @@ Bool_t SusyNtMaker::Process(Long64_t entry)
     static Long64_t chainEntry = -1;
     chainEntry++;
     m_event.getEntry(chainEntry); // DG 2014-09-19 TEvent wants the chain entry, not the tree entry (?)
+    retrieveCollections();
     const xAOD::EventInfo* eventinfo = XaodAnalysis::xaodEventInfo();
-
     if(m_dbg || chainEntry%5000==0){
         cout << "***********************************************************" << endl;
         cout << "**** Processing entry " << setw(6) << chainEntry
@@ -158,9 +163,7 @@ Bool_t SusyNtMaker::Process(Long64_t entry)
              << " event " << setw(7) << eventinfo->eventNumber() << " ****" << endl;
         cout << "***********************************************************" << endl;
     }
-    
-    retrieveCollections();
-    
+        
     if(!m_flagsHaveBeenChecked) {
         m_flagsAreConsistent = runningOptionsAreValid();
         m_flagsHaveBeenChecked=true;
@@ -170,11 +173,13 @@ Bool_t SusyNtMaker::Process(Long64_t entry)
         }
     }
 
-    
-
     fillTriggerHisto(); // dantrim trig
     if(selectEvent() && m_fillNt){
         matchTriggers();
+        if(m_isMC){
+            m_tauTruthMatchingTool->setTruthParticleContainer(xaodTruthParticles());
+            m_tauTruthMatchingTool->createTruthTauContainer();
+        }
         fillNtVars();
         if(m_isMC && m_sys) doSystematic();
         int bytes = m_outTree->Fill();
@@ -183,9 +188,8 @@ Bool_t SusyNtMaker::Process(Long64_t entry)
             abort();
         }
     }
-    deleteShallowCopies();
     clearOutputObjects();
-    clearContainerPointers();
+    deleteShallowCopies();
     return kTRUE;
 }
 //----------------------------------------------------------
@@ -270,20 +274,23 @@ void SusyNtMaker::fillEventVars()
     evt->trigBits         = m_evtTrigBits; // dantrim trig
     
 
-    evt->wPileup          = m_isMC? getPileupWeight(eventinfo) : 1;
-    evt->wPileup_up       = m_isMC? getPileupWeightUp() : 1;
-    evt->wPileup_dn       = m_isMC? getPileupWeightDown() : 1;
-    evt->xsec             = m_isMC? getXsecWeight() : 1;
-    evt->errXsec          = m_isMC? m_errXsec : 1;
-    evt->sumw             = m_isMC? m_sumw : 1;
+    evt->wPileup          = is8TeV() ? getPileupWeight(eventinfo) : 1;
+    evt->wPileup_up       = is8TeV() ? getPileupWeightUp() : 1;
+    evt->wPileup_dn       = is8TeV() ? getPileupWeightDown() : 1;
+    //evt->wPileup          = m_isMC? getPileupWeight(eventinfo) : 1;
+    //evt->wPileup_up       = m_isMC? getPileupWeightUp() : 1;
+    //evt->wPileup_dn       = m_isMC? getPileupWeightDown() : 1;
 
     if(m_isMC){
         xAOD::TruthEventContainer::const_iterator truthE_itr = xaodTruthEvent()->begin();
-        // ( *truthE_itr )->pdfInfoParameter(evt->pdf_id1   , xAOD::TruthEvent::PDGID1); // not available for some samples
-        // ( *truthE_itr )->pdfInfoParameter(evt->pdf_id2   , xAOD::TruthEvent::PDGID2);
-        // ( *truthE_itr )->pdfInfoParameter(evt->pdf_x1    , xAOD::TruthEvent::X1);
-        // ( *truthE_itr )->pdfInfoParameter(evt->pdf_x2    , xAOD::TruthEvent::X2);
-        // ( *truthE_itr )->pdfInfoParameter(evt->pdf_scale , xAOD::TruthEvent::SCALE);
+/*
+  AT: test 05-08-15: still crashes
+        ( *truthE_itr )->pdfInfoParameter(evt->pdf_id1   , xAOD::TruthEvent::PDGID1); // not available for some samples
+        ( *truthE_itr )->pdfInfoParameter(evt->pdf_id2   , xAOD::TruthEvent::PDGID2);
+        ( *truthE_itr )->pdfInfoParameter(evt->pdf_x1    , xAOD::TruthEvent::X1);
+        ( *truthE_itr )->pdfInfoParameter(evt->pdf_x2    , xAOD::TruthEvent::X2);
+        ( *truthE_itr )->pdfInfoParameter(evt->pdf_scale , xAOD::TruthEvent::SCALE);
+*/
         // DG what are these two?
         //( *truthE_itr )->pdfInfoParameter(evt->pdf_x1   , xAOD::TruthEvent::x1);
         //( *truthE_itr )->pdfInfoParameter(evt->pdf_x2   , xAOD::TruthEvent::x2);
@@ -375,13 +382,13 @@ void SusyNtMaker::storeElectron(const xAOD::Electron &in)
     out.q   = in.charge();
     bool all_available=true;
     
-    out.veryLooseLLH = eleIsOfType(in, eleID::VeryLooseLLH);
-    out.looseLLH = eleIsOfType(in, eleID::LooseLLH);
-    out.mediumLLH = eleIsOfType(in, eleID::MediumLLH);
-    out.tightLLH = eleIsOfType(in, eleID::TightLLH);
-    out.looseLLH_nod0 = eleIsOfType(in, eleID::LooseLLH_nod0);
-    out.mediumLLH_nod0 = eleIsOfType(in, eleID::MediumLLH_nod0);
-    out.tightLLH_nod0 = eleIsOfType(in, eleID::TightLLH_nod0);
+    out.veryLooseLLH = eleIsOfType(in, ElectronId::VeryLooseLLH);
+    out.looseLLH = eleIsOfType(in, ElectronId::LooseLLH);
+    out.mediumLLH = eleIsOfType(in, ElectronId::MediumLLH);
+    out.tightLLH = eleIsOfType(in, ElectronId::TightLLH);
+    out.looseLLH_nod0 = eleIsOfType(in, ElectronId::LooseLLH_nod0);
+    out.mediumLLH_nod0 = eleIsOfType(in, ElectronId::MediumLLH_nod0);
+    out.tightLLH_nod0 = eleIsOfType(in, ElectronId::TightLLH_nod0);
 
     //Isolations
     //AT: Will become obsolete in run-2
@@ -400,28 +407,29 @@ void SusyNtMaker::storeElectron(const xAOD::Electron &in)
     //out.ptvarcone20 = in.isolationValue(xAOD::Iso::ptvarcone20) * MeV2GeV;
     //out.ptvarcone30 = in.isolationValue(xAOD::Iso::ptvarcone30) * MeV2GeV;
     
+    if(m_dbg>=10) 
+        cout << "AT: storing in susyNt electron Et "
+             << out.pt
+             << " LLH type "
+             << out.veryLooseLLH << " "  
+             << out.looseLLH << " "  
+             << out.mediumLLH << " "  
+             << out.tightLLH 
+             << endl;
+    
     if(m_isMC){
         //Store the SF of the tightest ID
         bool recoSF=true;
         bool idSF=true;
         bool trigSF=false;
-        if(eleIsOfType(in, eleID::TightLLH))           
-            out.effSF = m_susyObj[eleID::TightLLH]->GetSignalElecSF(in, recoSF, idSF, trigSF);
-        else if(eleIsOfType(in, eleID::MediumLLH))
-            out.effSF = m_susyObj[eleID::MediumLLH]->GetSignalElecSF(in, recoSF, idSF, trigSF);	 
-        else if(eleIsOfType(in, eleID::LooseLLH))
-            out.effSF = m_susyObj[eleID::LooseLLH]->GetSignalElecSF(in, recoSF, idSF, trigSF);
+        if(eleIsOfType(in, ElectronId::TightLLH))
+            out.effSF = m_susyObj[ElectronId::TightLLH]->GetSignalElecSF(in, recoSF, idSF, trigSF);
+        else if(eleIsOfType(in, ElectronId::MediumLLH))
+            out.effSF = m_susyObj[ElectronId::MediumLLH]->GetSignalElecSF(in, recoSF, idSF, trigSF);
+        else if(eleIsOfType(in, ElectronId::LooseLLH))
+            out.effSF = m_susyObj[ElectronId::LooseLLH]->GetSignalElecSF(in, recoSF, idSF, trigSF);
 
-        if(m_dbg>=10) 
-            cout << "AT: storing in susyNt electron Et "
-                 << out.pt
-                 << " LLH type "
-                 << out.veryLooseLLH << " "  
-                 << out.looseLLH << " "  
-                 << out.mediumLLH << " "  
-                 << out.tightLLH 
-                 << " SF "  
-                 << out.effSF << endl;
+      
        /* 
         >>> dantrim March 2 2015 -- calling AsgElectronEfficiencyTool causes seg-fault?
         AT: Crash is in getting EventInfo L175 ???
@@ -438,7 +446,8 @@ void SusyNtMaker::storeElectron(const xAOD::Electron &in)
         int matchedPdgId = truthEle ? truthEle->pdgId() : -999;
         out.truthType  = isFakeLepton(out.mcOrigin, out.mcType, matchedPdgId); 
         //AT: 05-02-15: Issue accessing Aux of trackParticle in truthElectronCharge. Info not in derived AOD ?
-        //out.isChargeFlip  = m_isMC ? isChargeFlip(in.charge(),truthElectronCharge(in)) : false;
+        //if(eleIsOfType(in, eleID::LooseLLH))
+        // crash p1874 out.isChargeFlip  = m_isMC ? isChargeFlip(in.charge(),truthElectronCharge(in)) : false;
     }
 
     if(const xAOD::CaloCluster* c = in.caloCluster()) {
@@ -505,6 +514,12 @@ void SusyNtMaker::storeMuon(const xAOD::Muon &in)
     out.isCosmic   = in.auxdata< char >("cosmic");
     out.isBadMuon  = m_susyObj[m_eleIDDefault]->IsBadMuon(in); // Uses default qoverpcut of 0.2
 
+    // muon quality
+    out.veryLoose = muIsOfType(in, MuonId::VeryLoose);
+    out.loose = muIsOfType(in, MuonId::Loose);
+    out.medium = muIsOfType(in, MuonId::Medium);
+    out.tight = muIsOfType(in, MuonId::Tight);
+
     bool all_available=true;
 
     // Isolation
@@ -560,14 +575,15 @@ void SusyNtMaker::storeMuon(const xAOD::Muon &in)
         out.msTrackTheta   = mstrack->theta();
     }
     // Truth Flags 
-    if(m_isMC) {
-        const xAOD::TrackParticle* trackParticle = in.primaryTrackParticle();
-        //AT 05/01/15: We should not have to do this on baseline only !!!
-        if(trackParticle && in.auxdata<char>("baseline")){
+    if(false) { // may 8 - comment out truthType accessor
+        const xAOD::TrackParticle* trackParticle = *(in.inDetTrackParticleLink());
+        if(trackParticle){
             static SG::AuxElement::Accessor<int> acc_truthType("truthType");
             static SG::AuxElement::Accessor<int> acc_truthOrigin("truthOrigin");
-            if (acc_truthType.isAvailable(*trackParticle)  ) out.mcType    = acc_truthType(*trackParticle);
-            if (acc_truthOrigin.isAvailable(*trackParticle)) out.mcOrigin  = acc_truthOrigin(*trackParticle);
+            if (acc_truthType.isAvailable(*trackParticle)) 
+                out.mcType    = acc_truthType(*trackParticle);
+            if (acc_truthOrigin.isAvailable(*trackParticle)) 
+                out.mcOrigin  = acc_truthOrigin(*trackParticle);
 
             const xAOD::TruthParticle* truthMu = xAOD::EgammaHelpers::getTruthParticle(trackParticle);
             out.matched2TruthLepton = truthMu ? true : false;
@@ -613,7 +629,12 @@ void SusyNtMaker::storeJet(const xAOD::Jet &in)
     out.phi = phi;
     out.m   = m;
     bool all_available=true;
-    
+
+    // number of associated tracks
+    vector<int> nTrkVec;
+    in.getAttribute(xAOD::JetAttribute::NumTrkPt500, nTrkVec);
+    int jet_nTrk = nTrkVec[0];
+    out.nTracks = jet_nTrk;
 
     // JVF 
     // ASM-2014-11-04 :: Remember JVT is gonna replace JVF in Run-II but not yet available
@@ -623,11 +644,15 @@ void SusyNtMaker::storeJet(const xAOD::Jet &in)
     out.jvf = (PV) ? jetJVF.at(PV->index()) : 0.;    // Upon discussion w/ TJ (2014-12-11)   
 
     // Truth Label/Matching 
-    if (m_isMC) in.getAttribute(xAOD::JetAttribute::JetLabel, out.truthLabel); 
+    if (m_isMC) in.getAttribute("TruthLabelID", out.truthLabel);
+//rel 20
+    //int JetPartonID = (in.jet())->auxdata< int >("PartonTruthLabelID"); // ghost association
+    //int JetConeID   = (in.jet())->auxdata< int >("ConeTruthLabelID"); // cone association
+
     // jetOut->matchTruth    = m_isMC? matchTruthJet(jetIdx) : false;
 
     // B-tagging 
-  //  out.mv1           = (in.btagging())->MV1_discriminant();      // dantrim Apr 15 2015 -- Not available for DC14@8TeV              
+    if(!is8TeV()) out.mv1 = (in.btagging())->MV1_discriminant();
     out.sv1plusip3d   = (in.btagging())->SV1plusIP3D_discriminant();           
     // Most of these are not available in DC14 samples, some obselete (ASM)
     // jetOut->sv0           = element->flavor_weight_SV0();
@@ -674,8 +699,7 @@ void SusyNtMaker::storeJet(const xAOD::Jet &in)
     // // 0th element is what we care about
     // int sWord = jetMetEgamma10NoTau.statusWord().at(0);
     // bool passSWord = (MissingETTags::DEFAULT == sWord);       // Note assuming default met..
-    // jetOut->met_wpx = 0; passSWord ? jetMetEgamma10NoTau.wpx().at(0) : 0;
-    // jetOut->met_wpy = 0; passSWord ? jetMetEgamma10NoTau.wpy().at(0) : 0;
+
     if(m_dbg && !all_available) cout<<"missing some jet variables"<<endl;
     m_susyNt.jet()->push_back(out);
 }
@@ -702,12 +726,10 @@ void SusyNtMaker::storePhoton(const xAOD::Photon &in)
         all_available = false;
     }
     out.OQ = in.isGoodOQ(xAOD::EgammaParameters::BADCLUSPHOTON);
-    in.isolationValue(out.topoEtcone40,xAOD::Iso::topoetcone40);
-
+//    in.isolationValue(out.topoEtcone40,xAOD::Iso::topoetcone40);
+    out.topoEtcone40 = in.isolationValue(xAOD::Iso::topoetcone40) * MeV2GeV;
+    
     if(m_dbg) cout << "AT: storePhoton: " << out.pt << " " << out.tight << " " << out.isConv << endl;
-    // // Miscellaneous
-    // phoOut->idx    = phIdx;
-    // if(m_dbg>=5) cout << "fillPhotonVar" << endl;
     if(m_dbg && !all_available) cout<<"missing some photon variables"<<endl;
     m_susyNt.pho()->push_back(out);
 }
@@ -722,10 +744,14 @@ void SusyNtMaker::storeTau(const xAOD::TauJet &tau)
     out.eta = eta;
     out.phi = phi;
     out.m   = m;
-    bool all_available=true;
-    out.q = tau.charge();
-    
-    // tauOut->author                = element->author(); // suneet: there is no author flag anymore?
+    out.q = int(tau.charge());
+    out.author = 0;//remove ?
+/*
+    if(tau.isTau(xAOD::TauJetParameters::tauRec))  out.author |= 1<<0;
+    if(tau.isTau(xAOD::TauJetParameters::tau1P3P)) out.author |= 1<<1;
+    if(tau.isTau(xAOD::TauJetParameters::PanTau))  out.author |= 1<<2;
+*/
+   
     out.nTrack = tau.nTracks();
     out.eleBDT = tau.discriminant(xAOD::TauJetParameters::BDTEleScore);
     out.jetBDT = tau.discriminant(xAOD::TauJetParameters::BDTJetScore);
@@ -739,45 +765,54 @@ void SusyNtMaker::storeTau(const xAOD::TauJet &tau)
     out.eleBDTTight = tau.isTau(xAOD::TauJetParameters::EleBDTTight);
 
     out.muonVeto = tau.isTau(xAOD::TauJetParameters::MuonVeto);
-
-   if (m_isMC)
-    {
-        m_tauTruthMatchingTool->setTruthParticleContainer(xaodTruthParticles());
-        m_tauTruthMatchingTool->createTruthTauContainer();
-
+    
+    if (m_isMC){
         m_tauTruthMatchingTool->applyTruthMatch(tau);
-        if (tau.auxdata<bool>("IsTruthMatched"))
-        {
-            out.trueTau = true;
-        }
-        else
-        {
-            out.trueTau = false;
-        }
+        if (tau.auxdata<bool>("IsTruthMatched")) out.trueTau = true;
+        else out.trueTau = false;
+        //tau.auxdata<size_t>("TruthProng");
+        //tau.auxdata<int>("TruthCharge");
+        //tau.auxdata<bool>("IsHadronicTau");
 
         m_TauEffEleTool->applyEfficiencyScaleFactor(tau);
 
-        out.looseEffSF = tau.auxdata<double>("TauScaleFactorEleID");
-        out.mediumEffSF = tau.auxdata<double>("TauScaleFactorEleID");
-        out.tightEffSF = tau.auxdata<double>("TauScaleFactorEleID");
+        //AT: Add errors!    
+        //m_TauEffEleTool->getEfficiencyScaleFactor(tau, out.looseEffS);
+        //How is the ID dealt with
+        //This is not correct... we need the tool initialize with various selection!
+        out.looseEffSF = tau.auxdata<double>("TauScaleFactorContJetID");//ok
+        out.mediumEffSF = tau.auxdata<double>("TauScaleFactorContJetID");//ok
+        out.tightEffSF = tau.auxdata<double>("TauScaleFactorContJetID");//ok
         // stat errors not supported
         // systematics not included here
         double EVetoSF = 0.0;
         if (tau.nTracks() == 1)
         {
-            m_TauEffEleTool->getEfficiencyScaleFactor(tau, EVetoSF);
+            m_TauEffEleTool->getEfficiencyScaleFactor(tau, EVetoSF); //?????
         }
+       //AT:: Add errors - what is store does not make sense. Save same thing.
         out.looseEVetoSF = EVetoSF;
         out.mediumEVetoSF = EVetoSF;
+        out.tightEVetoSF = EVetoSF;
 
+
+ // may8 - comment out truthType accessor     out.truthType = classifyTau(tau);
+        if(m_dbg>10) std::cout << "TauClassifier: found Tau= "<< out.truthType << std::endl;
     }
-    // tauOut->trueTau               = m_isMC? element->trueTauAssoc_matched() : false;
-    
+
+
+    //TO ADD
     // tauOut->matched2TruthLepton   = m_isMC? m_recoTruthMatch.Matched2TruthLepton(*tauLV, true) : false;
     // tauOut->detailedTruthType     = m_isMC? m_recoTruthMatch.TauDetailedFakeType(*tauLV) : -1;
     // tauOut->truthType             = m_isMC? m_recoTruthMatch.TauFakeType(tauOut->detailedTruthType) : -1;
     
-    // // ID efficiency scale factors
+   
+   if(m_dbg>5) cout << "SusyNtMaker Filling Tau pt " << out.pt 
+                     << " eta " << out.eta << " phi " << out.phi << " q " << out.q << " " << int(tau.charge()) << endl;
+
+
+
+// // ID efficiency scale factors
     // if(m_isMC){
     //   #define TAU_ARGS TauCorrUncert::BDTLOOSE, tauLV->Eta(), element->numTrack()
     //   //TauCorrections* tauSF       = m_susyObj[m_eleIDDefault]->GetTauCorrectionsProvider();
@@ -810,9 +845,7 @@ void SusyNtMaker::storeTau(const xAOD::TauJet &tau)
     
     // tauOut->trigFlags             = m_tauTrigFlags[tauIdx];
     
-    // tauOut->idx   = tauIdx;
-    if(m_dbg && !all_available) cout<<"missing some tau variables"<<endl;
-    m_susyNt.tau()->push_back(out);
+   m_susyNt.tau()->push_back(out);
 }
 
 /*--------------------------------------------------------------------------------*/
@@ -820,127 +853,69 @@ void SusyNtMaker::storeTau(const xAOD::TauJet &tau)
 /*--------------------------------------------------------------------------------*/
 void SusyNtMaker::fillMetVars(SusyNtSys sys)
 {
-
     xAOD::MissingETContainer::const_iterator met_it = m_metContainer->find("Final");
-  
+    if(m_dbg>=15){
+        cout << "Dump MET container - SusyNtMaker " << endl;
+        for(auto it=m_metContainer->begin(), end=m_metContainer->end(); it!=end; ++it){
+            cout << "Met container name " << (*it)->name() << endl;
+        }
+    }
+
     if (met_it == m_metContainer->end()) {
-        cout<<"No RefFinal inside MET container"<<endl;
+        cout<<"WARNING: SusyNtMaker: No RefFinal inside MET container found"<<endl;
         return;
     }
   
     m_susyNt.met()->push_back( Susy::Met() );
     Susy::Met* metOut = & m_susyNt.met()->back();
-    
-    metOut->Et = (*met_it)->met()*MeV2GeV;// m_met.Et();
-    metOut->phi = (*met_it)->phi();// m_met.Phi();
-    metOut->sys = sys;
+    metOut->Et = (*met_it)->met()*MeV2GeV;
+    metOut->phi = (*met_it)->phi();
     metOut->sumet = (*met_it)->sumet()*MeV2GeV;
-    
-    if(m_dbg) cout << " AT:fillMetVars " << metOut->Et << " " << metOut->phi << " " << metOut->lv().Pt() << endl;
+    metOut->sys = sys;
+    if(m_dbg>=5) cout << " AT:fillMetVars " << metOut->Et << " " << metOut->phi << " " << metOut->lv().Pt() << endl;
     
     // RefEle
     xAOD::MissingETContainer::const_iterator met_find = m_metContainer->find("RefEle");
-    if (met_find == m_metContainer->end()) {
-        // cout << "No RefEle inside MET container" << endl;
-    }
-    else {
-        metOut->refEle = (*met_find)->met()*MeV2GeV;
-        metOut->refEle_etx = (*met_find)->mpx()*MeV2GeV;
-        metOut->refEle_ety = (*met_find)->mpy()*MeV2GeV;
+    if (met_find != m_metContainer->end()) {
+        metOut->refEle_et = (*met_find)->met()*MeV2GeV;
+        metOut->refEle_phi = (*met_find)->phi();
         metOut->refEle_sumet = (*met_find)->sumet()*MeV2GeV;
     }
-
-  
     // RefGamma
     met_find = m_metContainer->find("RefGamma");
-    if (met_find == m_metContainer->end()) {
-        // cout << "No RefGamma inside MET container" << endl;
-    }
-    else {
-        metOut->refGamma = (*met_find)->met()*MeV2GeV;
-        metOut->refGamma_etx = (*met_find)->mpx()*MeV2GeV;
-        metOut->refGamma_ety = (*met_find)->mpy()*MeV2GeV;
+    if (met_find != m_metContainer->end()) {
+        metOut->refGamma_et = (*met_find)->met()*MeV2GeV;
+        metOut->refGamma_phi = (*met_find)->phi();
         metOut->refGamma_sumet = (*met_find)->sumet()*MeV2GeV;
     }
-  
     // RefTau
     met_find = m_metContainer->find("RefTau");
-    if (met_find == m_metContainer->end()) {
-        // cout << "No RefTau inside MET container" << endl;
+    if (met_find != m_metContainer->end()) {
+        metOut->refTau_et = (*met_find)->met()*MeV2GeV;
+        metOut->refTau_phi = (*met_find)->phi();
+        metOut->refTau_sumet = (*met_find)->sumet()*MeV2GeV;
     }
-    else {
-        // cout << "Found RefTau inside MET container, not stored." << endl;
-    }
-
-    // Muons
-    met_find = m_metContainer->find("Muons");
-    if (met_find == m_metContainer->end()) {
-        // cout << "No Muons inside MET container" << endl;
-    }
-    else {
-        metOut->refMuo = (*met_find)->met()*MeV2GeV;
-        metOut->refMuo_etx = (*met_find)->mpx()*MeV2GeV;
-        metOut->refMuo_ety = (*met_find)->mpy()*MeV2GeV;
-        metOut->refMuo_sumet = (*met_find)->sumet()*MeV2GeV;
-    }
-
     // RefJet
     met_find = m_metContainer->find("RefJet");
-    if (met_find == m_metContainer->end()) {
-        // cout << "No RefJet inside MET container" << endl;
-    }
-    else {
-        metOut->refJet = (*met_find)->met()*MeV2GeV;
-        metOut->refJet_etx = (*met_find)->mpx()*MeV2GeV;
-        metOut->refJet_ety = (*met_find)->mpy()*MeV2GeV;
+    if (met_find != m_metContainer->end()) {
+        metOut->refJet_et = (*met_find)->met()*MeV2GeV;
+        metOut->refJet_phi = (*met_find)->phi();
         metOut->refJet_sumet = (*met_find)->sumet()*MeV2GeV;
     }
-
-    // SoftClus
-    met_find = m_metContainer->find("SoftClus");
-    if (met_find == m_metContainer->end()) {
-        // cout << "No SoftClus (softTerm) inside MET container" << endl;
-    }
-    else {
-        metOut->softTerm = (*met_find)->met()*MeV2GeV;
-        metOut->softTerm_etx = (*met_find)->mpx()*MeV2GeV;
-        metOut->softTerm_ety = (*met_find)->mpy()*MeV2GeV;
+    // SoftTerm
+    met_find = m_metContainer->find("SoftClus"); //Use GetMet default, so SoftClus is what we get. doTST=true would give SoftTrk
+    if (met_find != m_metContainer->end()) {
+        metOut->softTerm_et = (*met_find)->met()*MeV2GeV;
+        metOut->softTerm_phi = (*met_find)->phi();
         metOut->softTerm_sumet = (*met_find)->sumet()*MeV2GeV;
     }
-
-    // cout << "Done looking for MET terms!" << endl;
-
-#warning fillMetVars not implemented
-    // if(m_dbg>=5) cout << "fillMetVars: sys " << sys << endl;
-
-    // // Just fill the lv for now
-    // double Et  = m_met.Et()/GeV;
-    // double phi = m_met.Phi();
-
-    // //double px = m_met.Px()/GeV;
-    // //double py = m_met.Py()/GeV;
-    // //double pz = m_met.Pz()/GeV;
-    // //double E  = m_met.E()/GeV;
-
-    // // Need to get the metUtility in order to
-    // // get all the sumet terms.  In the future,
-    // // we could use the metUtility to get all the
-    // // comonents instead of the SUSYTools method
-    // // computeMetComponent, but that is up to Steve,
-    // // Lord of the Ntuples.
-    // METUtility* metUtil = m_susyObj[m_eleIDDefault]->GetMETUtility();
-
-    // m_susyNt.met()->push_back( Susy::Met() );
-    // Susy::Met* metOut = & m_susyNt.met()->back();
-    // metOut->Et    = Et;
-    // metOut->phi   = phi;
-    // metOut->sys   = sys;
-    // metOut->sumet = metUtil->getMissingET(METUtil::RefFinal, METUtil::None).sumet()/GeV;
-
-    // // MET comp terms
-    // // Need to save these for the MET systematics as well.
-    // // Use the sys enum to determine which argument to pass to SUSYTools
-    // METUtil::Systematics metSys = METUtil::None;
+    // RefMuons
+    met_find = m_metContainer->find("Muons");
+    if (met_find != m_metContainer->end()) {
+        metOut->refMuo_et = (*met_find)->met()*MeV2GeV;
+        metOut->refMuo_phi = (*met_find)->phi();
+        metOut->refMuo_sumet = (*met_find)->sumet()*MeV2GeV;
+    }
 
     // // I guess these are the only ones we need to specify, the ones specified in SUSYTools...
     // // All the rest should be automatic (I think), e.g. JES
@@ -948,55 +923,6 @@ void SusyNtMaker::fillMetVars(SusyNtSys sys)
     // else if(sys == NtSys_SCALEST_DN) metSys = METUtil::ScaleSoftTermsDown;
     // else if(sys == NtSys_RESOST) metSys = METUtil::ResoSoftTermsUp;
 
-    // // Save the MET terms
-    // TVector2 refEleV   = m_susyObj[m_eleIDDefault]->computeMETComponent(METUtil::RefEle, metSys);
-    // TVector2 refMuoV   = m_susyObj[m_eleIDDefault]->computeMETComponent(METUtil::MuonTotal, metSys);
-    // TVector2 refJetV   = m_susyObj[m_eleIDDefault]->computeMETComponent(METUtil::RefJet, metSys);
-    // TVector2 refGammaV = m_susyObj[m_eleIDDefault]->computeMETComponent(METUtil::RefGamma, metSys);
-    // //TVector2 softJetV  = m_susyObj[m_eleIDDefault]->computeMETComponent(METUtil::SoftJets, metSys);
-    // //TVector2 refCellV  = m_susyObj[m_eleIDDefault]->computeMETComponent(METUtil::CellOutEflow, metSys);
-    // TVector2 softTermV = m_susyObj[m_eleIDDefault]->computeMETComponent(METUtil::SoftTerms, metSys);
-    // //float sumet = m_susyObj[m_eleIDDefault]->_metUtility->getMissingET(METUtil::SoftTerms).sumet();
-
-    //migrated// metOut->refEle     = refEleV.Mod()/GeV;
-    //migrated// metOut->refEle_etx = refEleV.Px()/GeV;
-    //migrated// metOut->refEle_ety = refEleV.Py()/GeV;
-    //migrated// metOut->refEle_sumet = metUtil->getMissingET(METUtil::RefEle, metSys).sumet()/GeV;
-
-    //migrated// metOut->refMuo     = refMuoV.Mod()/GeV;
-    //migrated// metOut->refMuo_etx = refMuoV.Px()/GeV;
-    //migrated// metOut->refMuo_ety = refMuoV.Py()/GeV;
-    //migrated// metOut->refMuo_sumet = metUtil->getMissingET(METUtil::MuonTotal, metSys).sumet()/GeV;
-
-    //migrated// metOut->refJet     = refJetV.Mod()/GeV;
-    //migrated// metOut->refJet_etx = refJetV.Px()/GeV;
-    //migrated// metOut->refJet_ety = refJetV.Py()/GeV;
-    //migrated// metOut->refJet_sumet = metUtil->getMissingET(METUtil::RefJet, metSys).sumet()/GeV;
-
-    //migrated// metOut->refGamma     = refGammaV.Mod()/GeV;
-    //migrated// metOut->refGamma_etx = refGammaV.Px()/GeV;
-    //migrated// metOut->refGamma_ety = refGammaV.Py()/GeV;
-    //migrated// metOut->refGamma_sumet = metUtil->getMissingET(METUtil::RefGamma, metSys).sumet()/GeV;
-
-    // //metOut->softJet     = softJetV.Mod()/GeV;
-    // //metOut->softJet_etx = softJetV.Px()/GeV;
-    // //metOut->softJet_ety = softJetV.Py()/GeV;
-
-    // //metOut->refCell     = refCellV.Mod()/GeV;
-    // //metOut->refCell_etx = refCellV.Px()/GeV;
-    // //metOut->refCell_ety = refCellV.Py()/GeV;
-
-    //migrated// metOut->softTerm     = softTermV.Mod()/GeV;
-    //migrated// metOut->softTerm_etx = softTermV.Px()/GeV;
-    //migrated// metOut->softTerm_ety = softTermV.Py()/GeV;
-    //migrated// metOut->softTerm_sumet = metUtil->getMissingET(METUtil::SoftTerms, metSys).sumet()/GeV;
-
-    // //metOut->refEle        = m_susyObj[m_eleIDDefault]->computeMETComponent(METUtil::RefEle, metSys).Mod()/GeV;
-    // //metOut->refMuo        = m_susyObj[m_eleIDDefault]->computeMETComponent(METUtil::MuonTotal, metSys).Mod()/GeV;
-    // //metOut->refJet        = m_susyObj[m_eleIDDefault]->computeMETComponent(METUtil::RefJet, metSys).Mod()/GeV;
-    // //metOut->refGamma      = m_susyObj[m_eleIDDefault]->computeMETComponent(METUtil::RefGamma, metSys).Mod()/GeV;
-    // //metOut->softJet       = m_susyObj[m_eleIDDefault]->computeMETComponent(METUtil::SoftJets, metSys).Mod()/GeV;
-    // //metOut->refCell       = m_susyObj[m_eleIDDefault]->computeMETComponent(METUtil::CellOutEflow, metSys).Mod()/GeV;
 }
 //----------------------------------------------------------
 void SusyNtMaker::fillMetTrackVars(SusyNtSys sys)
@@ -1116,9 +1042,8 @@ void SusyNtMaker::doSystematic()
         /*
           Recheck the event selection and save objects scale variation
         */
-        deleteShallowCopies(false);//Don't clear the nominal containers
-        clearContainerPointers(false);
         clearOutputObjects(false);
+        deleteShallowCopies(false);//Don't clear the nominal containers
         selectObjects(ourSys, sysInfo);
         retrieveXaodMet(sysInfo,ourSys);
         assignEventCleaningFlags(); //AT really needed for each systematic ? CHECK
@@ -1147,7 +1072,7 @@ void SusyNtMaker::saveElectronSF(ST::SystInfo sysInfo, SusyNtSys sys)
     xAOD::ElectronContainer* electrons_nom = xaodElectrons(sysInfo,NtSys::NOM);
 
     if(m_dbg>=5) cout << "saveElectronSF " << NtSys::SusyNtSysNames[sys]  << endl;
-    for(const auto &iEl : m_preElectrons){
+    for(const auto &iEl : m_preElectrons){ //loop over array containing the xAOD electron idx
         const xAOD::Electron* ele = electrons->at(iEl);
         if(m_dbg>=5) cout << "This ele pt " << ele->pt() << " eta " << ele->eta() << " phi " << ele->phi() << endl; 
         
@@ -1165,6 +1090,8 @@ void SusyNtMaker::saveElectronSF(ST::SystInfo sysInfo, SusyNtSys sys)
                     cout << "\t ele_nom pt " << ele_nom->pt() << " eta " << ele_nom->eta() << " phi " << ele_nom->phi() << endl; 
                     ele_susyNt->print();
                 }
+                if( fabs(ele_nom->eta() - ele->eta())>0.001 || fabs(ele_nom->phi() - ele->phi())>0.001)
+                    cout << "WARNING SusyNtMaker::saveElectronSF index mis-match " << endl;
                 break;
             }
         }
@@ -1257,7 +1184,7 @@ void SusyNtMaker::saveMuonSF(ST::SystInfo sysInfo, SusyNtSys sys)
     xAOD::MuonContainer* muons_nom = xaodMuons(sysInfo, NtSys::NOM);
   
     if(m_dbg>=5) cout << "saveMuonSF "  << NtSys::SusyNtSysNames[sys] << endl;
-    for(const auto &iMu : m_preMuons){
+    for(const auto &iMu : m_preMuons){//loop over array containing the xAOD muon idx
         const xAOD::Muon* mu = muons->at(iMu);
         if(m_dbg>=5) cout << "This mu pt " << mu->pt() << " eta " << mu->eta() << " phi " << mu->phi() << endl; 
         
@@ -1275,6 +1202,8 @@ void SusyNtMaker::saveMuonSF(ST::SystInfo sysInfo, SusyNtSys sys)
                     cout << "mu_nom pt " << mu_nom->pt() << " eta " << mu_nom->eta() << " phi " << mu_nom->phi() << endl; 
                     mu_susyNt->print();
                 }
+                if( fabs(mu_nom->eta() - mu->eta())>0.001 || fabs(mu_nom->phi() - mu->phi())>0.001)
+                    cout << "WARNING SusyNtMaker::saveMuonSF index mis-match " << endl;
                 break;
             }
         }
@@ -1309,7 +1238,7 @@ void SusyNtMaker::saveJetSF(ST::SystInfo sysInfo, SusyNtSys sys)
     xAOD::JetContainer* jets_nom = xaodJets(sysInfo,NtSys::NOM);
   
     if(m_dbg>=5) cout << "saveJetSF "  << NtSys::SusyNtSysNames[sys] << endl;
-    for(const auto &iJ : m_preJets){
+    for(const auto &iJ : m_preJets){ //loop over array containing the xAOD electron idx
         const xAOD::Jet* jet = jets->at(iJ);
         if(m_dbg>=5) cout << "This jet pt " << jet->pt() << " eta " << jet->eta() << " phi " << jet->phi() << endl; 
     
@@ -1327,6 +1256,8 @@ void SusyNtMaker::saveJetSF(ST::SystInfo sysInfo, SusyNtSys sys)
                     cout << "jet_nom pt " << jet_nom->pt() << " eta " << jet_nom->eta() << " phi " << jet_nom->phi() << endl; 
                     jet_susyNt->print();
                 }
+                if( fabs(jet_nom->eta() - jet->eta())>0.001 || fabs(jet_nom->phi() - jet->phi())>0.001)
+                    cout << "WARNING SusyNtMaker::savJetSF index mis-match " << endl;
                 break;
             }
         }
@@ -1394,7 +1325,7 @@ void SusyNtMaker::saveTauSF(ST::SystInfo sysInfo, SusyNtSys sys)
     xAOD::TauJetContainer* taus_nom = xaodTaus(sysInfo,NtSys::NOM);
 
     if(m_dbg>=5) cout << "saveTauSF " << NtSys::SusyNtSysNames[sys]  << endl;
-    for(const auto &iTau : m_preTaus){
+    for(const auto &iTau : m_preTaus){ //loop over array containing the xAOD tau idx
         const xAOD::TauJet* tau = taus->at(iTau);
         if(m_dbg>=5)  cout << "This tau pt " << tau->pt() << " eta " << tau->eta() << " phi " << tau->phi() << endl; 
     
@@ -1412,6 +1343,8 @@ void SusyNtMaker::saveTauSF(ST::SystInfo sysInfo, SusyNtSys sys)
                     cout << "tau_nom pt " << tau_nom->pt() << " eta " << tau_nom->eta() << " phi " << tau_nom->phi() << endl; 
                     tau_susyNt->print();
                 }
+                if( fabs(tau_nom->eta() - tau->eta())>0.001 || fabs(tau_nom->phi() - tau->phi())>0.001)
+                    cout << "WARNING SusyNtMaker::saveTauSF index mis-match " << endl;
                 break;
             }
         }
@@ -1545,6 +1478,43 @@ SusyNtMaker& SusyNtMaker::initializeCutflowHistograms()
     return *this;
 }
 //----------------------------------------------------------
+SusyNtMaker& SusyNtMaker::writeMetadata()
+{
+    struct {
+        string operator()(const string &s) { return (s.size()==0 ? " Warning, empty string!" : ""); }
+    } warn_if_empty;
+    if(m_dbg){
+        cout<<"Writing the following info to file:"<<endl
+            <<"m_inputContainerName: '"<<m_inputContainerName<<"'"<<warn_if_empty(m_inputContainerName)<<endl
+            <<"m_outputContainerName: '"<<m_outputContainerName<<"'"<<warn_if_empty(m_outputContainerName)<<endl
+            <<"m_productionTag: '"<<m_productionTag<<"'"<<warn_if_empty(m_productionTag)<<endl
+            <<"m_productionCommand: '"<<m_productionCommand<<"'"<<warn_if_empty(m_productionCommand)<<endl;
+    }
+    if(m_outTreeFile){
+        TDirectory *current_directory = gROOT->CurrentDirectory();
+        m_outTreeFile->cd();
+        TNamed inputContainerName("inputContainerName", m_inputContainerName.c_str());
+        TNamed outputContainerName("outputContainerName", m_outputContainerName.c_str());
+        TNamed productionTag("productionTag", m_productionTag.c_str());
+        TNamed productionCommand("productionCommand", m_productionCommand.c_str());
+        inputContainerName.Write();
+        outputContainerName.Write();
+        productionTag.Write();
+        productionCommand.Write();
+        current_directory->cd();
+    } else {
+        cout<<"SusyNtMaker::writeMetadata: missing output file, cannot write"<<endl;
+    }
+    return *this;
+}
+//----------------------------------------------------------
+void SusyNtMaker::checkIfInputIs13TeV()
+{
+    size_t found_mc14_13TeV = m_inputContainerName.find("mc14_13TeV");
+    if(found_mc14_13TeV != std::string::npos) { m_is8TeV = false; }
+    cout << "Treating input sample as " << (m_is8TeV ? "mc14_8TeV" : "mc14_13TeV") << endl;
+} 
+//----------------------------------------------------------
 bool SusyNtMaker::guessWhetherIsWhSample(const TString &samplename)
 {
     return (samplename.Contains("simplifiedModel_wA_noslep_WH") ||
@@ -1556,6 +1526,7 @@ SusyNtMaker& SusyNtMaker::saveOutputTree()
     m_outTreeFile = m_outTree->GetCurrentFile();
     m_outTreeFile->Write(0, TObject::kOverwrite);
     cout<<"susyNt tree saved to "<<m_outTreeFile->GetName()<<endl;
+    writeMetadata();
     m_outTreeFile->Close();
     return *this;
 }
@@ -1589,10 +1560,16 @@ std::string SusyNtMaker::counterSummary() const
 {
     ostringstream oss;
     oss<<"Object counter"<<endl
+       <<"  PreEle    "<<n_pre_ele   <<endl
+       <<"  PreMuo    "<<n_pre_muo   <<endl
+       <<"  PreTau    "<<n_pre_tau   <<endl
+       <<"  PreJet    "<<n_pre_jet   <<endl
+
        <<"  BaseEle   "<<n_base_ele   <<endl
        <<"  BaseMuo   "<<n_base_muo   <<endl
        <<"  BaseTau   "<<n_base_tau   <<endl
        <<"  BaseJet   "<<n_base_jet   <<endl
+
        <<"  SigEle    "<<n_sig_ele    <<endl
        <<"  SigMuo    "<<n_sig_muo    <<endl
        <<"  SigTau    "<<n_sig_tau    <<endl
@@ -1682,6 +1659,10 @@ bool SusyNtMaker::passObjectlevelSelection()
      
     assignObjectCleaningFlags(sysInfo, sys);
 
+    n_pre_ele += m_preElectrons.size();
+    n_pre_muo += m_preMuons.size();
+    n_pre_tau += m_preTaus.size();
+    n_pre_jet += m_preJets.size();
     n_base_ele += m_baseElectrons.size();
     n_base_muo += m_baseMuons.size();
     n_base_tau += m_baseTaus.size();
@@ -1716,14 +1697,17 @@ bool SusyNtMaker::passObjectlevelSelection()
     fillCutFlow(pass_e1sj, w);
 
 
-
-//    fillCutFlow.disableFilterNextCuts()(pass_ge1l, w).enableFilterNextCuts();
-//    fillCutFlow(pass_ge2bl, w);
-//    fillCutFlow(pass_ge2l, w);
-//    fillCutFlow(pass_eq3l, w);
-    bool has_at_least_two_base_leptons = pass_ge2bl;
-    if(m_dbg>=5 && !has_at_least_two_base_leptons)
+    // filter
+    bool pass = true;
+    bool pass_nLepFilter( (m_preElectrons.size()+m_preMuons.size()) >= m_nLepFilter );
+    bool trig_has_fired( h_passTrigLevel->Integral(0,-1) > 0. ); // check if any of the triggers fired
+    if(m_filter) {
+        if(m_filterTrigger) { pass = (pass_nLepFilter && trig_has_fired); }
+        else { pass = pass_nLepFilter; }
+    }
+    if(m_dbg>=5 && !pass)
         cout << "SusyNtMaker: fail passObjectlevelSelection " << endl;
-    return has_at_least_two_base_leptons;
+    return pass;
+
 }
 //----------------------------------------------------------

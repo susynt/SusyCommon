@@ -32,16 +32,10 @@ using namespace std;
 /////////////////////////////////////////////////
 /////////////////////////////////////////////////
 
-
-enum trigger {
-    RUN_1=0,
-    RUN_2=1
-};
-
 ////////////
 // Run 1
 ////////////
-const std::vector<std::string> triggerNames_Run1 = {
+const std::vector<std::string> triggers_run1 = {
     // 2012
     // electron triggers
     "EF_e7_medium1",
@@ -112,32 +106,69 @@ const std::vector<std::string> triggerNames_Run1 = {
 ////////////
 // Run 2
 ////////////
-const std::vector<std::string> triggerNames_Run2 = {
+const std::vector<std::string> triggers_run2 = {
     // DC14
     // electron triggers
+    "HLT_e5_etcut",
+    "HLT_e5_lhtight",
+    "HLT_e9_etcut",
+    "HLT_e9_lhtight",
+    "HLT_e14_etcut",
+    "HLT_e14_lhtight",
+    "HLT_e20_medium",
     "HLT_e24_medium1_iloose",
     "HLT_e24_loose1",
+    "HLT_e24_tight_iloose",
+    "HLT_e25_lhvloose_L1EM15",
+    "HLT_e25_etcut_L1EM15",
+    "HLT_e26_tight_iloose",
     "HLT_e26_lhtight_iloose",
     "HLT_e28_tight1_iloose",
+    "HLT_e30_etcut_L1EM15",
+    "HLT_e40_etcut_L1EM15",
+    "HLT_e60_medium",
     "HLT_e60_loose1",
     "HLT_e60_medium1",
     "HLT_e60_lhmedium",
 
     // dielectron triggers
+    "HLT_2e12_loose1",
+    "HLT_2e12_loose_L12EM10VH",
+    "HLT_2e17_loose1",
     "HLT_2e17_lhloose",
 
     // muon triggers
+    "HLT_mu4",
+    "HLT_mu6",
+    "HLT_mu10",
+    "HLT_mu14",
+    "HLT_mu18",
+    "HLT_mu20",
+    "HLT_mu22",
+    "HLT_mu24",
+    "HLT_mu24_imedium",
+    "HLT_mu26",
     "HLT_mu26_imedium",
     "HLT_mu50",
     "HLT_mu60_0eta105_msonly",
+    
+    // dimuon triggers
     "HLT_2mu4",
     "HLT_2mu6",
     "HLT_2mu10",
     "HLT_2mu14",
-    "HLT_3mu6",
+    "HLT_mu24_mu8noL1",
+    "HLT_mu14_iloose_mu14",
+    "HLT_mu20_imedium_mu8noL1",
+    "HLT_mu20_iloose_mu8noL1",
+
+    // el/mu triggers
+    "HLT_e17_loose_mu14",
+    "HLT_e17_medium_mu12",
     
-    // dimuon triggers
-    "HLT_2mu14",
+    // multi-lepton triggers
+    "HLT_3mu6",
+    "HLT_e12loose_2mu10",
 
     // photon triggers
     "HLT_g120_loose1",
@@ -150,34 +181,38 @@ const std::vector<std::string> triggerNames_Run2 = {
     "HLT_tau35_medium1_calo_tau25_medium1_calo",
 
     // met triggers
+    "HLT_xe50_cell",
+    "HLT_xe60",
+    "HLT_xe70",
     "HLT_xe100",
+    "HLT_xe100_cell",
 
     // jet triggers
     "HLT_j400",
     "HLT_3j175"
 };
 
-std::vector<std::string> getTrigNames(int run)
+std::vector<std::string> getTrigNames(string set)
 { 
-    if(run==0) { 
+    if(set.compare("run1")==0) { 
         std::cout << std::endl;
         std::cout << " ------------------------ " << std::endl;
         std::cout << " Storing Run1 trigger set " << std::endl;
         std::cout << " ------------------------ " << std::endl;
         std::cout << std::endl;
-        return triggerNames_Run1;
+        return triggers_run1;
     }
-    else if(run==1) {
+    else if(set.compare("run2")==0) {
         std::cout << std::endl;
         std::cout << " ------------------------ " << std::endl;
         std::cout << " Storing Run2 trigger set " << std::endl;
         std::cout << " ------------------------ " << std::endl;
         std::cout << std::endl;
-        return triggerNames_Run2;
+        return triggers_run2;
     }
     else {
-        std::cout << "getTrigNames -- Trigger names for requested run not available. Exitting." << std::endl;
-        exit(1);
+        std::cout << "getTrigNames error: Requested set of triggers ("<< set << ") not available. Storing Run-2 triggers instead." << std::endl;
+        return triggers_run2;
     }
 }
 
