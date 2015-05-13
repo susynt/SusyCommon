@@ -12,9 +12,11 @@
 #include "SUSYTools/SUSYObjDef_xAOD.h"
 #include "LeptonTruthTools/RecoTauMatch.h"
 
+#include "SusyNtuple/ElectronId.h"
 #include "SusyCommon/LeptonInfo.h"
-#include "SusyNtuple/SusyNt.h"
+#include "SusyNtuple/MuonId.h"
 #include "SusyNtuple/SusyDefs.h"
+#include "SusyNtuple/SusyNt.h"
 #include "SusyNtuple/SusyNtSys.h"
 
 //xAOD
@@ -96,28 +98,6 @@ namespace Susy {
   
   const double MeV2GeV=1.0e-3;
 
-  enum eleID{
-    TightLLH=0
-    ,MediumLLH
-    ,LooseLLH
-    ,VeryLooseLLH
-    ,TightLLH_nod0
-    ,MediumLLH_nod0
-    ,LooseLLH_nod0    
-    ,eleIDInvalid
-  };
-  
-  const std::string eleIDNames[] = {
-    "TightLLH"
-    ,"MediumLLH"
-    ,"LooseLLH"
-    ,"VeryLooseLLH"
-    ,"TightLLH_nod0"
-    ,"MediumLLH_nod0"
-    ,"LooseLLH_nod0"
-    ,"eleIDInvalid"
-  };
-
   ///  a class for performing object selections and event cleaning on xaod
   class XaodAnalysis : public TSelector
   {
@@ -138,7 +118,6 @@ namespace Susy {
     virtual XaodAnalysis& setDebug(int debugLevel) { m_dbg = debugLevel; return *this; }
     void setTriggerSet(std::string set) { m_triggerSet = set; }
     XaodAnalysis& initSusyTools(); ///< initialize SUSYObjDef_xAOD
-    bool processingMc12b() const { return m_mcProd == MCProd_MC12b; }
     
     /**
        Performance Tools 
@@ -306,11 +285,7 @@ namespace Susy {
     */
     float getEventWeight(float lumi = LUMI_A_E);
     float getXsecWeight(); ///< event weight (xsec*kfac)
-    float getLumiWeight(); ///< lumi weight (lumi/sumw) normalized to 4.7/fb
     void setLumi(float lumi) { m_lumi = lumi; } ///< luminosity to normalize to (in 1/pb)
-    void setSumw(float sumw) { m_sumw = sumw;  } ///< sum of mc weights for sample
-    void setXsec(float xsec) { m_xsec = xsec;  } ///< user cross section, overrides susy cross section
-    void setErrXsec(float err) { m_errXsec = err;  } ///< user cross section uncert
     float getPileupWeight(const xAOD::EventInfo* eventinfo); ///< pileup weight for full dataset: currently A-L
     float getPileupWeightUp();
     float getPileupWeightDown();
@@ -324,14 +299,14 @@ namespace Susy {
     uint getNumGoodVtx(); ///< Count number of good vertices
     bool matchTruthJet(int iJet); ///< Match a reco jet to a truth jet
 
-    bool eleIsOfType(const xAOD::Electron &in, eleID id=eleID::LooseLLH);
+    bool eleIsOfType(const xAOD::Electron &in, ElectronId id);
+    bool muIsOfType(const xAOD::Muon &in, MuonId id);
 
 
     // Running conditions
     TString sample() { return m_sample; } ///< Sample name - used to set isMC flag
     XaodAnalysis& setSample(TString s) { m_sample = s; return *this; }
     void setAF2(bool isAF2=true) { m_isAF2 = isAF2; } ///< AF2 flag
-    void setMCProduction(MCProduction prod) { m_mcProd = prod; } ///< Set MC Production flag
     void setD3PDTag(D3PDTag tag) { m_d3pdTag = tag; } ///< Set SUSY D3PD tag to know which branches are ok
     void setSys(bool sysOn){ m_sys = sysOn; }; ///< Set sys run
     void setSelectPhotons(bool doIt) { m_selectPhotons = doIt; } ///< Toggle photon selection
@@ -382,6 +357,9 @@ namespace Susy {
      */
     static TDirectory* getDirectoryFromTreeOrChain(TTree* tree, bool verbose);
 
+    // return the flag "m_is8TeV"
+    bool is8TeV() { return m_is8TeV; }
+
 
   protected:
 
@@ -392,7 +370,7 @@ namespace Susy {
     DataStream                  m_stream;       // data stream enum, taken from sample name
     bool                        m_isDerivation; // flag for derived xAOD (DxAOD)
     bool                        m_isAF2;        // flag for ATLFastII samples
-    MCProduction                m_mcProd;       // MC production campaign
+    bool                        m_is8TeV;       // flag for 8 TeV samples
 
     bool                        m_isSusySample; // is susy grid sample
     int                         m_susyFinalState;// susy subprocess
@@ -473,9 +451,6 @@ namespace Susy {
     //
 
     float                       m_lumi;         // normalized luminosity (defaults to 4.7/fb)
-    float                       m_sumw;         // sum of mc weights for normalization, must be set by user
-    float                       m_xsec;         // optional user cross section, to override susy xsec usage
-    float                       m_errXsec;      // user cross section uncertainty
 
     uint                        m_mcRun;        // Random run number for MC from pileup tool
     uint                        m_mcLB;         // Random lb number for MC from pileup tool
@@ -514,8 +489,8 @@ namespace Susy {
     xAOD::TEvent m_event;
     xAOD::TStore m_store;
 
-    ST::SUSYObjDef_xAOD* m_susyObj[eleID::eleIDInvalid];      // SUSY object definitions
-    eleID m_eleIDDefault;
+    ST::SUSYObjDef_xAOD* m_susyObj[ElectronId::ElectronIdInvalid];      // SUSY object definitions
+    ElectronId m_eleIDDefault;
 
     std::vector<CP::SystematicSet> sysList;  //CP Systematic list
     std::vector<ST::SystInfo> systInfoList;  //SystInfo is a SUSYTools simplify version struct
@@ -611,6 +586,11 @@ namespace Susy {
     CP::PileupReweightingTool           *m_pileupReweightingTool;
 
     CP::MuonSelectionTool               *m_muonSelectionTool;
+    CP::MuonEfficiencyScaleFactors      *m_muonEfficiencySFTool; 
+    CP::MuonSelectionTool               *m_muonSelectionToolVeryLoose;
+    CP::MuonSelectionTool               *m_muonSelectionToolLoose;
+    CP::MuonSelectionTool               *m_muonSelectionToolMedium;
+    CP::MuonSelectionTool               *m_muonSelectionToolTight;
 
     //Tau truth matchong tools
     TauAnalysisTools::TauTruthMatchingTool       *m_tauTruthMatchingTool;

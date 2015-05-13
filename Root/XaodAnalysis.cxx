@@ -45,7 +45,7 @@ XaodAnalysis::XaodAnalysis() :
     m_stream(Stream_Unknown),
     m_isDerivation(false), // dantrim event shape
     m_isAF2(false),
-    m_mcProd(MCProd_Unknown),
+    m_is8TeV(true),
     m_d3pdTag(D3PD_p1328),
     m_selectPhotons(false),
     m_selectTaus(false),
@@ -54,9 +54,6 @@ XaodAnalysis::XaodAnalysis() :
     m_doMetMuCorr(false),
     m_doMetFix(false),
     m_lumi(LUMI_A_E),
-    m_sumw(1),
-    m_xsec(-1),
-    m_errXsec(-1),
     m_mcRun(0),
     m_mcLB(0),
     m_sys(false),
@@ -87,6 +84,11 @@ XaodAnalysis::XaodAnalysis() :
     m_elecSelLikelihoodTight_nod0(0),
 	m_pileupReweightingTool(0),
     m_muonSelectionTool(0),
+	m_muonEfficiencySFTool(0),
+    m_muonSelectionToolVeryLoose(0),
+    m_muonSelectionToolLoose(0),
+    m_muonSelectionToolMedium(0),
+    m_muonSelectionToolTight(0),
 	m_tauTruthMatchingTool(0),
 	m_tauTruthTrackMatchingTool(0),
         //dantrim trig
@@ -193,6 +195,11 @@ void XaodAnalysis::Terminate()
 
     delete m_pileupReweightingTool;
     delete m_muonSelectionTool;
+    delete m_muonEfficiencySFTool;
+    delete m_muonSelectionToolVeryLoose;
+    delete m_muonSelectionToolLoose;
+    delete m_muonSelectionToolMedium;
+    delete m_muonSelectionToolTight;
     delete m_tauTruthMatchingTool;
     delete m_tauTruthTrackMatchingTool;
 
@@ -211,7 +218,8 @@ void XaodAnalysis::Terminate()
 XaodAnalysis& XaodAnalysis::initSusyTools()
 {
     for(int i=TightLLH; i<=LooseLLH; i++){
-        string name = "SUSYObjDef_xAOD_" + eleIDNames[i];
+        string electronIdName = ElectronId2str(static_cast<ElectronId>(i));
+        string name = "SUSYObjDef_xAOD_" + electronIdName;
         m_susyObj[i] = new ST::SUSYObjDef_xAOD(name);
         cout << "------------------------------------------------------------" << endl;
         cout << "XaodAnalysis::initSusyTools: " << name <<endl;
@@ -219,7 +227,7 @@ XaodAnalysis& XaodAnalysis::initSusyTools()
 
         m_susyObj[i]->msg().setLevel(m_dbg ? MSG::DEBUG : MSG::WARNING);
         //m_susyObj[i]->msg().setLevel(m_dbg ? MSG::VERBOSE : MSG::WARNING);
-        m_susyObj[i]->setProperty("EleId", eleIDNames[i]);
+        m_susyObj[i]->setProperty("EleId", electronIdName);
         int datasource = !m_isMC ? ST::Data : (m_isAF2 ? ST::AtlfastII : ST::FullSim);
         m_susyObj[i]->setProperty("DataSource",datasource);
 
@@ -252,6 +260,27 @@ XaodAnalysis& XaodAnalysis::initSusyTools()
                 string foo;
                 m_susyObj[i]->getPropertyMgr()->getProperty(x.first, foo);
                 cout << " Property << " << x.first << ": " << foo << endl;
+            }
+            else if(x.second->typeName()=="int"){
+                int foo;
+                m_susyObj[i]->getPropertyMgr()->getProperty(x.first, foo);
+                cout << " Property << " << x.first << ": " << foo << endl;
+            }
+            else if(x.second->typeName()=="float"){
+                float foo;
+                m_susyObj[i]->getPropertyMgr()->getProperty(x.first, foo);
+                cout << " Property << " << x.first << ": " << foo << endl;
+            }
+            else if(x.second->typeName()=="double"){
+                double foo;
+                m_susyObj[i]->getPropertyMgr()->getProperty(x.first, foo);
+                cout << " Property << " << x.first << ": " << foo << endl;
+            }
+            else if(x.second->typeName()=="bool"){
+                bool foo;
+                m_susyObj[i]->getPropertyMgr()->getProperty(x.first, foo);
+                string value = foo ? "True" : "False";
+                cout << " Property << " << x.first << ": " << value << endl;
             }
         }
         
@@ -373,13 +402,36 @@ void XaodAnalysis::initMuonTools()
     CHECK( m_muonSelectionTool->setProperty( "MaxEta", 2.5 ) );
     CHECK( m_muonSelectionTool->setProperty( "MuQuality", int(xAOD::Muon::VeryLoose) ));// Warning: includes bad muons!
     CHECK( m_muonSelectionTool->initialize() );
+    m_muonEfficiencySFTool = new CP::MuonEfficiencyScaleFactors("MuonEfficiencyScaleFactors");
+    CHECK( m_muonEfficiencySFTool->setProperty("WorkingPoint","CBandST") );
+    CHECK( m_muonEfficiencySFTool->setProperty("DataPeriod","2012") );
+    CHECK( m_muonEfficiencySFTool->initialize() );
 
+    m_muonSelectionToolVeryLoose = new CP::MuonSelectionTool("MuonSelectionTool_VeryLoose");
+    CHECK( m_muonSelectionToolVeryLoose->setProperty( "MaxEta", 2.5 ) );
+    CHECK( m_muonSelectionToolVeryLoose->setProperty( "MuQuality", int(xAOD::Muon::VeryLoose) ));// Warning: includes bad muons!
+    CHECK( m_muonSelectionToolVeryLoose->initialize() );
+
+    m_muonSelectionToolLoose = new CP::MuonSelectionTool("MuonSelectionTool_Loose");
+    CHECK( m_muonSelectionToolLoose->setProperty( "MaxEta", 2.5 ) );
+    CHECK( m_muonSelectionToolLoose->setProperty( "MuQuality", int(xAOD::Muon::Loose) ));
+    CHECK( m_muonSelectionToolLoose->initialize() );
+    
+    m_muonSelectionToolMedium = new CP::MuonSelectionTool("MuonSelectionTool_Medium");
+    CHECK( m_muonSelectionToolMedium->setProperty( "MaxEta", 2.5 ) );
+    CHECK( m_muonSelectionToolMedium->setProperty( "MuQuality", int(xAOD::Muon::Medium) ));
+    CHECK( m_muonSelectionToolMedium->initialize() );
+
+    m_muonSelectionToolTight = new CP::MuonSelectionTool("MuonSelectionTool_Tight");
+    CHECK( m_muonSelectionToolTight->setProperty( "MaxEta", 2.5 ) );
+    CHECK( m_muonSelectionToolTight->setProperty( "MuQuality", int(xAOD::Muon::Tight) ));
+    CHECK( m_muonSelectionToolTight->initialize() );
 }
 //----------------------------------------------------------
 void XaodAnalysis::initTauTools()
 {
     m_tauTruthMatchingTool = new TauAnalysisTools::TauTruthMatchingTool("TauTruthMatchingTool");
-    m_tauTruthMatchingTool->msg().setLevel(m_dbg ? MSG::DEBUG : MSG::WARNING);
+    m_tauTruthMatchingTool->msg().setLevel(m_dbg ? MSG::DEBUG : MSG::ERROR);
     CHECK(m_tauTruthMatchingTool->initialize());
     
     //AT: 05-07-15: consider adding ?
@@ -733,7 +785,7 @@ void XaodAnalysis::selectBaselineObjects(SusyNtSys sys, ST::SystInfo sysInfo)
     for(const auto& mu : *muons){
         iMu++;
         if(mu->pt()* MeV2GeV > 3 && 
-           m_muonSelectionTool->accept(mu)) m_preMuons.push_back(iMu); //AT: Save VeryLoose pt>3 muon only
+           m_muonSelectionToolVeryLoose->accept(mu)) m_preMuons.push_back(iMu); //AT: Save VeryLoose pt>3 muon only
         //m_susyObj[m_eleIDDefault]->IsSignalMuon(*mu);
         m_susyObj[m_eleIDDefault]->IsSignalMuonExp(*mu, ST::SignalIsoExp::TightIso);
         m_susyObj[m_eleIDDefault]->IsCosmicMuon(*mu);
@@ -755,6 +807,7 @@ void XaodAnalysis::selectBaselineObjects(SusyNtSys sys, ST::SystInfo sysInfo)
     for(const auto& jet : *jets){
         iJet++;
         if((bool)jet->auxdata< char >("baseline")==1 ) m_preJets.push_back(iJet);//AT: save baseline pT>20GeV only
+        m_susyObj[m_eleIDDefault]->IsBJet(*jet, !is8TeV());
     //    m_susyObj[m_eleIDDefault]->IsBJet(*jet);     // dantrim Apr 15 2015 -- Not available for DC14@8TeV 
         if(m_dbg>=5) cout<<"Jet passing"
                          <<" baseline? "<< bool(jet->auxdata< char >("baseline")==1)
@@ -1080,18 +1133,29 @@ bool XaodAnalysis::matchTruthJet(int iJet)
 /*--------------------------------------------------------------------------------*/
 // Return electron type
 /*--------------------------------------------------------------------------------*/
-bool XaodAnalysis::eleIsOfType(const xAOD::Electron &in, eleID id)
+bool XaodAnalysis::eleIsOfType(const xAOD::Electron &in, ElectronId id)
 {
-    if     (id==eleID::VeryLooseLLH  && m_elecSelLikelihoodVeryLoose->accept(in))  return true;
-    else if(id==eleID::LooseLLH  && m_elecSelLikelihoodLoose->accept(in))  return true;
-    else if(id==eleID::MediumLLH && m_elecSelLikelihoodMedium->accept(in)) return true;
-    else if(id==eleID::TightLLH  && m_elecSelLikelihoodTight->accept(in))  return true;
+    if     (id==ElectronId::VeryLooseLLH  && m_elecSelLikelihoodVeryLoose->accept(in))  return true;
+    else if(id==ElectronId::LooseLLH  && m_elecSelLikelihoodLoose->accept(in))  return true;
+    else if(id==ElectronId::MediumLLH && m_elecSelLikelihoodMedium->accept(in)) return true;
+    else if(id==ElectronId::TightLLH  && m_elecSelLikelihoodTight->accept(in))  return true;
 
-    else if(id==eleID::LooseLLH_nod0  && m_elecSelLikelihoodLoose_nod0->accept(in))  return true;
-    else if(id==eleID::MediumLLH_nod0 && m_elecSelLikelihoodMedium_nod0->accept(in)) return true;
-    else if(id==eleID::TightLLH_nod0  && m_elecSelLikelihoodTight_nod0->accept(in))  return true;
+    else if(id==ElectronId::LooseLLH_nod0  && m_elecSelLikelihoodLoose_nod0->accept(in))  return true;
+    else if(id==ElectronId::MediumLLH_nod0 && m_elecSelLikelihoodMedium_nod0->accept(in)) return true;
+    else if(id==ElectronId::TightLLH_nod0  && m_elecSelLikelihoodTight_nod0->accept(in))  return true;
     return false;
 }
+/*--------------------------------------------------------------------------------*/
+// Return muon type
+/*--------------------------------------------------------------------------------*/
+bool XaodAnalysis::muIsOfType(const xAOD::Muon &in, MuonId id)
+{
+    if     (id==MuonId::VeryLoose && m_muonSelectionToolVeryLoose->accept(in))  return true;
+    else if(id==MuonId::Loose     && m_muonSelectionToolLoose    ->accept(in))  return true;
+    else if(id==MuonId::Medium    && m_muonSelectionToolMedium   ->accept(in))  return true;
+    else if(id==MuonId::Tight     && m_muonSelectionToolTight    ->accept(in))  return true;
+    return false;
+} 
 /*--------------------------------------------------------------------------------*/
 // Get triggers
 /*--------------------------------------------------------------------------------*/
@@ -1378,33 +1442,45 @@ int XaodAnalysis::truthElectronCharge(const xAOD::Electron &in)
 {
     int type   = xAOD::EgammaHelpers::getParticleTruthType(&in);
     int origin = xAOD::EgammaHelpers::getParticleTruthOrigin(&in);
+
+    if(m_dbg>15) std::cout << "check Charge flip ele " << in.pt()*MeV2GeV 
+                           << " type " << type << " origin " << origin << " nTrk " << in.nTrackParticles() << endl;
+
     if(isPromptElectron(type,origin)){
         const xAOD::TruthParticle* truthEle = xAOD::EgammaHelpers::getTruthParticle(&in);
+        if(m_dbg>15) std::cout << "Truth Prompt ele " << truthEle->pdgId() << " " << in.charge()  << endl;
         if (truthEle->pdgId()==11) return -1;
         if (truthEle->pdgId()==-11) return 1;
     }
-    else{
-        
+    else{        
         if(type==4 && origin==5 && in.nTrackParticles()>1){//Not sure if Type/Origin check really needed
             for(uint itrk=0; itrk< in.nTrackParticles(); itrk++ ){
-                int extraType=0;
-                int extraOrigin=0;
                 const xAOD::TrackParticle* trackParticle = in.trackParticle(itrk);
                 static SG::AuxElement::Accessor<int> acc_truthType("truthType");
                 static SG::AuxElement::Accessor<int> acc_truthOrigin("truthOrigin");
-                if(acc_truthType.isAvailable(*trackParticle)) 
-                    extraType   = acc_truthType(*trackParticle);
-                if(acc_truthOrigin.isAvailable(*trackParticle)) 
-                    extraOrigin = acc_truthOrigin(*trackParticle);
-                if (isPromptElectron(extraType,extraOrigin)) {
-                    const xAOD::TruthParticle* truthEle = xAOD::EgammaHelpers::getTruthParticle(trackParticle);
-                    if (truthEle->pdgId()==11) return -1;
-                    if (truthEle->pdgId()==-11) return 1;
+                if(m_dbg>15) std::cout << "\tNon-prompt ele " << trackParticle << endl;
+                if(trackParticle){//Just in case track got lost in slimming.
+                    int extraType=0;
+                    int extraOrigin=0;
+                    if(acc_truthType.isAvailable(*trackParticle))   extraType   = acc_truthType(*trackParticle);
+                    if(acc_truthOrigin.isAvailable(*trackParticle)) extraOrigin = acc_truthOrigin(*trackParticle);
+                    if(m_dbg>15) std::cout << "\t\t pt " << trackParticle->pt()*MeV2GeV
+                                           << " type " << extraType << " & origin " << extraOrigin << endl;
+                    if(isPromptElectron(extraType,extraOrigin)) {
+                        const xAOD::TruthParticle* truthEle = xAOD::EgammaHelpers::getTruthParticle(trackParticle);
+                        if(m_dbg>15)
+                            std::cout << " \t\t Found charged flipped ?" << truthEle->pdgId() << " " << in.charge() << endl;
+                        if (truthEle->pdgId()==11) return -1;
+                        if (truthEle->pdgId()==-11) return 1;
+                    }
+                }
+                else {
+                    if(m_dbg>15) std::cout << "\t Don't have track " << endl;
                 }
             }
         }
-        return 0;
     }
+    if(m_dbg>15) std::cout << "Cannot determined charge " << std::endl;
     return 0;
 }
 
@@ -1606,13 +1682,10 @@ float XaodAnalysis::getXsecWeight()
     // return m_xsecMap[id].xsect() * m_xsecMap[id].kfactor() * m_xsecMap[id].efficiency();
 }
 //----------------------------------------------------------
-float XaodAnalysis::getLumiWeight()
-{ return m_lumi / m_sumw; }
-//----------------------------------------------------------
 float XaodAnalysis::getPileupWeight(const xAOD::EventInfo* eventinfo)
 {
     if(!m_isMC) return 1;
-    if(eventinfo->runNumber() == 222222) return 1; //Cannot yet reweight mc14_13TeV
+    if(!is8TeV()) return 1;
 
     m_pileupReweightingTool->execute();
     return xaodEventInfo()->auxdata< double >( "PileupWeight" );
@@ -1863,14 +1936,6 @@ cout.unsetf(ios_base::fixed);
 bool XaodAnalysis::runningOptionsAreValid()
 {
     bool valid=true;
-    if(m_isMC && m_mcProd==MCProd_Unknown){
-        valid=false;
-        if(m_dbg)
-            cout<<"XaodAnalysis::runningOptionsAreValid invalid production"
-                <<" 'MCProd_Unknown' is not a valid choice for simulated samples."
-                <<" You should call XaodAnalysis::setMCProduction()"
-                <<endl;
-    }
     bool isSimulation = xaodEventInfo()->eventType( xAOD::EventInfo::IS_SIMULATION );
     bool isData = !isSimulation;
     if(m_isMC != isSimulation) {
