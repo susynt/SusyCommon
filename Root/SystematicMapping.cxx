@@ -126,11 +126,11 @@ SusyNtSys CPsys2sys(const std::string &s)
   else if( s== "FT_Eigen_Light_9__1up" )                   r = FT_Eigen_Light_9_UP;
   else if( s== "JER__1up" )                                r = JER;
   else if( s== "JET_GroupedNP_1__1up" )                    r = JET_GroupedNP_1_UP;
-  else if( s== "JET_GroupedNP_1__1dn" )                    r = JET_GroupedNP_1_DN;
+  else if( s== "JET_GroupedNP_1__1down" )                  r = JET_GroupedNP_1_DN;
   else if( s== "JET_GroupedNP_2__1up" )                    r = JET_GroupedNP_2_UP;
-  else if( s== "JET_GroupedNP_2__1dn" )                    r = JET_GroupedNP_2_DN;
+  else if( s== "JET_GroupedNP_2__1down" )                  r = JET_GroupedNP_2_DN;
   else if( s== "JET_GroupedNP_3__1up" )                    r = JET_GroupedNP_3_UP;
-  else if( s== "JET_GroupedNP_3__1dn" )                    r = JET_GroupedNP_3_DN;
+  else if( s== "JET_GroupedNP_3__1down" )                  r = JET_GroupedNP_3_DN;
 /*
   else if( s== "JET_BJES_Response__1up" )                  r = JET_BJES_Response_UP;
   else if( s== "JET_BJES_Response__1down" )                r = JET_BJES_Response_DN;
