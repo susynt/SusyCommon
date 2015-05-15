@@ -9,7 +9,7 @@ namespace NtSys {
 //-----------------------------------------
 SusyNtSys CPsys2sys(const std::string &s)
 {
-  SusyNtSys r = SYSUNKNOWN;
+  SusyNtSys r = SYS_UNKNOWN;
   
   
   if     ( s== "EG_RESOLUTION_ALL__1down" )                r = EG_RESOLUTION_ALL_DN;
@@ -125,6 +125,13 @@ SusyNtSys CPsys2sys(const std::string &s)
   else if( s== "FT_Eigen_Light_9__1down" )                 r = FT_Eigen_Light_9_DN;
   else if( s== "FT_Eigen_Light_9__1up" )                   r = FT_Eigen_Light_9_UP;
   else if( s== "JER__1up" )                                r = JER;
+  else if( s== "JET_GroupedNP_1__1up" )                    r = JET_GroupedNP_1_UP;
+  else if( s== "JET_GroupedNP_1__1dn" )                    r = JET_GroupedNP_1_DN;
+  else if( s== "JET_GroupedNP_2__1up" )                    r = JET_GroupedNP_2_UP;
+  else if( s== "JET_GroupedNP_2__1dn" )                    r = JET_GroupedNP_2_DN;
+  else if( s== "JET_GroupedNP_3__1up" )                    r = JET_GroupedNP_3_UP;
+  else if( s== "JET_GroupedNP_3__1dn" )                    r = JET_GroupedNP_3_DN;
+/*
   else if( s== "JET_BJES_Response__1up" )                  r = JET_BJES_Response_UP;
   else if( s== "JET_BJES_Response__1down" )                r = JET_BJES_Response_DN;
   else if( s== "JET_EffectiveNP_1__1up" )                  r = JET_EffectiveNP_1_UP;
@@ -157,10 +164,11 @@ SusyNtSys CPsys2sys(const std::string &s)
   else if( s== "JET_Pileup_RhoTopology__1down" )           r = JET_Pileup_RhoTopology_DN;
   else if( s== "JET_PunchThrough_MC12__1up" )              r = JET_PunchThrough_MC12_UP;
   else if( s== "JET_PunchThrough_MC12__1down" )            r = JET_PunchThrough_MC12_DN;
-  //else if( s== "JET_RelativeNonClosure_MC12__1up" )        r = JET_RelativeNonClosure_MC12_UP;
-  //else if( s== "JET_RelativeNonClosure_MC12__1down" )      r = JET_RelativeNonClosure_MC12_DN;
   else if( s== "JET_SingleParticle_HighPt__1up" )          r = JET_SingleParticle_HighPt_UP;
   else if( s== "JET_SingleParticle_HighPt__1down" )        r = JET_SingleParticle_HighPt_DN;
+  //else if( s== "JET_RelativeNonClosure_MC12__1up" )        r = JET_RelativeNonClosure_MC12_UP;
+  //else if( s== "JET_RelativeNonClosure_MC12__1down" )      r = JET_RelativeNonClosure_MC12_DN;
+*/
 //NEW
   else if( s== "MET_SoftCalo_Reso" )                       r = MET_SoftCalo_Reso;
   else if( s== "MET_SoftCalo_ScaleDown" )                  r = MET_SoftCalo_ScaleDown;

@@ -243,6 +243,11 @@ XaodAnalysis& XaodAnalysis::initSusyTools()
         else { m_susyObj[i]->setProperty("DoJetAreaCalib", false); }
         m_susyObj[i]->setProperty("DoJetGSCCalib", true);
 
+        //AT 05-11-15 Test reduce systemactic set
+#warning Setting recommended reduced JES systematics set
+        m_susyObj[i]->setProperty("JESNuisanceParameterSet", 1);
+
+
         if(m_susyObj[i]->SUSYToolsInit().isFailure() ) {
             cout << "XaodAnalysis: Failed to initialise tools in SUSYToolsInit()... Aborting" << endl;
             abort();
