@@ -1268,7 +1268,7 @@ void SusyNtMaker::storeJetKinSys(ST::SystInfo sysInfo, SusyNtSys sys)
             storeJet(*jet_nom);//add the jet at the end... 
             m_preJets_nom.push_back(iJ);
             jet_susyNt = & m_susyNt.jet()->back(); //get the newly inserted jet
-            if(m_dbg>=5) cout << "\t"; jet_susyNt->print();
+            if(m_dbg>=5) {cout << "\t"; jet_susyNt->print();}
         }
 
         //Calculate systematic SF: shift/nom

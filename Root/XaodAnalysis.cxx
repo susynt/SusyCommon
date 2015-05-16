@@ -688,12 +688,10 @@ void XaodAnalysis::retrieveXaodMet( ST::SystInfo sysInfo, SusyNtSys sys)
 {
     if(m_dbg>=5) cout << "retrieveXaodMet " << SusyNtSysNames[sys] << endl;
 
-    if(m_metContainer==NULL && sys == NtSys::NOM){
-        m_metContainer = new xAOD::MissingETContainer;
-        m_metAuxContainer = new xAOD::MissingETAuxContainer;
-        m_metContainer->setStore( m_metAuxContainer );
-        if(m_dbg>=5) cout << "Made metContainer pointers " << m_metContainer << " eleID " << m_eleIDDefault << endl; 
-    }
+    m_metContainer = new xAOD::MissingETContainer;
+    m_metAuxContainer = new xAOD::MissingETAuxContainer;
+    m_metContainer->setStore( m_metAuxContainer );
+    if(m_dbg>=5) cout << "Made metContainer pointers " << m_metContainer << " eleID " << m_eleIDDefault << endl; 
 
     xAOD::ElectronContainer* electrons = xaodElectrons(sysInfo,sys);
     xAOD::MuonContainer*     muons     = xaodMuons(sysInfo,sys);
@@ -2094,11 +2092,17 @@ XaodAnalysis& XaodAnalysis::deleteShallowCopies(bool deleteNominal)
     if(m_xaodPhotons      ) delete m_xaodPhotons;
     if(m_xaodPhotonsAux   ) delete m_xaodPhotonsAux;
 
+    if(m_metContainer     ) delete m_metContainer;
+    if(m_metAuxContainer  ) delete m_metAuxContainer;
+
     if(m_dbg>5) cout << "Check delete shallowCopied mu " << m_xaodMuons
-                     << " ele " << m_xaodElectrons
-                     << " pho " << m_xaodPhotons
+                     << " ele "  << m_xaodElectrons
+                     << " pho "  << m_xaodPhotons
                      << " jets " << m_xaodJets
-                     << " taus " << m_xaodTaus << endl;
+                     << " taus " << m_xaodTaus 
+                     << " met "  << m_metContainer
+                     << endl;
+    
     if(deleteNominal){
         //m_store.print();
         m_store.clear(); // this clears m_metTrackContainer, m_xaodTruthEvent and m_xaodTruthParticles
@@ -2114,9 +2118,6 @@ XaodAnalysis& XaodAnalysis::deleteShallowCopies(bool deleteNominal)
         if(m_xaodJetsAux_nom       ) delete m_xaodJetsAux_nom;
         if(m_xaodPhotons_nom       ) delete m_xaodPhotons_nom;
         if(m_xaodPhotonsAux_nom    ) delete m_xaodPhotonsAux_nom;
-
-        if(m_metContainer          ) delete m_metContainer;
-        if(m_metAuxContainer       ) delete m_metAuxContainer;
 
         if(m_xaodTruthParticlesAux ) delete m_xaodTruthParticlesAux;
     }
@@ -2140,6 +2141,9 @@ XaodAnalysis& XaodAnalysis::clearContainerPointers(bool deleteNominal)
     m_xaodPhotons        = NULL;
     m_xaodPhotonsAux     = NULL;
 
+    m_metContainer           = NULL;
+    m_metAuxContainer        = NULL;
+
     if(deleteNominal){
         m_xaodMuons_nom          = NULL;
         m_xaodMuonsAux_nom       = NULL;
@@ -2152,8 +2156,6 @@ XaodAnalysis& XaodAnalysis::clearContainerPointers(bool deleteNominal)
         m_xaodPhotons_nom        = NULL;
         m_xaodPhotonsAux_nom     = NULL;
 
-        m_metContainer           = NULL;
-        m_metAuxContainer        = NULL;
         m_metTrackContainer      = NULL; 
 
         m_xaodTruthEvent         = NULL;
