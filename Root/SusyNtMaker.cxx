@@ -272,8 +272,7 @@ void SusyNtMaker::fillEventVars()
     evt->eventWithSusyProp= m_hasSusyProp;
     
     evt->trigBits         = m_evtTrigBits; // dantrim trig
-    
-
+   
     evt->wPileup          = is8TeV() ? getPileupWeight(eventinfo) : 1;
     evt->wPileup_up       = is8TeV() ? getPileupWeightUp() : 1;
     evt->wPileup_dn       = is8TeV() ? getPileupWeightDown() : 1;
@@ -321,6 +320,10 @@ void SusyNtMaker::fillJetVars()
 {
     if(m_dbg>=5) cout<<"fillJetVars"<<endl;
     xAOD::JetContainer* jets = XaodAnalysis::xaodJets(systInfoList[0]);
+    /////////////////////
+    // Not super smart but tag along for the moment - ASM 25/5/2015
+    m_susyObj[m_eleIDDefault]->BtagSF(jets); // Decorate the jets w/ effscalefact
+    /////////////////////
     for(auto &i : m_preJets){
             storeJet(*(jets->at(i)));
     }
@@ -660,6 +663,38 @@ void SusyNtMaker::storeJet(const xAOD::Jet &in)
     // jetOut->jfit_mass     = element->flavor_component_jfit_mass();
     // jetOut->sv0p_mass     = element->flavor_component_sv0p_mass();
     // jetOut->svp_mass      = element->flavor_component_svp_mass();
+    out.bjet         = in.auxdata< char >("bjet");
+    out.effscalefact = in.auxdata< float >("effscalefact");
+
+    vector<float> test_values;
+    test_values.push_back(out.effscalefact);
+
+    // B-tagging systematics
+    if(m_isMC && m_sys) {
+      for(const auto& sysInfo : systInfoList){
+        if(!(sysInfo.affectsType == ST::SystObjType::BTag && sysInfo.affectsWeights)) continue;
+        // Read information
+        const CP::SystematicSet& sys = sysInfo.systset;
+        SusyNtSys ourSys = CPsys2sys((sys.name()).c_str());
+        // Configure the tools
+        if ( m_susyObj[m_eleIDDefault]->applySystematicVariation(sys) != CP::SystematicCode::Ok){
+          cout << "SusyNtMaker::storeJet - cannot configure SUSYTools for " << sys.name() << endl;
+          continue;
+        }
+        // Get and store the information
+        m_susyObj[m_eleIDDefault]->BtagSF(XaodAnalysis::xaodJets(systInfoList[0])); // re-decorate the jets w/ appropriate effscalefact
+                                                                                    // not the most efficient way but works 
+        float scaleFactor = in.auxdata< float >("effscalefact");
+        out.setFTSys(ourSys,scaleFactor);
+        test_values.push_back(scaleFactor);
+      }
+      m_susyObj[m_eleIDDefault]->resetSystematics();
+    }
+
+    cout << "SERHAN :: " << endl;
+    for(auto scale : test_values) {
+        cout << scale << endl;
+    }
 
     // Misc
     out.detEta = (in.jetP4(xAOD::JetConstitScaleMomentum)).eta();
