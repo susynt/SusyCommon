@@ -67,7 +67,7 @@
 #include "xAODTrigEgamma/TrigElectron.h"
 #include "xAODTrigEgamma/TrigElectronContainer.h"
 
-#include "SusyCommon/Trigger.h"
+#include "SusyNtuple/Trigger.h"
 
 #include "TBits.h"
 

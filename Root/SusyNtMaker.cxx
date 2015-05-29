@@ -20,7 +20,7 @@
 // Amg include
 #include "EventPrimitives/EventPrimitivesHelpers.h"
 
-#include "SusyCommon/Trigger.h"
+#include "SusyNtuple/Trigger.h"
 
 
 #include <algorithm> // max_element
