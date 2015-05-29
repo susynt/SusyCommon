@@ -94,7 +94,6 @@ XaodAnalysis::XaodAnalysis() :
         m_evtTrigBits(m_nTriggerBits),
         m_configTool(NULL),
         m_trigTool(NULL)
-     //   m_escopier(NULL)
 {
     clearOutputObjects();
     clearContainerPointers();
@@ -208,8 +207,6 @@ void XaodAnalysis::Terminate()
     // dantrim trig
     delete m_trigTool;
     delete m_configTool;
-
- //   delete m_escopier;
     
 }
 //----------------------------------------------------------
@@ -318,13 +315,6 @@ XaodAnalysis& XaodAnalysis::initLocalTools()
 
     // dantrim -- initialize trigger tool
     initTrigger();
-
-    // dantrim -- Call EventShapeCopier tool when accessing jets (cluster objects).
-    //            Call "renameEventDensities". This is temporary? And only for
-    //            DxAODs. If running over DxAOD be sure to put "derived" in the sample
-    //            name '-s' option (case insensitive).
-    //m_escopier = new EventShapeCopier("Kt4LCCopier");
-
 
     return *this;
 }
@@ -579,8 +569,6 @@ xAOD::JetContainer* XaodAnalysis::xaodJets(ST::SystInfo sysInfo, SusyNtSys sys)
     bool syst_affectsJets      = ST::testAffectsObject(xAOD::Type::Jet, sysInfo.affectsType);
     if(sys!=NtSys::NOM && syst_affectsJets){
         if(m_xaodJets==NULL){
-            // dantrim event shape
-         //   if ( m_isDerivation ) m_escopier->renameEventDensities();
             m_susyObj[m_eleIDDefault]->GetJets(m_xaodJets, m_xaodJetsAux);
         }
         if(m_dbg>=5) cout << "xaodJets " << m_xaodJets->size() << endl;
@@ -588,8 +576,6 @@ xAOD::JetContainer* XaodAnalysis::xaodJets(ST::SystInfo sysInfo, SusyNtSys sys)
     }
     else{
         if(m_xaodJets_nom==NULL){
-            // dantrim event shape
-         //   if ( m_isDerivation ) m_escopier->renameEventDensities();
             m_susyObj[m_eleIDDefault]->GetJets(m_xaodJets_nom, m_xaodJetsAux_nom);
             if(m_dbg>=5) cout << "xaodJets_nom " << m_xaodJets_nom->size() << endl;
         }

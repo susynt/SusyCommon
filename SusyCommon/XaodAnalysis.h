@@ -49,7 +49,6 @@
 #include "PileupReweighting/PileupReweightingTool.h"
 #include "MuonEfficiencyCorrections/MuonEfficiencyScaleFactors.h"
 #include "MuonSelectorTools/MuonSelectionTool.h"
-//#include "EventShapeTools/EventShapeCopier.h"
 
 //Trigger
 #include "TBits.h"
@@ -602,9 +601,6 @@ namespace Susy {
     TH1F*                       hLevelPassed;
     TrigConf::xAODConfigTool*   m_configTool;
     Trig::TrigDecisionTool*     m_trigTool;
-
-    // event shape copier
-    //EventShapeCopier*           m_escopier;
 
   };
 
