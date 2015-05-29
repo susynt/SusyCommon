@@ -49,7 +49,7 @@
 #include "PileupReweighting/PileupReweightingTool.h"
 #include "MuonEfficiencyCorrections/MuonEfficiencyScaleFactors.h"
 #include "MuonSelectorTools/MuonSelectionTool.h"
-#include "EventShapeTools/EventShapeCopier.h"
+//#include "EventShapeTools/EventShapeCopier.h"
 
 //Trigger
 #include "TBits.h"
@@ -604,7 +604,7 @@ namespace Susy {
     Trig::TrigDecisionTool*     m_trigTool;
 
     // event shape copier
-    EventShapeCopier*           m_escopier;
+    //EventShapeCopier*           m_escopier;
 
   };
 

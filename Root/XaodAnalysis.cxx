@@ -93,8 +93,8 @@ XaodAnalysis::XaodAnalysis() :
         //dantrim trig
         m_evtTrigBits(m_nTriggerBits),
         m_configTool(NULL),
-        m_trigTool(NULL),
-        m_escopier(NULL)
+        m_trigTool(NULL)
+     //   m_escopier(NULL)
 {
     clearOutputObjects();
     clearContainerPointers();
@@ -209,7 +209,7 @@ void XaodAnalysis::Terminate()
     delete m_trigTool;
     delete m_configTool;
 
-    delete m_escopier;
+ //   delete m_escopier;
     
 }
 //----------------------------------------------------------
@@ -226,7 +226,8 @@ XaodAnalysis& XaodAnalysis::initSusyTools()
         m_susyObj[i]->msg().setLevel(m_dbg ? MSG::DEBUG : MSG::WARNING);
         //m_susyObj[i]->msg().setLevel(m_dbg ? MSG::VERBOSE : MSG::WARNING);
         m_susyObj[i]->setProperty("EleId", electronIdName);
-        int datasource = !m_isMC ? ST::Data : (m_isAF2 ? ST::AtlfastII : ST::FullSim);
+       // int datasource = !m_isMC ? ST::Data : (m_isAF2 ? ST::AtlfastII : ST::FullSim);
+        ST::SettingDataSource datasource = !m_isMC ? ST::Data : (m_isAF2 ? ST::AtlfastII : ST::FullSim);
         m_susyObj[i]->setProperty("DataSource",datasource);
 
         //Other parameter that are undefine in SUSYTools and that we should be setting here
@@ -235,8 +236,8 @@ XaodAnalysis& XaodAnalysis::initSusyTools()
 
         //AT 05-01-15 For p1872 Need to use the AODfix version
 #warning p1872 need to use AODfix MET_RefinalFix and MET_TrackFix
-        m_susyObj[i]->setProperty("METInputCont", "MET_RefFinalFix");
-        m_susyObj[i]->setProperty("METInputMap", "METMap_RefFinalFix");
+     //   m_susyObj[i]->setProperty("METInputCont", "MET_RefFinalFix");
+     //   m_susyObj[i]->setProperty("METInputMap", "METMap_RefFinalFix");
 
   // dantrim May 6 2015 - Jet calibration for derivations, and GSC
         if(m_isDerivation) { m_susyObj[i]->setProperty("DoJetAreaCalib", true); }
@@ -322,7 +323,7 @@ XaodAnalysis& XaodAnalysis::initLocalTools()
     //            Call "renameEventDensities". This is temporary? And only for
     //            DxAODs. If running over DxAOD be sure to put "derived" in the sample
     //            name '-s' option (case insensitive).
-    m_escopier = new EventShapeCopier("Kt4LCCopier");
+    //m_escopier = new EventShapeCopier("Kt4LCCopier");
 
 
     return *this;
@@ -622,10 +623,10 @@ xAOD::PhotonContainer* XaodAnalysis::xaodPhotons(ST::SystInfo sysInfo, SusyNtSys
 const xAOD::TruthEventContainer* XaodAnalysis::retrieveTruthEvent(xAOD::TEvent &e, bool dbg)
 {
     const xAOD::TruthEventContainer* truth = NULL;
-    e.retrieve(truth, "TruthEvent");
+    e.retrieve(truth, "TruthEvents");
     if(dbg){
-        if(truth) cout<<"XaodAnalysis::retrieveTruthEvent: retrieved "<<endl;
-        else      cout<<"XaodAnalysis::retrieveTruthEvent: failed"<<endl;
+        if(truth) cout<<"XaodAnalysis::retrieveTruthEvents: retrieved "<<endl;
+        else      cout<<"XaodAnalysis::retrieveTruthEvents: failed"<<endl;
     }
     return truth;
 }
@@ -641,7 +642,7 @@ const xAOD::TruthEventContainer* XaodAnalysis::xaodTruthEvent()
 const xAOD::TruthParticleContainer* XaodAnalysis::retrieveTruthParticles(xAOD::TEvent &e, bool dbg)
 {
     const xAOD::TruthParticleContainer* truthP = NULL;
-    e.retrieve(truthP, "TruthParticle");
+    e.retrieve(truthP, "TruthParticles");
     if(dbg){
         if(truthP) cout<<"XaodAnalysis::retrieveTruthParticles: retrieved "<<truthP->size()<<endl;
         else       cout<<"XaodAnalysis::retrieveTruthParticles: failed"<<endl;
@@ -749,7 +750,7 @@ void XaodAnalysis::selectBaselineObjects(SusyNtSys sys, ST::SystInfo sysInfo)
     for(const auto& el : *electrons) {
         iEl++;
        // m_susyObj[m_eleIDDefault]->IsSignalElectron(*el);
-        m_susyObj[m_eleIDDefault]->IsSignalElectronExp(*el, ST::SignalIsoExp::TightIso);
+        m_susyObj[m_eleIDDefault]->IsSignalElectronExp(*el);
         if(m_dbg>=5) cout<<"El "
                          <<" pt " << el->pt()
                          <<" eta " << el->eta()
@@ -781,7 +782,7 @@ void XaodAnalysis::selectBaselineObjects(SusyNtSys sys, ST::SystInfo sysInfo)
         if(mu->pt()* MeV2GeV > 3 && 
            m_muonSelectionToolVeryLoose->accept(mu)) m_preMuons.push_back(iMu); //AT: Save VeryLoose pt>3 muon only
         //m_susyObj[m_eleIDDefault]->IsSignalMuon(*mu);
-        m_susyObj[m_eleIDDefault]->IsSignalMuonExp(*mu, ST::SignalIsoExp::TightIso);
+        m_susyObj[m_eleIDDefault]->IsSignalMuonExp(*mu);
         m_susyObj[m_eleIDDefault]->IsCosmicMuon(*mu);
         if(m_dbg>=5) cout<<"Mu passing"
                          <<" baseline? "<< bool(mu->auxdata< char >("baseline"))
@@ -2178,7 +2179,7 @@ XaodAnalysis& XaodAnalysis::retrieveCollections()
     xaodPhotons(systInfoList[0]);
     retrieveXaodMet(systInfoList[0]);//nominal
     
-    xaodMET_Track();
+//    xaodMET_Track();
 
     xaodTruthEvent();
     xaodTruthParticles();

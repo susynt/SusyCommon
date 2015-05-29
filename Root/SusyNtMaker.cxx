@@ -1,4 +1,4 @@
-#include "egammaAnalysisUtils/CaloIsoCorrection.h"
+//#include "egammaAnalysisUtils/CaloIsoCorrection.h"
 
 //#include "TauCorrections/TauCorrections.h"
 #include "TauCorrUncert/TauSF.h"
@@ -226,7 +226,7 @@ void SusyNtMaker::fillNtVars()
     fillTauVars();
     fillJetVars();
     fillMetVars();
-    fillMetTrackVars();
+//    fillMetTrackVars();
     fillPhotonVars();
     if(m_isMC && getSelectTruthObjects() ) {
         fillTruthParticleVars();
@@ -395,7 +395,7 @@ void SusyNtMaker::storeElectron(const xAOD::Electron &in)
     //Bug in code ptcorrected stores the correction!
     //out.etcone20 = in.isolationValue(xAOD::Iso::etcone20) * MeV2GeV;
     // in.isolationValue(xAOD::Iso::etcone20_ptcorrected)) * MeV2GeV;
-    out.etcone30 = in.isolationValue(xAOD::Iso::etcone30) *  MeV2GeV;
+//    out.etcone30 = in.isolationValue(xAOD::Iso::etcone30) *  MeV2GeV;
     //in.isolationValue(xAOD::Iso::etcone30_ptcorrected)) * MeV2GeV;
     out.etconetopo20 = in.isolationValue(xAOD::Iso::topoetcone20) * MeV2GeV;
     out.etconetopo30 = in.isolationValue(xAOD::Iso::topoetcone30) * MeV2GeV;
@@ -539,7 +539,7 @@ void SusyNtMaker::storeMuon(const xAOD::Muon &in)
     //out.ptvarcone30 = in.isolationValue(xAOD::Iso::ptvarcone30) * MeV2GeV;
 
     //all_available &= in.isolation(out.etcone20, xAOD::Iso::etcone20); out.etcone20 *= MeV2GeV;
-    all_available &= in.isolation(out.etcone30, xAOD::Iso::etcone30); out.etcone30 *= MeV2GeV;
+//    all_available &= in.isolation(out.etcone30, xAOD::Iso::etcone30); out.etcone30 *= MeV2GeV;
     //all_available &= in.isolation(out.etconetopo20, xAOD::Iso::topoetcone20); out.etconetopo20 *= MeV2GeV;
     //all_available &= in.isolation(out.etconetopo30, xAOD::Iso::topoetcone30); out.etconetopo30 *= MeV2GeV;
     all_available &= in.isolation(out.ptcone20, xAOD::Iso::ptcone20); out.ptcone20 *= MeV2GeV;
@@ -1502,8 +1502,19 @@ SusyNtMaker& SusyNtMaker::writeMetadata()
 void SusyNtMaker::checkIfInputIs13TeV()
 {
     size_t found_mc14_13TeV = m_inputContainerName.find("mc14_13TeV");
-    if(found_mc14_13TeV != std::string::npos) { m_is8TeV = false; }
-    cout << "Treating input sample as " << (m_is8TeV ? "mc14_8TeV" : "mc14_13TeV") << endl;
+    // could remove mc14_13TeV altogether since this is for mc15, but just add this 
+    // second check for now:
+    size_t found_mc15_13TeV = m_inputContainerName.find("mc15_13TeV");
+    std::string treatment;
+    if(found_mc14_13TeV != std::string::npos) {
+        m_is8TeV = false;
+        treatment = "mc14_13TeV";
+    }
+    else if(found_mc15_13TeV != std::string::npos) {
+        m_is8TeV = false;
+        treatment = "mc15_13TeV";
+    }
+    cout << "Treating input sample as " << (m_is8TeV ? "mc14_8TeV" : treatment) << endl;
 } 
 //----------------------------------------------------------
 bool SusyNtMaker::guessWhetherIsWhSample(const TString &samplename)
