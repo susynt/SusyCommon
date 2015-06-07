@@ -390,6 +390,13 @@ void SusyNtMaker::storeElectron(const xAOD::Electron &in)
     out.mediumLLH_nod0 = eleIsOfType(in, ElectronId::MediumLLH_nod0);
     out.tightLLH_nod0 = eleIsOfType(in, ElectronId::TightLLH_nod0);
 
+    // Isolation flags
+    out.isoGradientLoose = m_isoToolGradientLoose->accept(in) ? true : false;
+    out.isoGradient = m_isoToolGradient->accept(in) ? true : false;
+    out.isoVeryLoose = m_isoToolVeryLoose->accept(in) ? true : false;
+    out.isoLoose = m_isoToolLoose->accept(in) ? true : false;
+    out.isoTight = m_isoToolTight->accept(in) ? true : false;
+
     //Isolations
     //AT: Will become obsolete in run-2
     //Bug in code ptcorrected stores the correction!
