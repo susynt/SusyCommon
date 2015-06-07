@@ -206,7 +206,6 @@ void XaodAnalysis::Terminate()
     delete m_isoToolLoose;
     delete m_isoToolTight;
 
-
     for(int i=TightLLH; i<=LooseLLH; i++){
         delete m_susyObj[i];
     }
