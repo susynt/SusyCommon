@@ -200,6 +200,11 @@ void XaodAnalysis::Terminate()
     delete m_tauTruthMatchingTool;
     delete m_tauTruthTrackMatchingTool;
 
+    delete m_isoToolGradientLoose;
+    delete m_isoToolGradient;
+    delete m_isoToolVeryLoose;
+    delete m_isoToolLoose;
+    delete m_isoToolTight;
 
     for(int i=TightLLH; i<=LooseLLH; i++){
         delete m_susyObj[i];
@@ -312,6 +317,7 @@ XaodAnalysis& XaodAnalysis::initLocalTools()
     initElectronTools();
     initMuonTools();
     initTauTools();
+    initIsoTools();
 
     // dantrim -- initialize trigger tool
     initTrigger();
@@ -429,7 +435,37 @@ void XaodAnalysis::initTauTools()
     CHECK(m_TauEffEleTool->setProperty("EfficiencyCorrectionType", (int) TauAnalysisTools::SFContJetID));
     CHECK(m_TauEffEleTool->initialize());
 }
+//----------------------------------------------------------
+void XaodAnalysis::initIsoTools()
+{
+    // see: https://twiki.cern.ch/twiki/bin/view/AtlasProtected/ElectronIsolationSelectionTool 
 
+    // Gradient Loose WP
+    m_isoToolGradientLoose = new CP::IsolationSelectionTool( "IsolationSelectionTool_GradientLoose" );
+    CHECK( m_isoToolGradientLoose->setProperty( "WorkingPoint", "GradientLoose" ) );
+    CHECK( m_isoToolGradientLoose->initialize() );
+    
+    // Gradient WP
+    m_isoToolGradient = new CP::IsolationSelectionTool( "IsolationSelectionTool_Gradient" );
+    CHECK( m_isoToolGradient->setProperty( "WorkingPoint", "Gradient" ) );
+    CHECK( m_isoToolGradient->initialize() );
+    
+    // Very Loose WP
+    m_isoToolVeryLoose = new CP::IsolationSelectionTool( "IsolationSelectionTool_VeryLoose" );
+    CHECK( m_isoToolVeryLoose->setProperty( "WorkingPoint", "VeryLoose") );
+    CHECK( m_isoToolVeryLoose->initialize() );
+    
+    // Loose WP
+    m_isoToolLoose = new CP::IsolationSelectionTool( "IsolationSelectionTool_Loose" );
+    CHECK( m_isoToolLoose->setProperty( "WorkingPoint", "Loose") );
+    CHECK( m_isoToolLoose->initialize() );
+    
+    // Tight WP
+    m_isoToolTight = new CP::IsolationSelectionTool( "IsolationSelectionTool_Tight" );
+    CHECK( m_isoToolTight->setProperty( "WorkingPoint", "Tight") );
+    CHECK( m_isoToolTight->initialize() );
+
+}
 //----------------------------------------------------------
 void XaodAnalysis::initTrigger()
 {
@@ -788,8 +824,8 @@ void XaodAnalysis::selectBaselineObjects(SusyNtSys sys, ST::SystInfo sysInfo)
     for(const auto& jet : *jets){
         iJet++;
         if((bool)jet->auxdata< char >("baseline")==1 ) m_preJets.push_back(iJet);//AT: save baseline pT>20GeV only
-        m_susyObj[m_eleIDDefault]->IsBJet(*jet, !is8TeV());
-    //    m_susyObj[m_eleIDDefault]->IsBJet(*jet);     // dantrim Apr 15 2015 -- Not available for DC14@8TeV 
+    //    m_susyObj[m_eleIDDefault]->IsBJet(*jet, !is8TeV()); // assuming for mc15 onlyi, this signature is obsolete
+        m_susyObj[m_eleIDDefault]->IsBJet(*jet);  // default MV2c20 > -0.3867 for IsBJet = True
         if(m_dbg>=5) cout<<"Jet passing"
                          <<" baseline? "<< bool(jet->auxdata< char >("baseline")==1)
                          <<" signal? "<<   bool(jet->auxdata< char >("signal")==1)

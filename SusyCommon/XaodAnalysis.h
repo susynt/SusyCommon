@@ -49,6 +49,7 @@
 #include "PileupReweighting/PileupReweightingTool.h"
 #include "MuonEfficiencyCorrections/MuonEfficiencyScaleFactors.h"
 #include "MuonSelectorTools/MuonSelectionTool.h"
+#include "ElectronIsolationSelection/IsolationSelectionTool.h"
 
 //Trigger
 #include "TBits.h"
@@ -126,6 +127,7 @@ namespace Susy {
     void          initElectronTools(); 
     void          initMuonTools(); 
     void          initTauTools(); 
+    void          initIsoTools();
     void          initTrigger();
     
     // Systematic Methods
@@ -589,6 +591,13 @@ namespace Susy {
     CP::MuonSelectionTool               *m_muonSelectionToolLoose;
     CP::MuonSelectionTool               *m_muonSelectionToolMedium;
     CP::MuonSelectionTool               *m_muonSelectionToolTight;
+
+    // Lepton isolation tools
+    CP::IsolationSelectionTool *m_isoToolGradientLoose;
+    CP::IsolationSelectionTool *m_isoToolGradient;
+    CP::IsolationSelectionTool *m_isoToolVeryLoose;
+    CP::IsolationSelectionTool *m_isoToolLoose;
+    CP::IsolationSelectionTool *m_isoToolTight;
 
     //Tau truth matchong tools
     TauAnalysisTools::TauTruthMatchingTool       *m_tauTruthMatchingTool;

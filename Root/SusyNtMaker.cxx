@@ -390,6 +390,13 @@ void SusyNtMaker::storeElectron(const xAOD::Electron &in)
     out.mediumLLH_nod0 = eleIsOfType(in, ElectronId::MediumLLH_nod0);
     out.tightLLH_nod0 = eleIsOfType(in, ElectronId::TightLLH_nod0);
 
+    // Isolation flags
+    out.isoGradientLoose = m_isoToolGradientLoose->accept(in) ? true : false;
+    out.isoGradient = m_isoToolGradient->accept(in) ? true : false;
+    out.isoVeryLoose = m_isoToolVeryLoose->accept(in) ? true : false;
+    out.isoLoose = m_isoToolLoose->accept(in) ? true : false;
+    out.isoTight = m_isoToolTight->accept(in) ? true : false;
+
     //Isolations
     //AT: Will become obsolete in run-2
     //Bug in code ptcorrected stores the correction!
@@ -653,6 +660,11 @@ void SusyNtMaker::storeJet(const xAOD::Jet &in)
 
     // B-tagging 
     if(!is8TeV()) out.mv1 = (in.btagging())->MV1_discriminant();
+    // for MV2C20, put error output for now
+    double weight_mv2c20(0.);
+    if(!in.btagging()->MVx_discriminant("MV2c20", weight_mv2c20)){ cout << "SusyNtMaker::storeJet ERROR    Failed to retrieve MV2c20 weight!" << endl; }
+    out.mv2c20 = weight_mv2c20;
+
     out.sv1plusip3d   = (in.btagging())->SV1plusIP3D_discriminant();           
     // Most of these are not available in DC14 samples, some obselete (ASM)
     // jetOut->sv0           = element->flavor_weight_SV0();
