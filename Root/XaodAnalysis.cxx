@@ -824,8 +824,8 @@ void XaodAnalysis::selectBaselineObjects(SusyNtSys sys, ST::SystInfo sysInfo)
     for(const auto& jet : *jets){
         iJet++;
         if((bool)jet->auxdata< char >("baseline")==1 ) m_preJets.push_back(iJet);//AT: save baseline pT>20GeV only
-        m_susyObj[m_eleIDDefault]->IsBJet(*jet, !is8TeV());
-    //    m_susyObj[m_eleIDDefault]->IsBJet(*jet);     // dantrim Apr 15 2015 -- Not available for DC14@8TeV 
+    //    m_susyObj[m_eleIDDefault]->IsBJet(*jet, !is8TeV()); // assuming for mc15 onlyi, this signature is obsolete
+        m_susyObj[m_eleIDDefault]->IsBJet(*jet);  // default MV2c20 > -0.3867 for IsBJet = True
         if(m_dbg>=5) cout<<"Jet passing"
                          <<" baseline? "<< bool(jet->auxdata< char >("baseline")==1)
                          <<" signal? "<<   bool(jet->auxdata< char >("signal")==1)

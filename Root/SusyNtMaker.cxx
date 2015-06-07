@@ -660,6 +660,11 @@ void SusyNtMaker::storeJet(const xAOD::Jet &in)
 
     // B-tagging 
     if(!is8TeV()) out.mv1 = (in.btagging())->MV1_discriminant();
+    // for MV2C20, put error output for now
+    double weight_mv2c20(0.);
+    if(!in.btagging()->MVx_discriminant("MV2c20", weight_mv2c20)){ cout << "SusyNtMaker::storeJet ERROR    Failed to retrieve MV2c20 weight!" << endl; }
+    out.mv2c20 = weight_mv2c20;
+
     out.sv1plusip3d   = (in.btagging())->SV1plusIP3D_discriminant();           
     // Most of these are not available in DC14 samples, some obselete (ASM)
     // jetOut->sv0           = element->flavor_weight_SV0();
