@@ -481,6 +481,15 @@ void SusyNtMaker::storeElectron(const xAOD::Electron &in)
     // 
     // // Trigger flags
     // eleOut->trigFlags     = m_eleTrigFlags[ lepIn->idx() ];
+    out.trigBits = matchElectronTriggers(in);
+    ///cout << "testing electron trigBits" << endl;
+    ///int nbins = h_passTrigLevel->GetXaxis()->GetNbins();
+    ///for(int iTrig=1; iTrig<26; iTrig++){
+    ///    bool bit = out.trigBits.TestBitNumber(iTrig);
+    ///    string trigger = h_passTrigLevel->GetXaxis()->GetBinLabel(iTrig);
+    ///    cout << "\t passed trigger " << trigger << "? " << (bit ? "yes" : "no") << endl;
+    ///}
+    ///cout << endl;
 
  
     if(m_dbg && !all_available) cout<<"missing some electron variables"<<endl;
@@ -603,6 +612,8 @@ void SusyNtMaker::storeMuon(const xAOD::Muon &in)
     // Trigger Flags 
     // ASM-2014-11-02 :: Trigger information in DC14 samples are problematic
     // muOut->trigFlags      = m_muoTrigFlags[ lepIn->idx() ];
+
+    out.trigBits   = matchMuonTriggers(in);
 
     // Scale Factors
     // ASM-2014-11-02 :: How to get the uncertatinty?
@@ -1475,6 +1486,8 @@ SusyNtMaker& SusyNtMaker::initializeCutflowHistograms()
     h_genCutFlow = makeCutFlow("genCutFlow", "genCutFlow;Cuts;Events");
     std::vector<std::string> trigs = XaodAnalysis::xaodTriggers();
     h_passTrigLevel = new TH1F("trig", "Event Level Triggers Fired", trigs.size()+1, 0.0, trigs.size()+1); // dantrim trig
+    h_passTrigLevel->GetXaxis()->SetLabelSize(0.8 * h_passTrigLevel->GetLabelSize());
+    h_passTrigLevel->GetXaxis()->SetLabelOffset(0.35 * h_passTrigLevel->GetLabelOffset());
     for ( unsigned int iTrig = 0; iTrig < trigs.size(); iTrig++) {
         h_passTrigLevel->GetXaxis()->SetBinLabel(iTrig+1, trigs[iTrig].c_str());
     }

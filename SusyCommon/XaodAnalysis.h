@@ -59,18 +59,13 @@
 #include "TrigConfHLTData/HLTTriggerElement.h"
 #include "xAODTrigEgamma/TrigElectron.h"
 #include "xAODTrigEgamma/TrigElectronContainer.h"
+#include "TrigMuonMatching/TrigMuonMatching.h"
+#include "TrigEgammaMatchingTool/TrigEgammaMatchingTool.h"
+#include "TrigEgammaMatchingTool/ITrigEgammaMatchingTool.h"
+#include "SusyNtuple/Trigger.h"
 
 #include "SusyCommon/XaodAnalysis_types.h"
 
-// Trigger
-#include "TrigConfxAOD/xAODConfigTool.h"
-#include "TrigDecisionTool/TrigDecisionTool.h"
-#include "xAODTrigEgamma/TrigElectron.h"
-#include "xAODTrigEgamma/TrigElectronContainer.h"
-
-#include "SusyNtuple/Trigger.h"
-
-#include "TBits.h"
 
 #include "TSelector.h"
 #include "TTree.h"
@@ -218,7 +213,11 @@ namespace Susy {
     // Trigger - check matching for all baseline leptons
     //
     void resetTriggers(){
-      m_evtTrigBits.ResetAllBits(); // dantrim trig
+    // TBits
+      m_evtTrigBits.ResetAllBits();
+      //m_muoTrigBits.ResetAllBits();
+      //m_muoTrigBits.clear();
+    // old
       m_evtTrigFlags = 0;
       m_eleTrigFlags.clear();
       m_muoTrigFlags.clear();
@@ -232,10 +231,12 @@ namespace Susy {
     }
     
     void fillEventTriggers();
-    void matchElectronTriggers();
+ //   void matchElectronTriggers();
     bool matchElectronTrigger(const TLorentzVector* lv, std::string chain);
  //   bool matchElectronTrigger(const TLorentzVector &lv, std::vector<int>* trigBools);
-    void matchMuonTriggers();
+ //   void matchMuonTriggers();
+    TBits matchMuonTriggers(const xAOD::Muon& in); 
+    TBits matchElectronTriggers(const xAOD::Electron& in);
     bool matchMuonTrigger(const TLorentzVector &lv, std::vector<int>* trigBools);
     void matchTauTriggers();
     bool matchTauTrigger(const TLorentzVector &lv, std::vector<int>* trigBools);
@@ -605,11 +606,13 @@ namespace Susy {
     TauAnalysisTools::TauEfficiencyCorrectionsTool *m_TauEffEleTool;
 
     // dantrim trig
-    TBits                       m_evtTrigBits;
+    TBits                       m_evtTrigBits;          ///< Bit flags for event trigger firing
     static const size_t         m_nTriggerBits=64;
     TH1F*                       hLevelPassed;
     TrigConf::xAODConfigTool*   m_configTool;
     Trig::TrigDecisionTool*     m_trigTool;
+    Trig::TrigMuonMatching*     m_trigMuonMatchTool;    ///< TrigMuonMatching tool
+    Trig::TrigEgammaMatchingTool* m_trigEgammaMatchTool;    ///< TrigEgammaMatching tool
 
   };
 

@@ -88,12 +88,19 @@ XaodAnalysis::XaodAnalysis() :
     m_muonSelectionToolLoose(0),
     m_muonSelectionToolMedium(0),
     m_muonSelectionToolTight(0),
+    m_isoToolGradientLoose(0),
+    m_isoToolGradient(0),
+    m_isoToolVeryLoose(0),
+    m_isoToolLoose(0),
+    m_isoToolTight(0),
 	m_tauTruthMatchingTool(0),
 	m_tauTruthTrackMatchingTool(0),
         //dantrim trig
         m_evtTrigBits(m_nTriggerBits),
         m_configTool(NULL),
-        m_trigTool(NULL)
+        m_trigTool(NULL),
+        m_trigMuonMatchTool(NULL),
+        m_trigEgammaMatchTool(NULL)
 {
     clearOutputObjects();
     clearContainerPointers();
@@ -212,6 +219,8 @@ void XaodAnalysis::Terminate()
     // dantrim trig
     delete m_trigTool;
     delete m_configTool;
+    delete m_trigMuonMatchTool;
+    delete m_trigEgammaMatchTool;
     
 }
 //----------------------------------------------------------
@@ -479,6 +488,19 @@ void XaodAnalysis::initTrigger()
     m_trigTool->setProperty("TrigDecisionKey", "xTrigDecision");
     m_trigTool->setProperty("OutputLevel", MSG::ERROR).ignore(); // dantrim Mar 16 2015 -- tool outputs extraneous errors due to extraneous tool, ignore them
     CHECK( m_trigTool->initialize() );
+
+
+    // Tool for muon matching
+    m_trigMuonMatchTool = new Trig::TrigMuonMatching("TrigMuonMatchTool");
+    ToolHandle<Trig::TrigDecisionTool> m_trigDec(m_trigTool);
+    CHECK( m_trigMuonMatchTool->setProperty("TriggerTool", m_trigDec ));
+    //CHECK( m_trigMuonMatchTool->setProperty("TriggerTool", m_trigTool ));
+    CHECK( m_trigMuonMatchTool->initialize() );
+
+    // Tool for egamma matching
+    m_trigEgammaMatchTool = new Trig::TrigEgammaMatchingTool("TrigEgammaMatchTool");
+    CHECK( m_trigEgammaMatchTool->setProperty("TriggerTool", m_trigDec) );
+    CHECK( m_trigEgammaMatchTool->initialize() );
 
 }
 /*--------------------------------------------------------------------------------*/
@@ -1190,60 +1212,46 @@ std::vector<std::string> XaodAnalysis::xaodTriggers()
 void XaodAnalysis::fillEventTriggers()
 {
     if(m_dbg>=5) cout << "fillEventTriggers" << endl;
-   
-
     m_evtTrigBits.ResetAllBits();
     std::vector<std::string> trigs = XaodAnalysis::xaodTriggers();
     for (unsigned int iTrig = 0; iTrig < trigs.size(); iTrig++) {
         if(m_trigTool->isPassed(trigs[iTrig]))  m_evtTrigBits.SetBitNumber(iTrig, true);
     }
-/*    
-    m_evtTrigFlags = 0; 
-    
-
-    if(m_trigTool->isPassed("EF_e7_medium1"))                   m_evtTrigFlags |= triggerbits::TRIG_e7_medium1;
-    if(m_trigTool->isPassed("EF_e12Tvh_loose1"))                m_evtTrigFlags |= triggerbits::TRIG_e12Tvh_loose1;
-    if(m_trigTool->isPassed("EF_e12Tvh_medium1"))               m_evtTrigFlags |= triggerbits::TRIG_e12Tvh_medium1;
-    if(m_trigTool->isPassed("EF_e24vh_medium1"))                m_evtTrigFlags |= triggerbits::TRIG_e24vh_medium1;
-    if(m_trigTool->isPassed("EF_2e12Tvh_loose1"))               m_evtTrigFlags |= triggerbits::TRIG_2e12Tvh_loose1;
-    if(m_trigTool->isPassed("EF_e24vh_medium1_e7_medium1"))     m_evtTrigFlags |= triggerbits::TRIG_e24vh_medium1_e7_medium1;
-    // move to muon triggers since validating on Muon stream
-    if(m_trigTool->isPassed("EF_mu8"))                          m_evtTrigFlags |= triggerbits::TRIG_mu8;
-    if(m_trigTool->isPassed("EF_mu13"))                         m_evtTrigFlags |= triggerbits::TRIG_mu18_tight;
-    if(m_trigTool->isPassed("EF_mu24i_tight"))                  m_evtTrigFlags |= triggerbits::TRIG_mu24i_tight;
-    if(m_trigTool->isPassed("EF_2mu13"))                        m_evtTrigFlags |= triggerbits::TRIG_2mu13;
-    if(m_trigTool->isPassed("EF_mu18_tight_mu8_EFFS"))          m_evtTrigFlags |= triggerbits::TRIG_mu18_tight_mu8_EFFS;
-    if(m_trigTool->isPassed("EF_e12Tvh_medium1_mu8"))           m_evtTrigFlags |= triggerbits::TRIG_e12Tvh_medium1_mu8;
-    if(m_trigTool->isPassed("EF_mu18_tight_e7_medium1"))        m_evtTrigFlags |= triggerbits::TRIG_mu18_tight_e7_medium1;
-
-    // photon trigger
-    if(m_trigTool->isPassed("EF_g20_loose"))                    m_evtTrigFlags |= triggerbits::TRIG_g20_loose;
-    if(m_trigTool->isPassed("EF_g40_loose"))                    m_evtTrigFlags |= triggerbits::TRIG_g40_loose;
-    if(m_trigTool->isPassed("EF_g60_loose"))                    m_evtTrigFlags |= triggerbits::TRIG_g60_loose;
-    if(m_trigTool->isPassed("EF_g80_loose"))                    m_evtTrigFlags |= triggerbits::TRIG_g80_loose;
-    if(m_trigTool->isPassed("EF_g100_loose"))                   m_evtTrigFlags |= triggerbits::TRIG_g100_loose;
-    if(m_trigTool->isPassed("EF_g120_loose"))                   m_evtTrigFlags |= triggerbits::TRIG_g120_loose;
-    
-    // tau trigger
-    if(m_trigTool->isPassed("EF_tau20_medium1"))                m_evtTrigFlags |= triggerbits::TRIG_tau20_medium1;
-    if(m_trigTool->isPassed("EF_tau20Ti_medium1"))              m_evtTrigFlags |= triggerbits::TRIG_tau20Ti_medium1;
-    if(m_trigTool->isPassed("EF_tau29Ti_medium1"))              m_evtTrigFlags |= triggerbits::TRIG_tau29Ti_medium1;
-    if(m_trigTool->isPassed("EF_tau29Ti_medium1_tau20Ti_medium1")) m_evtTrigFlags |= triggerbits::TRIG_tau29Ti_medium1_tau20Ti_medium1;
-    if(m_trigTool->isPassed("EF_tau20Ti_medium1_e18vh_medium1"))   m_evtTrigFlags |= triggerbits::TRIG_tau20Ti_medium1_e18vh_medium1;
-    if(m_trigTool->isPassed("EF_tau20_medium1_mu15"))           m_evtTrigFlags |= triggerbits::TRIG_tau20_medium1_mu15;
-    
-    // lep-tau matching trigger
-    if(m_trigTool->isPassed("EF_e18vh_medium1"))                m_evtTrigFlags |= triggerbits::TRIG_e18vh_medium1;
-    if(m_trigTool->isPassed("EF_mu15"))                         m_evtTrigFlags |= triggerbits::TRIG_mu15;
-    
-    // MET triggers
-    if(m_trigTool->isPassed("EF_2mu8_EFxe40wMu_tclcw"))         m_evtTrigFlags |= triggerbits::TRIG_2mu8_EFxe40wMu_tclcw;
-    if(m_trigTool->isPassed("EF_xe80_tclcw_loose"))             m_evtTrigFlags |= triggerbits::TRIG_xe80_tclcw_loose;
-    if(m_trigTool->isPassed("EF_xe80T_tclcw_loose"))            m_evtTrigFlags |= triggerbits::TRIG_xe80T_tclcw_loose;
-*/
-
 }
-
+/*--------------------------------------------------------------------------------*/
+// Muon trigger matching
+/*--------------------------------------------------------------------------------*/
+TBits XaodAnalysis::matchMuonTriggers(const xAOD::Muon &in)
+{
+    if(m_dbg>=5) cout << "XaodAnalysis::matchMuonTriggers" << endl;
+    TBits muoTrigBits(m_nTriggerBits);
+    muoTrigBits.ResetAllBits();
+    std::vector<std::string> trigs = XaodAnalysis::xaodTriggers();
+    for(unsigned int iTrig=0; iTrig<trigs.size(); iTrig++){
+        if(m_trigMuonMatchTool->match(&in, trigs[iTrig])) muoTrigBits.SetBitNumber(iTrig, true);
+    }
+    return muoTrigBits;
+}
+/*--------------------------------------------------------------------------------*/
+// Electron trigger matching
+/*--------------------------------------------------------------------------------*/
+TBits XaodAnalysis::matchElectronTriggers(const xAOD::Electron &in)
+{
+    // DA: maybe split up trigger list in terms of electron/muon/etc triggers? but then bit numbers
+    // may be out of sync w.r.t. the stored histogram... in any case, the non-passed triggers are always
+    // false and on SusyNtuple side the user will provide specific string for the ele/muo trigger that
+    // is checked against the trig histo
+    if(m_dbg>=5) cout << "XaodAnalysis::matchElectronTriggers" << endl;
+    TBits eleTrigBits(m_nTriggerBits);
+    eleTrigBits.ResetAllBits();
+    std::vector<std::string> trigs = XaodAnalysis::xaodTriggers();
+    for(unsigned int iTrig=0; iTrig<trigs.size(); iTrig++){
+        // for matchHLT function, remove the "HLT_" portion of the trigger name for input to the tool's "matchHLT" method
+        std::string hlt_trigger = trigs[iTrig].replace(trigs[iTrig].begin(), trigs[iTrig].begin()+4, "");
+        if(m_trigEgammaMatchTool->matchHLT(&in, hlt_trigger)) eleTrigBits.SetBitNumber(iTrig, true);
+    }
+    return eleTrigBits;
+}
 /*--------------------------------------------------------------------------------*/
 // Electron trigger matching
 /*--------------------------------------------------------------------------------*/
@@ -1327,8 +1335,8 @@ void XaodAnalysis::fillEventTriggers()
 /*--------------------------------------------------------------------------------*/
 // Muon trigger matching
 /*--------------------------------------------------------------------------------*/
-void XaodAnalysis::matchMuonTriggers()
-{
+//void XaodAnalysis::matchMuonTriggers()
+//{
 //-DG--  if(m_dbg>=5) cout << "matchMuonTriggers" << endl;
 //-DG--  for(uint i=0; i<m_preMuons.size(); i++){
 //-DG--    int iMu = m_preMuons[i];
@@ -1359,7 +1367,7 @@ void XaodAnalysis::matchMuonTriggers()
 //-DG--       matchMuonTrigger(lv, m_event.trig_EF_trigmuonef.EF_mu24_j65_a4tchad_EFxe40wMu_tclcw()) ) { flags |= TRIG_mu24_j65_a4tchad_EFxe40wMu_tclcw; }
 //-DG--    m_muoTrigFlags[iMu] = flags;
 //-DG--  }
-}
+//}
 /*--------------------------------------------------------------------------------*/
 bool XaodAnalysis::matchMuonTrigger(const TLorentzVector &lv, vector<int>* passTrig)
 {
