@@ -781,20 +781,24 @@ void XaodAnalysis::selectBaselineObjects(SusyNtSys sys, ST::SystInfo sysInfo)
 {
     if(m_dbg>=5) cout << "selectBaselineObjects with sys=" <<  SusyNtSysNames[sys] << endl;
 
+    //////////////////////////////////
+    // Grab the object containers
+    //////////////////////////////////
     xAOD::ElectronContainer* electrons = xaodElectrons(sysInfo,sys);
-    xAOD::MuonContainer* muons =xaodMuons(sysInfo,sys);
-    xAOD::JetContainer* jets = xaodJets(sysInfo,sys);
+    xAOD::MuonContainer*     muons     = xaodMuons(sysInfo,sys);
+    xAOD::JetContainer*      jets      = xaodJets(sysInfo,sys);
+    xAOD::TauJetContainer*   taus      = xaodTaus(sysInfo,sys);
 
-    // dantrim March 17 1015 -- call initially in case we want to check OR on baseline.
-    //                          For now, have set "doHarmonization=False"
-    m_susyObj[m_eleIDDefault]->OverlapRemoval(electrons, muons, jets, false); 
-  //  m_susyObj[m_eleIDDefault]->OverlapRemoval(xaodElectrons(sysInfo,sys), xaodMuons(sysInfo, sys), xaodJets(sysInfo, sys), false);
-  //  xAOD::ElectronContainer* electrons = xaodElectrons(sysInfo,sys);
+    //////////////////////////////////
+    // Electrons
+    //////////////////////////////////
     int iEl = -1;
+    ST::IsSignalElectronExpCutArgs electron_cuts;
+    electron_cuts.etcut(10000); // set signal electron et cut > 10 GeV (default is > 25 GeV)
     for(const auto& el : *electrons) {
         iEl++;
        // m_susyObj[m_eleIDDefault]->IsSignalElectron(*el);
-        m_susyObj[m_eleIDDefault]->IsSignalElectronExp(*el);
+        m_susyObj[m_eleIDDefault]->IsSignalElectronExp(*el, electron_cuts);
         if(m_dbg>=5) cout<<"El "
                          <<" pt " << el->pt()
                          <<" eta " << el->eta()
@@ -802,8 +806,8 @@ void XaodAnalysis::selectBaselineObjects(SusyNtSys sys, ST::SystInfo sysInfo)
                          <<endl;
       //  if(!el->auxdata< bool >("baseline")) continue;
         //AT:12/16/14 TO UPDATE Base Obj should be after overlap removal
-        if( (bool)el->auxdata< char >("baseline")==1 &&
-            (bool)el->auxdata< char >("passOR")==1 ) m_baseElectrons.push_back(iEl); 
+        if( (bool)el->auxdata< char >("baseline")==1 ) m_baseElectrons.push_back(iEl); //&&
+        //    (bool)el->auxdata< char >("passOR")==1 ) m_baseElectrons.push_back(iEl); 
 
         if(m_dbg>=5) cout<<"\t El passing"
                          <<" baseline? "<< (bool)(el->auxdata< char >("baseline"))
@@ -819,14 +823,18 @@ void XaodAnalysis::selectBaselineObjects(SusyNtSys sys, ST::SystInfo sysInfo)
     }
     if(m_dbg) cout<<"preElectrons["<<m_preElectrons.size()<<"]"<<endl;
 
+    //////////////////////////////////
+    // Muons
+    //////////////////////////////////
     int iMu = -1;
- //   xAOD::MuonContainer* muons =xaodMuons(sysInfo,sys);
+    ST::IsSignalMuonExpCutArgs muon_cuts;
+    muon_cuts.ptcut(10000); // set the signal moun pt cut > 10 GeV (default is > 25 GeV)
     for(const auto& mu : *muons){
         iMu++;
         if(mu->pt()* MeV2GeV > 3 && 
            m_muonSelectionToolVeryLoose->accept(mu)) m_preMuons.push_back(iMu); //AT: Save VeryLoose pt>3 muon only
         //m_susyObj[m_eleIDDefault]->IsSignalMuon(*mu);
-        m_susyObj[m_eleIDDefault]->IsSignalMuonExp(*mu);
+        m_susyObj[m_eleIDDefault]->IsSignalMuonExp(*mu, muon_cuts);
         m_susyObj[m_eleIDDefault]->IsCosmicMuon(*mu);
         if(m_dbg>=5) cout<<"Mu passing"
                          <<" baseline? "<< bool(mu->auxdata< char >("baseline"))
@@ -835,14 +843,16 @@ void XaodAnalysis::selectBaselineObjects(SusyNtSys sys, ST::SystInfo sysInfo)
                          <<" eta " << mu->eta()
                          <<" phi " << mu->phi()
                          <<endl;
-        if( (bool)mu->auxdata< char >("baseline")==1 && 
-            (bool)mu->auxdata< char >("passOR")==1 ) m_baseMuons.push_back(iMu); 
+        if( (bool)mu->auxdata< char >("baseline")==1 ) m_baseMuons.push_back(iMu); //&& 
+        //    (bool)mu->auxdata< char >("passOR")==1 ) m_baseMuons.push_back(iMu); 
         // if(signal) m_sigMuons.push_back(iMu);
     }
     if(m_dbg) cout<<"preMuons["<<m_preMuons.size()<<"]"<<endl;
 
+    //////////////////////////////////
+    // Jets
+    //////////////////////////////////
     int iJet=-1;
-  //  xAOD::JetContainer* jets = xaodJets(sysInfo,sys);
     for(const auto& jet : *jets){
         iJet++;
         if((bool)jet->auxdata< char >("baseline")==1 ) m_preJets.push_back(iJet);//AT: save baseline pT>20GeV only
@@ -855,19 +865,23 @@ void XaodAnalysis::selectBaselineObjects(SusyNtSys sys, ST::SystInfo sysInfo)
                          <<" eta " << jet->eta()
                          <<" phi " << jet->phi()
                          <<endl;
-        if((bool)jet->auxdata< char >("baseline")==1 &&
-           (bool)jet->auxdata< char >("passOR")==1 ) m_baseJets.push_back(iJet); 
+        if((bool)jet->auxdata< char >("baseline")==1 ) m_baseJets.push_back(iJet); //&&
+         //  (bool)jet->auxdata< char >("passOR")==1 ) m_baseJets.push_back(iJet); 
     }
     if(m_dbg) cout<<"preJets["<<m_preJets.size()<<"]"<<endl;
 
-    // overlap removal and met (need to build 'MyJet' coll?)
-    //AT:: Depending of what container is affected by systematic, feed the correct set for the met computation
-    // dantrim March 2 2015 -- setting "doHarmonization" to False, in accord with Ximo & Fabio
-    //m_susyObj[m_eleIDDefault]->OverlapRemoval(xaodElectrons(sysInfo,sys), xaodMuons(sysInfo, sys), xaodJets(sysInfo, sys), false);
+    //////////////////////////////////
+    // set OverlapRemoval flags
+    //  --> "passOR"
+    //  signature: (ele, muo, jets, useSigLep=false, useIsoLep=false, doBjetOR=false)
+    //////////////////////////////////
+    m_susyObj[m_eleIDDefault]->OverlapRemoval(electrons, muons, jets); 
 
-
+    //////////////////////////////////
+    // Taus
+    //////////////////////////////////
     int iTau=-1;
-    xAOD::TauJetContainer* taus = xaodTaus(sysInfo,sys);
+    //xAOD::TauJetContainer* taus = xaodTaus(sysInfo,sys);
     for(const auto& tau : *taus){
         iTau++;
         m_susyObj[m_eleIDDefault]->IsSignalTau(*tau);
@@ -879,21 +893,19 @@ void XaodAnalysis::selectBaselineObjects(SusyNtSys sys, ST::SystInfo sysInfo)
                          <<" phi " << tau->phi()
                          <<" q   " << tau->charge()
                          <<endl;
-
         //Container tau: tau->pt()>20*GeV && abs(tau->eta())<2.47 ???  //AT TO ADD
         //if(tau->pt() * MeV2GeV > 20 && fabs(tau->eta())<2.47) m_preTaus.push_back(iTau);        
         if((bool)tau->auxdata< char >("baseline")==1){
             m_preTaus.push_back(iTau);
             m_baseTaus.push_back(iTau);
         }
-
     }
     if(m_dbg) cout<<"m_preTaus["<<m_preTaus.size()<<"]"<<endl;
 
-
-    //
-    //If Nom systematics keep track of the pre_object indices
-    //
+    //////////////////////////////////
+    // If Nom systematics keep track
+    // of the pre_object indices
+    //////////////////////////////////
     if(sys==NtSys::NOM){
         m_preElectrons_nom = m_preElectrons;
         m_preMuons_nom     = m_preMuons;
@@ -985,8 +997,20 @@ void XaodAnalysis::selectSignalObjects(SusyNtSys sys, ST::SystInfo sysInfo)
 {
     if(m_dbg>=5) cout << "selectSignalObjects with sys=" <<  SusyNtSysNames[sys] << endl;
 
+    //////////////////////////////////
+    // Grab the object containers
+    //////////////////////////////////
+    xAOD::ElectronContainer* electrons = xaodElectrons(sysInfo, sys);
+    xAOD::MuonContainer*     muons     = xaodMuons(sysInfo, sys);
+    xAOD::JetContainer*      jets      = xaodJets(sysInfo, sys);
+    xAOD::TauJetContainer*   taus      = xaodTaus(sysInfo, sys);
+    xAOD::PhotonContainer*   photons   = xaodPhotons(sysInfo, sys);
+
+    //////////////////////////////////
+    // Electrons
+    //////////////////////////////////
     int iEl = 0;
-    xAOD::ElectronContainer* electrons = xaodElectrons(sysInfo,sys);
+    //xAOD::ElectronContainer* electrons = xaodElectrons(sysInfo,sys);
     for(const auto& el : *electrons) {
         if( (bool)el->auxdata< char >("signal")==1 &&
             (bool)el->auxdata< char >("passOR")==1 )   m_sigElectrons.push_back(iEl);
@@ -994,8 +1018,11 @@ void XaodAnalysis::selectSignalObjects(SusyNtSys sys, ST::SystInfo sysInfo)
     }
     if(m_dbg) cout<<"m_sigElectrons["<<m_sigElectrons.size()<<"]"<<endl;
 
+    //////////////////////////////////
+    // Muons
+    //////////////////////////////////
     int iMu = 0;
-    xAOD::MuonContainer* muons = xaodMuons(sysInfo,sys);
+    //xAOD::MuonContainer* muons = xaodMuons(sysInfo,sys);
     for(const auto& mu : *muons){
         if( (bool)mu->auxdata< char >("signal")==1 &&
             (bool)mu->auxdata< char >("passOR")==1 )  m_sigMuons.push_back(iMu);
@@ -1003,8 +1030,11 @@ void XaodAnalysis::selectSignalObjects(SusyNtSys sys, ST::SystInfo sysInfo)
     }
     if(m_dbg) cout<<"m_sigMuons["<<m_sigMuons.size()<<"]"<<endl;
 
+    //////////////////////////////////
+    // Jets
+    //////////////////////////////////
     int iJet=0;
-    xAOD::JetContainer* jets = xaodJets(sysInfo,sys);
+    //xAOD::JetContainer* jets = xaodJets(sysInfo,sys);
     for(const auto& jet : *jets){
         if(jet->pt()*MeV2GeV >20.0 &&
             jet->auxdata< char >("passOR")==1 &&
@@ -1016,8 +1046,11 @@ void XaodAnalysis::selectSignalObjects(SusyNtSys sys, ST::SystInfo sysInfo)
     }
     if(m_dbg) cout<<"m_sigJets["<<m_sigJets.size()<<"]"<<endl;
 
+    //////////////////////////////////
+    // Taus
+    //////////////////////////////////
     int iTau=0;
-    xAOD::TauJetContainer* taus = xaodTaus(sysInfo,sys);
+    //xAOD::TauJetContainer* taus = xaodTaus(sysInfo,sys);
     for(const auto& tau : *taus){
         if(tau->pt() * MeV2GeV >20.0 &&
            (bool)tau->auxdata< char >("signal")==1)
@@ -1027,8 +1060,11 @@ void XaodAnalysis::selectSignalObjects(SusyNtSys sys, ST::SystInfo sysInfo)
         iTau++;
     if(m_dbg) cout<<"m_sigTaus["<<m_sigTaus.size()<<"]"<<endl;
 
+    //////////////////////////////////
+    // Photons
+    //////////////////////////////////
     int iPh=0;
-    xAOD::PhotonContainer* photons = xaodPhotons(sysInfo,sys);
+    //xAOD::PhotonContainer* photons = xaodPhotons(sysInfo,sys);
     if(photons) {
     for(const auto& ph : *photons){
         //m_susyObj[m_eleIDDefault]->FillPhoton(ph);
@@ -1251,6 +1287,7 @@ TBits XaodAnalysis::matchElectronTriggers(const xAOD::Electron &in)
         if(m_trigEgammaMatchTool->matchHLT(&in, hlt_trigger)) eleTrigBits.SetBitNumber(iTrig, true);
     }
     return eleTrigBits;
+
 }
 /*--------------------------------------------------------------------------------*/
 // Electron trigger matching

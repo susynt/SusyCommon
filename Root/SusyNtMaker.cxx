@@ -482,14 +482,14 @@ void SusyNtMaker::storeElectron(const xAOD::Electron &in)
     // // Trigger flags
     // eleOut->trigFlags     = m_eleTrigFlags[ lepIn->idx() ];
     out.trigBits = matchElectronTriggers(in);
-    ///cout << "testing electron trigBits" << endl;
-    ///int nbins = h_passTrigLevel->GetXaxis()->GetNbins();
-    ///for(int iTrig=1; iTrig<26; iTrig++){
-    ///    bool bit = out.trigBits.TestBitNumber(iTrig);
-    ///    string trigger = h_passTrigLevel->GetXaxis()->GetBinLabel(iTrig);
-    ///    cout << "\t passed trigger " << trigger << "? " << (bit ? "yes" : "no") << endl;
-    ///}
-    ///cout << endl;
+    //cout << "testing electron trigBits" << endl;
+    //int nbins = h_passTrigLevel->GetXaxis()->GetNbins();
+    //for(int iTrig=1; iTrig<26; iTrig++){
+    //    bool bit = out.trigBits.TestBitNumber(iTrig);
+    //    string trigger = h_passTrigLevel->GetXaxis()->GetBinLabel(iTrig);
+    //    cout << "\t passed trigger " << trigger << "? " << (bit ? "yes" : "no") << endl;
+    //}
+    //cout << endl;
 
  
     if(m_dbg && !all_available) cout<<"missing some electron variables"<<endl;
