@@ -360,7 +360,8 @@ void XaodAnalysis::initElectronTools()
 
 
     //AT:: LooseLLH & TightLLH are already define in SUSYTools but protected
-    std::string confDir = "ElectronPhotonSelectorTools/offline/mc15_20150429/";
+  //  std::string confDir = "ElectronPhotonSelectorTools/offline/mc15_20150429/";
+    std::string confDir = "ElectronPhotonSelectorTools/offline/dc14b_20150121/";
 
     m_elecSelLikelihoodVeryLoose = new AsgElectronLikelihoodTool("AsgElectronLikelihoodToolVeryLoose");
     CHECK( m_elecSelLikelihoodVeryLoose->setProperty("primaryVertexContainer","PrimaryVertices") );
@@ -408,22 +409,22 @@ void XaodAnalysis::initMuonTools()
     CHECK( m_muonEfficiencySFTool->initialize() );
 
     m_muonSelectionToolVeryLoose = new CP::MuonSelectionTool("MuonSelectionTool_VeryLoose");
-    CHECK( m_muonSelectionToolVeryLoose->setProperty( "MaxEta", 2.5 ) );
+    CHECK( m_muonSelectionToolVeryLoose->setProperty( "MaxEta", 2.4 ) );
     CHECK( m_muonSelectionToolVeryLoose->setProperty( "MuQuality", int(xAOD::Muon::VeryLoose) ));// Warning: includes bad muons!
     CHECK( m_muonSelectionToolVeryLoose->initialize() );
 
     m_muonSelectionToolLoose = new CP::MuonSelectionTool("MuonSelectionTool_Loose");
-    CHECK( m_muonSelectionToolLoose->setProperty( "MaxEta", 2.5 ) );
+    CHECK( m_muonSelectionToolLoose->setProperty( "MaxEta", 2.4 ) );
     CHECK( m_muonSelectionToolLoose->setProperty( "MuQuality", int(xAOD::Muon::Loose) ));
     CHECK( m_muonSelectionToolLoose->initialize() );
     
     m_muonSelectionToolMedium = new CP::MuonSelectionTool("MuonSelectionTool_Medium");
-    CHECK( m_muonSelectionToolMedium->setProperty( "MaxEta", 2.5 ) );
+    CHECK( m_muonSelectionToolMedium->setProperty( "MaxEta", 2.4 ) );
     CHECK( m_muonSelectionToolMedium->setProperty( "MuQuality", int(xAOD::Muon::Medium) ));
     CHECK( m_muonSelectionToolMedium->initialize() );
 
     m_muonSelectionToolTight = new CP::MuonSelectionTool("MuonSelectionTool_Tight");
-    CHECK( m_muonSelectionToolTight->setProperty( "MaxEta", 2.5 ) );
+    CHECK( m_muonSelectionToolTight->setProperty( "MaxEta", 2.4 ) );
     CHECK( m_muonSelectionToolTight->setProperty( "MuQuality", int(xAOD::Muon::Tight) ));
     CHECK( m_muonSelectionToolTight->initialize() );
 }
