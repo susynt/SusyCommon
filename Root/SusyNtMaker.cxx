@@ -651,7 +651,7 @@ void SusyNtMaker::storeJet(const xAOD::Jet &in)
     // number of associated tracks
     vector<int> nTrkVec;
     in.getAttribute(xAOD::JetAttribute::NumTrkPt500, nTrkVec);
-    int jet_nTrk = nTrkVec[0];
+    int jet_nTrk = (m_susyObj[m_eleIDDefault]->GetPrimVtx()==0 || nTrkVec.size()==0) ? 0 : nTrkVec[m_susyObj[m_eleIDDefault]->GetPrimVtx()->index()];
     out.nTracks = jet_nTrk;
 
     // JVF 
