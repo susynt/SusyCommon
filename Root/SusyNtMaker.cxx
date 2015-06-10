@@ -99,8 +99,8 @@ const std::vector< std::string > SusyNtMaker::cutflowLabels()
     labels.push_back("jet cleaning"   );
     labels.push_back("good pvx"       );
     labels.push_back("pass cosmic"    );
-    labels.push_back("1 == base lepton"   );
-    labels.push_back("1 == sig. lepton"   );
+    labels.push_back("2 == base lepton"   );
+    labels.push_back("2 == sig. lepton"   );
     labels.push_back("1 == base jet"  );
     labels.push_back("1 == sig. jet"  );
   //  labels.push_back("SusyProp Veto"  );
@@ -467,7 +467,7 @@ void SusyNtMaker::storeElectron(const xAOD::Electron &in)
     if(const xAOD::TrackParticle* t = in.trackParticle()){
         out.trackPt = t->pt()*MeV2GeV;
         out.trackEta = t->eta();
-        out.d0      = t->d0();//AT:: wrt to PV ???
+        out.d0      = fabs(t->d0());//AT:: wrt to PV ???
 
         const xAOD::Vertex* PV = getPV();
         double  primvertex_z = (PV) ? PV->z() : -999;
@@ -537,6 +537,13 @@ void SusyNtMaker::storeMuon(const xAOD::Muon &in)
     out.medium = muIsOfType(in, MuonId::Medium);
     out.tight = muIsOfType(in, MuonId::Tight);
 
+    // Isolation flags
+    out.isoGradientLoose = m_isoToolGradientLoose->accept(in) ? true : false;
+    out.isoGradient = m_isoToolGradient->accept(in) ? true : false;
+    out.isoVeryLoose = m_isoToolVeryLoose->accept(in) ? true : false;
+    out.isoLoose = m_isoToolLoose->accept(in) ? true : false;
+    out.isoTight = m_isoToolTight->accept(in) ? true : false;
+
     bool all_available=true;
 
     // Isolation
@@ -568,7 +575,7 @@ void SusyNtMaker::storeMuon(const xAOD::Muon &in)
     if(const xAOD::TrackParticle* t = in.primaryTrackParticle()){
         const xAOD::Vertex* PV = getPV();
         double  primvertex_z = (PV) ? PV->z() : 0.;
-        out.d0             = t->d0();
+        out.d0             = fabs(t->d0());
         out.errD0          = Amg::error(t->definingParametersCovMatrix(),0); 
         out.z0             = t->z0() + t->vz() - primvertex_z;
         out.errZ0          = Amg::error(t->definingParametersCovMatrix(),1); 
@@ -1712,15 +1719,17 @@ bool SusyNtMaker::passObjectlevelSelection()
     bool pass_ge2bl(2>=(m_baseElectrons.size()+m_baseMuons.size()));
     bool pass_exactly1sig(1==(m_sigElectrons.size()+m_sigMuons.size()));
     bool pass_exactly1base(1==(m_baseElectrons.size()+m_baseMuons.size()));
+    bool pass_exactly2base(2==(m_baseElectrons.size()+m_baseMuons.size()));
     bool pass_e1j(1==(m_baseJets.size()));
     bool pass_e1sj(1==(m_sigJets.size()));
+    bool pass_exactly2sig(2==(m_sigElectrons.size()+m_sigMuons.size()));
 
     fillCutFlow(pass_bad_muon, w);
     fillCutFlow(pass_JetCleaning, w);
     fillCutFlow(pass_goodpv, w);
     fillCutFlow(pass_cosmic, w);
-    fillCutFlow(pass_exactly1base, w);
-    fillCutFlow(pass_exactly1sig, w);
+    fillCutFlow(pass_exactly2base, w);
+    fillCutFlow(pass_exactly2sig, w);
     fillCutFlow(pass_e1j, w);
     fillCutFlow(pass_e1sj, w);
 
