@@ -446,9 +446,9 @@ void SusyNtMaker::storeElectron(const xAOD::Electron &in)
           if(m_dbg) cout << "AT: electron SF " << out.effSF << " " << out.errEffSF << endl;
       */  
    
-        out.mcType   = xAOD::EgammaHelpers::getParticleTruthType(&in);
-        out.mcOrigin = xAOD::EgammaHelpers::getParticleTruthOrigin(&in);    
-        const xAOD::TruthParticle* truthEle = xAOD::EgammaHelpers::getTruthParticle(&in);
+        out.mcType = xAOD::TruthHelpers::getParticleTruthType(in);
+        out.mcOrigin = xAOD::TruthHelpers::getParticleTruthOrigin(in);  
+        const xAOD::TruthParticle* truthEle = xAOD::TruthHelpers::getTruthParticle(in);
         out.matched2TruthLepton   = truthEle ? true : false;
         int matchedPdgId = truthEle ? truthEle->pdgId() : -999;
         out.truthType  = isFakeLepton(out.mcOrigin, out.mcType, matchedPdgId); 
@@ -609,7 +609,7 @@ void SusyNtMaker::storeMuon(const xAOD::Muon &in)
             if (acc_truthOrigin.isAvailable(*trackParticle)) 
                 out.mcOrigin  = acc_truthOrigin(*trackParticle);
 
-            const xAOD::TruthParticle* truthMu = xAOD::EgammaHelpers::getTruthParticle(trackParticle);
+            const xAOD::TruthParticle* truthMu = xAOD::TruthHelpers::getTruthParticle(*trackParticle);
             out.matched2TruthLepton = truthMu ? true : false;
             int matchedPdgId = truthMu ? truthMu->pdgId() : -999;
             out.truthType  = isFakeLepton(out.mcOrigin, out.mcType, matchedPdgId); 

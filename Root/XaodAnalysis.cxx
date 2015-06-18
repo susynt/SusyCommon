@@ -1503,14 +1503,14 @@ bool XaodAnalysis::matchTauTrigger(const TLorentzVector &lv, vector<int>* passTr
 //----------------------------------------------------------
 int XaodAnalysis::truthElectronCharge(const xAOD::Electron &in)
 {
-    int type   = xAOD::EgammaHelpers::getParticleTruthType(&in);
-    int origin = xAOD::EgammaHelpers::getParticleTruthOrigin(&in);
+    int type   = xAOD::TruthHelpers::getParticleTruthType(in);
+    int origin = xAOD::TruthHelpers::getParticleTruthOrigin(in);
 
     if(m_dbg>15) std::cout << "check Charge flip ele " << in.pt()*MeV2GeV 
                            << " type " << type << " origin " << origin << " nTrk " << in.nTrackParticles() << endl;
 
     if(isPromptElectron(type,origin)){
-        const xAOD::TruthParticle* truthEle = xAOD::EgammaHelpers::getTruthParticle(&in);
+        const xAOD::TruthParticle* truthEle = xAOD::TruthHelpers::getTruthParticle(in);
         if(m_dbg>15) std::cout << "Truth Prompt ele " << truthEle->pdgId() << " " << in.charge()  << endl;
         if (truthEle->pdgId()==11) return -1;
         if (truthEle->pdgId()==-11) return 1;
@@ -1530,7 +1530,7 @@ int XaodAnalysis::truthElectronCharge(const xAOD::Electron &in)
                     if(m_dbg>15) std::cout << "\t\t pt " << trackParticle->pt()*MeV2GeV
                                            << " type " << extraType << " & origin " << extraOrigin << endl;
                     if(isPromptElectron(extraType,extraOrigin)) {
-                        const xAOD::TruthParticle* truthEle = xAOD::EgammaHelpers::getTruthParticle(trackParticle);
+                        const xAOD::TruthParticle* truthEle = xAOD::TruthHelpers::getTruthParticle(*trackParticle);
                         if(m_dbg>15)
                             std::cout << " \t\t Found charged flipped ?" << truthEle->pdgId() << " " << in.charge() << endl;
                         if (truthEle->pdgId()==11) return -1;
@@ -1885,8 +1885,8 @@ void XaodAnalysis::dumpBaselineObjects()
                  << " pt " << setw(6) << el->p4().Pt()/1000. //lv.Pt()/GeV
                  << " eta " << setw(5) << el->p4().Eta() //lv.Eta()
                  << " phi " << setw(5) << el->p4().Phi(); //lv.Phi();
-            if(m_isMC) cout << " type " << setw(2) << xAOD::EgammaHelpers::getParticleTruthType(el)
-                         << " origin " << setw(2) << xAOD::EgammaHelpers::getParticleTruthOrigin(el);
+            if(m_isMC) cout << " type " << setw(2) << xAOD::TruthHelpers::getParticleTruthType(*el)
+                         << " origin " << setw(2)  << xAOD::TruthHelpers::getParticleTruthOrigin(*el);
             cout << endl;
         } // El
     } // nEle
@@ -1950,8 +1950,8 @@ void XaodAnalysis::dumpSignalObjects()
                  << " pt " << setw(6) << el->p4().Pt()/1000. //lv.Pt()/GeV
                  << " eta " << setw(5) << el->p4().Eta() //lv.Eta()
                  << " phi " << setw(5) << el->p4().Phi(); //lv.Phi();
-                if(m_isMC) cout << " type " << setw(2) << xAOD::EgammaHelpers::getParticleTruthType(el)
-                                << " origin " << setw(2) << xAOD::EgammaHelpers::getParticleTruthOrigin(el);
+                if(m_isMC) cout << " type " << setw(2)   << xAOD::TruthHelpers::getParticleTruthType(*el)
+                                << " origin " << setw(2) << xAOD::TruthHelpers::getParticleTruthOrigin(*el);
             cout << endl;
         } // iEl
     }

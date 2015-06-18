@@ -30,6 +30,7 @@
 #include "xAODMissingET/MissingETAuxContainer.h"
 #include "xAODTruth/TruthParticleContainer.h"
 #include "xAODTruth/TruthEventContainer.h"
+#include "xAODTruth/xAODTruthHelpers.h"
 #include "TauAnalysisTools/TauTruthMatchingTool.h"
 #include "TauAnalysisTools/TauTruthTrackMatchingTool.h"
 
