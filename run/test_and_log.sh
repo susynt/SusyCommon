@@ -91,7 +91,7 @@ function main {
 	#to run on MC
         #NtMaker -f ${input_file} -p mc12a --saveContTau --savePh --nLepFilter 1 --nLepTauFilter 2 --filterTrig -d 0 --sys > ${tmp_detailed_log} 2>&1
 	#-- sys -- broken
-    NtMaker -f ${input_file} -s mc14 --nLepFilter 1 -n 100 -d 10 -n 500 \
+    NtMaker -f ${input_file} -s mc14 --nLepFilter 1 -n 100 -d 10 -n 500 --sys \
             2>&1 |tee ${tmp_detailed_log} 
 
 	more ${tmp_detailed_log} |head -n  ${nlines_head} > ${tmp_log} 
