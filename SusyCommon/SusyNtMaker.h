@@ -1,14 +1,20 @@
+// Dear emacs, this is -*- c++ -*-
 #ifndef SusyCommon_SusyNtMaker_h
 #define SusyCommon_SusyNtMaker_h
 
+#include "SusyNtuple/SusyNtObject.h" // DG-2014-08-15 note to self: reversed include order breaks things (VarHandle bug?)
+#include "SusyCommon/XaodAnalysis.h"
+#include "SusyCommon/SystematicMapping.h"
 
-#include <iostream>
+
+#include "SusyCommon/Trigger.h"
+
 
 #include "TStopwatch.h"
 
-#include "SusyCommon/D3PDAna.h"
-#include "SusyNtuple/SusyNtObject.h"
-
+#include <iostream>
+#include <string>
+#include <vector>
 
 /*
 
@@ -18,8 +24,9 @@
 
 namespace Root { class TElectronEfficiencyCorrectionTool; }
 
-namespace susy {
-class SusyNtMaker : public D3PDAna
+
+namespace Susy {
+class SusyNtMaker : public XaodAnalysis
 {
 
  public:
@@ -36,9 +43,36 @@ class SusyNtMaker : public D3PDAna
     // Terminate is called after looping is finished
     virtual void    Terminate();
 
-    // Event selection - loose object/event cuts for filling tree
-    virtual bool    selectEvent();
+    /// fill histogram of event-level triggers that this event triggered
+    virtual void fillTriggerHisto(); //dantrim trig
 
+    /// whether this event should be written to the output
+    /**
+       This selection includes the event-level criteria and the
+       object-level ones
+    */
+    virtual bool    selectEvent();
+    /// whether this event passes the event-level criteria
+    /**
+       These are the criteria that only depend on flags, and not on
+       objects. Also increment the counters/histos used for
+       bookkeeping and normalization.
+     */
+    virtual bool passEventlevelSelection();
+
+    /// whether this event passes the object-level criteria
+    /**
+       These are the criteria that depend on the reconstructed
+       objects. Also increment the counters/histos used for
+       bookkeeping and normalization.
+     */
+    virtual bool passObjectlevelSelection();
+    
+    /// labels of the cut stages used in the selection
+    /**
+       They are used to book the histograms and the counters.
+     */
+    static const std::vector< std::string > cutflowLabels();
     // Initialize a cutflow histo
     TH1F* makeCutFlow(const char* name, const char* title);
     TH1F* getProcCutFlow(int signalProcess);
@@ -49,27 +83,29 @@ class SusyNtMaker : public D3PDAna
 
     void fillNtVars();
     void fillEventVars();
-    void fillLeptonVars();
-    void fillElectronVars(const LeptonInfo* lepIn);
-    void fillMuonVars(const LeptonInfo* lepIn);
+    void fillElectronVars();
+    void fillMuonVars();
     void fillJetVars();
-    void fillJetVar(int jetIdx);
-    void fillPhotonVars();
-    void fillPhotonVar(int phIdx);
     void fillTauVars();
-    void fillTauVar(int tauIdx);
-    void fillMetVars(SusyNtSys sys = NtSys_NOM);
+    void fillPhotonVars();
     void fillTruthParticleVars();
+    void storeElectron(const xAOD::Electron &in);
+    void storeMuon(const xAOD::Muon &in);
+    void storeJet(const xAOD::Jet &in);
+    void storeTau(const xAOD::TauJet &in);
+    void storePhoton(const xAOD::Photon &in);
+    void storeTruthParticle(const xAOD::TruthParticle &in);
+    void fillMetVars(SusyNtSys sys = NtSys::NOM);
+    void fillMetTrackVars(SusyNtSys sys = NtSys::NOM);
     void fillTruthJetVars();
     void fillTruthMetVars();
-
-    // Systematic Methods
+  
     void doSystematic();
 
-    void saveElectronSF(SusyNtSys sys);
-    void saveMuonSF(SusyNtSys sys);
-    void saveJetSF(SusyNtSys sys);
-    void saveTauSF(SusyNtSys sys);
+    void saveElectronSF(ST::SystInfo sysInfo, SusyNtSys sys);
+    void saveMuonSF(ST::SystInfo sysInfo, SusyNtSys sys);
+    void saveJetSF(ST::SystInfo sysInfo, SusyNtSys sys);
+    void saveTauSF(ST::SystInfo sysInfo, SusyNtSys sys);
 
     // This should be updated, we have some duplicated code which is dangerous
     void addMissingElectron(const LeptonInfo*, SusyNtSys sys);
@@ -79,20 +115,20 @@ class SusyNtMaker : public D3PDAna
 
     // Systematic enum checks
     bool isElecSys(SusyNtSys s){
-      return (s == NtSys_EES_Z_UP   || s == NtSys_EES_Z_DN ||
-	      s == NtSys_EES_MAT_UP || s == NtSys_EES_MAT_DN ||
-	      s == NtSys_EES_PS_UP  || s == NtSys_EES_PS_DN ||
-	      s == NtSys_EES_LOW_UP || s == NtSys_EES_LOW_DN ||
-	      s == NtSys_EER_UP     || s == NtSys_EER_DN);
+      return (s == NtSys::EES_Z_UP   || s == NtSys::EES_Z_DN ||
+	      s == NtSys::EES_MAT_UP || s == NtSys::EES_MAT_DN ||
+	      s == NtSys::EES_PS_UP  || s == NtSys::EES_PS_DN ||
+	      s == NtSys::EES_LOW_UP || s == NtSys::EES_LOW_DN ||
+	      s == NtSys::EER_UP     || s == NtSys::EER_DN);
     };
     bool isMuonSys(SusyNtSys s){
-      return (s == NtSys_MS_UP || s == NtSys_MS_DN || s == NtSys_ID_UP || s == NtSys_ID_DN);
+      return (s == NtSys::MS_UP || s == NtSys::MS_DN || s == NtSys::ID_UP || s == NtSys::ID_DN);
     };
     bool isJetSys(SusyNtSys s){
-      return (s == NtSys_JES_UP || s == NtSys_JES_DN || s == NtSys_JER);
+      return (s == NtSys::JES_UP || s == NtSys::JES_DN || s == NtSys::JER);
     };
     bool isTauSys(SusyNtSys s){
-      return (s == NtSys_TES_UP || s == NtSys_TES_DN);
+      return (s == NtSys::TES_UP || s == NtSys::TES_DN);
     }
 
     //void addEventFlag(SusyNtSys s, int eventFlag){
@@ -115,21 +151,35 @@ class SusyNtMaker : public D3PDAna
 
     // Toggle saving container taus instead of selected taus
     void setSaveContTaus(bool saveContTaus=true) { m_saveContTaus = saveContTaus; }
+    static bool guessWhetherIsWhSample(const TString &samplename);
+    std::string timerSummary();
+    std::string counterSummary() const;
+    /**
+     * \defgroup SusyNt-specific metadata. Must be specified before writing the output.
+     * @{
+     */
+    std::string         m_inputContainerName;  ///< name of the dq2 input container
+    std::string         m_outputContainerName; ///< name of the dq2 output container
+    std::string         m_productionTag;       ///< SusyNtuple production tag
+    std::string         m_productionCommand;   ///< command used to create the ntuple (with all options and flags)
+    /**@}*/
+    
+    // Check from the input container name if the sample is mc14_13TeV.
+    // If so sets flag "m_is8TeV" to false
+    void checkIfInputIs13TeV();
+    
 
+ protected:
+    SusyNtMaker& initializeOuputTree();
+    SusyNtMaker& saveOutputTree();
+    SusyNtMaker& initializeCutflowHistograms();
+    /// write to the output file our SusyNt-specific metadata
+    SusyNtMaker& writeMetadata();
  private:
     //static bool isBuggyWwSherpaSample(const int &dsid); //!< see thread "Diboson MC Truth Discrepancy" atlas-phys-susy-d3pd.cern.ch, Mar2013
     //static bool hasRadiativeBquark(const vint_t *pdg, const vint_t *status);
 
-/*     // Function to get reco + ID efficiency scale factors. */
-/*     // Copied from SUSYTools in order to provide the extra flexibility to use more than one set of electron ID. */
-/*     // DG May2014: this function should really be somewhere else. Do we still need it? */
-/*     void get_electron_eff_sf(float& sf, float& uncert, */
-/*                              const float el_cl_eta, const float pt, */
-/*                              bool recoSF, bool idSF, bool triggerSF, bool isAF2, */
-/*                              Root::TElectronEfficiencyCorrectionTool* electronRecoSF, */
-/*                              Root::TElectronEfficiencyCorrectionTool* electronIDSF, */
-/*                              Root::TElectronEfficiencyCorrectionTool* electronTriggerSF, */
-/*                              int RunNumber); */
+
 
  protected:
 
@@ -144,6 +194,8 @@ class SusyNtMaker : public D3PDAna
     uint                m_nLepFilter;   // Number of light leptons to filter on.
     uint                m_nLepTauFilter;// Number of leptons (light+tau) to filter on.
     bool                m_filterTrigger;// Only save events that pass any of our triggers
+    int                 m_triggerSet;   // Set which triggers are stored
+    std::vector<std::string> m_triggerNames;
     bool                m_saveContTaus; // Save container taus instead of selected taus
 
     // Some useful flags
@@ -152,6 +204,10 @@ class SusyNtMaker : public D3PDAna
     bool                m_hasSusyProp;  // whether this event is affected by the susy propagator bug (only for c1c1)
 
     // Some object counts
+    uint                n_pre_ele;
+    uint                n_pre_muo;
+    uint                n_pre_tau;
+    uint                n_pre_jet;
     uint                n_base_ele;
     uint                n_base_muo;
     uint                n_base_tau;
@@ -160,29 +216,6 @@ class SusyNtMaker : public D3PDAna
     uint                n_sig_muo;
     uint                n_sig_tau;
     uint                n_sig_jet;
-
-    // Some event counts
-    uint                n_evt_initial;
-    uint                n_evt_grl;
-    uint                n_evt_ttcVeto;
-    uint                n_evt_WwSherpa;
-    uint                n_evt_tileTrip;
-    uint                n_evt_larErr;
-    uint                n_evt_tileErr;
-    uint                n_evt_larHole;
-    uint                n_evt_hotSpot;
-    uint                n_evt_badJet;
-    uint                n_evt_goodVtx;
-    uint                n_evt_badMu;
-    uint                n_evt_cosmic;
-    uint                n_evt_susyProp;
-    uint                n_evt_1Lep;
-    uint                n_evt_2Lep;
-    uint                n_evt_3Lep;
-    uint                n_evt_saved;    // number of events save in the SusyNt
-
-    // histogram to save cutflow
-    //TH1F*               h_cutFlow;
 
     // We are currently changing the procedure for counting events in the cutflow!
     // We would like to have a histogram with total raw numbers, as above, but in
@@ -194,10 +227,12 @@ class SusyNtMaker : public D3PDAna
     TH1F*               h_rawCutFlow;           // cutflow filled always with weight=1
     TH1F*               h_genCutFlow;           // cutflow filled with generator weights
     std::map<int,TH1F*> m_procCutFlows;         // cutflows, one for each subprocess
+    std::vector< size_t > m_cutstageCounters; ///< used to print the summary cutflow table
+
+    TH1F*               h_passTrigLevel;        // histogram storing event-level fired triggers // dantrim trig
 
     // Timer
     TStopwatch          m_timer;
-
 };
 
 } // susy

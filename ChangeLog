@@ -1,5 +1,22 @@
 # vim: set noexpandtab:
 
+2015-03-13 Serhan Mete <amete@cern.ch>
+	modified:   cmt/Makefile.RootCore
+	modified:   util/NtMaker.cxx
+	* Fix compilation errors
+
+2014-12-11 Serhan Mete <amete@cern.ch>
+	M Root/SusyNtMaker.cxx
+	* Updated muon z0 so that it's w.r.t. PV
+	* Updated jet JVF so that it's w.r.t. PV
+	* Implement isHotTile 
+
+2014-11-02 Serhan Mete <amete@cern.ch>
+	* Started filling muon information for xAOD
+
+2014-10-30 Serhan Mete <amete@cern.ch>
+	* Started filling jet information for xAOD
+
 2014-02-13 Steve
 	* Now using central SUSYTools method for sherpa WW radiative
 	  b quark fix: Sherpa_WW_veto

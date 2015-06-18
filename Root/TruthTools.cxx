@@ -7,6 +7,7 @@
 //-------------------------------------------
 
 #include <iostream>
+#include <iterator> // ostream_iterator
 #include <cassert>
 
 #include "TLorentzVector.h"
@@ -32,15 +33,15 @@ Bool_t PassMllForAlpgen(Int_t mc_channel_number, Int_t mc_n,
     return (mll < 40.);
 }
 //----------------------------------
-Bool_t PassMllForAlpgen(D3PDReader::EventInfoD3PDObject *eventInfo,
-                        D3PDReader::TruthParticleD3PDObject* truthParticles, Bool_t DEBUG_PASSMLL_ALPGEN)
-{
-    return PassMllForAlpgen(eventInfo->mc_channel_number(), truthParticles->n(), 
-                            truthParticles->pt(), truthParticles->eta(), truthParticles->phi(), truthParticles->m(),
-                            truthParticles->pdgId(), truthParticles->status(), truthParticles->barcode(),
-                            truthParticles->parents(), truthParticles->children(),
-                            DEBUG_PASSMLL_ALPGEN);
-}
+// DROP Bool_t PassMllForAlpgen(D3PDReader::EventInfoD3PDObject *eventInfo,
+// DROP                         D3PDReader::TruthParticleD3PDObject* truthParticles, Bool_t DEBUG_PASSMLL_ALPGEN)
+// DROP {
+// DROP     return PassMllForAlpgen(eventInfo->mc_channel_number(), truthParticles->n(), 
+// DROP                             truthParticles->pt(), truthParticles->eta(), truthParticles->phi(), truthParticles->m(),
+// DROP                             truthParticles->pdgId(), truthParticles->status(), truthParticles->barcode(),
+// DROP                             truthParticles->parents(), truthParticles->children(),
+// DROP                             DEBUG_PASSMLL_ALPGEN);
+// DROP }
 //----------------------------------
 float MllForAlpgen(Int_t mc_n, 
                    vector<float>* mc_pt, vector<float>* mc_eta, vector<float>* mc_phi, vector<float>* mc_m, 
@@ -68,16 +69,16 @@ float MllForAlpgen(Int_t mc_n,
 }
 // Alternative function for MultiLep classes
 //----------------------------------
-float MllForAlpgen(D3PDReader::TruthParticleD3PDObject* truthParticles,
-                   Bool_t DEBUG_PASSMLL_ALPGEN)
-{
-    D3PDReader::TruthParticleD3PDObject *tp = truthParticles;
-    return MllForAlpgen(tp->n(), 
-                        tp->pt(), tp->eta(), tp->phi(), tp->m(),
-                        tp->pdgId(), tp->status(), tp->barcode(),
-                        tp->parents(), tp->children(),
-                        DEBUG_PASSMLL_ALPGEN);
-}
+// DROP float MllForAlpgen(D3PDReader::TruthParticleD3PDObject* truthParticles,
+// DROP                    Bool_t DEBUG_PASSMLL_ALPGEN)
+// DROP {
+// DROP     D3PDReader::TruthParticleD3PDObject *tp = truthParticles;
+// DROP     return MllForAlpgen(tp->n(), 
+// DROP                         tp->pt(), tp->eta(), tp->phi(), tp->m(),
+// DROP                         tp->pdgId(), tp->status(), tp->barcode(),
+// DROP                         tp->parents(), tp->children(),
+// DROP                         DEBUG_PASSMLL_ALPGEN);
+// DROP }
 //----------------------------------
 bool IsAlpgenLowMass(UInt_t datasetId)
 {
@@ -301,12 +302,12 @@ void printEvent(const vector<int>* pdg,
   } // end for(iP)
 }
 //----------------------------------
-float MllForSherpa(D3PDReader::TruthParticleD3PDObject* truthParticles, Bool_t verbose)
-{
-  D3PDReader::TruthParticleD3PDObject *tp = truthParticles;
-  //if(verbose) printEvent(tp->pdgId(), tp->status(), tp->parent_index());
-  return MllForSherpa(tp->pt(), tp->eta(), tp->phi(), tp->m(),
-					  tp->pdgId(), tp->status(),
-					  verbose);
-}
+// DROP float MllForSherpa(D3PDReader::TruthParticleD3PDObject* truthParticles, Bool_t verbose)
+// DROP {
+// DROP   D3PDReader::TruthParticleD3PDObject *tp = truthParticles;
+// DROP   //if(verbose) printEvent(tp->pdgId(), tp->status(), tp->parent_index());
+// DROP   return MllForSherpa(tp->pt(), tp->eta(), tp->phi(), tp->m(),
+// DROP 					  tp->pdgId(), tp->status(),
+// DROP 					  verbose);
+// DROP }
 //----------------------------------
