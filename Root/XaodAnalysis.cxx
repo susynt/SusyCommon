@@ -2017,30 +2017,43 @@ bool XaodAnalysis::runningOptionsAreValid()
                            cout << "AT:  stream " << s.name()<< endl;
                            return s.name();
                        });
-        bool isEgamma = (find(streamnames.begin(), streamnames.end(), "Egamma") != streamnames.end());
-        bool isJetEt  = (find(streamnames.begin(), streamnames.end(), "JetTauEtmiss") != streamnames.end());
-        bool isMuons  = (find(streamnames.begin(), streamnames.end(), "Muons") != streamnames.end());
-        bool consistentStream = (isMuons  ? m_stream==Stream_Muons :
-                                 isEgamma ? m_stream==Stream_Egamma :
-                                 isJetEt  ? m_stream==Stream_JetTauEtmiss :
-                                 false);
+        bool isPhysicsMain = (find(streamnames.begin(), streamnames.end(), "Main") != streamnames.end());
+        bool consistentStream = (isPhysicsMain ? m_stream==Stream_PhysicsMain : false); 
+
+     //   bool isEgamma = (find(streamnames.begin(), streamnames.end(), "Egamma") != streamnames.end());
+     //   bool isJetEt  = (find(streamnames.begin(), streamnames.end(), "JetTauEtmiss") != streamnames.end());
+     //   bool isMuons  = (find(streamnames.begin(), streamnames.end(), "Muons") != streamnames.end());
+     //   bool consistentStream = (isMuons  ? m_stream==Stream_Muons :
+     //                            isEgamma ? m_stream==Stream_Egamma :
+     //                            isJetEt  ? m_stream==Stream_JetTauEtmiss :
+     //                            false);
         if(!consistentStream) {
             valid=false;
             if(m_dbg)
-                cout<<"XaodAnalysis::runningOptionsAreValid: inconsistent stream"
-                    <<" m_stream: "
-                    <<(m_stream==Stream_Muons        ? "Stream_Muons":
-                       m_stream==Stream_Egamma       ? "Stream_Egamma":
-                       m_stream==Stream_JetTauEtmiss ? "Stream_JetTauEtmiss":
-                       "unknown")
-                    <<" eventinfo: "
-                    <<accumulate(streamnames.begin(), streamnames.end(), std::string(),
-                                 [](const std::string& a, const std::string& b) -> std::string {
-                                     return a + (a.length() > 0 ? "," : "") + b;
-                                 })
-                    <<endl;
+                cout << "XaodAnalysis::runningOptionsAreValid: inconsistent stream"
+                     << " m_stream: "
+                     << (m_stream==Stream_PhysicsMain   ? "Stream_PhysicsMain" : "unknown")
+                     << " eventinfo: "
+                     << accumulate(streamnames.begin(), streamnames.end(), std::string(),
+                            [](const std::string& a, const std::string& b) -> std::string {
+                                return a + (a.length() > 0 ? "," : "") + b;
+                                })
+                     << endl;
 
-        }
+               // cout<<"XaodAnalysis::runningOptionsAreValid: inconsistent stream"
+               //     <<" m_stream: "
+               //     <<(m_stream==Stream_Muons        ? "Stream_Muons":
+               //        m_stream==Stream_Egamma       ? "Stream_Egamma":
+               //        m_stream==Stream_JetTauEtmiss ? "Stream_JetTauEtmiss":
+               //        "unknown")
+               //     <<" eventinfo: "
+               //     <<accumulate(streamnames.begin(), streamnames.end(), std::string(),
+               //                  [](const std::string& a, const std::string& b) -> std::string {
+               //                      return a + (a.length() > 0 ? "," : "") + b;
+               //                  })
+               //     <<endl;
+
+        } // !consistentStream
     } // isData
     if(m_dbg)
         cout<<"XaodAnalysis::runningOptionsAreValid(): "<<(valid?"true":"false")<<endl;
@@ -2071,10 +2084,11 @@ DataStream XaodAnalysis::streamFromSamplename(const TString &sample, bool isdata
     bool ismc(!isdata);
 //    TString sample(s.c_str());
     DataStream stream = Stream_Unknown;
-    if(ismc) stream = Stream_MC;
-    else if(sample.Contains("muons",        TString::kIgnoreCase)) stream = Stream_Muons;
-    else if(sample.Contains("egamma",       TString::kIgnoreCase)) stream = Stream_Egamma;
-    else if(sample.Contains("jettauetmiss", TString::kIgnoreCase)) stream = Stream_JetTauEtmiss;
+    if     (ismc) stream = Stream_MC;
+    else if(sample.Contains("main",         TString::kIgnoreCase)) stream = Stream_PhysicsMain;
+    //else if(sample.Contains("muons",        TString::kIgnoreCase)) stream = Stream_Muons;
+    //else if(sample.Contains("egamma",       TString::kIgnoreCase)) stream = Stream_Egamma;
+    //else if(sample.Contains("jettauetmiss", TString::kIgnoreCase)) stream = Stream_JetTauEtmiss;
     else
         cout<<"XaodAnalysis::streamFromSamplename('"<<sample<<"',isdata="<<(isdata?"true":"false")<<")"
             <<" : cannot determine the stream, returning "<<streamName(stream)<<endl;
