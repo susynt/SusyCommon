@@ -178,7 +178,7 @@ Bool_t SusyNtMaker::Process(Long64_t entry)
         matchTriggers();
         if(m_isMC){
             m_tauTruthMatchingTool->setTruthParticleContainer(xaodTruthParticles());
-            m_tauTruthMatchingTool->createTruthTauContainer();
+            //m_tauTruthMatchingTool->createTruthTauContainer(); // DA: gets called automatically when calling setTruthParticleContainer
         }
         fillNtVars();
         if(m_isMC && m_sys) doSystematic();
@@ -435,17 +435,15 @@ void SusyNtMaker::storeElectron(const xAOD::Electron &in)
             out.effSF = m_susyObj[ElectronId::MediumLLH]->GetSignalElecSF(in, recoSF, idSF, trigSF);
         else if(eleIsOfType(in, ElectronId::LooseLLH))
             out.effSF = m_susyObj[ElectronId::LooseLLH]->GetSignalElecSF(in, recoSF, idSF, trigSF);
-
+    
       
-       /* 
-        >>> dantrim March 2 2015 -- calling AsgElectronEfficiencyTool causes seg-fault?
-        AT: Crash is in getting EventInfo L175 ???
-          const Root::TResult &result =  m_electronEfficiencySFTool->calculate(in);
-          out.effSF    = result.getScaleFactor();
-          out.errEffSF = result.getTotalUncertainty();
-          if(m_dbg) cout << "AT: electron SF " << out.effSF << " " << out.errEffSF << endl;
-      */  
-   
+     //   >>> dantrim March 2 2015 -- calling AsgElectronEfficiencyTool causes seg-fault?
+     //   AT: Crash is in getting EventInfo L175 ???
+     //     const Root::TResult &result =  m_electronEfficiencySFTool->calculate(in);
+     //     out.effSF    = result.getScaleFactor();
+     //     out.errEffSF = result.getTotalUncertainty();
+     //     if(m_dbg) cout << "AT: electron SF " << out.effSF << " " << out.errEffSF << endl;
+  
         out.mcType = xAOD::TruthHelpers::getParticleTruthType(in);
         out.mcOrigin = xAOD::TruthHelpers::getParticleTruthOrigin(in);  
         const xAOD::TruthParticle* truthEle = xAOD::TruthHelpers::getTruthParticle(in);
@@ -478,19 +476,20 @@ void SusyNtMaker::storeElectron(const xAOD::Electron &in)
     } else {
         all_available = false;
     }
+
     // DG-2014-08-29 mc info not available yet
     // 
     // // Trigger flags
     // eleOut->trigFlags     = m_eleTrigFlags[ lepIn->idx() ];
     out.trigBits = matchElectronTriggers(in);
-    //cout << "testing electron trigBits" << endl;
-    //int nbins = h_passTrigLevel->GetXaxis()->GetNbins();
-    //for(int iTrig=1; iTrig<26; iTrig++){
-    //    bool bit = out.trigBits.TestBitNumber(iTrig);
-    //    string trigger = h_passTrigLevel->GetXaxis()->GetBinLabel(iTrig);
-    //    cout << "\t passed trigger " << trigger << "? " << (bit ? "yes" : "no") << endl;
-    //}
-    //cout << endl;
+//    cout << "testing electron trigBits" << endl;
+//    int nbins = h_passTrigLevel->GetXaxis()->GetNbins();
+//    for(int iTrig=1; iTrig<26; iTrig++){
+//        bool bit = out.trigBits.TestBitNumber(iTrig);
+//        string trigger = h_passTrigLevel->GetXaxis()->GetBinLabel(iTrig);
+//        cout << "\t passed trigger " << trigger << "? " << (bit ? "yes" : "no") << endl;
+//    }
+//    cout << endl;
 
  
     if(m_dbg && !all_available) cout<<"missing some electron variables"<<endl;
@@ -934,7 +933,7 @@ void SusyNtMaker::fillMetVars(SusyNtSys sys)
         metOut->refJet_sumet = (*met_find)->sumet()*MeV2GeV;
     }
     // SoftTerm
-    met_find = m_metContainer->find("SoftClus"); //Use GetMet default, so SoftClus is what we get. doTST=true would give SoftTrk
+    met_find = m_metContainer->find("PVSoftTrk"); // We use default GetMET method, which as TST met so soft term is PVSoftTrk (not SoftClus)
     if (met_find != m_metContainer->end()) {
         metOut->softTerm_et = (*met_find)->met()*MeV2GeV;
         metOut->softTerm_phi = (*met_find)->phi();

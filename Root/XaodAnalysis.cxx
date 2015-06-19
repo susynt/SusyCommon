@@ -328,7 +328,6 @@ XaodAnalysis& XaodAnalysis::initLocalTools()
     initTauTools();
     initIsoTools();
 
-    // dantrim -- initialize trigger tool
     initTrigger();
 
     return *this;
@@ -360,8 +359,8 @@ void XaodAnalysis::initElectronTools()
 
 
     //AT:: LooseLLH & TightLLH are already define in SUSYTools but protected
-  //  std::string confDir = "ElectronPhotonSelectorTools/offline/mc15_20150429/";
-    std::string confDir = "ElectronPhotonSelectorTools/offline/dc14b_20150121/";
+    std::string confDir = "ElectronPhotonSelectorTools/offline/mc15_20150429/";
+  //  std::string confDir = "ElectronPhotonSelectorTools/offline/dc14b_20150121/";
 
     m_elecSelLikelihoodVeryLoose = new AsgElectronLikelihoodTool("AsgElectronLikelihoodToolVeryLoose");
     CHECK( m_elecSelLikelihoodVeryLoose->setProperty("primaryVertexContainer","PrimaryVertices") );
@@ -403,10 +402,13 @@ void XaodAnalysis::initElectronTools()
 //----------------------------------------------------------
 void XaodAnalysis::initMuonTools()
 {
+
+    // Initialize muon scale-factor tools
     m_muonEfficiencySFTool = new CP::MuonEfficiencyScaleFactors("MuonEfficiencyScaleFactors");
-    CHECK( m_muonEfficiencySFTool->setProperty("WorkingPoint","CBandST") );
-    CHECK( m_muonEfficiencySFTool->setProperty("DataPeriod","2012") );
+    CHECK( m_muonEfficiencySFTool->setProperty("WorkingPoint","Medium") );
     CHECK( m_muonEfficiencySFTool->initialize() );
+
+    // Initialize muon selection tools
 
     m_muonSelectionToolVeryLoose = new CP::MuonSelectionTool("MuonSelectionTool_VeryLoose");
     CHECK( m_muonSelectionToolVeryLoose->setProperty( "MaxEta", 2.4 ) );
@@ -742,6 +744,7 @@ void XaodAnalysis::retrieveXaodMet( ST::SystInfo sysInfo, SusyNtSys sys)
     xAOD::TauJetContainer*   taus      = xaodTaus(sysInfo,sys);
     xAOD::PhotonContainer*   photons   = xaodPhotons(sysInfo,sys);
 
+    // GetMET(met, jet, elec, muon, gamma, taujet, doTST = true)
     m_susyObj[m_eleIDDefault]->GetMET(*m_metContainer,
                                       jets,
                                       electrons,
@@ -794,12 +797,10 @@ void XaodAnalysis::selectBaselineObjects(SusyNtSys sys, ST::SystInfo sysInfo)
     // Electrons
     //////////////////////////////////
     int iEl = -1;
-    ST::IsSignalElectronExpCutArgs electron_cuts;
-    electron_cuts.etcut(10000); // set signal electron et cut > 10 GeV (default is > 25 GeV)
     for(const auto& el : *electrons) {
         iEl++;
-       // m_susyObj[m_eleIDDefault]->IsSignalElectron(*el);
-        m_susyObj[m_eleIDDefault]->IsSignalElectronExp(*el, electron_cuts);
+        // defaults: IsSignalElectron(ele, etcut = 25000, d0sigcut = 5., z0cut = 0.5)
+        m_susyObj[m_eleIDDefault]->IsSignalElectron(*el, 10000, 5., 0.5);
         if(m_dbg>=5) cout<<"El "
                          <<" pt " << el->pt()
                          <<" eta " << el->eta()
@@ -834,8 +835,8 @@ void XaodAnalysis::selectBaselineObjects(SusyNtSys sys, ST::SystInfo sysInfo)
         iMu++;
         if(mu->pt()* MeV2GeV > 3 && 
            m_muonSelectionToolVeryLoose->accept(mu)) m_preMuons.push_back(iMu); //AT: Save VeryLoose pt>3 muon only
-        //m_susyObj[m_eleIDDefault]->IsSignalMuon(*mu);
-        m_susyObj[m_eleIDDefault]->IsSignalMuonExp(*mu, muon_cuts);
+        // defaults: IsSignalMuon(mu, ptcut = 25000, d0sigcut = 3., z0cut = 0.5)
+        m_susyObj[m_eleIDDefault]->IsSignalMuon(*mu, 10000, 3., 0.5);
         m_susyObj[m_eleIDDefault]->IsCosmicMuon(*mu);
         if(m_dbg>=5) cout<<"Mu passing"
                          <<" baseline? "<< bool(mu->auxdata< char >("baseline"))
