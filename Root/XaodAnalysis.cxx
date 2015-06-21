@@ -359,8 +359,6 @@ void XaodAnalysis::initJVTTool()
 {
     // configure the JVT tool
     m_jvtTool = new JetVertexTaggerTool("jvtag");
-  //  ToolHandle<IJetUpdateJvt> hjvtagup;
-    hjvtagup = ToolHandle<IJetUpdateJvt>("jvtag");
     CHECK( m_jvtTool->setProperty("JVTFileName","JetMomentTools/JVTlikelihood_20140805.root") );
     CHECK( m_jvtTool->initialize() );
 }

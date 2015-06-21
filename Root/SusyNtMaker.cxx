@@ -481,7 +481,7 @@ void SusyNtMaker::storeElectron(const xAOD::Electron &in)
     // 
     // // Trigger flags
     // eleOut->trigFlags     = m_eleTrigFlags[ lepIn->idx() ];
-    out.trigBits = matchElectronTriggers(in);
+//    out.trigBits = matchElectronTriggers(in);
 //    cout << "testing electron trigBits" << endl;
 //    int nbins = h_passTrigLevel->GetXaxis()->GetNbins();
 //    for(int iTrig=1; iTrig<26; iTrig++){
@@ -598,7 +598,7 @@ void SusyNtMaker::storeMuon(const xAOD::Muon &in)
         out.msTrackTheta   = mstrack->theta();
     }
     // Truth Flags 
-    if(false) { // may 8 - comment out truthType accessor
+    if(m_isMC) { // may 8 - comment out truthType accessor
         const xAOD::TrackParticle* trackParticle = *(in.inDetTrackParticleLink());
         if(trackParticle){
             static SG::AuxElement::Accessor<int> acc_truthType("truthType");
@@ -620,23 +620,26 @@ void SusyNtMaker::storeMuon(const xAOD::Muon &in)
     // ASM-2014-11-02 :: Trigger information in DC14 samples are problematic
     // muOut->trigFlags      = m_muoTrigFlags[ lepIn->idx() ];
 
-    out.trigBits   = matchMuonTriggers(in);
+//    out.trigBits   = matchMuonTriggers(in);
 
     // Scale Factors
+    // DA June 21 :: For now just store the nominal -- need to merge with xaod (xaod_muonSF) branch
+    //  >>> add the baseline check since otherwise the muonSF tool complains
+    out.effSF = (m_isMC && out.isBaseline) ? m_susyObj[m_eleIDDefault]->GetSignalMuonSF(in) : 1;
     // ASM-2014-11-02 :: How to get the uncertatinty?
-    {
-        float value = 1.0;
-        float value_err = 0.0; // ASM-2014-11-02 0. for the time being
-        if(m_isMC) {
-            CP::CorrectionCode result = m_muonEfficiencySFTool->getEfficiencyScaleFactor( in, value );
-            if( result == CP::CorrectionCode::OutOfValidityRange ) {
-                // cout << "ASM :: getEfficiencyScaleFactor out of validity range " << endl;
-                value = 0.0;
-            }
-        }
-        out.effSF    = value;
-        out.errEffSF = value_err;
-    }
+   // {
+   //     float value = 1.0;
+   //     float value_err = 0.0; // ASM-2014-11-02 0. for the time being
+   //     if(m_isMC) {
+   //  //       CP::CorrectionCode result = m_muonEfficiencySFTool->getEfficiencyScaleFactor( in, value );
+   //  //       if( result == CP::CorrectionCode::OutOfValidityRange ) {
+   //  //           // cout << "ASM :: getEfficiencyScaleFactor out of validity range " << endl;
+   //  //           value = 0.0;
+   //  //       }
+   //     }
+   //     out.effSF    = value;
+   //     out.errEffSF = value_err;
+   // }
 
     // ASM-2014-11-02 :: Store to be true at the moment
     all_available =  false;
@@ -1743,11 +1746,14 @@ bool SusyNtMaker::passObjectlevelSelection()
     // filter
     bool pass = true;
     bool pass_nLepFilter( (m_preElectrons.size()+m_preMuons.size()) >= m_nLepFilter );
-    bool trig_has_fired( h_passTrigLevel->Integral(0,-1) > 0. ); // check if any of the triggers fired
     if(m_filter) {
-        if(m_filterTrigger) { pass = (pass_nLepFilter && trig_has_fired); }
-        else { pass = pass_nLepFilter; }
+        pass = pass_nLepFilter;
     }
+  //  bool trig_has_fired( h_passTrigLevel->Integral(0,-1) > 0. ); // check if any of the triggers fired
+  //  if(m_filter) {
+  //      if(m_filterTrigger) { pass = (pass_nLepFilter && trig_has_fired); }
+  //      else { pass = pass_nLepFilter; }
+  //  }
     if(m_dbg>=5 && !pass)
         cout << "SusyNtMaker: fail passObjectlevelSelection " << endl;
     return pass;
