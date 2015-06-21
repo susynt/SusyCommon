@@ -678,7 +678,7 @@ void SusyNtMaker::storeJet(const xAOD::Jet &in)
     out.jvt = m_jvtTool->updateJvt(in);
 
     // Truth Label/Matching 
-    if (m_isMC) in.getAttribute("TruthLabelID", out.truthLabel);
+    if (m_isMC) { in.getAttribute("ConeTruthLabelID", out.truthLabel); }
 //rel 20
     //int JetPartonID = (in.jet())->auxdata< int >("PartonTruthLabelID"); // ghost association
     //int JetConeID   = (in.jet())->auxdata< int >("ConeTruthLabelID"); // cone association
