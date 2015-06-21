@@ -83,6 +83,7 @@ XaodAnalysis::XaodAnalysis() :
     m_elecSelLikelihoodMedium_nod0(0),
     m_elecSelLikelihoodTight_nod0(0),
 	m_pileupReweightingTool(0),
+    m_jvtTool(0),
 	m_muonEfficiencySFTool(0),
     m_muonSelectionToolVeryLoose(0),
     m_muonSelectionToolLoose(0),
@@ -323,6 +324,7 @@ XaodAnalysis& XaodAnalysis::initLocalTools()
 
 
     initPileupTool();
+    initJVTTool();
     initElectronTools();
     initMuonTools();
     initTauTools();
@@ -351,6 +353,16 @@ void XaodAnalysis::initPileupTool()
     //CHECK( m_pileupReweightingTool->setProperty("DataScaleFactors",1/1.11) );
     CHECK( m_pileupReweightingTool->initialize() );
 
+}
+//----------------------------------------------------------
+void XaodAnalysis::initJVTTool()
+{
+    // configure the JVT tool
+    m_jvtTool = new JetVertexTaggerTool("jvtag");
+  //  ToolHandle<IJetUpdateJvt> hjvtagup;
+    hjvtagup = ToolHandle<IJetUpdateJvt>("jvtag");
+    CHECK( m_jvtTool->setProperty("JVTFileName","JetMomentTools/JVTlikelihood_20140805.root") );
+    CHECK( m_jvtTool->initialize() );
 }
 //----------------------------------------------------------
 void XaodAnalysis::initElectronTools()

@@ -51,6 +51,7 @@
 #include "MuonEfficiencyCorrections/MuonEfficiencyScaleFactors.h"
 #include "MuonSelectorTools/MuonSelectionTool.h"
 #include "ElectronIsolationSelection/IsolationSelectionTool.h"
+#include "JetMomentTools/JetVertexTaggerTool.h"
 
 //Trigger
 #include "TBits.h"
@@ -120,6 +121,7 @@ namespace Susy {
     **/
     XaodAnalysis& initLocalTools(); ///< initialize performance tools
     void          initPileupTool();
+    void          initJVTTool();
     void          initElectronTools(); 
     void          initMuonTools(); 
     void          initTauTools(); 
@@ -587,6 +589,8 @@ namespace Susy {
     AsgElectronLikelihoodTool *m_elecSelLikelihoodTight_nod0;
 
     CP::PileupReweightingTool           *m_pileupReweightingTool;
+    
+    JetVertexTaggerTool                 *m_jvtTool;
 
     CP::MuonEfficiencyScaleFactors      *m_muonEfficiencySFTool; 
     CP::MuonSelectionTool               *m_muonSelectionToolVeryLoose;

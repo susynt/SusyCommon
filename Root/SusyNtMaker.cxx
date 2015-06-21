@@ -666,7 +666,13 @@ void SusyNtMaker::storeJet(const xAOD::Jet &in)
     vector<float> jetJVF;
     in.getAttribute(xAOD::JetAttribute::JVF,jetJVF); // JVF returns a vector that holds jvf per vertex
     const xAOD::Vertex* PV = getPV();                // Need to know the PV
-    out.jvf = (PV) ? jetJVF.at(PV->index()) : 0.;    // Upon discussion w/ TJ (2014-12-11)   
+    out.jvf = (PV) ? jetJVF.at(PV->index()) : 0.;    // Upon discussion w/ TJ (2014-12-11)
+
+    // JVT
+    // DA Jun21 :: following instructions at: https://twiki.cern.ch/twiki/bin/view/AtlasProtected/JetVertexTaggerTool 
+    // on the twiki they use the ToolHandle to get the updated JVT -- using the pointer to the tool itself
+    // as done here produces the same values
+    out.jvt = m_jvtTool->updateJvt(in);
 
     // Truth Label/Matching 
     if (m_isMC) in.getAttribute("TruthLabelID", out.truthLabel);
@@ -698,7 +704,8 @@ void SusyNtMaker::storeJet(const xAOD::Jet &in)
     in.getAttribute(xAOD::JetAttribute::BchCorrCell,out.bch_corr_cell);
 
     // isBadJet 
-    out.isBadVeryLoose = false; // DG tmp-2014-11-02 in.isAvailable("bad") ? in.auxdata<char>("bad") : false;
+    //out.isBadVeryLoose = false; // DG tmp-2014-11-02 in.isAvailable("bad") ? in.auxdata<char>("bad") : false;
+    out.isBadVeryLoose = (bool)in.auxdata<char>("bad") ? 1 : 0;
 
     // Hot Tile
     float fracSamplingMax, samplingMax;
