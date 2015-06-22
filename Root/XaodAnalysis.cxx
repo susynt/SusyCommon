@@ -839,8 +839,6 @@ void XaodAnalysis::selectBaselineObjects(SusyNtSys sys, ST::SystInfo sysInfo)
     // Muons
     //////////////////////////////////
     int iMu = -1;
-    ST::IsSignalMuonExpCutArgs muon_cuts;
-    muon_cuts.ptcut(10000); // set the signal moun pt cut > 10 GeV (default is > 25 GeV)
     for(const auto& mu : *muons){
         iMu++;
         if(mu->pt()* MeV2GeV > 3 && 
@@ -2075,7 +2073,9 @@ std::string XaodAnalysis::defauldGrlFile()
     //return std::string( "$ROOTCOREBIN/data/SUSYTools/GRL/Summer2013/"
     //                    "data12_8TeV.periodAllYear_DetStatus-v61-pro14-02"
     //                    "_DQDefects-00-01-00_PHYS_StandardGRL_All_Good.xml");
-    return std::string( "$ROOTCOREBIN/data/SusyCommon/data15_13TeV.periodA1_DetStatus-v62-pro17_DQDefects-00-01-02_PHYS_CombinedPerf_Tracking_Tracking.xml");
+    //return std::string( "$ROOTCOREBIN/data/SusyCommon/data15_13TeV.periodA1_DetStatus-v62-pro17_DQDefects-00-01-02_PHYS_CombinedPerf_Tracking_Tracking.xml");
+    // DA June 22 :: using most recent GRL for period A
+    return std::string( "$ROOTCOREBIN/data/SusyCommon/data15_13TeV.periodA_DetStatus-v62-pro18_DQDefects-00-01-02_PHYS_StandardModel_MinimuBias2010.xml");
 }
 //----------------------------------------------------------
 bool XaodAnalysis::initGrlTool()
