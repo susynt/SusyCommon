@@ -598,21 +598,17 @@ void SusyNtMaker::storeMuon(const xAOD::Muon &in)
         out.msTrackTheta   = mstrack->theta();
     }
     // Truth Flags 
-    if(m_isMC) { // may 8 - comment out truthType accessor
-        const xAOD::TrackParticle* trackParticle = *(in.inDetTrackParticleLink());
+    if(m_isMC) {
+        const xAOD::TrackParticle* trackParticle = in.primaryTrackParticle();
         if(trackParticle){
-            static SG::AuxElement::Accessor<int> acc_truthType("truthType");
-            static SG::AuxElement::Accessor<int> acc_truthOrigin("truthOrigin");
-            if (acc_truthType.isAvailable(*trackParticle)) 
-                out.mcType    = acc_truthType(*trackParticle);
-            if (acc_truthOrigin.isAvailable(*trackParticle)) 
-                out.mcOrigin  = acc_truthOrigin(*trackParticle);
-
+            // mcType <==> "truthType" of input xAOD (MCTruthClassifier)
+            out.mcType = xAOD::TruthHelpers::getParticleTruthType(*trackParticle);
+            // mcOrigin <==> "truthOrigin" of input xAOD (MCTruthClassifier)
+            out.mcOrigin = xAOD::TruthHelpers::getParticleTruthOrigin(*trackParticle);
             const xAOD::TruthParticle* truthMu = xAOD::TruthHelpers::getTruthParticle(*trackParticle);
             out.matched2TruthLepton = truthMu ? true : false;
             int matchedPdgId = truthMu ? truthMu->pdgId() : -999;
-            out.truthType  = isFakeLepton(out.mcOrigin, out.mcType, matchedPdgId); 
-
+            out.truthType = isFakeLepton(out.mcOrigin, out.mcType, matchedPdgId);
         }
     }
 
