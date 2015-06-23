@@ -200,12 +200,14 @@ void XaodAnalysis::Terminate()
     delete m_elecSelLikelihoodTight_nod0;
 
     delete m_pileupReweightingTool;
+    delete m_jvtTool;
     delete m_muonEfficiencySFTool;
     delete m_muonSelectionToolVeryLoose;
     delete m_muonSelectionToolLoose;
     delete m_muonSelectionToolMedium;
     delete m_muonSelectionToolTight;
     delete m_tauTruthMatchingTool;
+    delete m_TauEffEleTool;
     delete m_tauTruthTrackMatchingTool;
 
     delete m_isoToolGradientLoose;
