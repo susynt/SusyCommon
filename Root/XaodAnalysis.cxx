@@ -2086,6 +2086,7 @@ bool XaodAnalysis::initGrlTool()
     m_grl = new GoodRunsListSelectionTool("GoodRunsListSelectionTool");
     std::vector<std::string> grl_files;
     grl_files.push_back(XaodAnalysis::defauldGrlFile());
+    cout << "XaodAnalysis::initGrlTool    Using GRL: " << grl_files[0] << endl;
     m_grl->setProperty("GoodRunsListVec", grl_files);
     m_grl->setProperty("PassThrough", false);
     success = m_grl->initialize(); // DG any check we should do here? (file_exists?)
