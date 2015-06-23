@@ -99,10 +99,10 @@ const std::vector< std::string > SusyNtMaker::cutflowLabels()
     labels.push_back("jet cleaning"   );
     labels.push_back("good pvx"       );
     labels.push_back("pass cosmic"    );
-    labels.push_back("2 == base lepton"   );
-    labels.push_back("2 == sig. lepton"   );
-    labels.push_back("1 == base jet"  );
-    labels.push_back("1 == sig. jet"  );
+    labels.push_back("base lepton >= 1"   );
+    labels.push_back("sig. lepton >= 1"   );
+  //  labels.push_back("1 == base jet"  );
+  //  labels.push_back("1 == sig. jet"  );
   //  labels.push_back("SusyProp Veto"  );
   //  labels.push_back("GRL"            );
   //  labels.push_back("LAr Error"      );
@@ -1721,10 +1721,11 @@ bool SusyNtMaker::passObjectlevelSelection()
     bool pass_bad_muon(m_cutFlags & ECut_BadMuon);
     bool pass_cosmic(m_cutFlags & ECut_Cosmic);
     
-    bool pass_ge2bl(2>=(m_baseElectrons.size()+m_baseMuons.size()));
+    bool pass_ge1bl(1>=(m_baseElectrons.size()+m_baseMuons.size()));
     bool pass_exactly1sig(1==(m_sigElectrons.size()+m_sigMuons.size()));
     bool pass_exactly1base(1==(m_baseElectrons.size()+m_baseMuons.size()));
     bool pass_exactly2base(2==(m_baseElectrons.size()+m_baseMuons.size()));
+    bool pass_ge1sl(1>=(m_sigElectrons.size()+m_sigMuons.size()));
     bool pass_e1j(1==(m_baseJets.size()));
     bool pass_e1sj(1==(m_sigJets.size()));
     bool pass_exactly2sig(2==(m_sigElectrons.size()+m_sigMuons.size()));
@@ -1733,10 +1734,8 @@ bool SusyNtMaker::passObjectlevelSelection()
     fillCutFlow(pass_JetCleaning, w);
     fillCutFlow(pass_goodpv, w);
     fillCutFlow(pass_cosmic, w);
-    fillCutFlow(pass_exactly2base, w);
-    fillCutFlow(pass_exactly2sig, w);
-    fillCutFlow(pass_e1j, w);
-    fillCutFlow(pass_e1sj, w);
+    fillCutFlow(pass_ge1bl, w);
+    fillCutFlow(pass_ge1sl, w);
 
 
     // filter
