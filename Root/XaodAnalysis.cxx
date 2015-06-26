@@ -94,7 +94,7 @@ XaodAnalysis::XaodAnalysis() :
     m_isoToolVeryLoose(0),
     m_isoToolLoose(0),
     m_isoToolTight(0),
-	m_tauTruthMatchingTool(0),
+	//m_tauTruthMatchingTool(0), // memory leak check
 	m_tauTruthTrackMatchingTool(0),
         //dantrim trig
         m_evtTrigBits(m_nTriggerBits),
@@ -115,7 +115,8 @@ void XaodAnalysis::Init(TTree *tree)
     xAOD::Init("Susy::XaodAnalysis").ignore();
     m_event.readFrom(tree);
     m_isMC = XaodAnalysis::isSimuFromSamplename(m_sample);
-    m_isDerivation = XaodAnalysis::isDerivationFromMetaData(tree, verbose); // dantrim event shape
+    //m_isDerivation = XaodAnalysis::isDerivationFromMetaData(tree, verbose); // dantrim event shape
+    m_isDerivation = true; // test memory leak check
     bool isData = XaodAnalysis::isDataFromSamplename(m_sample);
     m_stream = XaodAnalysis::streamFromSamplename(m_sample, isData);
     initSusyTools();
@@ -206,7 +207,7 @@ void XaodAnalysis::Terminate()
     delete m_muonSelectionToolLoose;
     delete m_muonSelectionToolMedium;
     delete m_muonSelectionToolTight;
-    delete m_tauTruthMatchingTool;
+    //delete m_tauTruthMatchingTool; // memory leak check
     delete m_TauEffEleTool;
     delete m_tauTruthTrackMatchingTool;
 
@@ -445,9 +446,9 @@ void XaodAnalysis::initMuonTools()
 //----------------------------------------------------------
 void XaodAnalysis::initTauTools()
 {
-    m_tauTruthMatchingTool = new TauAnalysisTools::TauTruthMatchingTool("TauTruthMatchingTool");
-    m_tauTruthMatchingTool->msg().setLevel(m_dbg ? MSG::DEBUG : MSG::ERROR);
-    CHECK(m_tauTruthMatchingTool->initialize());
+    //m_tauTruthMatchingTool = new TauAnalysisTools::TauTruthMatchingTool("TauTruthMatchingTool");  // memory leak check
+    //m_tauTruthMatchingTool->msg().setLevel(m_dbg ? MSG::DEBUG : MSG::ERROR);                      // memory leak check
+    //CHECK(m_tauTruthMatchingTool->initialize());                                                  // memory leak check
     
     //AT: 05-07-15: consider adding ?
     //m_tauTruthMatchingTool->setProperty("SampleType", (int)TauAnalysisTools::SHERPA);
@@ -718,15 +719,15 @@ const xAOD::TruthParticleContainer* XaodAnalysis::xaodTruthParticles()
 }
 
 //----------------------------------------------------------
-const xAOD::TruthParticleContainer* XaodAnalysis::xaodTruthTauParticles()
-{
-    return m_tauTruthMatchingTool->getTruthTauContainer();
-}
+//const xAOD::TruthParticleContainer* XaodAnalysis::xaodTruthTauParticles()  // test memory leak check
+//{
+//    return m_tauTruthMatchingTool->getTruthTauContainer();
+//}
 //----------------------------------------------------------
-const xAOD::TruthParticleAuxContainer* XaodAnalysis::xaodTruthTauParticlesAux()
-{
-    return m_tauTruthMatchingTool->getTruthTauAuxContainer();
-}
+//const xAOD::TruthParticleAuxContainer* XaodAnalysis::xaodTruthTauParticlesAux()  // test memory leak check
+//{
+//    return m_tauTruthMatchingTool->getTruthTauAuxContainer();
+//}
 
 //----------------------------------------------------------
 /// temporary patch, see SUSYToolsTester.cxx @ SUSYTools-00-05-00-14
@@ -2077,7 +2078,9 @@ std::string XaodAnalysis::defauldGrlFile()
     //                    "_DQDefects-00-01-00_PHYS_StandardGRL_All_Good.xml");
     //return std::string( "$ROOTCOREBIN/data/SusyCommon/data15_13TeV.periodA1_DetStatus-v62-pro17_DQDefects-00-01-02_PHYS_CombinedPerf_Tracking_Tracking.xml");
     // DA June 22 :: using most recent GRL for period A
-    return std::string( "$ROOTCOREBIN/data/SusyCommon/data15_13TeV.periodA_DetStatus-v62-pro18_DQDefects-00-01-02_PHYS_StandardModel_MinimuBias2010.xml");
+    //return std::string( "$ROOTCOREBIN/data/SusyCommon/data15_13TeV.periodA_DetStatus-v62-pro18_DQDefects-00-01-02_PHYS_StandardModel_MinimuBias2010.xml");
+    // DA June 25 :: latest, now with run 267073
+    return std::string( "$ROOTCOREBIN/data/SusyCommon/data15_13TeV.periodA_DetStatus-v62-pro18_DQDefects-00-01-02_PHYS_StandardGRL_All_Good.xml");
 }
 //----------------------------------------------------------
 bool XaodAnalysis::initGrlTool()

@@ -176,10 +176,10 @@ Bool_t SusyNtMaker::Process(Long64_t entry)
     fillTriggerHisto(); // dantrim trig
     if(selectEvent() && m_fillNt){
         matchTriggers();
-        if(m_isMC){
-            m_tauTruthMatchingTool->setTruthParticleContainer(xaodTruthParticles());
-            //m_tauTruthMatchingTool->createTruthTauContainer(); // DA: gets called automatically when calling setTruthParticleContainer
-        }
+        //if(m_isMC){
+        //    //m_tauTruthMatchingTool->setTruthParticleContainer(xaodTruthParticles()); // comment out for memory leak check
+        //    //m_tauTruthMatchingTool->createTruthTauContainer(); // DA: gets called automatically when calling setTruthParticleContainer
+        //}
         fillNtVars();
         if(m_isMC && m_sys) doSystematic();
         int bytes = m_outTree->Fill();
@@ -803,9 +803,9 @@ void SusyNtMaker::storeTau(const xAOD::TauJet &tau)
     out.muonVeto = tau.isTau(xAOD::TauJetParameters::MuonVeto);
     
     if (m_isMC){
-        m_tauTruthMatchingTool->applyTruthMatch(tau);
-        if (tau.auxdata<bool>("IsTruthMatched")) out.trueTau = true;
-        else out.trueTau = false;
+        //m_tauTruthMatchingTool->applyTruthMatch(tau); // memory leak check
+        //if (tau.auxdata<bool>("IsTruthMatched")) out.trueTau = true; // memory leak check
+        //else out.trueTau = false;  // memory leak check
         //tau.auxdata<size_t>("TruthProng");
         //tau.auxdata<int>("TruthCharge");
         //tau.auxdata<bool>("IsHadronicTau");

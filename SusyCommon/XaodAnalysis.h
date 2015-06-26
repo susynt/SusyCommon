@@ -178,8 +178,8 @@ namespace Susy {
     virtual const xAOD::TruthParticleContainer* xaodTruthParticles();
 
     /// access truth tau particles
-    virtual const xAOD::TruthParticleContainer* xaodTruthTauParticles();
-    virtual const xAOD::TruthParticleAuxContainer* xaodTruthTauParticlesAux();
+    //virtual const xAOD::TruthParticleContainer* xaodTruthTauParticles();
+    //virtual const xAOD::TruthParticleAuxContainer* xaodTruthTauParticlesAux();
 
     /// retrieve & build met
     virtual void retrieveXaodMet(ST::SystInfo sysInfo, SusyNtSys sys = NtSys::NOM);
@@ -606,7 +606,7 @@ namespace Susy {
     CP::IsolationSelectionTool *m_isoToolTight;
 
     //Tau truth matchong tools
-    TauAnalysisTools::TauTruthMatchingTool       *m_tauTruthMatchingTool;
+    //TauAnalysisTools::TauTruthMatchingTool       *m_tauTruthMatchingTool; // memory leak check
     TauAnalysisTools::TauTruthTrackMatchingTool  *m_tauTruthTrackMatchingTool;
     TauAnalysisTools::TauEfficiencyCorrectionsTool *m_TauEffEleTool;
 

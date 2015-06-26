@@ -1,0 +1,57 @@
+<?xml version="1.0"?>
+<!DOCTYPE LumiRangeCollection SYSTEM "http://atlas-runquery.cern.ch/LumiRangeCollection.dtd">
+<!--This document is created by GoodRunsListWriter.-->
+<?xml-stylesheet type="text/xsl" href="/atlasdqm/grlview/grl.xsl" title="grlview" ?>
+<LumiRangeCollection>
+<NamedLumiRange>
+<Name>PHYS_StandardGRL_All_Good</Name>
+<Version>2.1</Version>
+<Metadata Name="ARQEquivalentQuery">find run data15_13TeV.periodA and dq PHYS_StandardGRL_All_Good DEFECTS#DetStatus-v62-pro18 g</Metadata>
+<Metadata Name="Query">Period: data15_13TeV.A; Defect: PHYS_StandardGRL_All_Good; Defect tag: DetStatus-v62-pro18; Ignoring None</Metadata>
+<Metadata Name="RQTSVNVersion">DQDefects-00-01-02</Metadata>
+<Metadata Name="RunList">266904,266919,267073,267167,267638,267639</Metadata>
+<LumiBlockCollection>
+<Run>266904</Run>
+<LBRange Start="423" End="531"/>
+<LBRange Start="537" End="612"/>
+</LumiBlockCollection>
+<LumiBlockCollection>
+<Run>266919</Run>
+<LBRange Start="107" End="364"/>
+</LumiBlockCollection>
+<LumiBlockCollection>
+<Run>267073</Run>
+<LBRange Start="368" End="410"/>
+<LBRange Start="413" End="416"/>
+<LBRange Start="442" End="466"/>
+<LBRange Start="471" End="485"/>
+<LBRange Start="491" End="724"/>
+</LumiBlockCollection>
+<LumiBlockCollection>
+<Run>267167</Run>
+<LBRange Start="197" End="197"/>
+<LBRange Start="199" End="209"/>
+<LBRange Start="211" End="231"/>
+<LBRange Start="233" End="268"/>
+<LBRange Start="270" End="276"/>
+<LBRange Start="278" End="336"/>
+<LBRange Start="338" End="350"/>
+<LBRange Start="352" End="353"/>
+<LBRange Start="355" End="403"/>
+<LBRange Start="405" End="444"/>
+</LumiBlockCollection>
+<LumiBlockCollection>
+<Run>267638</Run>
+<LBRange Start="307" End="949"/>
+</LumiBlockCollection>
+<LumiBlockCollection>
+<Run>267639</Run>
+<LBRange Start="131" End="167"/>
+<LBRange Start="177" End="184"/>
+<LBRange Start="186" End="198"/>
+<LBRange Start="200" End="209"/>
+<LBRange Start="212" End="418"/>
+<LBRange Start="420" End="658"/>
+</LumiBlockCollection>
+</NamedLumiRange>
+</LumiRangeCollection>
