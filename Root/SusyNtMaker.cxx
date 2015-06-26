@@ -1,4 +1,4 @@
-#include "egammaAnalysisUtils/CaloIsoCorrection.h"
+//#include "egammaAnalysisUtils/CaloIsoCorrection.h"
 
 //#include "TauCorrections/TauCorrections.h"
 #include "TauCorrUncert/TauSF.h"
@@ -20,7 +20,7 @@
 // Amg include
 #include "EventPrimitives/EventPrimitivesHelpers.h"
 
-#include "SusyCommon/Trigger.h"
+#include "SusyNtuple/Trigger.h"
 
 
 #include <algorithm> // max_element
@@ -99,10 +99,10 @@ const std::vector< std::string > SusyNtMaker::cutflowLabels()
     labels.push_back("jet cleaning"   );
     labels.push_back("good pvx"       );
     labels.push_back("pass cosmic"    );
-    labels.push_back("1 == base lepton"   );
-    labels.push_back("1 == sig. lepton"   );
-    labels.push_back("1 == base jet"  );
-    labels.push_back("1 == sig. jet"  );
+    labels.push_back("base lepton >= 1"   );
+    labels.push_back("sig. lepton >= 1"   );
+  //  labels.push_back("1 == base jet"  );
+  //  labels.push_back("1 == sig. jet"  );
   //  labels.push_back("SusyProp Veto"  );
   //  labels.push_back("GRL"            );
   //  labels.push_back("LAr Error"      );
@@ -176,10 +176,10 @@ Bool_t SusyNtMaker::Process(Long64_t entry)
     fillTriggerHisto(); // dantrim trig
     if(selectEvent() && m_fillNt){
         matchTriggers();
-        if(m_isMC){
-            m_tauTruthMatchingTool->setTruthParticleContainer(xaodTruthParticles());
-            m_tauTruthMatchingTool->createTruthTauContainer();
-        }
+        //if(m_isMC){
+        //    //m_tauTruthMatchingTool->setTruthParticleContainer(xaodTruthParticles()); // comment out for memory leak check
+        //    //m_tauTruthMatchingTool->createTruthTauContainer(); // DA: gets called automatically when calling setTruthParticleContainer
+        //}
         fillNtVars();
         if(m_isMC && m_sys) doSystematic();
         int bytes = m_outTree->Fill();
@@ -393,12 +393,19 @@ void SusyNtMaker::storeElectron(const xAOD::Electron &in)
     out.mediumLLH_nod0 = eleIsOfType(in, ElectronId::MediumLLH_nod0);
     out.tightLLH_nod0 = eleIsOfType(in, ElectronId::TightLLH_nod0);
 
+    // Isolation flags
+    out.isoGradientLoose = m_isoToolGradientLoose->accept(in) ? true : false;
+    out.isoGradient = m_isoToolGradient->accept(in) ? true : false;
+    out.isoVeryLoose = m_isoToolVeryLoose->accept(in) ? true : false;
+    out.isoLoose = m_isoToolLoose->accept(in) ? true : false;
+    out.isoTight = m_isoToolTight->accept(in) ? true : false;
+
     //Isolations
     //AT: Will become obsolete in run-2
     //Bug in code ptcorrected stores the correction!
     //out.etcone20 = in.isolationValue(xAOD::Iso::etcone20) * MeV2GeV;
     // in.isolationValue(xAOD::Iso::etcone20_ptcorrected)) * MeV2GeV;
-    out.etcone30 = in.isolationValue(xAOD::Iso::etcone30) *  MeV2GeV;
+//    out.etcone30 = in.isolationValue(xAOD::Iso::etcone30) *  MeV2GeV;
     //in.isolationValue(xAOD::Iso::etcone30_ptcorrected)) * MeV2GeV;
     out.etconetopo20 = in.isolationValue(xAOD::Iso::topoetcone20) * MeV2GeV;
     out.etconetopo30 = in.isolationValue(xAOD::Iso::topoetcone30) * MeV2GeV;
@@ -431,20 +438,18 @@ void SusyNtMaker::storeElectron(const xAOD::Electron &in)
             out.effSF = m_susyObj[ElectronId::MediumLLH]->GetSignalElecSF(in, recoSF, idSF, trigSF);
         else if(eleIsOfType(in, ElectronId::LooseLLH))
             out.effSF = m_susyObj[ElectronId::LooseLLH]->GetSignalElecSF(in, recoSF, idSF, trigSF);
-
+    
       
-       /* 
-        >>> dantrim March 2 2015 -- calling AsgElectronEfficiencyTool causes seg-fault?
-        AT: Crash is in getting EventInfo L175 ???
-          const Root::TResult &result =  m_electronEfficiencySFTool->calculate(in);
-          out.effSF    = result.getScaleFactor();
-          out.errEffSF = result.getTotalUncertainty();
-          if(m_dbg) cout << "AT: electron SF " << out.effSF << " " << out.errEffSF << endl;
-      */  
-   
-        out.mcType   = xAOD::EgammaHelpers::getParticleTruthType(&in);
-        out.mcOrigin = xAOD::EgammaHelpers::getParticleTruthOrigin(&in);    
-        const xAOD::TruthParticle* truthEle = xAOD::EgammaHelpers::getTruthParticle(&in);
+     //   >>> dantrim March 2 2015 -- calling AsgElectronEfficiencyTool causes seg-fault?
+     //   AT: Crash is in getting EventInfo L175 ???
+     //     const Root::TResult &result =  m_electronEfficiencySFTool->calculate(in);
+     //     out.effSF    = result.getScaleFactor();
+     //     out.errEffSF = result.getTotalUncertainty();
+     //     if(m_dbg) cout << "AT: electron SF " << out.effSF << " " << out.errEffSF << endl;
+  
+        out.mcType = xAOD::TruthHelpers::getParticleTruthType(in);
+        out.mcOrigin = xAOD::TruthHelpers::getParticleTruthOrigin(in);  
+        const xAOD::TruthParticle* truthEle = xAOD::TruthHelpers::getTruthParticle(in);
         out.matched2TruthLepton   = truthEle ? true : false;
         int matchedPdgId = truthEle ? truthEle->pdgId() : -999;
         out.truthType  = isFakeLepton(out.mcOrigin, out.mcType, matchedPdgId); 
@@ -462,7 +467,8 @@ void SusyNtMaker::storeElectron(const xAOD::Electron &in)
     }
     if(const xAOD::TrackParticle* t = in.trackParticle()){
         out.trackPt = t->pt()*MeV2GeV;
-        out.d0      = t->d0();//AT:: wrt to PV ???
+        out.trackEta = t->eta();
+        out.d0      = fabs(t->d0());//AT:: wrt to PV ???
 
         const xAOD::Vertex* PV = getPV();
         double  primvertex_z = (PV) ? PV->z() : -999;
@@ -473,10 +479,20 @@ void SusyNtMaker::storeElectron(const xAOD::Electron &in)
     } else {
         all_available = false;
     }
+
     // DG-2014-08-29 mc info not available yet
     // 
     // // Trigger flags
     // eleOut->trigFlags     = m_eleTrigFlags[ lepIn->idx() ];
+//    out.trigBits = matchElectronTriggers(in);
+//    cout << "testing electron trigBits" << endl;
+//    int nbins = h_passTrigLevel->GetXaxis()->GetNbins();
+//    for(int iTrig=1; iTrig<26; iTrig++){
+//        bool bit = out.trigBits.TestBitNumber(iTrig);
+//        string trigger = h_passTrigLevel->GetXaxis()->GetBinLabel(iTrig);
+//        cout << "\t passed trigger " << trigger << "? " << (bit ? "yes" : "no") << endl;
+//    }
+//    cout << endl;
 
  
     if(m_dbg && !all_available) cout<<"missing some electron variables"<<endl;
@@ -523,6 +539,13 @@ void SusyNtMaker::storeMuon(const xAOD::Muon &in)
     out.medium = muIsOfType(in, MuonId::Medium);
     out.tight = muIsOfType(in, MuonId::Tight);
 
+    // Isolation flags
+    out.isoGradientLoose = m_isoToolGradientLoose->accept(in) ? true : false;
+    out.isoGradient = m_isoToolGradient->accept(in) ? true : false;
+    out.isoVeryLoose = m_isoToolVeryLoose->accept(in) ? true : false;
+    out.isoLoose = m_isoToolLoose->accept(in) ? true : false;
+    out.isoTight = m_isoToolTight->accept(in) ? true : false;
+
     bool all_available=true;
 
     // Isolation
@@ -542,7 +565,7 @@ void SusyNtMaker::storeMuon(const xAOD::Muon &in)
     //out.ptvarcone30 = in.isolationValue(xAOD::Iso::ptvarcone30) * MeV2GeV;
 
     //all_available &= in.isolation(out.etcone20, xAOD::Iso::etcone20); out.etcone20 *= MeV2GeV;
-    all_available &= in.isolation(out.etcone30, xAOD::Iso::etcone30); out.etcone30 *= MeV2GeV;
+//    all_available &= in.isolation(out.etcone30, xAOD::Iso::etcone30); out.etcone30 *= MeV2GeV;
     //all_available &= in.isolation(out.etconetopo20, xAOD::Iso::topoetcone20); out.etconetopo20 *= MeV2GeV;
     //all_available &= in.isolation(out.etconetopo30, xAOD::Iso::topoetcone30); out.etconetopo30 *= MeV2GeV;
     all_available &= in.isolation(out.ptcone20, xAOD::Iso::ptcone20); out.ptcone20 *= MeV2GeV;
@@ -554,7 +577,7 @@ void SusyNtMaker::storeMuon(const xAOD::Muon &in)
     if(const xAOD::TrackParticle* t = in.primaryTrackParticle()){
         const xAOD::Vertex* PV = getPV();
         double  primvertex_z = (PV) ? PV->z() : 0.;
-        out.d0             = t->d0();
+        out.d0             = fabs(t->d0());
         out.errD0          = Amg::error(t->definingParametersCovMatrix(),0); 
         out.z0             = t->z0() + t->vz() - primvertex_z;
         out.errZ0          = Amg::error(t->definingParametersCovMatrix(),1); 
@@ -578,21 +601,17 @@ void SusyNtMaker::storeMuon(const xAOD::Muon &in)
         out.msTrackTheta   = mstrack->theta();
     }
     // Truth Flags 
-    if(false) { // may 8 - comment out truthType accessor
-        const xAOD::TrackParticle* trackParticle = *(in.inDetTrackParticleLink());
+    if(m_isMC) {
+        const xAOD::TrackParticle* trackParticle = in.primaryTrackParticle();
         if(trackParticle){
-            static SG::AuxElement::Accessor<int> acc_truthType("truthType");
-            static SG::AuxElement::Accessor<int> acc_truthOrigin("truthOrigin");
-            if (acc_truthType.isAvailable(*trackParticle)) 
-                out.mcType    = acc_truthType(*trackParticle);
-            if (acc_truthOrigin.isAvailable(*trackParticle)) 
-                out.mcOrigin  = acc_truthOrigin(*trackParticle);
-
-            const xAOD::TruthParticle* truthMu = xAOD::EgammaHelpers::getTruthParticle(trackParticle);
+            // mcType <==> "truthType" of input xAOD (MCTruthClassifier)
+            out.mcType = xAOD::TruthHelpers::getParticleTruthType(*trackParticle);
+            // mcOrigin <==> "truthOrigin" of input xAOD (MCTruthClassifier)
+            out.mcOrigin = xAOD::TruthHelpers::getParticleTruthOrigin(*trackParticle);
+            const xAOD::TruthParticle* truthMu = xAOD::TruthHelpers::getTruthParticle(*trackParticle);
             out.matched2TruthLepton = truthMu ? true : false;
             int matchedPdgId = truthMu ? truthMu->pdgId() : -999;
-            out.truthType  = isFakeLepton(out.mcOrigin, out.mcType, matchedPdgId); 
-
+            out.truthType = isFakeLepton(out.mcOrigin, out.mcType, matchedPdgId);
         }
     }
 
@@ -600,21 +619,26 @@ void SusyNtMaker::storeMuon(const xAOD::Muon &in)
     // ASM-2014-11-02 :: Trigger information in DC14 samples are problematic
     // muOut->trigFlags      = m_muoTrigFlags[ lepIn->idx() ];
 
+//    out.trigBits   = matchMuonTriggers(in);
+
     // Scale Factors
+    // DA June 21 :: For now just store the nominal -- need to merge with xaod (xaod_muonSF) branch
+    //  >>> add the baseline check since otherwise the muonSF tool complains
+    out.effSF = (m_isMC && out.isBaseline) ? m_susyObj[m_eleIDDefault]->GetSignalMuonSF(in) : 1;
     // ASM-2014-11-02 :: How to get the uncertatinty?
-    {
-        float value = 1.0;
-        float value_err = 0.0; // ASM-2014-11-02 0. for the time being
-        if(m_isMC) {
-            CP::CorrectionCode result = m_muonEfficiencySFTool->getEfficiencyScaleFactor( in, value );
-            if( result == CP::CorrectionCode::OutOfValidityRange ) {
-                // cout << "ASM :: getEfficiencyScaleFactor out of validity range " << endl;
-                value = 0.0;
-            }
-        }
-        out.effSF    = value;
-        out.errEffSF = value_err;
-    }
+   // {
+   //     float value = 1.0;
+   //     float value_err = 0.0; // ASM-2014-11-02 0. for the time being
+   //     if(m_isMC) {
+   //  //       CP::CorrectionCode result = m_muonEfficiencySFTool->getEfficiencyScaleFactor( in, value );
+   //  //       if( result == CP::CorrectionCode::OutOfValidityRange ) {
+   //  //           // cout << "ASM :: getEfficiencyScaleFactor out of validity range " << endl;
+   //  //           value = 0.0;
+   //  //       }
+   //     }
+   //     out.effSF    = value;
+   //     out.errEffSF = value_err;
+   // }
 
     // ASM-2014-11-02 :: Store to be true at the moment
     all_available =  false;
@@ -636,7 +660,7 @@ void SusyNtMaker::storeJet(const xAOD::Jet &in)
     // number of associated tracks
     vector<int> nTrkVec;
     in.getAttribute(xAOD::JetAttribute::NumTrkPt500, nTrkVec);
-    int jet_nTrk = nTrkVec[0];
+    int jet_nTrk = (m_susyObj[m_eleIDDefault]->GetPrimVtx()==0 || nTrkVec.size()==0) ? 0 : nTrkVec[m_susyObj[m_eleIDDefault]->GetPrimVtx()->index()];
     out.nTracks = jet_nTrk;
 
     // JVF 
@@ -644,10 +668,16 @@ void SusyNtMaker::storeJet(const xAOD::Jet &in)
     vector<float> jetJVF;
     in.getAttribute(xAOD::JetAttribute::JVF,jetJVF); // JVF returns a vector that holds jvf per vertex
     const xAOD::Vertex* PV = getPV();                // Need to know the PV
-    out.jvf = (PV) ? jetJVF.at(PV->index()) : 0.;    // Upon discussion w/ TJ (2014-12-11)   
+    out.jvf = (PV) ? jetJVF.at(PV->index()) : 0.;    // Upon discussion w/ TJ (2014-12-11)
+
+    // JVT
+    // DA Jun21 :: following instructions at: https://twiki.cern.ch/twiki/bin/view/AtlasProtected/JetVertexTaggerTool 
+    // on the twiki they use the ToolHandle to get the updated JVT -- using the pointer to the tool itself
+    // as done here produces the same values
+    out.jvt = m_jvtTool->updateJvt(in);
 
     // Truth Label/Matching 
-    if (m_isMC) in.getAttribute("TruthLabelID", out.truthLabel);
+    if (m_isMC) { in.getAttribute("ConeTruthLabelID", out.truthLabel); }
 //rel 20
     //int JetPartonID = (in.jet())->auxdata< int >("PartonTruthLabelID"); // ghost association
     //int JetConeID   = (in.jet())->auxdata< int >("ConeTruthLabelID"); // cone association
@@ -656,6 +686,11 @@ void SusyNtMaker::storeJet(const xAOD::Jet &in)
 
     // B-tagging 
     if(!is8TeV()) out.mv1 = (in.btagging())->MV1_discriminant();
+    // for MV2C20, put error output for now
+    double weight_mv2c20(0.);
+    if(!in.btagging()->MVx_discriminant("MV2c20", weight_mv2c20)){ cout << "SusyNtMaker::storeJet ERROR    Failed to retrieve MV2c20 weight!" << endl; }
+    out.mv2c20 = weight_mv2c20;
+
     out.sv1plusip3d   = (in.btagging())->SV1plusIP3D_discriminant();           
     // Most of these are not available in DC14 samples, some obselete (ASM)
     // jetOut->sv0           = element->flavor_weight_SV0();
@@ -703,7 +738,8 @@ void SusyNtMaker::storeJet(const xAOD::Jet &in)
     in.getAttribute(xAOD::JetAttribute::BchCorrCell,out.bch_corr_cell);
 
     // isBadJet 
-    out.isBadVeryLoose = false; // DG tmp-2014-11-02 in.isAvailable("bad") ? in.auxdata<char>("bad") : false;
+    //out.isBadVeryLoose = false; // DG tmp-2014-11-02 in.isAvailable("bad") ? in.auxdata<char>("bad") : false;
+    out.isBadVeryLoose = (bool)in.auxdata<char>("bad") ? 1 : 0;
 
     // Hot Tile
     float fracSamplingMax, samplingMax;
@@ -802,9 +838,9 @@ void SusyNtMaker::storeTau(const xAOD::TauJet &tau)
     out.muonVeto = tau.isTau(xAOD::TauJetParameters::MuonVeto);
     
     if (m_isMC){
-        m_tauTruthMatchingTool->applyTruthMatch(tau);
-        if (tau.auxdata<bool>("IsTruthMatched")) out.trueTau = true;
-        else out.trueTau = false;
+        //m_tauTruthMatchingTool->applyTruthMatch(tau); // memory leak check
+        //if (tau.auxdata<bool>("IsTruthMatched")) out.trueTau = true; // memory leak check
+        //else out.trueTau = false;  // memory leak check
         //tau.auxdata<size_t>("TruthProng");
         //tau.auxdata<int>("TruthCharge");
         //tau.auxdata<bool>("IsHadronicTau");
@@ -940,7 +976,7 @@ void SusyNtMaker::fillMetVars(SusyNtSys sys)
         metOut->refJet_sumet = (*met_find)->sumet()*MeV2GeV;
     }
     // SoftTerm
-    met_find = m_metContainer->find("SoftClus"); //Use GetMet default, so SoftClus is what we get. doTST=true would give SoftTrk
+    met_find = m_metContainer->find("PVSoftTrk"); // We use default GetMET method, which as TST met so soft term is PVSoftTrk (not SoftClus)
     if (met_find != m_metContainer->end()) {
         metOut->softTerm_et = (*met_find)->met()*MeV2GeV;
         metOut->softTerm_phi = (*met_find)->phi();
@@ -1516,6 +1552,8 @@ SusyNtMaker& SusyNtMaker::initializeCutflowHistograms()
     h_genCutFlow = makeCutFlow("genCutFlow", "genCutFlow;Cuts;Events");
     std::vector<std::string> trigs = XaodAnalysis::xaodTriggers();
     h_passTrigLevel = new TH1F("trig", "Event Level Triggers Fired", trigs.size()+1, 0.0, trigs.size()+1); // dantrim trig
+    h_passTrigLevel->GetXaxis()->SetLabelSize(0.8 * h_passTrigLevel->GetLabelSize());
+    h_passTrigLevel->GetXaxis()->SetLabelOffset(0.35 * h_passTrigLevel->GetLabelOffset());
     for ( unsigned int iTrig = 0; iTrig < trigs.size(); iTrig++) {
         h_passTrigLevel->GetXaxis()->SetBinLabel(iTrig+1, trigs[iTrig].c_str());
     }
@@ -1555,8 +1593,19 @@ SusyNtMaker& SusyNtMaker::writeMetadata()
 void SusyNtMaker::checkIfInputIs13TeV()
 {
     size_t found_mc14_13TeV = m_inputContainerName.find("mc14_13TeV");
-    if(found_mc14_13TeV != std::string::npos) { m_is8TeV = false; }
-    cout << "Treating input sample as " << (m_is8TeV ? "mc14_8TeV" : "mc14_13TeV") << endl;
+    // could remove mc14_13TeV altogether since this is for mc15, but just add this 
+    // second check for now:
+    size_t found_mc15_13TeV = m_inputContainerName.find("mc15_13TeV");
+    std::string treatment;
+    if(found_mc14_13TeV != std::string::npos) {
+        m_is8TeV = false;
+        treatment = "mc14_13TeV";
+    }
+    else if(found_mc15_13TeV != std::string::npos) {
+        m_is8TeV = false;
+        treatment = "mc15_13TeV";
+    }
+    cout << "Treating input sample as " << (m_is8TeV ? "mc14_8TeV" : treatment) << endl;
 } 
 //----------------------------------------------------------
 bool SusyNtMaker::guessWhetherIsWhSample(const TString &samplename)
@@ -1725,30 +1774,34 @@ bool SusyNtMaker::passObjectlevelSelection()
     bool pass_bad_muon(m_cutFlags & ECut_BadMuon);
     bool pass_cosmic(m_cutFlags & ECut_Cosmic);
     
-    bool pass_ge2bl(2>=(m_baseElectrons.size()+m_baseMuons.size()));
+    bool pass_ge1bl(1>=(m_baseElectrons.size()+m_baseMuons.size()));
     bool pass_exactly1sig(1==(m_sigElectrons.size()+m_sigMuons.size()));
     bool pass_exactly1base(1==(m_baseElectrons.size()+m_baseMuons.size()));
+    bool pass_exactly2base(2==(m_baseElectrons.size()+m_baseMuons.size()));
+    bool pass_ge1sl(1>=(m_sigElectrons.size()+m_sigMuons.size()));
     bool pass_e1j(1==(m_baseJets.size()));
     bool pass_e1sj(1==(m_sigJets.size()));
+    bool pass_exactly2sig(2==(m_sigElectrons.size()+m_sigMuons.size()));
 
     fillCutFlow(pass_bad_muon, w);
     fillCutFlow(pass_JetCleaning, w);
     fillCutFlow(pass_goodpv, w);
     fillCutFlow(pass_cosmic, w);
-    fillCutFlow(pass_exactly1base, w);
-    fillCutFlow(pass_exactly1sig, w);
-    fillCutFlow(pass_e1j, w);
-    fillCutFlow(pass_e1sj, w);
+    fillCutFlow(pass_ge1bl, w);
+    fillCutFlow(pass_ge1sl, w);
 
 
     // filter
     bool pass = true;
     bool pass_nLepFilter( (m_preElectrons.size()+m_preMuons.size()) >= m_nLepFilter );
-    bool trig_has_fired( h_passTrigLevel->Integral(0,-1) > 0. ); // check if any of the triggers fired
     if(m_filter) {
-        if(m_filterTrigger) { pass = (pass_nLepFilter && trig_has_fired); }
-        else { pass = pass_nLepFilter; }
+        pass = pass_nLepFilter;
     }
+  //  bool trig_has_fired( h_passTrigLevel->Integral(0,-1) > 0. ); // check if any of the triggers fired
+  //  if(m_filter) {
+  //      if(m_filterTrigger) { pass = (pass_nLepFilter && trig_has_fired); }
+  //      else { pass = pass_nLepFilter; }
+  //  }
     if(m_dbg>=5 && !pass)
         cout << "SusyNtMaker: fail passObjectlevelSelection " << endl;
     return pass;

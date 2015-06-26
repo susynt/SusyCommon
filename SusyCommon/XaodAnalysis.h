@@ -30,6 +30,7 @@
 #include "xAODMissingET/MissingETAuxContainer.h"
 #include "xAODTruth/TruthParticleContainer.h"
 #include "xAODTruth/TruthEventContainer.h"
+#include "xAODTruth/xAODTruthHelpers.h"
 #include "TauAnalysisTools/TauTruthMatchingTool.h"
 #include "TauAnalysisTools/TauTruthTrackMatchingTool.h"
 
@@ -49,7 +50,8 @@
 #include "PileupReweighting/PileupReweightingTool.h"
 #include "MuonEfficiencyCorrections/MuonEfficiencyScaleFactors.h"
 #include "MuonSelectorTools/MuonSelectionTool.h"
-#include "EventShapeTools/EventShapeCopier.h"
+#include "ElectronIsolationSelection/IsolationSelectionTool.h"
+#include "JetMomentTools/JetVertexTaggerTool.h"
 
 //Trigger
 #include "TBits.h"
@@ -59,18 +61,13 @@
 #include "TrigConfHLTData/HLTTriggerElement.h"
 #include "xAODTrigEgamma/TrigElectron.h"
 #include "xAODTrigEgamma/TrigElectronContainer.h"
+#include "TrigMuonMatching/TrigMuonMatching.h"
+#include "TrigEgammaMatchingTool/TrigEgammaMatchingTool.h"
+#include "TrigEgammaMatchingTool/ITrigEgammaMatchingTool.h"
+#include "SusyNtuple/Trigger.h"
 
 #include "SusyCommon/XaodAnalysis_types.h"
 
-// Trigger
-#include "TrigConfxAOD/xAODConfigTool.h"
-#include "TrigDecisionTool/TrigDecisionTool.h"
-#include "xAODTrigEgamma/TrigElectron.h"
-#include "xAODTrigEgamma/TrigElectronContainer.h"
-
-#include "SusyCommon/Trigger.h"
-
-#include "TBits.h"
 
 #include "TSelector.h"
 #include "TTree.h"
@@ -124,9 +121,11 @@ namespace Susy {
     **/
     XaodAnalysis& initLocalTools(); ///< initialize performance tools
     void          initPileupTool();
+    void          initJVTTool();
     void          initElectronTools(); 
     void          initMuonTools(); 
     void          initTauTools(); 
+    void          initIsoTools();
     void          initTrigger();
     
     // Systematic Methods
@@ -179,8 +178,8 @@ namespace Susy {
     virtual const xAOD::TruthParticleContainer* xaodTruthParticles();
 
     /// access truth tau particles
-    virtual const xAOD::TruthParticleContainer* xaodTruthTauParticles();
-    virtual const xAOD::TruthParticleAuxContainer* xaodTruthTauParticlesAux();
+    //virtual const xAOD::TruthParticleContainer* xaodTruthTauParticles();
+    //virtual const xAOD::TruthParticleAuxContainer* xaodTruthTauParticlesAux();
 
     /// retrieve & build met
     virtual void retrieveXaodMet(ST::SystInfo sysInfo, SusyNtSys sys = NtSys::NOM);
@@ -217,7 +216,11 @@ namespace Susy {
     // Trigger - check matching for all baseline leptons
     //
     void resetTriggers(){
-      m_evtTrigBits.ResetAllBits(); // dantrim trig
+    // TBits
+      m_evtTrigBits.ResetAllBits();
+      //m_muoTrigBits.ResetAllBits();
+      //m_muoTrigBits.clear();
+    // old
       m_evtTrigFlags = 0;
       m_eleTrigFlags.clear();
       m_muoTrigFlags.clear();
@@ -231,10 +234,12 @@ namespace Susy {
     }
     
     void fillEventTriggers();
-    void matchElectronTriggers();
+ //   void matchElectronTriggers();
     bool matchElectronTrigger(const TLorentzVector* lv, std::string chain);
  //   bool matchElectronTrigger(const TLorentzVector &lv, std::vector<int>* trigBools);
-    void matchMuonTriggers();
+ //   void matchMuonTriggers();
+    TBits matchMuonTriggers(const xAOD::Muon& in); 
+    TBits matchElectronTriggers(const xAOD::Electron& in);
     bool matchMuonTrigger(const TLorentzVector &lv, std::vector<int>* trigBools);
     void matchTauTriggers();
     bool matchTauTrigger(const TLorentzVector &lv, std::vector<int>* trigBools);
@@ -283,7 +288,7 @@ namespace Susy {
         You can supply a different integrated luminosity,
         but the the pileup weights will still correspond to A-E.
     */
-    float getEventWeight(float lumi = LUMI_A_E);
+    float getEventWeight(float lumi = LUMI_A_A4);
     float getXsecWeight(); ///< event weight (xsec*kfac)
     void setLumi(float lumi) { m_lumi = lumi; } ///< luminosity to normalize to (in 1/pb)
     float getPileupWeight(const xAOD::EventInfo* eventinfo); ///< pileup weight for full dataset: currently A-L
@@ -584,6 +589,8 @@ namespace Susy {
     AsgElectronLikelihoodTool *m_elecSelLikelihoodTight_nod0;
 
     CP::PileupReweightingTool           *m_pileupReweightingTool;
+    
+    JetVertexTaggerTool                 *m_jvtTool;
 
     CP::MuonEfficiencyScaleFactors      *m_muonEfficiencySFTool; 
     CP::MuonSelectionTool               *m_muonSelectionToolVeryLoose;
@@ -591,20 +598,26 @@ namespace Susy {
     CP::MuonSelectionTool               *m_muonSelectionToolMedium;
     CP::MuonSelectionTool               *m_muonSelectionToolTight;
 
+    // Lepton isolation tools
+    CP::IsolationSelectionTool *m_isoToolGradientLoose;
+    CP::IsolationSelectionTool *m_isoToolGradient;
+    CP::IsolationSelectionTool *m_isoToolVeryLoose;
+    CP::IsolationSelectionTool *m_isoToolLoose;
+    CP::IsolationSelectionTool *m_isoToolTight;
+
     //Tau truth matchong tools
-    TauAnalysisTools::TauTruthMatchingTool       *m_tauTruthMatchingTool;
+    //TauAnalysisTools::TauTruthMatchingTool       *m_tauTruthMatchingTool; // memory leak check
     TauAnalysisTools::TauTruthTrackMatchingTool  *m_tauTruthTrackMatchingTool;
     TauAnalysisTools::TauEfficiencyCorrectionsTool *m_TauEffEleTool;
 
     // dantrim trig
-    TBits                       m_evtTrigBits;
+    TBits                       m_evtTrigBits;          ///< Bit flags for event trigger firing
     static const size_t         m_nTriggerBits=64;
     TH1F*                       hLevelPassed;
     TrigConf::xAODConfigTool*   m_configTool;
     Trig::TrigDecisionTool*     m_trigTool;
-
-    // event shape copier
-    EventShapeCopier*           m_escopier;
+    Trig::TrigMuonMatching*     m_trigMuonMatchTool;    ///< TrigMuonMatching tool
+    Trig::TrigEgammaMatchingTool* m_trigEgammaMatchTool;    ///< TrigEgammaMatching tool
 
   };
 
