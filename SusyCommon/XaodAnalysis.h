@@ -288,7 +288,7 @@ namespace Susy {
         You can supply a different integrated luminosity,
         but the the pileup weights will still correspond to A-E.
     */
-    float getEventWeight(float lumi = LUMI_A_E);
+    float getEventWeight(float lumi = LUMI_A_A4);
     float getXsecWeight(); ///< event weight (xsec*kfac)
     void setLumi(float lumi) { m_lumi = lumi; } ///< luminosity to normalize to (in 1/pb)
     float getPileupWeight(const xAOD::EventInfo* eventinfo); ///< pileup weight for full dataset: currently A-L
