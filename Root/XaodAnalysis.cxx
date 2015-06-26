@@ -53,7 +53,7 @@ XaodAnalysis::XaodAnalysis() :
     // m_metFlavor(SUSYMet::Default),
     m_doMetMuCorr(false),
     m_doMetFix(false),
-    m_lumi(LUMI_A_E),
+    m_lumi(LUMI_A_A4),
     m_mcRun(0),
     m_mcLB(0),
     m_sys(false),
