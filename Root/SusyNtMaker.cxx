@@ -272,8 +272,7 @@ void SusyNtMaker::fillEventVars()
     evt->eventWithSusyProp= m_hasSusyProp;
     
     evt->trigBits         = m_evtTrigBits; // dantrim trig
-    
-
+   
     evt->wPileup          = is8TeV() ? getPileupWeight(eventinfo) : 1;
     evt->wPileup_up       = is8TeV() ? getPileupWeightUp() : 1;
     evt->wPileup_dn       = is8TeV() ? getPileupWeightDown() : 1;
@@ -321,6 +320,10 @@ void SusyNtMaker::fillJetVars()
 {
     if(m_dbg>=5) cout<<"fillJetVars"<<endl;
     xAOD::JetContainer* jets = XaodAnalysis::xaodJets(systInfoList[0]);
+    /////////////////////
+    // Not super smart but tag along for the moment - ASM 25/5/2015
+    m_susyObj[m_eleIDDefault]->BtagSF(jets); // Decorate the jets w/ effscalefact
+    /////////////////////
     for(auto &i : m_preJets){
             storeJet(*(jets->at(i)));
     }
@@ -704,6 +707,38 @@ void SusyNtMaker::storeJet(const xAOD::Jet &in)
     // jetOut->jfit_mass     = element->flavor_component_jfit_mass();
     // jetOut->sv0p_mass     = element->flavor_component_sv0p_mass();
     // jetOut->svp_mass      = element->flavor_component_svp_mass();
+    out.bjet         = in.auxdata< char >("bjet");
+    out.effscalefact = in.auxdata< float >("effscalefact");
+
+    vector<float> test_values;
+    test_values.push_back(out.effscalefact);
+
+    // B-tagging systematics
+    if(m_isMC && m_sys) {
+      for(const auto& sysInfo : systInfoList){
+        if(!(sysInfo.affectsType == ST::SystObjType::BTag && sysInfo.affectsWeights)) continue;
+        // Read information
+        const CP::SystematicSet& sys = sysInfo.systset;
+        SusyNtSys ourSys = CPsys2sys((sys.name()).c_str());
+        // Configure the tools
+        if ( m_susyObj[m_eleIDDefault]->applySystematicVariation(sys) != CP::SystematicCode::Ok){
+          cout << "SusyNtMaker::storeJet - cannot configure SUSYTools for " << sys.name() << endl;
+          continue;
+        }
+        // Get and store the information
+        m_susyObj[m_eleIDDefault]->BtagSF(XaodAnalysis::xaodJets(systInfoList[0])); // re-decorate the jets w/ appropriate effscalefact
+                                                                                    // not the most efficient way but works 
+        float scaleFactor = in.auxdata< float >("effscalefact");
+        out.setFTSys(ourSys,scaleFactor);
+        test_values.push_back(scaleFactor);
+      }
+      m_susyObj[m_eleIDDefault]->resetSystematics();
+    }
+
+    cout << "SERHAN :: " << endl;
+    for(auto scale : test_values) {
+        cout << scale << endl;
+    }
 
     // Misc
     out.detEta = (in.jetP4(xAOD::JetConstitScaleMomentum)).eta();
@@ -916,7 +951,9 @@ void SusyNtMaker::fillMetVars(SusyNtSys sys)
     metOut->phi = (*met_it)->phi();
     metOut->sumet = (*met_it)->sumet()*MeV2GeV;
     metOut->sys = sys;
-    if(m_dbg>=5) cout << " AT:fillMetVars " << metOut->Et << " " << metOut->phi << " " << metOut->lv().Pt() << endl;
+    if(m_dbg>=5) cout << " AT:fillMetVars " << metOut->Et << " " 
+                      << metOut->phi << " " << metOut->lv().Pt() 
+                      << " " << NtSys::SusyNtSysNames[sys] << endl;
     
     // RefEle
     xAOD::MissingETContainer::const_iterator met_find = m_metContainer->find("RefEle");
@@ -984,7 +1021,7 @@ void SusyNtMaker::fillMetTrackVars(SusyNtSys sys)
     
     metTrackOut->Et = (*metTrack_it)->met()*MeV2GeV;// m_met.Et();
     metTrackOut->phi = (*metTrack_it)->phi();// m_met.Phi();
-    // metOut->sys = sys;
+    metTrackOut->sys = sys;
     metTrackOut->sumet = (*metTrack_it)->sumet()*MeV2GeV;
     
     if (m_dbg) cout << " AT:fillMetTrackVars " << metTrackOut->Et << " " << metTrackOut->phi << " " << metTrackOut->lv().Pt() << endl;
@@ -1072,7 +1109,7 @@ void SusyNtMaker::doSystematic()
         if(m_dbg>=5) std::cout << "\t systematic is affecting the kinematics "<< endl;
     
         SusyNtSys ourSys = CPsys2sys((sys.name()).c_str());
-        if(ourSys == NtSys::SYSUNKNOWN ) continue;
+        if(ourSys == NtSys::SYS_UNKNOWN ) continue;
 
         if(m_dbg>=5) cout << "Found syst in global registry: " << sys.name() 
                           << " matching to our systematic " << NtSys::SusyNtSysNames[ourSys] << endl;
@@ -1091,14 +1128,16 @@ void SusyNtMaker::doSystematic()
         selectObjects(ourSys, sysInfo);
         retrieveXaodMet(sysInfo,ourSys);
         assignEventCleaningFlags(); //AT really needed for each systematic ? CHECK
-        assignObjectCleaningFlags(sysInfo, ourSys);//AT really needed fro each systematic ? CHECK
+        assignObjectCleaningFlags(sysInfo, ourSys);//AT really needed for each systematic ? CHECK
 
-        saveElectronSF(sysInfo,ourSys);
-        saveMuonSF(sysInfo,ourSys);
-        saveTauSF(sysInfo,ourSys);
-        saveJetSF(sysInfo,ourSys);
-        //savePhotonSF(ourSys);
-    
+        storeElectronKinSys(sysInfo,ourSys);
+        storeMuonKinSys(sysInfo,ourSys);
+        storeTauKinSys(sysInfo,ourSys);
+        storeJetKinSys(sysInfo,ourSys);
+        //storePhotonKinSys(sysInfo,ourSys);//To be implemented if needed
+
+        fillMetVars(ourSys);    
+        fillMetTrackVars(ourSys);
         // m_susyNt.evt()->cutFlags[sys] = m_cutFlags;
 
         //Reset the systematics for all tools
@@ -1108,14 +1147,14 @@ void SusyNtMaker::doSystematic()
 }
 
 /*--------------------------------------------------------------------------------*/
-void SusyNtMaker::saveElectronSF(ST::SystInfo sysInfo, SusyNtSys sys)
+void SusyNtMaker::storeElectronKinSys(ST::SystInfo sysInfo, SusyNtSys sys)
 {
     if(!ST::testAffectsObject(xAOD::Type::Electron, sysInfo.affectsType)) return;
 
     xAOD::ElectronContainer* electrons     = xaodElectrons(sysInfo,sys);
     xAOD::ElectronContainer* electrons_nom = xaodElectrons(sysInfo,NtSys::NOM);
 
-    if(m_dbg>=5) cout << "saveElectronSF " << NtSys::SusyNtSysNames[sys]  << endl;
+    if(m_dbg>=5) cout << "storeElectronKinSys " << NtSys::SusyNtSysNames[sys]  << endl;
     for(const auto &iEl : m_preElectrons){ //loop over array containing the xAOD electron idx
         const xAOD::Electron* ele = electrons->at(iEl);
         if(m_dbg>=5) cout << "This ele pt " << ele->pt() << " eta " << ele->eta() << " phi " << ele->phi() << endl; 
@@ -1135,7 +1174,7 @@ void SusyNtMaker::saveElectronSF(ST::SystInfo sysInfo, SusyNtSys sys)
                     ele_susyNt->print();
                 }
                 if( fabs(ele_nom->eta() - ele->eta())>0.001 || fabs(ele_nom->phi() - ele->phi())>0.001)
-                    cout << "WARNING SusyNtMaker::saveElectronSF index mis-match " << endl;
+                    cout << "WARNING SusyNtMaker::storeElectronKinSys index mis-match " << endl;
                 break;
             }
         }
@@ -1154,6 +1193,7 @@ void SusyNtMaker::saveElectronSF(ST::SystInfo sysInfo, SusyNtSys sys)
         if(m_dbg>=5) cout << "Ele SF " << sf << endl;
         if     ( sys == NtSys::EG_RESOLUTION_ALL_DN ) ele_susyNt->res_all_dn = sf;
         else if( sys == NtSys::EG_RESOLUTION_ALL_UP ) ele_susyNt->res_all_up = sf;
+/*
         else if( sys == NtSys::EG_RESOLUTION_MATERIALCALO_DN ) ele_susyNt->res_matCalo_dn = sf;
         else if( sys == NtSys::EG_RESOLUTION_MATERIALCALO_UP ) ele_susyNt->res_matCalo_up = sf;
         else if( sys == NtSys::EG_RESOLUTION_MATERIALCRYO_DN ) ele_susyNt->res_matCryo_dn = sf;
@@ -1170,8 +1210,10 @@ void SusyNtMaker::saveElectronSF(ST::SystInfo sysInfo, SusyNtSys sys)
         else if( sys == NtSys::EG_RESOLUTION_SAMPLINGTERM_UP ) ele_susyNt->res_sampTerm_up = sf;
         else if( sys == NtSys::EG_RESOLUTION_ZSMEARING_DN ) ele_susyNt->res_z_dn = sf;
         else if( sys == NtSys::EG_RESOLUTION_ZSMEARING_UP ) ele_susyNt->res_z_up = sf;
+*/
         else if( sys == NtSys::EG_SCALE_ALL_DN ) ele_susyNt->scale_all_dn = sf;
         else if( sys == NtSys::EG_SCALE_ALL_UP ) ele_susyNt->scale_all_up = sf;
+/*
         else if( sys == NtSys::EG_SCALE_G4_DN ) ele_susyNt->scale_G4_dn = sf;
         else if( sys == NtSys::EG_SCALE_G4_UP ) ele_susyNt->scale_G4_up = sf;
         else if( sys == NtSys::EG_SCALE_L1GAIN_DN ) ele_susyNt->scale_L1_dn = sf;
@@ -1207,18 +1249,19 @@ void SusyNtMaker::saveElectronSF(ST::SystInfo sysInfo, SusyNtSys sys)
         else if( sys == NtSys::EG_SCALE_ZEESYST_UP ) ele_susyNt->scale_ZeeSys_up = sf;
         else if( sys == NtSys::EL_SCALE_MOMENTUM_DN ) ele_susyNt->scale_mom_dn = sf;
         else if( sys == NtSys::EL_SCALE_MOMENTUM_UP ) ele_susyNt->scale_mom_up = sf;
+*/
     }
 }
 
 /*--------------------------------------------------------------------------------*/
-void SusyNtMaker::saveMuonSF(ST::SystInfo sysInfo, SusyNtSys sys)
+void SusyNtMaker::storeMuonKinSys(ST::SystInfo sysInfo, SusyNtSys sys)
 {
     if(!ST::testAffectsObject(xAOD::Type::Muon, sysInfo.affectsType)) return;
 
     xAOD::MuonContainer* muons     = xaodMuons(sysInfo,sys);
     xAOD::MuonContainer* muons_nom = xaodMuons(sysInfo, NtSys::NOM);
   
-    if(m_dbg>=5) cout << "saveMuonSF "  << NtSys::SusyNtSysNames[sys] << endl;
+    if(m_dbg>=5) cout << "storeMuonKinSys "  << NtSys::SusyNtSysNames[sys] << endl;
     for(const auto &iMu : m_preMuons){//loop over array containing the xAOD muon idx
         const xAOD::Muon* mu = muons->at(iMu);
         if(m_dbg>=5) cout << "This mu pt " << mu->pt() << " eta " << mu->eta() << " phi " << mu->phi() << endl; 
@@ -1238,7 +1281,7 @@ void SusyNtMaker::saveMuonSF(ST::SystInfo sysInfo, SusyNtSys sys)
                     mu_susyNt->print();
                 }
                 if( fabs(mu_nom->eta() - mu->eta())>0.001 || fabs(mu_nom->phi() - mu->phi())>0.001)
-                    cout << "WARNING SusyNtMaker::saveMuonSF index mis-match " << endl;
+                    cout << "WARNING SusyNtMaker::storeMuonKinSys index mis-match " << endl;
                 break;
             }
         }
@@ -1265,14 +1308,14 @@ void SusyNtMaker::saveMuonSF(ST::SystInfo sysInfo, SusyNtSys sys)
 }
 
 /*--------------------------------------------------------------------------------*/
-void SusyNtMaker::saveJetSF(ST::SystInfo sysInfo, SusyNtSys sys)
+void SusyNtMaker::storeJetKinSys(ST::SystInfo sysInfo, SusyNtSys sys)
 {
     if(!ST::testAffectsObject(xAOD::Type::Jet, sysInfo.affectsType)) return;
     
     xAOD::JetContainer* jets     = xaodJets(sysInfo,sys);
     xAOD::JetContainer* jets_nom = xaodJets(sysInfo,NtSys::NOM);
   
-    if(m_dbg>=5) cout << "saveJetSF "  << NtSys::SusyNtSysNames[sys] << endl;
+    if(m_dbg>=5) cout << "storeJetKinSys "  << NtSys::SusyNtSysNames[sys] << endl;
     for(const auto &iJ : m_preJets){ //loop over array containing the xAOD electron idx
         const xAOD::Jet* jet = jets->at(iJ);
         if(m_dbg>=5) cout << "This jet pt " << jet->pt() << " eta " << jet->eta() << " phi " << jet->phi() << endl; 
@@ -1287,9 +1330,9 @@ void SusyNtMaker::saveJetSF(ST::SystInfo sysInfo, SusyNtSys sys)
                 jet_susyNt = & m_susyNt.jet()->at(idx);
                 idx_susyNt=idx;
                 if(m_dbg>=5){
-                    cout << "Found matching jet sys: " << iJ << "  " << iJ_nom << " " << idx_susyNt << endl;
-                    cout << "jet_nom pt " << jet_nom->pt() << " eta " << jet_nom->eta() << " phi " << jet_nom->phi() << endl; 
-                    jet_susyNt->print();
+                    cout << "\t Found matching jet sys: " << iJ << "  " << iJ_nom << " " << idx_susyNt << endl;
+                    cout << "\t jet_nom pt " << jet_nom->pt() << " eta " << jet_nom->eta() << " phi " << jet_nom->phi() << endl; 
+                    cout << "\t"; jet_susyNt->print();
                 }
                 if( fabs(jet_nom->eta() - jet->eta())>0.001 || fabs(jet_nom->phi() - jet->phi())>0.001)
                     cout << "WARNING SusyNtMaker::savJetSF index mis-match " << endl;
@@ -1299,18 +1342,27 @@ void SusyNtMaker::saveJetSF(ST::SystInfo sysInfo, SusyNtSys sys)
 
         //Jet was not found. Add it at its nominal scale to susyNt and m_preJet_nom 
         if(jet_susyNt == NULL){
-            if(m_dbg>=5) cout << " Jet not found - adding to susyNt" << endl;
+            if(m_dbg>=5) cout << "\t\tJet not found - adding to susyNt jet_nom idx  " << iJ << endl;
             jet_nom = jets_nom->at(iJ);//assume order is preserved
             storeJet(*jet_nom);//add the jet at the end... 
             m_preJets_nom.push_back(iJ);
-            jet_susyNt = & m_susyNt.jet()->back(); //get the newly inserted jetment
+            jet_susyNt = & m_susyNt.jet()->back(); //get the newly inserted jet
+            if(m_dbg>=5) {cout << "\t"; jet_susyNt->print();}
         }
 
         //Calculate systematic SF: shift/nom
         float sf = jet->e() / jet_nom->e();
-        if(m_dbg>=5) cout << "Jet SF " << sf << endl;
+        if(m_dbg>=5) cout << "\t Jet SF " << sf << endl;
 
-        if     ( sys == NtSys::JER) jet_susyNt->jer = sf;
+        if     ( sys == NtSys::JER)                jet_susyNt->jer = sf;
+        else if( sys == NtSys::JET_GroupedNP_1_UP) jet_susyNt->groupedNP[0] = sf;
+        else if( sys == NtSys::JET_GroupedNP_1_DN) jet_susyNt->groupedNP[1] = sf;
+        else if( sys == NtSys::JET_GroupedNP_2_UP) jet_susyNt->groupedNP[2] = sf;
+        else if( sys == NtSys::JET_GroupedNP_2_DN) jet_susyNt->groupedNP[3] = sf;
+        else if( sys == NtSys::JET_GroupedNP_3_UP) jet_susyNt->groupedNP[4] = sf;
+        else if( sys == NtSys::JET_GroupedNP_3_DN) jet_susyNt->groupedNP[5] = sf;
+
+        /*
         else if( sys == NtSys::JET_BJES_Response_DN) jet_susyNt->bjes[0] = sf;
         else if( sys == NtSys::JET_BJES_Response_UP) jet_susyNt->bjes[1] = sf;
         else if( sys == NtSys::JET_EffectiveNP_1_DN) jet_susyNt->effNp[0] = sf;
@@ -1343,23 +1395,24 @@ void SusyNtMaker::saveJetSF(ST::SystInfo sysInfo, SusyNtSys sys)
         else if( sys == NtSys::JET_Pileup_RhoTopology_UP) jet_susyNt-> pileup[7] = sf;
         else if( sys == NtSys::JET_PunchThrough_MC12_DN) jet_susyNt->punchThrough[0] = sf;
         else if( sys == NtSys::JET_PunchThrough_MC12_UP) jet_susyNt->punchThrough[1] = sf;
-        else if( sys == NtSys::JET_RelativeNonClosure_MC12_DN) jet_susyNt->relativeNC[0] = sf;
-        else if( sys == NtSys::JET_RelativeNonClosure_MC12_UP) jet_susyNt->relativeNC[1] = sf;
         else if( sys == NtSys::JET_SingleParticle_HighPt_DN) jet_susyNt->singlePart[0] = sf;
         else if( sys == NtSys::JET_SingleParticle_HighPt_UP) jet_susyNt->singlePart[1] = sf;
+        //else if( sys == NtSys::JET_RelativeNonClosure_MC12_DN) jet_susyNt->relativeNC[0] = sf;
+        //else if( sys == NtSys::JET_RelativeNonClosure_MC12_UP) jet_susyNt->relativeNC[1] = sf;
+        */
 
     }
 }
 
 /*--------------------------------------------------------------------------------*/
-void SusyNtMaker::saveTauSF(ST::SystInfo sysInfo, SusyNtSys sys)
+void SusyNtMaker::storeTauKinSys(ST::SystInfo sysInfo, SusyNtSys sys)
 {
     if(!ST::testAffectsObject(xAOD::Type::Tau, sysInfo.affectsType)) return;
 
     xAOD::TauJetContainer* taus     = xaodTaus(sysInfo,sys);
     xAOD::TauJetContainer* taus_nom = xaodTaus(sysInfo,NtSys::NOM);
 
-    if(m_dbg>=5) cout << "saveTauSF " << NtSys::SusyNtSysNames[sys]  << endl;
+    if(m_dbg>=5) cout << "storeTauKinSys " << NtSys::SusyNtSysNames[sys]  << endl;
     for(const auto &iTau : m_preTaus){ //loop over array containing the xAOD tau idx
         const xAOD::TauJet* tau = taus->at(iTau);
         if(m_dbg>=5)  cout << "This tau pt " << tau->pt() << " eta " << tau->eta() << " phi " << tau->phi() << endl; 
@@ -1379,7 +1432,7 @@ void SusyNtMaker::saveTauSF(ST::SystInfo sysInfo, SusyNtSys sys)
                     tau_susyNt->print();
                 }
                 if( fabs(tau_nom->eta() - tau->eta())>0.001 || fabs(tau_nom->phi() - tau->phi())>0.001)
-                    cout << "WARNING SusyNtMaker::saveTauSF index mis-match " << endl;
+                    cout << "WARNING SusyNtMaker::storeTauKinSys index mis-match " << endl;
                 break;
             }
         }
@@ -1452,7 +1505,7 @@ void SusyNtMaker::addMissingJet(int index, SusyNtSys sys)
     //                   m_event.eventinfo.averageIntPerXing(),
     //                   m_event.vxp.nTracks());
     // fillJetVar(index);
-    // // Set SF This should only be done in saveJetSF
+    // // Set SF This should only be done in storeJetKinSys
 }
 
 /*--------------------------------------------------------------------------------*/

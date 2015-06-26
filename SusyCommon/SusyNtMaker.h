@@ -102,10 +102,10 @@ class SusyNtMaker : public XaodAnalysis
   
     void doSystematic();
 
-    void saveElectronSF(ST::SystInfo sysInfo, SusyNtSys sys);
-    void saveMuonSF(ST::SystInfo sysInfo, SusyNtSys sys);
-    void saveJetSF(ST::SystInfo sysInfo, SusyNtSys sys);
-    void saveTauSF(ST::SystInfo sysInfo, SusyNtSys sys);
+    void storeElectronKinSys(ST::SystInfo sysInfo, SusyNtSys sys);
+    void storeMuonKinSys(ST::SystInfo sysInfo, SusyNtSys sys);
+    void storeJetKinSys(ST::SystInfo sysInfo, SusyNtSys sys);
+    void storeTauKinSys(ST::SystInfo sysInfo, SusyNtSys sys);
 
     // This should be updated, we have some duplicated code which is dangerous
     void addMissingElectron(const LeptonInfo*, SusyNtSys sys);
@@ -113,6 +113,8 @@ class SusyNtMaker : public XaodAnalysis
     void addMissingJet(int index, SusyNtSys sys);
     void addMissingTau(int index, SusyNtSys sys);
 
+    /*
+      //AT 05-09-15 obsolete
     // Systematic enum checks
     bool isElecSys(SusyNtSys s){
       return (s == NtSys::EES_Z_UP   || s == NtSys::EES_Z_DN ||
@@ -130,6 +132,7 @@ class SusyNtMaker : public XaodAnalysis
     bool isTauSys(SusyNtSys s){
       return (s == NtSys::TES_UP || s == NtSys::TES_DN);
     }
+    */
 
     //void addEventFlag(SusyNtSys s, int eventFlag){
       //m_susyNt.evt()->evtFlag[s] = eventFlag;
