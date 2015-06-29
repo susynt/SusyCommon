@@ -346,16 +346,31 @@ XaodAnalysis& XaodAnalysis::initLocalTools()
 void XaodAnalysis::initPileupTool()
 {
     m_pileupReweightingTool = new CP::PileupReweightingTool("PileupReweightingTool");
-    m_pileupReweightingTool->setProperty("Input","EventInfo");
+   // CHECK( m_pileupReweightingTool->setProperty("DefaultChannel", 410000) );
+   // m_pileupReweightingTool->setProperty("Input","EventInfo");
+   // m_pileupReweightingTool->EnableDebugging(true);
 
     std::vector<std::string> prwFiles;
     std::vector<std::string> lumicalcFiles;
 
-    prwFiles.push_back("PileupReweighting/mc14v1_defaults.prw.root");
-    CHECK (m_pileupReweightingTool->setProperty("ConfigFiles",prwFiles));
+    //prwFiles.push_back("PileupReweighting/mc14v1_defaults.prw.root");
+    // DA Juen 27 :: prw files from Anyes
+    prwFiles.push_back(maindir+"SusyCommon/mc15_50ns.prw.root");
+  //  prwFiles.push_back(maindir+"SusyCommon/wm_enu.prw.root");
+  //  prwFiles.push_back(maindir+"SusyCommon/wm_munu.prw.root");
+  //  prwFiles.push_back(maindir+"SusyCommon/wm_taunu.prw.root");
+  //  prwFiles.push_back(maindir+"SusyCommon/wp_enu.prw.root");
+  //  prwFiles.push_back(maindir+"SusyCommon/ttbar.prw.root");
+  //  prwFiles.push_back(maindir+"SusyCommon/wp_munu.prw.root");
+  //  prwFiles.push_back(maindir+"SusyCommon/wp_taunu.prw.root");
+  //  prwFiles.push_back(maindir+"SusyCommon/zee.prw.root");
+  //  prwFiles.push_back(maindir+"SusyCommon/zmm.prw.root");
+  //  prwFiles.push_back(maindir+"SusyCommon/ztt.prw.root");
+    
+    lumicalcFiles.push_back(maindir+"SusyCommon/ilumicalc_histograms_None_266904-267639.root");
+    CHECK( m_pileupReweightingTool->setProperty("ConfigFiles", prwFiles) );
+    CHECK( m_pileupReweightingTool->setProperty("LumiCalcFiles", lumicalcFiles) );
 
-    lumicalcFiles.push_back(maindir+"SUSYTools/susy_data12_avgintperbx.root");
-    CHECK( m_pileupReweightingTool->setProperty("LumiCalcFiles",lumicalcFiles) );
     //AT-2014-10-31 For systematic instanciate two more tools with difference SF
     //CHECK( m_pileupReweightingTool->setProperty("DataScaleFactors",1/1.08) );
     //CHECK( m_pileupReweightingTool->setProperty("DataScaleFactors",1/1.11) );
@@ -1280,7 +1295,7 @@ TBits XaodAnalysis::matchMuonTriggers(const xAOD::Muon &in)
     muoTrigBits.ResetAllBits();
     std::vector<std::string> trigs = XaodAnalysis::xaodTriggers();
     for(unsigned int iTrig=0; iTrig<trigs.size(); iTrig++){
-        if(m_trigMuonMatchTool->match(&in, trigs[iTrig])) muoTrigBits.SetBitNumber(iTrig, true);
+        if(m_trigMuonMatchTool->match(&in, trigs[iTrig]))  muoTrigBits.SetBitNumber(iTrig, true);
     }
     return muoTrigBits;
 }
@@ -1760,13 +1775,18 @@ float XaodAnalysis::getXsecWeight()
     // return m_xsecMap[id].xsect() * m_xsecMap[id].kfactor() * m_xsecMap[id].efficiency();
 }
 //----------------------------------------------------------
-float XaodAnalysis::getPileupWeight(const xAOD::EventInfo* eventinfo)
+double XaodAnalysis::getPileupWeight(const xAOD::EventInfo* eventinfo)
 {
-    if(!m_isMC) return 1;
-    if(!is8TeV()) return 1;
+    double pile_up_w = 1.0;
+    if(eventinfo->eventType( xAOD::EventInfo::IS_SIMULATION ) ) {
+        pile_up_w = m_pileupReweightingTool->getCombinedWeight(*eventinfo);
+    //    pile_up_w = m_pileupReweightingTool->GetCombinedWeight(eventinfo->runNumber(),
+    //                    eventinfo->mcChannelNumber(), eventinfo->averageInteractionsPerCrossing());
+    }
+    return pile_up_w;
 
-    m_pileupReweightingTool->execute();
-    return xaodEventInfo()->auxdata< double >( "PileupWeight" );
+    //m_pileupReweightingTool->execute();
+    //return xaodEventInfo()->auxdata< double >( "PileupWeight" );
 }
 //----------------------------------------------------------
 float XaodAnalysis::getPileupWeightUp()

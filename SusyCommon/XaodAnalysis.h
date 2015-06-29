@@ -48,6 +48,7 @@
 #include "ElectronEfficiencyCorrection/AsgElectronEfficiencyCorrectionTool.h"
 #include "ElectronPhotonSelectorTools/AsgElectronLikelihoodTool.h"
 #include "PileupReweighting/PileupReweightingTool.h"
+#include "AsgTools/ToolHandle.h"
 #include "MuonEfficiencyCorrections/MuonEfficiencyScaleFactors.h"
 #include "MuonSelectorTools/MuonSelectionTool.h"
 #include "ElectronIsolationSelection/IsolationSelectionTool.h"
@@ -291,7 +292,7 @@ namespace Susy {
     float getEventWeight(float lumi = LUMI_A_A4);
     float getXsecWeight(); ///< event weight (xsec*kfac)
     void setLumi(float lumi) { m_lumi = lumi; } ///< luminosity to normalize to (in 1/pb)
-    float getPileupWeight(const xAOD::EventInfo* eventinfo); ///< pileup weight for full dataset: currently A-L
+    double getPileupWeight(const xAOD::EventInfo* eventinfo); ///< pileup weight for full dataset: currently A-L
     float getPileupWeightUp();
     float getPileupWeightDown();
     float getPDFWeight8TeV(); ///< PDF reweighting of 7TeV -> 8TeV
@@ -589,6 +590,8 @@ namespace Susy {
     AsgElectronLikelihoodTool *m_elecSelLikelihoodTight_nod0;
 
     CP::PileupReweightingTool           *m_pileupReweightingTool;
+    ToolHandle<CP::IPileupReweightingTool> *m_pileup;
+    
     
     JetVertexTaggerTool                 *m_jvtTool;
 
