@@ -373,6 +373,8 @@ void SusyNtMaker::fillTruthParticleVars()
 //----------------------------------------------------------
 void SusyNtMaker::storeElectron(const xAOD::Electron &in)
 {
+    if(m_dbg>=15) cout<<"SusyNtMaker::storeElectron pT "<< in.pt()*MeV2GeV <<endl;
+
     Susy::Electron out;
     double pt(in.pt()*MeV2GeV), eta(in.eta()), phi(in.phi()), m(in.m()*MeV2GeV);
     out.SetPtEtaPhiM(pt, eta, phi, m);
@@ -519,6 +521,8 @@ void SusyNtMaker::storeElectron(const xAOD::Electron &in)
 //----------------------------------------------------------
 void SusyNtMaker::storeMuon(const xAOD::Muon &in)
 {
+    if(m_dbg>=15) cout<<"SusyNtMaker::storeMuon pT "<< in.pt()*MeV2GeV <<endl;
+
     Susy::Muon out;
     double pt(in.pt()*MeV2GeV), eta(in.eta()), phi(in.phi()), m(in.m()*MeV2GeV);
     out.SetPtEtaPhiM(pt, eta, phi, m);
@@ -648,6 +652,8 @@ void SusyNtMaker::storeMuon(const xAOD::Muon &in)
 /*--------------------------------------------------------------------------------*/
 void SusyNtMaker::storeJet(const xAOD::Jet &in)
 {
+    if(m_dbg>=15) cout<<"SusyNtMaker::storeJet pT "<< in.pt()*MeV2GeV <<endl;
+
     Susy::Jet out;
     double pt(in.pt()*MeV2GeV), eta(in.eta()), phi(in.phi()), m(in.m()*MeV2GeV);
     out.SetPtEtaPhiM(pt, eta, phi, m);
@@ -699,18 +705,21 @@ void SusyNtMaker::storeJet(const xAOD::Jet &in)
     // jetOut->sv0p_mass     = element->flavor_component_sv0p_mass();
     // jetOut->svp_mass      = element->flavor_component_svp_mass();
     out.bjet         = in.auxdata< char >("bjet");
-    out.effscalefact = in.auxdata< float >("effscalefact");
+    out.effscalefact = 1;//in.auxdata< float >("effscalefact");
 
     vector<float> test_values;
     test_values.push_back(out.effscalefact);
 
     // B-tagging systematics
+    //AT 06-29-15: Coomented out btag decoration in SusyTools 
+/*
     if(m_isMC && m_sys) {
       for(const auto& sysInfo : systInfoList){
         if(!(sysInfo.affectsType == ST::SystObjType::BTag && sysInfo.affectsWeights)) continue;
         // Read information
         const CP::SystematicSet& sys = sysInfo.systset;
         SusyNtSys ourSys = CPsys2sys((sys.name()).c_str());
+        if(m_dbg>=15) std::cout<< "\t Jet btag sys " << NtSys::SusyNtSysNames[ourSys] << endl;
         // Configure the tools
         if ( m_susyObj[m_eleIDDefault]->applySystematicVariation(sys) != CP::SystematicCode::Ok){
           cout << "SusyNtMaker::storeJet - cannot configure SUSYTools for " << sys.name() << endl;
@@ -725,11 +734,14 @@ void SusyNtMaker::storeJet(const xAOD::Jet &in)
       }
       m_susyObj[m_eleIDDefault]->resetSystematics();
     }
+*/
+
 
     cout << "SERHAN :: " << endl;
     for(auto scale : test_values) {
         cout << scale << endl;
     }
+
 
     // Misc
     out.detEta = (in.jetP4(xAOD::JetConstitScaleMomentum)).eta();
@@ -777,6 +789,8 @@ void SusyNtMaker::storeJet(const xAOD::Jet &in)
 //----------------------------------------------------------
 void SusyNtMaker::storePhoton(const xAOD::Photon &in)
 {
+    if(m_dbg>=15) cout<<"SusyNtMaker::storePhoton pT "<< in.pt()*MeV2GeV <<endl;
+
     Susy::Photon out;
     double pt(in.pt()*MeV2GeV), eta(in.eta()), phi(in.phi()), m(in.m()*MeV2GeV);
     out.SetPtEtaPhiM(pt, eta, phi, m);
@@ -805,61 +819,63 @@ void SusyNtMaker::storePhoton(const xAOD::Photon &in)
     m_susyNt.pho()->push_back(out);
 }
 //----------------------------------------------------------
-void SusyNtMaker::storeTau(const xAOD::TauJet &tau)
+void SusyNtMaker::storeTau(const xAOD::TauJet &in)
 {
+    if(m_dbg>=15) cout<<"SusyNtMaker::storeTau pT "<< in.pt()*MeV2GeV <<endl;
+
     Susy::Tau out;
-    double pt(tau.pt()*MeV2GeV), eta(tau.eta()), phi(tau.phi()), m(tau.m()*MeV2GeV);
+    double pt(in.pt()*MeV2GeV), eta(in.eta()), phi(in.phi()), m(in.m()*MeV2GeV);
 
     out.SetPtEtaPhiM(pt, eta, phi, m);
     out.pt  = pt;
     out.eta = eta;
     out.phi = phi;
     out.m   = m;
-    out.q = int(tau.charge());
+    out.q = int(in.charge());
     out.author = 0;//remove ?
 /*
-    if(tau.isTau(xAOD::TauJetParameters::tauRec))  out.author |= 1<<0;
-    if(tau.isTau(xAOD::TauJetParameters::tau1P3P)) out.author |= 1<<1;
-    if(tau.isTau(xAOD::TauJetParameters::PanTau))  out.author |= 1<<2;
+    if(in.isTau(xAOD::TauJetParameters::tauRec))  out.author |= 1<<0;
+    if(in.isTau(xAOD::TauJetParameters::tau1P3P)) out.author |= 1<<1;
+    if(in.isTau(xAOD::TauJetParameters::PanTau))  out.author |= 1<<2;
 */
    
-    out.nTrack = tau.nTracks();
-    out.eleBDT = tau.discriminant(xAOD::TauJetParameters::BDTEleScore);
-    out.jetBDT = tau.discriminant(xAOD::TauJetParameters::BDTJetScore);
+    out.nTrack = in.nTracks();
+    out.eleBDT = in.discriminant(xAOD::TauJetParameters::BDTEleScore);
+    out.jetBDT = in.discriminant(xAOD::TauJetParameters::BDTJetScore);
 
-    out.jetBDTSigLoose = tau.isTau(xAOD::TauJetParameters::JetBDTSigLoose);
-    out.jetBDTSigMedium = tau.isTau(xAOD::TauJetParameters::JetBDTSigMedium);
-    out.jetBDTSigTight = tau.isTau(xAOD::TauJetParameters::JetBDTSigTight);
+    out.jetBDTSigLoose = in.isTau(xAOD::TauJetParameters::JetBDTSigLoose);
+    out.jetBDTSigMedium = in.isTau(xAOD::TauJetParameters::JetBDTSigMedium);
+    out.jetBDTSigTight = in.isTau(xAOD::TauJetParameters::JetBDTSigTight);
 
-    out.eleBDTLoose = tau.isTau(xAOD::TauJetParameters::EleBDTLoose);
-    out.eleBDTMedium = tau.isTau(xAOD::TauJetParameters::EleBDTMedium);
-    out.eleBDTTight = tau.isTau(xAOD::TauJetParameters::EleBDTTight);
+    out.eleBDTLoose = in.isTau(xAOD::TauJetParameters::EleBDTLoose);
+    out.eleBDTMedium = in.isTau(xAOD::TauJetParameters::EleBDTMedium);
+    out.eleBDTTight = in.isTau(xAOD::TauJetParameters::EleBDTTight);
 
-    out.muonVeto = tau.isTau(xAOD::TauJetParameters::MuonVeto);
+    out.muonVeto = in.isTau(xAOD::TauJetParameters::MuonVeto);
     
     if (m_isMC){
         //m_tauTruthMatchingTool->applyTruthMatch(tau); // memory leak check
-        //if (tau.auxdata<bool>("IsTruthMatched")) out.trueTau = true; // memory leak check
+        //if (in.auxdata<bool>("IsTruthMatched")) out.trueTau = true; // memory leak check
         //else out.trueTau = false;  // memory leak check
-        //tau.auxdata<size_t>("TruthProng");
-        //tau.auxdata<int>("TruthCharge");
-        //tau.auxdata<bool>("IsHadronicTau");
+        //in.auxdata<size_t>("TruthProng");
+        //in.auxdata<int>("TruthCharge");
+        //in.auxdata<bool>("IsHadronicTau");
 
-        m_TauEffEleTool->applyEfficiencyScaleFactor(tau);
+        m_TauEffEleTool->applyEfficiencyScaleFactor(in);
 
         //AT: Add errors!    
         //m_TauEffEleTool->getEfficiencyScaleFactor(tau, out.looseEffS);
         //How is the ID dealt with
         //This is not correct... we need the tool initialize with various selection!
-        out.looseEffSF = tau.auxdata<double>("TauScaleFactorContJetID");//ok
-        out.mediumEffSF = tau.auxdata<double>("TauScaleFactorContJetID");//ok
-        out.tightEffSF = tau.auxdata<double>("TauScaleFactorContJetID");//ok
+        out.looseEffSF = in.auxdata<double>("TauScaleFactorContJetID");//ok
+        out.mediumEffSF = in.auxdata<double>("TauScaleFactorContJetID");//ok
+        out.tightEffSF = in.auxdata<double>("TauScaleFactorContJetID");//ok
         // stat errors not supported
         // systematics not included here
         double EVetoSF = 0.0;
-        if (tau.nTracks() == 1)
+        if (in.nTracks() == 1)
         {
-            m_TauEffEleTool->getEfficiencyScaleFactor(tau, EVetoSF); //?????
+            m_TauEffEleTool->getEfficiencyScaleFactor(in, EVetoSF); //?????
         }
        //AT:: Add errors - what is store does not make sense. Save same thing.
         out.looseEVetoSF = EVetoSF;
@@ -879,7 +895,7 @@ void SusyNtMaker::storeTau(const xAOD::TauJet &tau)
     
    
    if(m_dbg>5) cout << "SusyNtMaker Filling Tau pt " << out.pt 
-                     << " eta " << out.eta << " phi " << out.phi << " q " << out.q << " " << int(tau.charge()) << endl;
+                     << " eta " << out.eta << " phi " << out.phi << " q " << out.q << " " << int(in.charge()) << endl;
 
 
 
@@ -924,6 +940,8 @@ void SusyNtMaker::storeTau(const xAOD::TauJet &tau)
 /*--------------------------------------------------------------------------------*/
 void SusyNtMaker::fillMetVars(SusyNtSys sys)
 {
+    if(m_dbg>=15) cout<<"SusyNtMaker::fillMetVars "<<endl;
+
     xAOD::MissingETContainer::const_iterator met_it = m_metContainer->find("Final");
     if(m_dbg>=15){
         cout << "Dump MET container - SusyNtMaker " << endl;
@@ -1000,6 +1018,8 @@ void SusyNtMaker::fillMetVars(SusyNtSys sys)
 //----------------------------------------------------------
 void SusyNtMaker::fillMetTrackVars(SusyNtSys sys)
 {
+    if(m_dbg>=15) cout<<"SusyNtMaker::fillMetTrackVars " <<endl;
+
     xAOD::MissingETContainer::const_iterator metTrack_it = m_metTrackContainer->find("Track");
     
     if (metTrack_it == m_metTrackContainer->end())
@@ -1021,6 +1041,8 @@ void SusyNtMaker::fillMetTrackVars(SusyNtSys sys)
 //----------------------------------------------------------
 void SusyNtMaker::storeTruthParticle(const xAOD::TruthParticle &in)
 {
+    if(m_dbg>=15) cout<<"SusyNtMaker::storeTruthParticle "<< in.pt()*MeV2GeV <<endl;
+
     Susy::TruthParticle out;
     double pt(in.pt()*MeV2GeV), eta(in.eta()), phi(in.phi()), m(in.m()*MeV2GeV);
     out.SetPtEtaPhiM(pt, eta, phi, m);
@@ -1133,8 +1155,15 @@ void SusyNtMaker::doSystematic()
         // m_susyNt.evt()->cutFlags[sys] = m_cutFlags;
 
         //Reset the systematics for all tools
-        m_susyObj[m_eleIDDefault]->resetSystematics();
+        if(m_dbg>=15) cout << "AT reset systematics " << endl;
+        if ( m_susyObj[m_eleIDDefault]-> != CP::SystematicCode::Ok){
+            cout << "SusyNtMaker::doSystematics -- Cannot reset SUSYTools systematics. Aborting " << endl;
+            abort();
+        }
+        //m_susyObj[m_eleIDDefault]->resetSystematics();
+        if(m_dbg>=15) cout << "AT reset systematics - done " << endl;
     }
+
 
 }
 
@@ -1146,7 +1175,7 @@ void SusyNtMaker::storeElectronKinSys(ST::SystInfo sysInfo, SusyNtSys sys)
     xAOD::ElectronContainer* electrons     = xaodElectrons(sysInfo,sys);
     xAOD::ElectronContainer* electrons_nom = xaodElectrons(sysInfo,NtSys::NOM);
 
-    if(m_dbg>=5) cout << "storeElectronKinSys " << NtSys::SusyNtSysNames[sys]  << endl;
+    if(m_dbg>=15) cout << "storeElectronKinSys " << NtSys::SusyNtSysNames[sys]  << endl;
     for(const auto &iEl : m_preElectrons){ //loop over array containing the xAOD electron idx
         const xAOD::Electron* ele = electrons->at(iEl);
         if(m_dbg>=5) cout << "This ele pt " << ele->pt() << " eta " << ele->eta() << " phi " << ele->phi() << endl; 
@@ -1253,7 +1282,7 @@ void SusyNtMaker::storeMuonKinSys(ST::SystInfo sysInfo, SusyNtSys sys)
     xAOD::MuonContainer* muons     = xaodMuons(sysInfo,sys);
     xAOD::MuonContainer* muons_nom = xaodMuons(sysInfo, NtSys::NOM);
   
-    if(m_dbg>=5) cout << "storeMuonKinSys "  << NtSys::SusyNtSysNames[sys] << endl;
+    if(m_dbg>=15) cout << "storeMuonKinSys "  << NtSys::SusyNtSysNames[sys] << endl;
     for(const auto &iMu : m_preMuons){//loop over array containing the xAOD muon idx
         const xAOD::Muon* mu = muons->at(iMu);
         if(m_dbg>=5) cout << "This mu pt " << mu->pt() << " eta " << mu->eta() << " phi " << mu->phi() << endl; 
@@ -1307,7 +1336,7 @@ void SusyNtMaker::storeJetKinSys(ST::SystInfo sysInfo, SusyNtSys sys)
     xAOD::JetContainer* jets     = xaodJets(sysInfo,sys);
     xAOD::JetContainer* jets_nom = xaodJets(sysInfo,NtSys::NOM);
   
-    if(m_dbg>=5) cout << "storeJetKinSys "  << NtSys::SusyNtSysNames[sys] << endl;
+    if(m_dbg>=15) cout << "storeJetKinSys "  << NtSys::SusyNtSysNames[sys] << endl;
     for(const auto &iJ : m_preJets){ //loop over array containing the xAOD electron idx
         const xAOD::Jet* jet = jets->at(iJ);
         if(m_dbg>=5) cout << "This jet pt " << jet->pt() << " eta " << jet->eta() << " phi " << jet->phi() << endl; 
@@ -1404,7 +1433,7 @@ void SusyNtMaker::storeTauKinSys(ST::SystInfo sysInfo, SusyNtSys sys)
     xAOD::TauJetContainer* taus     = xaodTaus(sysInfo,sys);
     xAOD::TauJetContainer* taus_nom = xaodTaus(sysInfo,NtSys::NOM);
 
-    if(m_dbg>=5) cout << "storeTauKinSys " << NtSys::SusyNtSysNames[sys]  << endl;
+    if(m_dbg>=15) cout << "storeTauKinSys " << NtSys::SusyNtSysNames[sys]  << endl;
     for(const auto &iTau : m_preTaus){ //loop over array containing the xAOD tau idx
         const xAOD::TauJet* tau = taus->at(iTau);
         if(m_dbg>=5)  cout << "This tau pt " << tau->pt() << " eta " << tau->eta() << " phi " << tau->phi() << endl; 
