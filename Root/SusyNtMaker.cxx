@@ -470,7 +470,7 @@ void SusyNtMaker::storeElectron(const xAOD::Electron &in)
     if(const xAOD::TrackParticle* t = in.trackParticle()){
         out.trackPt = t->pt()*MeV2GeV;
         out.trackEta = t->eta();
-        out.d0      = fabs(t->d0());//AT:: wrt to PV ???
+        out.d0      = t->d0();//AT:: wrt to PV ???
 
         const xAOD::Vertex* PV = getPV();
         double  primvertex_z = (PV) ? PV->z() : -999;
