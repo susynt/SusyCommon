@@ -272,10 +272,12 @@ void SusyNtMaker::fillEventVars()
     evt->eventWithSusyProp= m_hasSusyProp;
     
     evt->trigBits         = m_evtTrigBits; // dantrim trig
+
+    evt->wPileup          = XaodAnalysis::getPileupWeight(eventinfo);
    
-    evt->wPileup          = is8TeV() ? getPileupWeight(eventinfo) : 1;
-    evt->wPileup_up       = is8TeV() ? getPileupWeightUp() : 1;
-    evt->wPileup_dn       = is8TeV() ? getPileupWeightDown() : 1;
+  //  evt->wPileup          = is8TeV() ? getPileupWeight(eventinfo) : 1;
+  //  evt->wPileup_up       = is8TeV() ? getPileupWeightUp() : 1;
+  //  evt->wPileup_dn       = is8TeV() ? getPileupWeightDown() : 1;
     //evt->wPileup          = m_isMC? getPileupWeight(eventinfo) : 1;
     //evt->wPileup_up       = m_isMC? getPileupWeightUp() : 1;
     //evt->wPileup_dn       = m_isMC? getPileupWeightDown() : 1;
@@ -468,7 +470,7 @@ void SusyNtMaker::storeElectron(const xAOD::Electron &in)
     if(const xAOD::TrackParticle* t = in.trackParticle()){
         out.trackPt = t->pt()*MeV2GeV;
         out.trackEta = t->eta();
-        out.d0      = fabs(t->d0());//AT:: wrt to PV ???
+        out.d0      = t->d0();//AT:: wrt to PV ???
 
         const xAOD::Vertex* PV = getPV();
         double  primvertex_z = (PV) ? PV->z() : -999;
@@ -619,7 +621,7 @@ void SusyNtMaker::storeMuon(const xAOD::Muon &in)
     // ASM-2014-11-02 :: Trigger information in DC14 samples are problematic
     // muOut->trigFlags      = m_muoTrigFlags[ lepIn->idx() ];
 
-//    out.trigBits   = matchMuonTriggers(in);
+    out.trigBits   = matchMuonTriggers(in);
 
     // Scale Factors
     // DA June 21 :: For now just store the nominal -- need to merge with xaod (xaod_muonSF) branch
@@ -725,12 +727,12 @@ void SusyNtMaker::storeJet(const xAOD::Jet &in)
       }
       m_susyObj[m_eleIDDefault]->resetSystematics();
     }
-
+/*
     cout << "SERHAN :: " << endl;
     for(auto scale : test_values) {
         cout << scale << endl;
     }
-
+*/
     // Misc
     out.detEta = (in.jetP4(xAOD::JetConstitScaleMomentum)).eta();
     in.getAttribute(xAOD::JetAttribute::EMFrac,out.emfrac);
