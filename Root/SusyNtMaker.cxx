@@ -736,12 +736,12 @@ void SusyNtMaker::storeJet(const xAOD::Jet &in)
     }
 */
 
-
+/*
     cout << "SERHAN :: " << endl;
     for(auto scale : test_values) {
         cout << scale << endl;
     }
-
+*/
 
     // Misc
     out.detEta = (in.jetP4(xAOD::JetConstitScaleMomentum)).eta();
@@ -1156,7 +1156,7 @@ void SusyNtMaker::doSystematic()
 
         //Reset the systematics for all tools
         if(m_dbg>=15) cout << "AT reset systematics " << endl;
-        if ( m_susyObj[m_eleIDDefault]-> != CP::SystematicCode::Ok){
+        if ( m_susyObj[m_eleIDDefault]->resetSystematics() != CP::SystematicCode::Ok){
             cout << "SusyNtMaker::doSystematics -- Cannot reset SUSYTools systematics. Aborting " << endl;
             abort();
         }
