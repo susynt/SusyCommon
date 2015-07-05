@@ -492,7 +492,6 @@ void SusyNtMaker::storeElectron(const xAOD::Electron &in)
     // DG-2014-08-29 mc info not available yet
     // 
     // // Trigger flags
-    // eleOut->trigFlags     = m_eleTrigFlags[ lepIn->idx() ];
 //    out.trigBits = matchElectronTriggers(in);
 //    cout << "testing electron trigBits" << endl;
 //    int nbins = h_passTrigLevel->GetXaxis()->GetNbins();
@@ -626,10 +625,7 @@ void SusyNtMaker::storeMuon(const xAOD::Muon &in)
         }
     }
 
-    // Trigger Flags 
-    // ASM-2014-11-02 :: Trigger information in DC14 samples are problematic
-    // muOut->trigFlags      = m_muoTrigFlags[ lepIn->idx() ];
-
+    // Trigger bits 
     out.trigBits   = matchMuonTriggers(in);
 
     // Scale Factors
@@ -942,8 +938,8 @@ void SusyNtMaker::storeTau(const xAOD::TauJet &in)
     //   }
     // }
     
-    // tauOut->trigFlags             = m_tauTrigFlags[tauIdx];
-    
+    // Tau trigger bits needed   
+ 
    m_susyNt.tau()->push_back(out);
 }
 
