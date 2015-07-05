@@ -242,7 +242,7 @@ void SusyNtMaker::fillEventVars()
     const xAOD::EventInfo* eventinfo = XaodAnalysis::xaodEventInfo();
 
     evt->run              = eventinfo->runNumber();
-    evt->event            = eventinfo->eventNumber();
+    evt->eventNumber      = eventinfo->eventNumber();
     evt->lb               = eventinfo->lumiBlock();
     evt->stream           = m_stream;
 
