@@ -15,6 +15,7 @@
 
 #include "xAODPrimitives/IsolationType.h"
 #include "xAODTracking/TrackParticle.h"
+#include "xAODTracking/TrackParticlexAODHelpers.h"  // xAOD::TrackingHelpers
 #include "xAODEgamma/EgammaxAODHelpers.h"
 
 // Amg include
@@ -376,6 +377,7 @@ void SusyNtMaker::fillTruthParticleVars()
 void SusyNtMaker::storeElectron(const xAOD::Electron &in)
 {
     if(m_dbg>=15) cout<<"SusyNtMaker::storeElectron pT "<< in.pt()*MeV2GeV <<endl;
+    const xAOD::EventInfo* eventinfo = XaodAnalysis::xaodEventInfo();
 
     Susy::Electron out;
     double pt(in.pt()*MeV2GeV), eta(in.eta()), phi(in.phi()), m(in.m()*MeV2GeV);
@@ -473,6 +475,8 @@ void SusyNtMaker::storeElectron(const xAOD::Electron &in)
         out.trackPt = t->pt()*MeV2GeV;
         out.trackEta = t->eta();
         out.d0      = t->d0();//AT:: wrt to PV ???
+        out.d0sigBSCorr = xAOD::TrackingHelpers::d0significance( t, eventinfo->beamPosSigmaX(),
+                                        eventinfo->beamPosSigmaY(), eventinfo->beamPosSigmaXY() );
 
         const xAOD::Vertex* PV = getPV();
         double  primvertex_z = (PV) ? PV->z() : -999;
@@ -524,6 +528,7 @@ void SusyNtMaker::storeElectron(const xAOD::Electron &in)
 void SusyNtMaker::storeMuon(const xAOD::Muon &in)
 {
     if(m_dbg>=15) cout<<"SusyNtMaker::storeMuon pT "<< in.pt()*MeV2GeV <<endl;
+    const xAOD::EventInfo* eventinfo = XaodAnalysis::xaodEventInfo();
 
     Susy::Muon out;
     double pt(in.pt()*MeV2GeV), eta(in.eta()), phi(in.phi()), m(in.m()*MeV2GeV);
@@ -578,13 +583,18 @@ void SusyNtMaker::storeMuon(const xAOD::Muon &in)
     all_available &= in.isolation(out.ptcone30, xAOD::Iso::ptcone30); out.ptcone30 *= MeV2GeV;
     out.ptvarcone20 = in.auxdataConst<float>("ptvarcone20") * MeV2GeV;
     out.ptvarcone30 = in.auxdataConst<float>("ptvarcone30") * MeV2GeV;
+    out.etconetopo20 = in.isolation(xAOD::Iso::topoetcone20) * MeV2GeV;
+    out.etconetopo30 = in.isolation(xAOD::Iso::topoetcone30) * MeV2GeV;
+    
 
     // ASM-2014-12-11 
     if(const xAOD::TrackParticle* t = in.primaryTrackParticle()){
         const xAOD::Vertex* PV = getPV();
         double  primvertex_z = (PV) ? PV->z() : 0.;
-        out.d0             = fabs(t->d0());
+        out.d0             = t->d0();
         out.errD0          = Amg::error(t->definingParametersCovMatrix(),0); 
+        out.d0sigBSCorr = xAOD::TrackingHelpers::d0significance( t, eventinfo->beamPosSigmaX(),
+                                    eventinfo->beamPosSigmaY(), eventinfo->beamPosSigmaXY() );
         out.z0             = t->z0() + t->vz() - primvertex_z;
         out.errZ0          = Amg::error(t->definingParametersCovMatrix(),1); 
     }

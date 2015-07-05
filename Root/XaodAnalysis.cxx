@@ -302,9 +302,7 @@ XaodAnalysis& XaodAnalysis::initSusyTools()
                 cout << " Property << " << x.first << ": " << value << endl;
             }
         }
-        
         CHECK( m_susyObj[i]->SUSYToolsInit() );
-
     }
 
     return *this;
