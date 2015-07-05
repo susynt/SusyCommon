@@ -99,8 +99,8 @@ XaodAnalysis::XaodAnalysis() :
         m_evtTrigBits(m_nTriggerBits),
         m_configTool(NULL),
         m_trigTool(NULL),
-        m_trigMuonMatchTool(NULL),
-        m_trigEgammaMatchTool(NULL)
+        m_trigMuonMatchTool(NULL)
+       // m_trigEgammaMatchTool(NULL)
 {
     clearOutputObjects();
     clearContainerPointers();
@@ -211,19 +211,19 @@ void XaodAnalysis::Terminate()
 
     delete m_isoToolGradientLoose;
     delete m_isoToolGradient;
-    delete m_isoToolVeryLoose;
+    delete m_isoToolLooseTrackOnly;
     delete m_isoToolLoose;
     delete m_isoToolTight;
 
-    for(int i=TightLLH; i<=LooseLLH; i++){
-        delete m_susyObj[i];
-    }
     // dantrim trig
     delete m_trigTool;
     delete m_configTool;
     delete m_trigMuonMatchTool;
-    delete m_trigEgammaMatchTool;
+    //delete m_trigEgammaMatchTool;
     
+    for(int i=TightLLH; i<=LooseLLH; i++){
+        delete m_susyObj[i];
+    }
 }
 //----------------------------------------------------------
 XaodAnalysis& XaodAnalysis::initSusyTools()
@@ -237,28 +237,17 @@ XaodAnalysis& XaodAnalysis::initSusyTools()
         cout << "------------------------------------------------------------" << endl;
 
         m_susyObj[i]->msg().setLevel(m_dbg ? MSG::DEBUG : MSG::WARNING);
-        //m_susyObj[i]->msg().setLevel(m_dbg ? MSG::VERBOSE : MSG::WARNING);
         m_susyObj[i]->setProperty("EleId", electronIdName);
-       // int datasource = !m_isMC ? ST::Data : (m_isAF2 ? ST::AtlfastII : ST::FullSim);
         ST::SettingDataSource datasource = !m_isMC ? ST::Data : (m_isAF2 ? ST::AtlfastII : ST::FullSim);
-        m_susyObj[i]->setProperty("DataSource",datasource);
+        CHECK( m_susyObj[i]->setProperty("DataSource",datasource) );
 
-        //Other parameter that are undefine in SUSYTools and that we should be setting here
-        //m_susyObj[i]->setProperty("IsDerived",isDerived);//Not used in SUSYTools yet
-        //m_susyObj[i]->setProperty("Is8TeV",is8TeV); <<-- this we should have
-
-        //AT 05-01-15 For p1872 Need to use the AODfix version
-#warning p1872 need to use AODfix MET_RefinalFix and MET_TrackFix
-     //   m_susyObj[i]->setProperty("METInputCont", "MET_RefFinalFix");
-     //   m_susyObj[i]->setProperty("METInputMap", "METMap_RefFinalFix");
-
-  // dantrim May 6 2015 - Jet calibration for derivations, and GSC
-        if(m_isDerivation) { m_susyObj[i]->setProperty("DoJetAreaCalib", true); }
-        else { m_susyObj[i]->setProperty("DoJetAreaCalib", false); }
-        m_susyObj[i]->setProperty("DoJetGSCCalib", true);
+        // dantrim Jul2 2015 :: these are set true by default in SUSYTools
+        //if(m_isDerivation) { m_susyObj[i]->setProperty("DoJetAreaCalib", true); }
+        //else { m_susyObj[i]->setProperty("DoJetAreaCalib", false); }
+        //m_susyObj[i]->setProperty("DoJetGSCCalib", true);
 
         //AT 05-11-15 Test reduce systemactic set
-#warning Setting recommended reduced JES systematics set
+        #warning Setting recommended reduced JES systematics set
         m_susyObj[i]->setProperty("JESNuisanceParameterSet", 1);
 
 
@@ -536,13 +525,13 @@ void XaodAnalysis::initTrigger()
     m_trigMuonMatchTool = new Trig::TrigMuonMatching("TrigMuonMatchTool");
     ToolHandle<Trig::TrigDecisionTool> m_trigDec(m_trigTool);
     CHECK( m_trigMuonMatchTool->setProperty("TriggerTool", m_trigDec ));
-    //CHECK( m_trigMuonMatchTool->setProperty("TriggerTool", m_trigTool ));
     CHECK( m_trigMuonMatchTool->initialize() );
 
     // Tool for egamma matching
-    m_trigEgammaMatchTool = new Trig::TrigEgammaMatchingTool("TrigEgammaMatchTool");
-    CHECK( m_trigEgammaMatchTool->setProperty("TriggerTool", m_trigDec) );
-    CHECK( m_trigEgammaMatchTool->initialize() );
+    // dantrim July 2 2015 :: Moving to SUSY,2.3.15a this tool has some library issues preventing compilation
+ //   m_trigEgammaMatchTool = new Trig::TrigEgammaMatchingTool("TrigEgammaMatchTool");
+ //   CHECK( m_trigEgammaMatchTool->setProperty("TriggerTool", m_trigDec) );
+ //   CHECK( m_trigEgammaMatchTool->initialize() );
 
 }
 /*--------------------------------------------------------------------------------*/
@@ -1327,11 +1316,11 @@ TBits XaodAnalysis::matchElectronTriggers(const xAOD::Electron &in)
     TBits eleTrigBits(m_nTriggerBits);
     eleTrigBits.ResetAllBits();
     std::vector<std::string> trigs = XaodAnalysis::xaodTriggers();
-    for(unsigned int iTrig=0; iTrig<trigs.size(); iTrig++){
-        // for matchHLT function, remove the "HLT_" portion of the trigger name for input to the tool's "matchHLT" method
-        std::string hlt_trigger = trigs[iTrig].replace(trigs[iTrig].begin(), trigs[iTrig].begin()+4, "");
-        if(m_trigEgammaMatchTool->matchHLT(&in, hlt_trigger)) eleTrigBits.SetBitNumber(iTrig, true);
-    }
+ //   for(unsigned int iTrig=0; iTrig<trigs.size(); iTrig++){
+ //       // for matchHLT function, remove the "HLT_" portion of the trigger name for input to the tool's "matchHLT" method
+ //       std::string hlt_trigger = trigs[iTrig].replace(trigs[iTrig].begin(), trigs[iTrig].begin()+4, "");
+ //       if(m_trigEgammaMatchTool->matchHLT(&in, hlt_trigger)) eleTrigBits.SetBitNumber(iTrig, true);
+ //   }
     return eleTrigBits;
 
 }

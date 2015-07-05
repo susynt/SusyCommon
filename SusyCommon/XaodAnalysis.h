@@ -63,8 +63,8 @@
 #include "xAODTrigEgamma/TrigElectron.h"
 #include "xAODTrigEgamma/TrigElectronContainer.h"
 #include "TrigMuonMatching/TrigMuonMatching.h"
-#include "TrigEgammaMatchingTool/TrigEgammaMatchingTool.h"
-#include "TrigEgammaMatchingTool/ITrigEgammaMatchingTool.h"
+//#include "TrigEgammaMatchingTool/TrigEgammaMatchingTool.h"
+//#include "TrigEgammaMatchingTool/ITrigEgammaMatchingTool.h"
 #include "SusyNtuple/Trigger.h"
 
 #include "SusyCommon/XaodAnalysis_types.h"
@@ -618,7 +618,7 @@ namespace Susy {
     TrigConf::xAODConfigTool*   m_configTool;
     Trig::TrigDecisionTool*     m_trigTool;
     Trig::TrigMuonMatching*     m_trigMuonMatchTool;    ///< TrigMuonMatching tool
-    Trig::TrigEgammaMatchingTool* m_trigEgammaMatchTool;    ///< TrigEgammaMatching tool
+//    Trig::TrigEgammaMatchingTool* m_trigEgammaMatchTool;    ///< TrigEgammaMatching tool
 
   };
 
