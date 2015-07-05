@@ -398,28 +398,22 @@ void SusyNtMaker::storeElectron(const xAOD::Electron &in)
     out.q   = in.charge();
     bool all_available=true;
     
-    out.veryLooseLLH = eleIsOfType(in, ElectronId::VeryLooseLLH);
-    out.looseLLH = eleIsOfType(in, ElectronId::LooseLLH);
-    out.mediumLLH = eleIsOfType(in, ElectronId::MediumLLH);
-    out.tightLLH = eleIsOfType(in, ElectronId::TightLLH);
-    out.looseLLH_nod0 = eleIsOfType(in, ElectronId::LooseLLH_nod0);
+    out.veryLooseLLH   = eleIsOfType(in, ElectronId::VeryLooseLLH);
+    out.looseLLH       = eleIsOfType(in, ElectronId::LooseLLH);
+    out.mediumLLH      = eleIsOfType(in, ElectronId::MediumLLH);
+    out.tightLLH       = eleIsOfType(in, ElectronId::TightLLH);
+    out.looseLLH_nod0  = eleIsOfType(in, ElectronId::LooseLLH_nod0);
     out.mediumLLH_nod0 = eleIsOfType(in, ElectronId::MediumLLH_nod0);
-    out.tightLLH_nod0 = eleIsOfType(in, ElectronId::TightLLH_nod0);
+    out.tightLLH_nod0  = eleIsOfType(in, ElectronId::TightLLH_nod0);
 
     // Isolation flags
-    out.isoGradientLoose = m_isoToolGradientLoose->accept(in) ? true : false;
-    out.isoGradient = m_isoToolGradient->accept(in) ? true : false;
+    out.isoGradientLoose  = m_isoToolGradientLoose->accept(in) ? true : false;
+    out.isoGradient       = m_isoToolGradient->accept(in) ? true : false;
     out.isoLooseTrackOnly = m_isoToolLooseTrackOnly->accept(in) ? true : false;
-    out.isoLoose = m_isoToolLoose->accept(in) ? true : false;
-    out.isoTight = m_isoToolTight->accept(in) ? true : false;
+    out.isoLoose          = m_isoToolLoose->accept(in) ? true : false;
+    out.isoTight          = m_isoToolTight->accept(in) ? true : false;
 
     //Isolations
-    //AT: Will become obsolete in run-2
-    //Bug in code ptcorrected stores the correction!
-    //out.etcone20 = in.isolationValue(xAOD::Iso::etcone20) * MeV2GeV;
-    // in.isolationValue(xAOD::Iso::etcone20_ptcorrected)) * MeV2GeV;
-//    out.etcone30 = in.isolationValue(xAOD::Iso::etcone30) *  MeV2GeV;
-    //in.isolationValue(xAOD::Iso::etcone30_ptcorrected)) * MeV2GeV;
     out.etconetopo20 = in.isolationValue(xAOD::Iso::topoetcone20) * MeV2GeV;
     out.etconetopo30 = in.isolationValue(xAOD::Iso::topoetcone30) * MeV2GeV;
     out.ptcone20 = in.isolationValue(xAOD::Iso::ptcone20) * MeV2GeV;
@@ -481,7 +475,7 @@ void SusyNtMaker::storeElectron(const xAOD::Electron &in)
     if(const xAOD::TrackParticle* t = in.trackParticle()){
         out.trackPt = t->pt()*MeV2GeV;
         out.trackEta = t->eta();
-        out.d0      = t->d0();//AT:: wrt to PV ???
+        out.d0      = t->d0();
         out.d0sigBSCorr = xAOD::TrackingHelpers::d0significance( t, eventinfo->beamPosSigmaX(),
                                         eventinfo->beamPosSigmaY(), eventinfo->beamPosSigmaXY() );
 
@@ -569,10 +563,6 @@ void SusyNtMaker::storeMuon(const xAOD::Muon &in)
     // Isolation
     //For Rel 20
     /*
-    out.etcone20 = in.isolation(xAOD::Iso::etcone20) * MeV2GeV;
-    out.etcone30 = in.isolation(xAOD::Iso::etcone30) * MeV2GeV;
-    out.etconetopo20 = in.isolation(xAOD::Iso::topoetcone20) * MeV2GeV;
-    out.etconetopo30 = in.isolation(xAOD::Iso::topoetcone30) * MeV2GeV;
     out.ptcone20 = in.isolation(xAOD::Iso::ptcone20) * MeV2GeV;
     out.ptcone30 = in.isolation(xAOD::Iso::ptcone30) * MeV2GeV;
     out.ptvarcone20 = in.auxdataConst<float>("ptvarcone20") * MeV2GeV;
@@ -582,8 +572,6 @@ void SusyNtMaker::storeMuon(const xAOD::Muon &in)
     //out.ptvarcone20 = in.isolationValue(xAOD::Iso::ptvarcone20) * MeV2GeV;
     //out.ptvarcone30 = in.isolationValue(xAOD::Iso::ptvarcone30) * MeV2GeV;
 
-    //all_available &= in.isolation(out.etcone20, xAOD::Iso::etcone20); out.etcone20 *= MeV2GeV;
-//    all_available &= in.isolation(out.etcone30, xAOD::Iso::etcone30); out.etcone30 *= MeV2GeV;
     //all_available &= in.isolation(out.etconetopo20, xAOD::Iso::topoetcone20); out.etconetopo20 *= MeV2GeV;
     //all_available &= in.isolation(out.etconetopo30, xAOD::Iso::topoetcone30); out.etconetopo30 *= MeV2GeV;
     all_available &= in.isolation(out.ptcone20, xAOD::Iso::ptcone20); out.ptcone20 *= MeV2GeV;
