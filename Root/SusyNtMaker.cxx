@@ -409,7 +409,7 @@ void SusyNtMaker::storeElectron(const xAOD::Electron &in)
     // Isolation flags
     out.isoGradientLoose = m_isoToolGradientLoose->accept(in) ? true : false;
     out.isoGradient = m_isoToolGradient->accept(in) ? true : false;
-    out.isoVeryLoose = m_isoToolVeryLoose->accept(in) ? true : false;
+    out.isoLooseTrackOnly = m_isoToolLooseTrackOnly->accept(in) ? true : false;
     out.isoLoose = m_isoToolLoose->accept(in) ? true : false;
     out.isoTight = m_isoToolTight->accept(in) ? true : false;
 
@@ -545,11 +545,11 @@ void SusyNtMaker::storeMuon(const xAOD::Muon &in)
     out.phi = phi;
     out.m   = m;
     out.q   = in.charge();
-    out.isBaseline = in.auxdata< char >("baseline");
-    out.isSignal   = in.auxdata< char >("signal");
+    out.isBaseline = (bool)in.auxdata< char >("baseline");
+    out.isSignal   = (bool)in.auxdata< char >("signal");
     out.isCombined = in.muonType()==xAOD::Muon::Combined;
-    out.isCosmic   = in.auxdata< char >("cosmic");
-    out.isBadMuon  = m_susyObj[m_eleIDDefault]->IsBadMuon(in); // Uses default qoverpcut of 0.2
+    out.isCosmic   = (bool)in.auxdata< char >("cosmic");
+    out.isBadMuon  = m_susyObj[m_eleIDDefault]->IsBadMuon(in) ? 1 : 0;
 
     // muon quality
     out.veryLoose = muIsOfType(in, MuonId::VeryLoose);
@@ -560,7 +560,7 @@ void SusyNtMaker::storeMuon(const xAOD::Muon &in)
     // Isolation flags
     out.isoGradientLoose = m_isoToolGradientLoose->accept(in) ? true : false;
     out.isoGradient = m_isoToolGradient->accept(in) ? true : false;
-    out.isoVeryLoose = m_isoToolVeryLoose->accept(in) ? true : false;
+    out.isoLooseTrackOnly = m_isoToolLooseTrackOnly->accept(in) ? true : false;
     out.isoLoose = m_isoToolLoose->accept(in) ? true : false;
     out.isoTight = m_isoToolTight->accept(in) ? true : false;
 
@@ -696,10 +696,8 @@ void SusyNtMaker::storeJet(const xAOD::Jet &in)
     out.jvf = (PV) ? jetJVF.at(PV->index()) : 0.;    // Upon discussion w/ TJ (2014-12-11)
 
     // JVT
-    // DA Jun21 :: following instructions at: https://twiki.cern.ch/twiki/bin/view/AtlasProtected/JetVertexTaggerTool 
-    // on the twiki they use the ToolHandle to get the updated JVT -- using the pointer to the tool itself
-    // as done here produces the same values
-    out.jvt = m_jvtTool->updateJvt(in);
+    static SG::AuxElement::Accessor<float> acc_jvt("Jvt");
+    out.jvt = acc_jvt(in);
 
     // Truth Label/Matching 
     if (m_isMC) { in.getAttribute("ConeTruthLabelID", out.truthLabel); }
@@ -710,8 +708,8 @@ void SusyNtMaker::storeJet(const xAOD::Jet &in)
     // jetOut->matchTruth    = m_isMC? matchTruthJet(jetIdx) : false;
 
     // B-tagging 
-    if(!is8TeV()) out.mv1 = (in.btagging())->MV1_discriminant();
-    // for MV2C20, put error output for now
+    //if(!is8TeV()) out.mv1 = (in.btagging())->MV1_discriminant();
+    // dantrim July 3 2015 : mv1 is a goner
     double weight_mv2c20(0.);
     if(!in.btagging()->MVx_discriminant("MV2c20", weight_mv2c20)){ cout << "SusyNtMaker::storeJet ERROR    Failed to retrieve MV2c20 weight!" << endl; }
     out.mv2c20 = weight_mv2c20;
@@ -723,7 +721,7 @@ void SusyNtMaker::storeJet(const xAOD::Jet &in)
     // jetOut->jfit_mass     = element->flavor_component_jfit_mass();
     // jetOut->sv0p_mass     = element->flavor_component_sv0p_mass();
     // jetOut->svp_mass      = element->flavor_component_svp_mass();
-    out.bjet         = in.auxdata< char >("bjet");
+    out.bjet = m_susyObj[m_eleIDDefault]->IsBJet(in) ? 1 : 0;
     out.effscalefact = 1;//in.auxdata< float >("effscalefact");
 
     vector<float> test_values;

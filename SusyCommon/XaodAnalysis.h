@@ -52,8 +52,7 @@
 #include "AsgTools/ToolHandle.h"
 #include "MuonEfficiencyCorrections/MuonEfficiencyScaleFactors.h"
 #include "MuonSelectorTools/MuonSelectionTool.h"
-#include "ElectronIsolationSelection/IsolationSelectionTool.h"
-#include "JetMomentTools/JetVertexTaggerTool.h"
+#include "IsolationSelection/IsolationSelectionTool.h"
 
 //Trigger
 #include "TBits.h"
@@ -594,8 +593,6 @@ namespace Susy {
     ToolHandle<CP::IPileupReweightingTool> *m_pileup;
     
     
-    JetVertexTaggerTool                 *m_jvtTool;
-
     CP::MuonEfficiencyScaleFactors      *m_muonEfficiencySFTool; 
     CP::MuonSelectionTool               *m_muonSelectionToolVeryLoose;
     CP::MuonSelectionTool               *m_muonSelectionToolLoose;

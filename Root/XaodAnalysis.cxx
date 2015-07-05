@@ -83,7 +83,6 @@ XaodAnalysis::XaodAnalysis() :
     m_elecSelLikelihoodMedium_nod0(0),
     m_elecSelLikelihoodTight_nod0(0),
 	m_pileupReweightingTool(0),
-    m_jvtTool(0),
 	m_muonEfficiencySFTool(0),
     m_muonSelectionToolVeryLoose(0),
     m_muonSelectionToolLoose(0),
@@ -91,7 +90,7 @@ XaodAnalysis::XaodAnalysis() :
     m_muonSelectionToolTight(0),
     m_isoToolGradientLoose(0),
     m_isoToolGradient(0),
-    m_isoToolVeryLoose(0),
+    m_isoToolLooseTrackOnly(0),
     m_isoToolLoose(0),
     m_isoToolTight(0),
 	//m_tauTruthMatchingTool(0), // memory leak check
@@ -201,7 +200,6 @@ void XaodAnalysis::Terminate()
     delete m_elecSelLikelihoodTight_nod0;
 
     delete m_pileupReweightingTool;
-    delete m_jvtTool;
     delete m_muonEfficiencySFTool;
     delete m_muonSelectionToolVeryLoose;
     delete m_muonSelectionToolLoose;
@@ -330,7 +328,6 @@ XaodAnalysis& XaodAnalysis::initLocalTools()
 
 
     initPileupTool();
-    initJVTTool();
     initElectronTools();
     initMuonTools();
     initTauTools();
@@ -374,14 +371,6 @@ void XaodAnalysis::initPileupTool()
     //CHECK( m_pileupReweightingTool->setProperty("DataScaleFactors",1/1.11) );
     CHECK( m_pileupReweightingTool->initialize() );
 
-}
-//----------------------------------------------------------
-void XaodAnalysis::initJVTTool()
-{
-    // configure the JVT tool
-    m_jvtTool = new JetVertexTaggerTool("jvtag");
-    CHECK( m_jvtTool->setProperty("JVTFileName","JetMomentTools/JVTlikelihood_20140805.root") );
-    CHECK( m_jvtTool->initialize() );
 }
 //----------------------------------------------------------
 void XaodAnalysis::initElectronTools()
@@ -442,22 +431,22 @@ void XaodAnalysis::initMuonTools()
     // Initialize muon selection tools
 
     m_muonSelectionToolVeryLoose = new CP::MuonSelectionTool("MuonSelectionTool_VeryLoose");
-    CHECK( m_muonSelectionToolVeryLoose->setProperty( "MaxEta", 2.4 ) );
+    CHECK( m_muonSelectionToolVeryLoose->setProperty( "MaxEta", 2.5 ) );
     CHECK( m_muonSelectionToolVeryLoose->setProperty( "MuQuality", int(xAOD::Muon::VeryLoose) ));// Warning: includes bad muons!
     CHECK( m_muonSelectionToolVeryLoose->initialize() );
 
     m_muonSelectionToolLoose = new CP::MuonSelectionTool("MuonSelectionTool_Loose");
-    CHECK( m_muonSelectionToolLoose->setProperty( "MaxEta", 2.4 ) );
+    CHECK( m_muonSelectionToolLoose->setProperty( "MaxEta", 2.5 ) );
     CHECK( m_muonSelectionToolLoose->setProperty( "MuQuality", int(xAOD::Muon::Loose) ));
     CHECK( m_muonSelectionToolLoose->initialize() );
     
     m_muonSelectionToolMedium = new CP::MuonSelectionTool("MuonSelectionTool_Medium");
-    CHECK( m_muonSelectionToolMedium->setProperty( "MaxEta", 2.4 ) );
+    CHECK( m_muonSelectionToolMedium->setProperty( "MaxEta", 2.5 ) );
     CHECK( m_muonSelectionToolMedium->setProperty( "MuQuality", int(xAOD::Muon::Medium) ));
     CHECK( m_muonSelectionToolMedium->initialize() );
 
     m_muonSelectionToolTight = new CP::MuonSelectionTool("MuonSelectionTool_Tight");
-    CHECK( m_muonSelectionToolTight->setProperty( "MaxEta", 2.4 ) );
+    CHECK( m_muonSelectionToolTight->setProperty( "MaxEta", 2.5 ) );
     CHECK( m_muonSelectionToolTight->setProperty( "MuQuality", int(xAOD::Muon::Tight) ));
     CHECK( m_muonSelectionToolTight->initialize() );
 }
@@ -489,27 +478,42 @@ void XaodAnalysis::initIsoTools()
 
     // Gradient Loose WP
     m_isoToolGradientLoose = new CP::IsolationSelectionTool( "IsolationSelectionTool_GradientLoose" );
-    CHECK( m_isoToolGradientLoose->setProperty( "WorkingPoint", "GradientLoose" ) );
+    CHECK( m_isoToolGradientLoose->setProperty( "ElectronWP",   "GradientLoose") );
+    CHECK( m_isoToolGradientLoose->setProperty( "MuonWP",       "GradientLoose") );
+    CHECK( m_isoToolGradientLoose->setProperty( "PhotonWP",     "GradientLoose") );
+    //CHECK( m_isoToolGradientLoose->setProperty( "WorkingPoint", "GradientLoose" ) );
     CHECK( m_isoToolGradientLoose->initialize() );
     
     // Gradient WP
     m_isoToolGradient = new CP::IsolationSelectionTool( "IsolationSelectionTool_Gradient" );
-    CHECK( m_isoToolGradient->setProperty( "WorkingPoint", "Gradient" ) );
+    CHECK( m_isoToolGradient->setProperty( "ElectronWP",   "Gradient") );
+    CHECK( m_isoToolGradient->setProperty( "MuonWP",       "Gradient") );
+    CHECK( m_isoToolGradient->setProperty( "PhotonWP",     "Gradient") );
+    //CHECK( m_isoToolGradient->setProperty( "WorkingPoint", "Gradient" ) );
     CHECK( m_isoToolGradient->initialize() );
-    
-    // Very Loose WP
-    m_isoToolVeryLoose = new CP::IsolationSelectionTool( "IsolationSelectionTool_VeryLoose" );
-    CHECK( m_isoToolVeryLoose->setProperty( "WorkingPoint", "VeryLoose") );
-    CHECK( m_isoToolVeryLoose->initialize() );
+   
+    // LooseTrackOnly WP 
+    m_isoToolLooseTrackOnly = new CP::IsolationSelectionTool( "IsolationSelectionTool_LooseTrackOnly" );
+    CHECK( m_isoToolLooseTrackOnly->setProperty( "ElectronWP",   "LooseTrackOnly") );
+    CHECK( m_isoToolLooseTrackOnly->setProperty( "MuonWP",       "LooseTrackOnly") );
+    CHECK( m_isoToolLooseTrackOnly->setProperty( "PhotonWP",     "LooseTrackOnly") );
+    //CHECK( m_isoToolLooseTrackOnly->setProperty( "WorkingPoint", "LooseTrackOnly") );
+    CHECK( m_isoToolLooseTrackOnly->initialize() );
     
     // Loose WP
     m_isoToolLoose = new CP::IsolationSelectionTool( "IsolationSelectionTool_Loose" );
-    CHECK( m_isoToolLoose->setProperty( "WorkingPoint", "Loose") );
+    CHECK( m_isoToolLoose->setProperty( "ElectronWP",   "Loose") );
+    CHECK( m_isoToolLoose->setProperty( "MuonWP",       "Loose") );
+    CHECK( m_isoToolLoose->setProperty( "PhotonWP",     "Loose") );
+    //CHECK( m_isoToolLoose->setProperty( "WorkingPoint", "Loose") );
     CHECK( m_isoToolLoose->initialize() );
     
     // Tight WP
     m_isoToolTight = new CP::IsolationSelectionTool( "IsolationSelectionTool_Tight" );
-    CHECK( m_isoToolTight->setProperty( "WorkingPoint", "Tight") );
+    CHECK( m_isoToolTight->setProperty( "ElectronWP",   "Tight") );
+    CHECK( m_isoToolTight->setProperty( "MuonWP",       "Tight") );
+    CHECK( m_isoToolTight->setProperty( "PhotonWP",     "Tight") );
+    //CHECK( m_isoToolTight->setProperty( "WorkingPoint", "Tight") );
     CHECK( m_isoToolTight->initialize() );
 
 }
@@ -883,14 +887,30 @@ void XaodAnalysis::selectBaselineObjects(SusyNtSys sys, ST::SystInfo sysInfo)
     if(m_dbg) cout<<"preMuons["<<m_preMuons.size()<<"]"<<endl;
 
     //////////////////////////////////
+    // For updated jet selection (as of SUSY,2.3.15a) 
+    // we need OR flags for Jets in order to check for b-tagging
+    // and "bad" jets
+    //
+    // set OverlapRemoval flags
+    //  --> "passOR"
+    //  signature: (ele, muo, jets, useSigLep=false, useIsoLep=false, doBjetOR=false)
+    //////////////////////////////////
+    m_susyObj[m_eleIDDefault]->OverlapRemoval(electrons, muons, jets); 
+
+    //////////////////////////////////
     // Jets
     //////////////////////////////////
     int iJet=-1;
     for(const auto& jet : *jets){
         iJet++;
         if((bool)jet->auxdata< char >("baseline")==1 ) m_preJets.push_back(iJet);//AT: save baseline pT>20GeV only
-    //    m_susyObj[m_eleIDDefault]->IsBJet(*jet, !is8TeV()); // assuming for mc15 onlyi, this signature is obsolete
-        m_susyObj[m_eleIDDefault]->IsBJet(*jet);  // default MV2c20 > -0.3867 for IsBJet = True
+        // defaults ST::00-06-13: IsSignalJet(const xAOD::Jet&, ptcut=20000., etacut=2.8, jvtcut=0.64)
+        //    --> calls IsBadJet and sets "bad" decoration
+        //    !!--> IsSignalJet must be called before IsBJet !!
+        m_susyObj[m_eleIDDefault]->IsSignalJet(*jet);
+
+        // defaults ST::00-06-13: mv2c20 > -0.4434 and dec_signal(jet)==True for IsBJet==True
+        m_susyObj[m_eleIDDefault]->IsBJet(*jet);
         if(m_dbg>=5) cout<<"Jet passing"
                          <<" baseline? "<< bool(jet->auxdata< char >("baseline")==1)
                          <<" signal? "<<   bool(jet->auxdata< char >("signal")==1)
@@ -902,13 +922,6 @@ void XaodAnalysis::selectBaselineObjects(SusyNtSys sys, ST::SystInfo sysInfo)
          //  (bool)jet->auxdata< char >("passOR")==1 ) m_baseJets.push_back(iJet); 
     }
     if(m_dbg) cout<<"preJets["<<m_preJets.size()<<"]"<<endl;
-
-    //////////////////////////////////
-    // set OverlapRemoval flags
-    //  --> "passOR"
-    //  signature: (ele, muo, jets, useSigLep=false, useIsoLep=false, doBjetOR=false)
-    //////////////////////////////////
-    m_susyObj[m_eleIDDefault]->OverlapRemoval(electrons, muons, jets); 
 
     //////////////////////////////////
     // Taus
