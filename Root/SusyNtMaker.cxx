@@ -177,6 +177,13 @@ Bool_t SusyNtMaker::Process(Long64_t entry)
     fillTriggerHisto(); // dantrim trig
     if(selectEvent() && m_fillNt){
         matchTriggers();
+        // dantrim Jul 2 2015
+     //   if(m_isMC) { 
+     //       //xaodTruthParticles();
+     //       m_tauTruthMatchingTool->setTruthParticleContainer(xaodTruthParticles());
+     //       m_tauTruthMatchingTool->initializeEvent();
+     //   }
+
         //if(m_isMC){
         //    //m_tauTruthMatchingTool->setTruthParticleContainer(xaodTruthParticles()); // comment out for memory leak check
         //    //m_tauTruthMatchingTool->createTruthTauContainer(); // DA: gets called automatically when calling setTruthParticleContainer
@@ -866,6 +873,13 @@ void SusyNtMaker::storeTau(const xAOD::TauJet &in)
     out.muonVeto = in.isTau(xAOD::TauJetParameters::MuonVeto);
     
     if (m_isMC){
+       // // dantrim Jul 3 2015 : SUSYTools' examples don't even work...
+       // const xAOD::TruthParticle* truthTau = m_tauTruthMatchingTool->applyTruthMatch(in);
+       // if((bool)in.auxdata< char >("IsTruthMatched")) {
+       //     cout << "tau IsTruthMatched == True    nProngs: " << int(in.auxdata<size_t>("TruthProng")) << "   charge: " << int(in.auxdata<int>("TruthCharge")) << endl;
+       //     out.trueTau = true;
+       // }
+
         //m_tauTruthMatchingTool->applyTruthMatch(tau); // memory leak check
         //if (in.auxdata<bool>("IsTruthMatched")) out.trueTau = true; // memory leak check
         //else out.trueTau = false;  // memory leak check

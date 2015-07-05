@@ -467,7 +467,11 @@ void XaodAnalysis::initTauTools()
     //m_tauTruthMatchingTool = new TauAnalysisTools::TauTruthMatchingTool("TauTruthMatchingTool");  // memory leak check
     //m_tauTruthMatchingTool->msg().setLevel(m_dbg ? MSG::DEBUG : MSG::ERROR);                      // memory leak check
     //CHECK(m_tauTruthMatchingTool->initialize());                                                  // memory leak check
-    
+   // // dantrim Jul 2 :: following TauTruthTool setup found in SUSYTools
+   // m_tauTruthMatchingTool = new TauAnalysisTools::TauTruthMatchingTool("TauTruthMatchingTool");
+   // m_tauTruthMatchingTool->msg().setLevel(MSG::INFO);
+   // CHECK( m_tauTruthMatchingTool->initialize() );   
+ 
     //AT: 05-07-15: consider adding ?
     //m_tauTruthMatchingTool->setProperty("SampleType", (int)TauAnalysisTools::SHERPA);
     //m_tauTruthMatchingTool->setProperty("SampleType", (int)TauAnalysisTools::PYTHIA);//default

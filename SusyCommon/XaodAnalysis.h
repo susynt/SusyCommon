@@ -31,6 +31,7 @@
 #include "xAODTruth/TruthParticleContainer.h"
 #include "xAODTruth/TruthEventContainer.h"
 #include "xAODTruth/xAODTruthHelpers.h"
+#include "TauAnalysisTools/TauEfficiencyCorrectionsTool.h"
 #include "TauAnalysisTools/TauTruthMatchingTool.h"
 #include "TauAnalysisTools/TauTruthTrackMatchingTool.h"
 
@@ -604,12 +605,12 @@ namespace Susy {
     // Lepton isolation tools
     CP::IsolationSelectionTool *m_isoToolGradientLoose;
     CP::IsolationSelectionTool *m_isoToolGradient;
-    CP::IsolationSelectionTool *m_isoToolVeryLoose;
+    CP::IsolationSelectionTool *m_isoToolLooseTrackOnly;
     CP::IsolationSelectionTool *m_isoToolLoose;
     CP::IsolationSelectionTool *m_isoToolTight;
 
     //Tau truth matchong tools
-    //TauAnalysisTools::TauTruthMatchingTool       *m_tauTruthMatchingTool; // memory leak check
+    TauAnalysisTools::TauTruthMatchingTool       *m_tauTruthMatchingTool; // memory leak check
     TauAnalysisTools::TauTruthTrackMatchingTool  *m_tauTruthTrackMatchingTool;
     TauAnalysisTools::TauEfficiencyCorrectionsTool *m_TauEffEleTool;
 
