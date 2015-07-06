@@ -814,6 +814,13 @@ void SusyNtMaker::storePhoton(const xAOD::Photon &in)
     out.OQ = in.isGoodOQ(xAOD::EgammaParameters::BADCLUSPHOTON);
 //    in.isolationValue(out.topoEtcone40,xAOD::Iso::topoetcone40);
     out.topoEtcone40 = in.isolationValue(xAOD::Iso::topoetcone40) * MeV2GeV;
+
+    // isolation
+    out.isoGradientLoose  = m_isoToolGradientLoose->accept(in) ? true : false;
+    out.isoGradient       = m_isoToolGradient->accept(in) ? true : false;
+    out.isoLooseTrackOnly = m_isoToolLooseTrackOnly->accept(in) ? true : false;
+    out.isoLoose          = m_isoToolLoose->accept(in) ? true : false;
+    out.isoTight          = m_isoToolTight->accept(in) ? true : false;
     
     if(m_dbg) cout << "AT: storePhoton: " << out.pt << " " << out.tight << " " << out.isConv << endl;
     if(m_dbg && !all_available) cout<<"missing some photon variables"<<endl;
