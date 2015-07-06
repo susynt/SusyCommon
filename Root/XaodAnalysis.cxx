@@ -18,6 +18,9 @@
 #include <iterator> // back_inserter
 #include <numeric> // accumulate
 
+#include "xAODCutFlow/CutBookkeeper.h"
+#include "xAODCutFlow/CutBookkeeperContainer.h"
+
 
 
 
@@ -40,10 +43,15 @@ using Susy::XaodAnalysis;
 
 //----------------------------------------------------------
 XaodAnalysis::XaodAnalysis() :
+    m_input_chain(0),
     m_sample(""),
     m_triggerSet("run2"),
     m_stream(Stream_Unknown),
     m_isDerivation(false), // dantrim event shape
+    m_checkCutBookKeeper(true),
+    m_nEventsProcessed(0),
+    m_sumOfWeights(0),
+    m_sumOfWeightsSquared(0),
     m_isAF2(false),
     m_is8TeV(true),
     m_d3pdTag(D3PD_p1328),
@@ -112,10 +120,26 @@ void XaodAnalysis::Init(TTree *tree)
 {
     bool verbose = m_dbg>0;
     xAOD::Init("Susy::XaodAnalysis").ignore();
+
+    // get the inital (pre-skimmed) counters
+    TObjArray* chainFiles = m_input_chain->GetListOfFiles();
+    TIter next(chainFiles);
+    TChainElement *chFile=0;
+    while (( chFile=(TChainElement*)next() )) {
+        cout << "XaodAnalysis::Init    CutBookkeeper info for: " << chFile->GetTitle() << endl;
+        TFile f(chFile->GetTitle());
+        m_event.readFrom(&f);
+        m_event.getEntry(0);
+        XaodAnalysis::getCutBookkeeperInfo(m_event);
+    }
+    cout << "XaodAnalysis::Init    CutBookkeeper info totals: " << endl;
+    cout << "    > m_nEventsProcessed   : " << m_nEventsProcessed << endl;
+    cout << "    > m_sumOfWeights       : " << m_sumOfWeights << endl;
+    cout << "    > m_sumOfWeightsSquared: " << m_sumOfWeightsSquared << endl;
+
     m_event.readFrom(tree);
     m_isMC = XaodAnalysis::isSimuFromSamplename(m_sample);
-    //m_isDerivation = XaodAnalysis::isDerivationFromMetaData(tree, verbose); // dantrim event shape
-    m_isDerivation = true; // test memory leak check
+    m_isDerivation = XaodAnalysis::isDerivationFromMetaData(tree, verbose); // dantrim event shape
     bool isData = XaodAnalysis::isDataFromSamplename(m_sample);
     m_stream = XaodAnalysis::streamFromSamplename(m_sample, isData);
     initSusyTools();
@@ -2153,8 +2177,25 @@ bool XaodAnalysis::isSimuFromSamplename(const TString &s)
 bool XaodAnalysis::isDerivationFromMetaData(TTree* intree, bool verbose)
 {
     // Following implementation in SUSYToolsTester
-    bool is_derived = false;
+    bool is_derivation = false;
     TTree* metadata = nullptr;
+
+    if(TDirectory* treeDir = getDirectoryFromTreeOrChain(intree, verbose)){
+        if(TObject *obj = dynamic_cast<TTree*>(treeDir->Get("MetaData"))){
+            metadata = dynamic_cast<TTree*>(treeDir->Get("MetaData"));
+        }
+    }
+    if(metadata){
+        metadata->LoadTree(0);
+        is_derivation = !metadata->GetBranch("StreamAOD");
+    } else {
+       cout << "XaodAnalysis::isDerivationFromMetaData    cannot get MetaData tree" << endl;
+    }
+
+    if(is_derivation) cout << "Treating input as a derivation" << endl;
+
+    return is_derivation;
+/*
     if(TDirectory* treeDir = getDirectoryFromTreeOrChain(intree, verbose)){
         if(TObject *obj = treeDir->Get("MetaData")){
             metadata = static_cast<TTree*>(obj);
@@ -2171,6 +2212,32 @@ bool XaodAnalysis::isDerivationFromMetaData(TTree* intree, bool verbose)
         cout<<"XaodAnalysis::isDerivationFromMetaData: cannot get metadata tree"<<endl;
     }
     return is_derived;
+*/
+}
+//----------------------------------------------------------
+void XaodAnalysis::getCutBookkeeperInfo(xAOD::TEvent& event)
+{
+    const xAOD::CutBookkeeperContainer* cutflows(0);
+    event.retrieveMetaInput(cutflows, "CutBookkeepers");
+    int minCycle = 10000;
+    for(const xAOD::CutBookkeeper* cutflow : *cutflows) {
+        if(!cutflow->name().empty() && minCycle > cutflow->cycle()) { minCycle = cutflow->cycle(); }
+    }
+    uint64_t nevents = 0;
+    double sumw = 0;
+    double sumw2 = 0;
+    for(const xAOD::CutBookkeeper* cutflow : *cutflows) {
+        if(minCycle == cutflow->cycle() && cutflow->name() == "AllExecutedEvents") {
+            nevents = cutflow->nAcceptedEvents();
+            sumw = cutflow->sumOfEventWeights();
+            sumw2 = cutflow->sumOfEventWeightsSquared();
+            break;
+        }
+    }
+    m_nEventsProcessed += nevents;
+    m_sumOfWeights += sumw;
+    m_sumOfWeightsSquared += sumw2;
+    cout << "nAcceptedEvents: " << nevents << "  sumOfEventWeights: " << sumw << "  sumOfEventWeightsSquared: " << sumw2 << endl;
 }
 //----------------------------------------------------------
 TDirectory* XaodAnalysis::getDirectoryFromTreeOrChain(TTree* tree, bool verbose)

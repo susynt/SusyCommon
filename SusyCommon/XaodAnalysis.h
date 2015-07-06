@@ -114,6 +114,7 @@ namespace Susy {
     /// Due to ROOT's stupid design, need to specify version >= 2 or the tree will not connect automatically
     virtual Int_t   Version() const { return 2; }
     virtual XaodAnalysis& setDebug(int debugLevel) { m_dbg = debugLevel; return *this; }
+    virtual void setChain(TChain* input_chain) { m_input_chain = input_chain; }
     void setTriggerSet(std::string set) { m_triggerSet = set; }
     XaodAnalysis& initSusyTools(); ///< initialize SUSYObjDef_xAOD
     
@@ -354,6 +355,7 @@ namespace Susy {
     static bool isDataFromSamplename(const TString &s); ///< guess from sample name whether it's data sample
     static bool isSimuFromSamplename(const TString &s); ///< guess from sample name whether it's a simulated sample
     static bool isDerivationFromMetaData(TTree* tree, bool verbose); ///< From sample MetaData, determine if sample is a derivation
+    void getCutBookkeeperInfo(xAOD::TEvent& event);
     /**
        \brief Retrieve the file holding the tree; for a chain, get the files holding the first tree.
 
@@ -369,12 +371,16 @@ namespace Susy {
 
   protected:
 
-
+    TChain*                     m_input_chain;  // input chain
     TString                     m_sample;       // sample name
     std::string                 m_triggerSet;   // trigger set to store
     std::vector<std::string>    m_triggerNames; 
     DataStream                  m_stream;       // data stream enum, taken from sample name
     bool                        m_isDerivation; // flag for derived xAOD (DxAOD)
+    bool                        m_checkCutBookKeeper;
+    uint64_t                    m_nEventsProcessed;
+    double                      m_sumOfWeights;
+    double                      m_sumOfWeightsSquared;
     bool                        m_isAF2;        // flag for ATLFastII samples
     bool                        m_is8TeV;       // flag for 8 TeV samples
 

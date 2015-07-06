@@ -18,6 +18,11 @@
 #include "xAODTracking/TrackParticlexAODHelpers.h"  // xAOD::TrackingHelpers
 #include "xAODEgamma/EgammaxAODHelpers.h"
 
+
+#include "xAODCutFlow/CutBookkeeper.h"
+#include "xAODCutFlow/CutBookkeeperContainer.h"
+
+
 // Amg include
 #include "EventPrimitives/EventPrimitivesHelpers.h"
 
@@ -84,7 +89,6 @@ void SusyNtMaker::SlaveBegin(TTree* tree)
     if(m_fillNt || true)
         initializeOuputTree();
     m_isWhSample = guessWhetherIsWhSample(m_sample);
-    checkIfInputIs13TeV();
     initializeCutflowHistograms();
 
     m_timer.Start();
@@ -155,6 +159,7 @@ Bool_t SusyNtMaker::Process(Long64_t entry)
     static Long64_t chainEntry = -1;
     chainEntry++;
     m_event.getEntry(chainEntry); // DG 2014-09-19 TEvent wants the chain entry, not the tree entry (?)
+
     retrieveCollections();
     const xAOD::EventInfo* eventinfo = XaodAnalysis::xaodEventInfo();
     if(m_dbg || chainEntry%5000==0){
@@ -164,7 +169,6 @@ Bool_t SusyNtMaker::Process(Long64_t entry)
              << " event " << setw(7) << eventinfo->eventNumber() << " ****" << endl;
         cout << "***********************************************************" << endl;
     }
-        
     if(!m_flagsHaveBeenChecked) {
         m_flagsAreConsistent = runningOptionsAreValid();
         m_flagsHaveBeenChecked=true;
@@ -257,6 +261,13 @@ void SusyNtMaker::fillEventVars()
     evt->isMC             = m_isMC;
     evt->mcChannel        = m_isMC? eventinfo->mcChannelNumber() : 0;
     evt->w                = m_isMC? eventinfo->mcEventWeight()   : 1; // \todo DG this now has an arg, is 0 the right one?
+    
+    // pre-skimmed counters (i.e. prior to derivation framework)
+    evt->initialNumberOfEvents    = m_nEventsProcessed;
+    evt->sumOfEventWeights        = m_sumOfWeights;
+    evt->sumOfEventWeightsSquared = m_sumOfWeightsSquared;
+
+
     evt->nVtx             = getNumGoodVtx();
     evt->avgMu            = eventinfo->averageInteractionsPerCrossing();
 
@@ -1620,24 +1631,6 @@ SusyNtMaker& SusyNtMaker::writeMetadata()
     }
     return *this;
 }
-//----------------------------------------------------------
-void SusyNtMaker::checkIfInputIs13TeV()
-{
-    size_t found_mc14_13TeV = m_inputContainerName.find("mc14_13TeV");
-    // could remove mc14_13TeV altogether since this is for mc15, but just add this 
-    // second check for now:
-    size_t found_mc15_13TeV = m_inputContainerName.find("mc15_13TeV");
-    std::string treatment;
-    if(found_mc14_13TeV != std::string::npos) {
-        m_is8TeV = false;
-        treatment = "mc14_13TeV";
-    }
-    else if(found_mc15_13TeV != std::string::npos) {
-        m_is8TeV = false;
-        treatment = "mc15_13TeV";
-    }
-    cout << "Treating input sample as " << (m_is8TeV ? "mc14_8TeV" : treatment) << endl;
-} 
 //----------------------------------------------------------
 bool SusyNtMaker::guessWhetherIsWhSample(const TString &samplename)
 {

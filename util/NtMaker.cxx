@@ -234,6 +234,7 @@ int main(int argc, char** argv)
 
   // Build the TSelector
   SusyNtMaker* susyAna = new SusyNtMaker();
+  susyAna->setChain(chain);
   susyAna->setDebug(dbg);
   susyAna->setTriggerSet(trigset);
   susyAna->setSample(sample);
