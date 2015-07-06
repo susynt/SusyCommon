@@ -18,11 +18,6 @@
 #include "xAODTracking/TrackParticlexAODHelpers.h"  // xAOD::TrackingHelpers
 #include "xAODEgamma/EgammaxAODHelpers.h"
 
-
-#include "xAODCutFlow/CutBookkeeper.h"
-#include "xAODCutFlow/CutBookkeeperContainer.h"
-
-
 // Amg include
 #include "EventPrimitives/EventPrimitivesHelpers.h"
 
