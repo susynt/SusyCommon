@@ -48,7 +48,6 @@ XaodAnalysis::XaodAnalysis() :
     m_triggerSet("run2"),
     m_stream(Stream_Unknown),
     m_isDerivation(false), // dantrim event shape
-    m_checkCutBookKeeper(true),
     m_nEventsProcessed(0),
     m_sumOfWeights(0),
     m_sumOfWeightsSquared(0),

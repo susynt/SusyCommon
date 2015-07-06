@@ -377,10 +377,9 @@ namespace Susy {
     std::vector<std::string>    m_triggerNames; 
     DataStream                  m_stream;       // data stream enum, taken from sample name
     bool                        m_isDerivation; // flag for derived xAOD (DxAOD)
-    bool                        m_checkCutBookKeeper;
-    uint64_t                    m_nEventsProcessed;
-    double                      m_sumOfWeights;
-    double                      m_sumOfWeightsSquared;
+    uint64_t                    m_nEventsProcessed; // initial number of events (pre-skim) in the input samples
+    double                      m_sumOfWeights;  // initial sumw (pre-skim) of the input samples
+    double                      m_sumOfWeightsSquared;  // initial sumw2 (pre-skim) of the input samples
     bool                        m_isAF2;        // flag for ATLFastII samples
     bool                        m_is8TeV;       // flag for 8 TeV samples
 
