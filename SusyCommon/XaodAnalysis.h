@@ -39,7 +39,6 @@
 #include "xAODCore/ShallowCopy.h"
 
 //CP systematics
-#include "PATInterfaces/SystematicList.h"
 #include "PATInterfaces/SystematicVariation.h"
 #include "PATInterfaces/SystematicRegistry.h"
 #include "PATInterfaces/SystematicCode.h"
@@ -582,7 +581,7 @@ namespace Susy {
 
 
     // Performance tools
-    std::string maindir;
+    std::string m_data_dir;
 
     AsgElectronEfficiencyCorrectionTool *m_electronEfficiencySFTool;
     AsgElectronLikelihoodTool *m_elecSelLikelihoodVeryLoose;

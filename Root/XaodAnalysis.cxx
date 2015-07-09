@@ -80,7 +80,7 @@ XaodAnalysis::XaodAnalysis() :
     //m_event(xAOD::TEvent::kClassAccess),
     m_event(xAOD::TEvent::kBranchAccess), ///> dantrim -- (in PAT threads, TDT is supposed to work with kBranchAccess option)
     m_store(),
-    m_eleIDDefault(TightLLH),
+    m_eleIDDefault(TightLH),
 	m_electronEfficiencySFTool(0),
     m_elecSelLikelihoodVeryLoose(0),
     m_elecSelLikelihoodLoose(0),
@@ -141,6 +141,25 @@ void XaodAnalysis::Init(TTree *tree)
     m_isDerivation = XaodAnalysis::isDerivationFromMetaData(tree, verbose); // dantrim event shape
     bool isData = XaodAnalysis::isDataFromSamplename(m_sample);
     m_stream = XaodAnalysis::streamFromSamplename(m_sample, isData);
+
+    // get the directory for the data/
+    char *tmparea=getenv("ROOTCOREBIN");
+    char* TestArea = getenv("TestArea");
+
+    if (tmparea != NULL) {
+        m_data_dir = tmparea;
+        m_data_dir = m_data_dir + "/data/";
+    }
+    else if (TestArea != NULL ) {/// Athena
+        tmparea = TestArea;
+        m_data_dir = tmparea;
+        m_data_dir = m_data_dir + "/";
+    } else {
+        cout << " RootCore area not set up " << endl
+             <<"Exiting... "<<endl << endl;
+        exit(-1);
+    }
+
     initSusyTools();
     initLocalTools();
     if(m_isMC && m_sys) getSystematicList();
@@ -239,19 +258,19 @@ void XaodAnalysis::Terminate()
     delete m_isoToolTight;
 
     // dantrim trig
-    delete m_trigTool;
-    delete m_configTool;
-    delete m_trigMuonMatchTool;
-    //delete m_trigEgammaMatchTool;
+  //  delete m_trigTool;
+  //  delete m_configTool;
+  //  delete m_trigMuonMatchTool;
+  //  //delete m_trigEgammaMatchTool;
     
-    for(int i=TightLLH; i<=LooseLLH; i++){
+    for(int i=TightLH; i<=LooseLH; i++){
         delete m_susyObj[i];
     }
 }
 //----------------------------------------------------------
 XaodAnalysis& XaodAnalysis::initSusyTools()
 {
-    for(int i=TightLLH; i<=LooseLLH; i++){
+    for(int i=TightLH; i<=LooseLH; i++){
         string electronIdName = ElectronId2str(static_cast<ElectronId>(i));
         string name = "SUSYObjDef_xAOD_" + electronIdName;
         m_susyObj[i] = new ST::SUSYObjDef_xAOD(name);
@@ -387,49 +406,52 @@ void XaodAnalysis::initPileupTool()
 //----------------------------------------------------------
 void XaodAnalysis::initElectronTools()
 {
-//    m_electronEfficiencySFTool = new AsgElectronEfficiencyCorrectionTool("AsgElectronEfficiencyCorrectionTool");
+    // Initialize the electron likelihood ID tools for each of the
+    // working points
 
-
-    //AT:: LooseLLH & TightLLH are already define in SUSYTools but protected
     std::string confDir = "ElectronPhotonSelectorTools/offline/mc15_20150429/";
-  //  std::string confDir = "ElectronPhotonSelectorTools/offline/dc14b_20150121/";
 
+    // VeryLooseLH
     m_elecSelLikelihoodVeryLoose = new AsgElectronLikelihoodTool("AsgElectronLikelihoodToolVeryLoose");
     CHECK( m_elecSelLikelihoodVeryLoose->setProperty("primaryVertexContainer","PrimaryVertices") );
     CHECK( m_elecSelLikelihoodVeryLoose->setProperty("ConfigFile",confDir+"ElectronLikelihoodVeryLooseOfflineConfig2015.conf"));
     CHECK( m_elecSelLikelihoodVeryLoose->initialize() );
 
+    // LooseLH
     m_elecSelLikelihoodLoose = new AsgElectronLikelihoodTool("AsgElectronLikelihoodToolLoose");
     CHECK( m_elecSelLikelihoodLoose->setProperty("primaryVertexContainer","PrimaryVertices") );
     CHECK( m_elecSelLikelihoodLoose->setProperty("ConfigFile",confDir+"ElectronLikelihoodLooseOfflineConfig2015.conf"));
     CHECK( m_elecSelLikelihoodLoose->initialize() );
     
+    // MediumLH
     m_elecSelLikelihoodMedium = new AsgElectronLikelihoodTool("AsgElectronLikelihoodToolMedium");
     CHECK( m_elecSelLikelihoodMedium->setProperty("primaryVertexContainer","PrimaryVertices") );
     CHECK( m_elecSelLikelihoodMedium->setProperty("ConfigFile",confDir+"ElectronLikelihoodMediumOfflineConfig2015.conf") );
     CHECK( m_elecSelLikelihoodMedium->initialize() );
 
+    // TightLH
     m_elecSelLikelihoodTight = new AsgElectronLikelihoodTool("AsgElectronLikelihoodToolTight");
     CHECK( m_elecSelLikelihoodTight->setProperty("primaryVertexContainer","PrimaryVertices") );
     CHECK( m_elecSelLikelihoodTight->setProperty("ConfigFile",confDir+"ElectronLikelihoodTightOfflineConfig2015.conf") );
     CHECK( m_elecSelLikelihoodTight->initialize() );
 
+    // LooseLH (noD0)
     m_elecSelLikelihoodLoose_nod0 = new AsgElectronLikelihoodTool("AsgElectronLikelihoodToolLoose_nod0");
     CHECK( m_elecSelLikelihoodLoose_nod0->setProperty("primaryVertexContainer","PrimaryVertices") );
     CHECK( m_elecSelLikelihoodLoose_nod0->setProperty("ConfigFile",confDir+"ElectronLikelihoodLooseNoD0OfflineConfig2015.conf"));
     CHECK( m_elecSelLikelihoodLoose_nod0->initialize() );
     
+    // MediumLH (noD0)
     m_elecSelLikelihoodMedium_nod0 = new AsgElectronLikelihoodTool("AsgElectronLikelihoodToolMedium_nod0");
     CHECK( m_elecSelLikelihoodMedium_nod0->setProperty("primaryVertexContainer","PrimaryVertices") );
     CHECK( m_elecSelLikelihoodMedium_nod0->setProperty("ConfigFile",confDir+"ElectronLikelihoodMediumNoD0OfflineConfig2015.conf") );
     CHECK( m_elecSelLikelihoodMedium_nod0->initialize() );
 
+    // TightLH (noD0)
     m_elecSelLikelihoodTight_nod0 = new AsgElectronLikelihoodTool("AsgElectronLikelihoodToolTight_nod0");
     CHECK( m_elecSelLikelihoodTight_nod0->setProperty("primaryVertexContainer","PrimaryVertices") );
     CHECK( m_elecSelLikelihoodTight_nod0->setProperty("ConfigFile",confDir+"ElectronLikelihoodTightNoD0OfflineConfig2015.conf") );
     CHECK( m_elecSelLikelihoodTight_nod0->initialize() );
-
-    
 }
 //----------------------------------------------------------
 void XaodAnalysis::initMuonTools()
@@ -486,14 +508,34 @@ void XaodAnalysis::initTauTools()
 //----------------------------------------------------------
 void XaodAnalysis::initIsoTools()
 {
-    // see: https://twiki.cern.ch/twiki/bin/view/AtlasProtected/ElectronIsolationSelectionTool 
+    // see: https://twiki.cern.ch/twiki/bin/view/AtlasProtected/IsolationSelectionTool
+
+    // track and calo based isolation efficiencies (and combined)
+    // LooseTrackOnly
+    //      > xAOD::Iso::ptvarcone30 : 99%
+    //      > Combined 99%
+    // Loose
+    //      > xAOD::Iso::ptvarcone30  : 99%
+    //      > xAOD::Iso::topoetcone20 : 99%
+    //      > Combined 99%
+    // Tight
+    //      > xAOD::Iso::ptvarcone30  : 99%
+    //      > xAOD::Iso::topoetcone20 : 96%
+    //      > Combined 95%
+    // Gradient
+    //      > xAOD::Iso::ptvarcone30  : "0.1143*x + 92.14"
+    //      > xAOD::Iso::topoetcone20 : "0.1143*x + 92.14"
+    //      > Combined: Constructed such that F(25 GeV) = 90%, F(60 GeV) = 99%
+    // GradientLoose
+    //      > xAOD::Iso::ptvarcone30  : "0.057*x + 95.57"
+    //      > xAOD::Iso::topoetcone20 : "0.057*x + 95.57"
+    //      > Combined: Constructed such that F(25 GeV) = 95%, F(60 GeV) = 99%
 
     // Gradient Loose WP
     m_isoToolGradientLoose = new CP::IsolationSelectionTool( "IsolationSelectionTool_GradientLoose" );
     CHECK( m_isoToolGradientLoose->setProperty( "ElectronWP",   "GradientLoose") );
     CHECK( m_isoToolGradientLoose->setProperty( "MuonWP",       "GradientLoose") );
     CHECK( m_isoToolGradientLoose->setProperty( "PhotonWP",     "GradientLoose") );
-    //CHECK( m_isoToolGradientLoose->setProperty( "WorkingPoint", "GradientLoose" ) );
     CHECK( m_isoToolGradientLoose->initialize() );
     
     // Gradient WP
@@ -501,7 +543,6 @@ void XaodAnalysis::initIsoTools()
     CHECK( m_isoToolGradient->setProperty( "ElectronWP",   "Gradient") );
     CHECK( m_isoToolGradient->setProperty( "MuonWP",       "Gradient") );
     CHECK( m_isoToolGradient->setProperty( "PhotonWP",     "Gradient") );
-    //CHECK( m_isoToolGradient->setProperty( "WorkingPoint", "Gradient" ) );
     CHECK( m_isoToolGradient->initialize() );
    
     // LooseTrackOnly WP 
@@ -509,7 +550,6 @@ void XaodAnalysis::initIsoTools()
     CHECK( m_isoToolLooseTrackOnly->setProperty( "ElectronWP",   "LooseTrackOnly") );
     CHECK( m_isoToolLooseTrackOnly->setProperty( "MuonWP",       "LooseTrackOnly") );
     CHECK( m_isoToolLooseTrackOnly->setProperty( "PhotonWP",     "LooseTrackOnly") );
-    //CHECK( m_isoToolLooseTrackOnly->setProperty( "WorkingPoint", "LooseTrackOnly") );
     CHECK( m_isoToolLooseTrackOnly->initialize() );
     
     // Loose WP
@@ -517,7 +557,6 @@ void XaodAnalysis::initIsoTools()
     CHECK( m_isoToolLoose->setProperty( "ElectronWP",   "Loose") );
     CHECK( m_isoToolLoose->setProperty( "MuonWP",       "Loose") );
     CHECK( m_isoToolLoose->setProperty( "PhotonWP",     "Loose") );
-    //CHECK( m_isoToolLoose->setProperty( "WorkingPoint", "Loose") );
     CHECK( m_isoToolLoose->initialize() );
     
     // Tight WP
@@ -672,7 +711,6 @@ xAOD::TauJetContainer* XaodAnalysis::xaodTaus(ST::SystInfo sysInfo, SusyNtSys sy
         }
         return m_xaodTaus_nom;
     }
-
     return NULL;
 }
 //----------------------------------------------------------
@@ -1268,14 +1306,14 @@ bool XaodAnalysis::matchTruthJet(int iJet)
 /*--------------------------------------------------------------------------------*/
 bool XaodAnalysis::eleIsOfType(const xAOD::Electron &in, ElectronId id)
 {
-    if     (id==ElectronId::VeryLooseLLH  && m_elecSelLikelihoodVeryLoose->accept(in))  return true;
-    else if(id==ElectronId::LooseLLH  && m_elecSelLikelihoodLoose->accept(in))  return true;
-    else if(id==ElectronId::MediumLLH && m_elecSelLikelihoodMedium->accept(in)) return true;
-    else if(id==ElectronId::TightLLH  && m_elecSelLikelihoodTight->accept(in))  return true;
+    if     (id==ElectronId::VeryLooseLH  && m_elecSelLikelihoodVeryLoose->accept(in))  return true;
+    else if(id==ElectronId::LooseLH  && m_elecSelLikelihoodLoose->accept(in))  return true;
+    else if(id==ElectronId::MediumLH && m_elecSelLikelihoodMedium->accept(in)) return true;
+    else if(id==ElectronId::TightLH  && m_elecSelLikelihoodTight->accept(in))  return true;
 
-    else if(id==ElectronId::LooseLLH_nod0  && m_elecSelLikelihoodLoose_nod0->accept(in))  return true;
-    else if(id==ElectronId::MediumLLH_nod0 && m_elecSelLikelihoodMedium_nod0->accept(in)) return true;
-    else if(id==ElectronId::TightLLH_nod0  && m_elecSelLikelihoodTight_nod0->accept(in))  return true;
+    else if(id==ElectronId::LooseLH_nod0  && m_elecSelLikelihoodLoose_nod0->accept(in))  return true;
+    else if(id==ElectronId::MediumLH_nod0 && m_elecSelLikelihoodMedium_nod0->accept(in)) return true;
+    else if(id==ElectronId::TightLH_nod0  && m_elecSelLikelihoodTight_nod0->accept(in))  return true;
     return false;
 }
 /*--------------------------------------------------------------------------------*/
