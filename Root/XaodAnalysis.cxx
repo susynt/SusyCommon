@@ -278,18 +278,31 @@ XaodAnalysis& XaodAnalysis::initSusyTools()
         cout << "XaodAnalysis::initSusyTools: " << name <<endl;
         cout << "------------------------------------------------------------" << endl;
 
+        // set the verbosity level of SUSYTools
         m_susyObj[i]->msg().setLevel(m_dbg ? MSG::DEBUG : MSG::WARNING);
+    
+        // set the electron Id used for this SUSYTools instance
         m_susyObj[i]->setProperty("EleId", electronIdName);
+
+        // set "datasource" for determining run configuration in SUSYTools
         ST::SettingDataSource datasource = !m_isMC ? ST::Data : (m_isAF2 ? ST::AtlfastII : ST::FullSim);
         CHECK( m_susyObj[i]->setProperty("DataSource",datasource) );
 
-        // dantrim Jul2 2015 :: these are set true by default in SUSYTools
-        //if(m_isDerivation) { m_susyObj[i]->setProperty("DoJetAreaCalib", true); }
-        //else { m_susyObj[i]->setProperty("DoJetAreaCalib", false); }
-        //m_susyObj[i]->setProperty("DoJetGSCCalib", true);
+        ///////////////////////////////////////
+        // set up the pileup reweighting tool
+        // inside of ST
+        ///////////////////////////////////////
+        // prw config files
+        std::vector<std::string> prwFiles;
+        prwFiles.push_back(m_data_dir+"SusyCommon/mc15_50ns.prw.root");
+        m_susyObj[i]->setProperty("PRWConfigFiles", prwFiles);
+        // data luminosity profile
+        std::vector<std::string> lumicalcFiles;
+        lumicalcFiles.push_back(m_data_dir+"SusyCommon/ilumicalc_histograms_None_266904-267639.root");
+        m_susyObj[i]->setProperty("PRWLumiCalcFiles", lumicalcFiles); 
 
-        //AT 05-11-15 Test reduce systemactic set
-        #warning Setting recommended reduced JES systematics set
+
+        #warning Setting recommended reduced JES systematics set to set 1
         m_susyObj[i]->setProperty("JESNuisanceParameterSet", 1);
 
 
@@ -340,37 +353,23 @@ XaodAnalysis& XaodAnalysis::initSusyTools()
 //----------------------------------------------------------
 XaodAnalysis& XaodAnalysis::initLocalTools()
 {
-    char *tmparea=getenv("ROOTCOREBIN");
-    char* TestArea = getenv("TestArea");
-
-    if (tmparea != NULL) {
-        maindir = tmparea;
-        maindir = maindir + "/data/";
-    }
-    else if (TestArea != NULL ) {/// Athena
-        tmparea = TestArea;
-        maindir = tmparea;
-        maindir = maindir + "/";
-    } else {
-        cout << " RootCore area not set up " << endl
-             <<"Exiting... "<<endl << endl;
-        exit(-1);
-    }
 
 
-    initPileupTool();
+    //initPileupTool(); // this is now done in SUSYTools (as of ST-00-06-15)
     initElectronTools();
     initMuonTools();
     initTauTools();
     initIsoTools();
 
-    initTrigger();
+ //   initTrigger(); // now using SUSYTools for all our trigger needs
 
     return *this;
 }
 //----------------------------------------------------------
 void XaodAnalysis::initPileupTool()
 {
+    // This function is obsolete now that SUSYTools implements its own tool
+
     m_pileupReweightingTool = new CP::PileupReweightingTool("PileupReweightingTool");
    // CHECK( m_pileupReweightingTool->setProperty("DefaultChannel", 410000) );
    // m_pileupReweightingTool->setProperty("Input","EventInfo");
@@ -381,19 +380,9 @@ void XaodAnalysis::initPileupTool()
 
     //prwFiles.push_back("PileupReweighting/mc14v1_defaults.prw.root");
     // DA Juen 27 :: prw files from Anyes
-    prwFiles.push_back(maindir+"SusyCommon/mc15_50ns.prw.root");
-  //  prwFiles.push_back(maindir+"SusyCommon/wm_enu.prw.root");
-  //  prwFiles.push_back(maindir+"SusyCommon/wm_munu.prw.root");
-  //  prwFiles.push_back(maindir+"SusyCommon/wm_taunu.prw.root");
-  //  prwFiles.push_back(maindir+"SusyCommon/wp_enu.prw.root");
-  //  prwFiles.push_back(maindir+"SusyCommon/ttbar.prw.root");
-  //  prwFiles.push_back(maindir+"SusyCommon/wp_munu.prw.root");
-  //  prwFiles.push_back(maindir+"SusyCommon/wp_taunu.prw.root");
-  //  prwFiles.push_back(maindir+"SusyCommon/zee.prw.root");
-  //  prwFiles.push_back(maindir+"SusyCommon/zmm.prw.root");
-  //  prwFiles.push_back(maindir+"SusyCommon/ztt.prw.root");
+    prwFiles.push_back(m_data_dir+"SusyCommon/mc15_50ns.prw.root");
     
-    lumicalcFiles.push_back(maindir+"SusyCommon/ilumicalc_histograms_None_266904-267639.root");
+    lumicalcFiles.push_back(m_data_dir+"SusyCommon/ilumicalc_histograms_None_266904-267639.root");
     CHECK( m_pileupReweightingTool->setProperty("ConfigFiles", prwFiles) );
     CHECK( m_pileupReweightingTool->setProperty("LumiCalcFiles", lumicalcFiles) );
 
@@ -2168,7 +2157,9 @@ std::string XaodAnalysis::defauldGrlFile()
     // DA June 22 :: using most recent GRL for period A
     //return std::string( "$ROOTCOREBIN/data/SusyCommon/data15_13TeV.periodA_DetStatus-v62-pro18_DQDefects-00-01-02_PHYS_StandardModel_MinimuBias2010.xml");
     // DA June 25 :: latest, now with run 267073
-    return std::string( "$ROOTCOREBIN/data/SusyCommon/data15_13TeV.periodA_DetStatus-v62-pro18_DQDefects-00-01-02_PHYS_StandardGRL_All_Good.xml");
+    //return std::string( "$ROOTCOREBIN/data/SusyCommon/data15_13TeV.periodA_DetStatus-v62-pro18_DQDefects-00-01-02_PHYS_StandardGRL_All_Good.xml");
+    // DA July 8 
+    return std::string( "$ROOTCOREBIN/data/SusyCommon/data15_13TeV.periodAllYear_DetStatus-v62-pro18-01_DQDefects-00-01-02_PHYS_StandardGRL_All_Good.xml");
 }
 //----------------------------------------------------------
 bool XaodAnalysis::initGrlTool()

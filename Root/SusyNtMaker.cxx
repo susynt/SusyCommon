@@ -287,11 +287,8 @@ void SusyNtMaker::fillEventVars()
     
     evt->trigBits         = m_evtTrigBits; // dantrim trig
 
-    evt->wPileup          = XaodAnalysis::getPileupWeight(eventinfo);
+    evt->wPileup          = m_isMC ? m_susyObj[m_eleIDDefault]->GetPileupWeight() : 1;
    
-  //  evt->wPileup          = is8TeV() ? getPileupWeight(eventinfo) : 1;
-  //  evt->wPileup_up       = is8TeV() ? getPileupWeightUp() : 1;
-  //  evt->wPileup_dn       = is8TeV() ? getPileupWeightDown() : 1;
     //evt->wPileup          = m_isMC? getPileupWeight(eventinfo) : 1;
     //evt->wPileup_up       = m_isMC? getPileupWeightUp() : 1;
     //evt->wPileup_dn       = m_isMC? getPileupWeightDown() : 1;
