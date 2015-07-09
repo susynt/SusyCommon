@@ -492,18 +492,16 @@ void SusyNtMaker::storeElectron(const xAOD::Electron &in)
         all_available = false;
     }
 
-    // DG-2014-08-29 mc info not available yet
-    // 
     // // Trigger flags
-//    out.trigBits = matchElectronTriggers(in);
-//    cout << "testing electron trigBits" << endl;
-//    int nbins = h_passTrigLevel->GetXaxis()->GetNbins();
-//    for(int iTrig=1; iTrig<26; iTrig++){
-//        bool bit = out.trigBits.TestBitNumber(iTrig);
-//        string trigger = h_passTrigLevel->GetXaxis()->GetBinLabel(iTrig);
-//        cout << "\t passed trigger " << trigger << "? " << (bit ? "yes" : "no") << endl;
-//    }
-//    cout << endl;
+    out.trigBits = matchElectronTriggers(in);
+ //   cout << "testing electron trigBits" << endl;
+ //   int nbins = h_passTrigLevel->GetXaxis()->GetNbins();
+ //   for(int iTrig=1; iTrig<26; iTrig++){
+ //       bool bit = out.trigBits.TestBitNumber(iTrig);
+ //       string trigger = h_passTrigLevel->GetXaxis()->GetBinLabel(iTrig);
+ //       cout << "\t passed trigger " << trigger << "? " << (bit ? "yes" : "no") << endl;
+ //   }
+ //   cout << endl;
 
  
     if(m_dbg && !all_available) cout<<"missing some electron variables"<<endl;
@@ -1731,7 +1729,8 @@ void SusyNtMaker::fillTriggerHisto() // dantrim trig
 {
     std::vector<std::string> trigs = XaodAnalysis::xaodTriggers();
     for ( unsigned int iTrig = 0; iTrig < trigs.size(); iTrig++ ) {
-        if(m_trigTool->isPassed(trigs[iTrig]))         h_passTrigLevel->Fill(iTrig+0.5);
+        if(m_susyObj[m_eleIDDefault]->IsTrigPassed(trigs[iTrig])) h_passTrigLevel->Fill(iTrig+0.5);
+        //if(m_trigTool->isPassed(trigs[iTrig]))         h_passTrigLevel->Fill(iTrig+0.5);
     }
 }
 //----------------------------------------------------------

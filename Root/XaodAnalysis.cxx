@@ -103,11 +103,11 @@ XaodAnalysis::XaodAnalysis() :
 	//m_tauTruthMatchingTool(0), // memory leak check
 	m_tauTruthTrackMatchingTool(0),
         //dantrim trig
-        m_evtTrigBits(m_nTriggerBits),
-        m_configTool(NULL),
-        m_trigTool(NULL),
-        m_trigMuonMatchTool(NULL)
-       // m_trigEgammaMatchTool(NULL)
+        m_evtTrigBits(m_nTriggerBits)
+    //    m_configTool(NULL),
+    //    m_trigTool(NULL),
+    //    m_trigMuonMatchTool(NULL)
+    //   // m_trigEgammaMatchTool(NULL)
 {
     clearOutputObjects();
     clearContainerPointers();
@@ -553,33 +553,32 @@ void XaodAnalysis::initIsoTools()
     CHECK( m_isoToolTight->setProperty( "ElectronWP",   "Tight") );
     CHECK( m_isoToolTight->setProperty( "MuonWP",       "Tight") );
     CHECK( m_isoToolTight->setProperty( "PhotonWP",     "Tight") );
-    //CHECK( m_isoToolTight->setProperty( "WorkingPoint", "Tight") );
     CHECK( m_isoToolTight->initialize() );
 
 }
 //----------------------------------------------------------
 void XaodAnalysis::initTrigger()
 {
-    // dantrim trig
-    m_configTool = new TrigConf::xAODConfigTool("xAODConfigTool");
-    ToolHandle<TrigConf::ITrigConfigTool> configHandle(m_configTool);
-    CHECK( configHandle->initialize() );
-    
-    m_trigTool = new Trig::TrigDecisionTool("TrigDecTool");
-    m_trigTool->setProperty("ConfigTool", configHandle);
-    m_trigTool->setProperty("TrigDecisionKey", "xTrigDecision");
-    m_trigTool->setProperty("OutputLevel", MSG::ERROR).ignore(); // dantrim Mar 16 2015 -- tool outputs extraneous errors due to extraneous tool, ignore them
-    CHECK( m_trigTool->initialize() );
+ //  Use SUSYTools implementation
+ //   // dantrim trig
+ //   m_configTool = new TrigConf::xAODConfigTool("xAODConfigTool");
+ //   ToolHandle<TrigConf::ITrigConfigTool> configHandle(m_configTool);
+ //   CHECK( configHandle->initialize() );
+ //   
+ //   m_trigTool = new Trig::TrigDecisionTool("TrigDecTool");
+ //   m_trigTool->setProperty("ConfigTool", configHandle);
+ //   m_trigTool->setProperty("TrigDecisionKey", "xTrigDecision");
+ //   m_trigTool->setProperty("OutputLevel", MSG::ERROR).ignore(); // dantrim Mar 16 2015 -- tool outputs extraneous errors due to extraneous tool, ignore them
+ //   CHECK( m_trigTool->initialize() );
 
+ // Trigger matching is now done via SUSYTools
+ //   // Tool for muon matching
+ //   m_trigMuonMatchTool = new Trig::TrigMuonMatching("TrigMuonMatchTool");
+ //   ToolHandle<Trig::TrigDecisionTool> m_trigDec(m_trigTool);
+ //   CHECK( m_trigMuonMatchTool->setProperty("TriggerTool", m_trigDec ));
+ //   CHECK( m_trigMuonMatchTool->initialize() );
 
-    // Tool for muon matching
-    m_trigMuonMatchTool = new Trig::TrigMuonMatching("TrigMuonMatchTool");
-    ToolHandle<Trig::TrigDecisionTool> m_trigDec(m_trigTool);
-    CHECK( m_trigMuonMatchTool->setProperty("TriggerTool", m_trigDec ));
-    CHECK( m_trigMuonMatchTool->initialize() );
-
-    // Tool for egamma matching
-    // dantrim July 2 2015 :: Moving to SUSY,2.3.15a this tool has some library issues preventing compilation
+ //   // Tool for egamma matching
  //   m_trigEgammaMatchTool = new Trig::TrigEgammaMatchingTool("TrigEgammaMatchTool");
  //   CHECK( m_trigEgammaMatchTool->setProperty("TriggerTool", m_trigDec) );
  //   CHECK( m_trigEgammaMatchTool->initialize() );
@@ -1336,7 +1335,8 @@ void XaodAnalysis::fillEventTriggers()
     m_evtTrigBits.ResetAllBits();
     std::vector<std::string> trigs = XaodAnalysis::xaodTriggers();
     for (unsigned int iTrig = 0; iTrig < trigs.size(); iTrig++) {
-        if(m_trigTool->isPassed(trigs[iTrig]))  m_evtTrigBits.SetBitNumber(iTrig, true);
+        if(m_susyObj[m_eleIDDefault]->IsTrigPassed(trigs[iTrig])) m_evtTrigBits.SetBitNumber(iTrig, true);
+        //if(m_trigTool->isPassed(trigs[iTrig]))  m_evtTrigBits.SetBitNumber(iTrig, true);
     }
 }
 /*--------------------------------------------------------------------------------*/
@@ -1349,7 +1349,8 @@ TBits XaodAnalysis::matchMuonTriggers(const xAOD::Muon &in)
     muoTrigBits.ResetAllBits();
     std::vector<std::string> trigs = XaodAnalysis::xaodTriggers();
     for(unsigned int iTrig=0; iTrig<trigs.size(); iTrig++){
-        if(m_trigMuonMatchTool->match(&in, trigs[iTrig]))  muoTrigBits.SetBitNumber(iTrig, true);
+        if(m_susyObj[m_eleIDDefault]->IsTrigMatched(&in, trigs[iTrig])) muoTrigBits.SetBitNumber(iTrig, true);
+        //if(m_trigMuonMatchTool->match(&in, trigs[iTrig]))  muoTrigBits.SetBitNumber(iTrig, true);
     }
     return muoTrigBits;
 }
@@ -1366,11 +1367,12 @@ TBits XaodAnalysis::matchElectronTriggers(const xAOD::Electron &in)
     TBits eleTrigBits(m_nTriggerBits);
     eleTrigBits.ResetAllBits();
     std::vector<std::string> trigs = XaodAnalysis::xaodTriggers();
- //   for(unsigned int iTrig=0; iTrig<trigs.size(); iTrig++){
- //       // for matchHLT function, remove the "HLT_" portion of the trigger name for input to the tool's "matchHLT" method
- //       std::string hlt_trigger = trigs[iTrig].replace(trigs[iTrig].begin(), trigs[iTrig].begin()+4, "");
+    for(unsigned int iTrig = 0; iTrig < trigs.size(); iTrig++) {
+        // for electron trigger matching the tools expect the "HLT_" portion to be missing... just to make things logical
+        std::string hlt_trigger = trigs[iTrig].replace(trigs[iTrig].begin(), trigs[iTrig].begin()+4, "");
+        if(m_susyObj[m_eleIDDefault]->IsTrigMatched(&in, hlt_trigger)) eleTrigBits.SetBitNumber(iTrig, true);
  //       if(m_trigEgammaMatchTool->matchHLT(&in, hlt_trigger)) eleTrigBits.SetBitNumber(iTrig, true);
- //   }
+    }
     return eleTrigBits;
 
 }
