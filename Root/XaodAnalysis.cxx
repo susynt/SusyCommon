@@ -119,17 +119,18 @@ void XaodAnalysis::Init(TTree *tree)
 {
     bool verbose = m_dbg>0;
     xAOD::Init("Susy::XaodAnalysis").ignore();
-
     // get the inital (pre-skimmed) counters
     TObjArray* chainFiles = m_input_chain->GetListOfFiles();
     TIter next(chainFiles);
     TChainElement *chFile=0;
     while (( chFile=(TChainElement*)next() )) {
         cout << "XaodAnalysis::Init    CutBookkeeper info for: " << chFile->GetTitle() << endl;
-        TFile f(chFile->GetTitle());
-        m_event.readFrom(&f);
+        TFile* f = TFile::Open(chFile->GetTitle());
+        m_event.readFrom(f);
         m_event.getEntry(0);
         XaodAnalysis::getCutBookkeeperInfo(m_event);
+        f->Close();
+        f->Delete();
     }
     cout << "XaodAnalysis::Init    CutBookkeeper info totals: " << endl;
     cout << "    > m_nEventsProcessed   : " << m_nEventsProcessed << endl;
@@ -300,11 +301,11 @@ XaodAnalysis& XaodAnalysis::initSusyTools()
         std::vector<std::string> lumicalcFiles;
         lumicalcFiles.push_back(m_data_dir+"SusyCommon/ilumicalc_histograms_None_266904-267639.root");
         m_susyObj[i]->setProperty("PRWLumiCalcFiles", lumicalcFiles); 
-
+        // default channel to use (if we do not have a prw config for a specific sample, this is what gets used)
+        m_susyObj[i]->setProperty("PRWDefaultChannel", 410000);
 
         #warning Setting recommended reduced JES systematics set to set 1
         m_susyObj[i]->setProperty("JESNuisanceParameterSet", 1);
-
 
         if(m_susyObj[i]->SUSYToolsInit().isFailure() ) {
             cout << "XaodAnalysis: Failed to initialise tools in SUSYToolsInit()... Aborting" << endl;
@@ -344,7 +345,7 @@ XaodAnalysis& XaodAnalysis::initSusyTools()
                 cout << " Property << " << x.first << ": " << value << endl;
             }
         }
-        CHECK( m_susyObj[i]->SUSYToolsInit() );
+    //    CHECK( m_susyObj[i]->SUSYToolsInit() );
     }
 
     return *this;
@@ -819,14 +820,14 @@ void XaodAnalysis::retrieveXaodMet( ST::SystInfo sysInfo, SusyNtSys sys)
     xAOD::TauJetContainer*   taus      = xaodTaus(sysInfo,sys);
     xAOD::PhotonContainer*   photons   = xaodPhotons(sysInfo,sys);
 
-    // GetMET(met, jet, elec, muon, gamma, taujet, doTST = true)
+    // GetMET(met, jet, elec, muon, gamma, taujet, doTST = true, doJVT=true, invis = 0)
     m_susyObj[m_eleIDDefault]->GetMET(*m_metContainer,
                                       jets,
                                       electrons,
                                       muons,
                                       photons,
                                       taus);
-    
+   
     if(m_dbg>=5) cout <<"Rebuilt MET with " 
                       << " ele size " << electrons->size()
                       << " photons size " << photons->size()
@@ -942,9 +943,12 @@ void XaodAnalysis::selectBaselineObjects(SusyNtSys sys, ST::SystInfo sysInfo)
     for(const auto& jet : *jets){
         iJet++;
         if((bool)jet->auxdata< char >("baseline")==1 ) m_preJets.push_back(iJet);//AT: save baseline pT>20GeV only
-        // defaults ST::00-06-13: IsSignalJet(const xAOD::Jet&, ptcut=20000., etacut=2.8, jvtcut=0.64)
-        //    --> calls IsBadJet and sets "bad" decoration
+        // defaults ST::00-06-15: IsBadJet(const xAOD::Jet&, jvtcut=0.64)
+        // defaults ST::00-06-15: IsSignalJet(const xAOD::Jet&, ptcut=20000., etacut=2.8, jvtcut=0.64)
+        //    !!--> IsBadJet must be called before IsSignalJet !!
         //    !!--> IsSignalJet must be called before IsBJet !!
+        //    !!--> IsBadJet AND IsSignalJet must be called AFTER OverlapRemoval !!
+        m_susyObj[m_eleIDDefault]->IsBadJet(*jet);
         m_susyObj[m_eleIDDefault]->IsSignalJet(*jet);
 
         // defaults ST::00-06-13: mv2c20 > -0.4434 and dec_signal(jet)==True for IsBJet==True

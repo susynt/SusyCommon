@@ -105,7 +105,8 @@ namespace Susy {
 
     virtual Bool_t  Process(Long64_t entry);
     virtual void    Terminate();
-    virtual void    Init(TTree *tree); ///< Init is called every time a new TTree is attached
+    virtual void    Init(TTree *tree); ///< Called every time a new TTree is attached
+    //virtual Bool_t    Notify(); ///< This method is called at the first entry of a new file in a chain
     virtual void    SlaveBegin(TTree *tree);
 
     virtual Bool_t  Notify() { return kTRUE; } /// Called at the first entry of a new file in a chain
