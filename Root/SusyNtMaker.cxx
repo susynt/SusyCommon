@@ -233,7 +233,7 @@ void SusyNtMaker::fillNtVars()
     fillTauVars();
     fillJetVars();
     fillMetVars();
-//dantrim n0207
+//dantrim n0208
 //    fillMetTrackVars();
     fillPhotonVars();
     if(m_isMC && getSelectTruthObjects() ) {
@@ -494,7 +494,7 @@ void SusyNtMaker::storeElectron(const xAOD::Electron &in)
     }
 
     // // Trigger flags
-    out.trigBits = matchElectronTriggers(in);
+ //   out.trigBits = matchElectronTriggers(in);
  //   cout << "testing electron trigBits" << endl;
  //   int nbins = h_passTrigLevel->GetXaxis()->GetNbins();
  //   for(int iTrig=1; iTrig<26; iTrig++){
@@ -1162,7 +1162,7 @@ void SusyNtMaker::doSystematic()
         //storePhotonKinSys(sysInfo,ourSys);//To be implemented if needed
 
         fillMetVars(ourSys);    
-        fillMetTrackVars(ourSys);
+//        fillMetTrackVars(ourSys);
         // m_susyNt.evt()->cutFlags[sys] = m_cutFlags;
 
         //Reset the systematics for all tools

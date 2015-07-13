@@ -119,6 +119,11 @@ void XaodAnalysis::Init(TTree *tree)
 {
     bool verbose = m_dbg>0;
     xAOD::Init("Susy::XaodAnalysis").ignore();
+
+    m_isMC = XaodAnalysis::isSimuFromSamplename(m_sample);
+    bool isData = XaodAnalysis::isDataFromSamplename(m_sample);
+
+    if(m_isMC){
     // get the inital (pre-skimmed) counters
     TObjArray* chainFiles = m_input_chain->GetListOfFiles();
     TIter next(chainFiles);
@@ -136,11 +141,10 @@ void XaodAnalysis::Init(TTree *tree)
     cout << "    > m_nEventsProcessed   : " << m_nEventsProcessed << endl;
     cout << "    > m_sumOfWeights       : " << m_sumOfWeights << endl;
     cout << "    > m_sumOfWeightsSquared: " << m_sumOfWeightsSquared << endl;
+    }
 
     m_event.readFrom(tree);
-    m_isMC = XaodAnalysis::isSimuFromSamplename(m_sample);
     m_isDerivation = XaodAnalysis::isDerivationFromMetaData(tree, verbose); // dantrim event shape
-    bool isData = XaodAnalysis::isDataFromSamplename(m_sample);
     m_stream = XaodAnalysis::streamFromSamplename(m_sample, isData);
 
     // get the directory for the data/
@@ -521,39 +525,40 @@ void XaodAnalysis::initIsoTools()
     //      > xAOD::Iso::topoetcone20 : "0.057*x + 95.57"
     //      > Combined: Constructed such that F(25 GeV) = 95%, F(60 GeV) = 99%
 
+    #warning Photon isolation not implemented
     // Gradient Loose WP
     m_isoToolGradientLoose = new CP::IsolationSelectionTool( "IsolationSelectionTool_GradientLoose" );
     CHECK( m_isoToolGradientLoose->setProperty( "ElectronWP",   "GradientLoose") );
     CHECK( m_isoToolGradientLoose->setProperty( "MuonWP",       "GradientLoose") );
-    CHECK( m_isoToolGradientLoose->setProperty( "PhotonWP",     "GradientLoose") );
+    //CHECK( m_isoToolGradientLoose->setProperty( "PhotonWP",     "GradientLoose") );
     CHECK( m_isoToolGradientLoose->initialize() );
     
     // Gradient WP
     m_isoToolGradient = new CP::IsolationSelectionTool( "IsolationSelectionTool_Gradient" );
     CHECK( m_isoToolGradient->setProperty( "ElectronWP",   "Gradient") );
     CHECK( m_isoToolGradient->setProperty( "MuonWP",       "Gradient") );
-    CHECK( m_isoToolGradient->setProperty( "PhotonWP",     "Gradient") );
+    //CHECK( m_isoToolGradient->setProperty( "PhotonWP",     "Gradient") );
     CHECK( m_isoToolGradient->initialize() );
    
     // LooseTrackOnly WP 
     m_isoToolLooseTrackOnly = new CP::IsolationSelectionTool( "IsolationSelectionTool_LooseTrackOnly" );
     CHECK( m_isoToolLooseTrackOnly->setProperty( "ElectronWP",   "LooseTrackOnly") );
     CHECK( m_isoToolLooseTrackOnly->setProperty( "MuonWP",       "LooseTrackOnly") );
-    CHECK( m_isoToolLooseTrackOnly->setProperty( "PhotonWP",     "LooseTrackOnly") );
+    //CHECK( m_isoToolLooseTrackOnly->setProperty( "PhotonWP",     "LooseTrackOnly") );
     CHECK( m_isoToolLooseTrackOnly->initialize() );
     
     // Loose WP
     m_isoToolLoose = new CP::IsolationSelectionTool( "IsolationSelectionTool_Loose" );
     CHECK( m_isoToolLoose->setProperty( "ElectronWP",   "Loose") );
     CHECK( m_isoToolLoose->setProperty( "MuonWP",       "Loose") );
-    CHECK( m_isoToolLoose->setProperty( "PhotonWP",     "Loose") );
+    //CHECK( m_isoToolLoose->setProperty( "PhotonWP",     "Loose") );
     CHECK( m_isoToolLoose->initialize() );
     
     // Tight WP
     m_isoToolTight = new CP::IsolationSelectionTool( "IsolationSelectionTool_Tight" );
     CHECK( m_isoToolTight->setProperty( "ElectronWP",   "Tight") );
     CHECK( m_isoToolTight->setProperty( "MuonWP",       "Tight") );
-    CHECK( m_isoToolTight->setProperty( "PhotonWP",     "Tight") );
+    //CHECK( m_isoToolTight->setProperty( "PhotonWP",     "Tight") );
     CHECK( m_isoToolTight->initialize() );
 
 }
@@ -817,7 +822,8 @@ void XaodAnalysis::retrieveXaodMet( ST::SystInfo sysInfo, SusyNtSys sys)
     xAOD::ElectronContainer* electrons = xaodElectrons(sysInfo,sys);
     xAOD::MuonContainer*     muons     = xaodMuons(sysInfo,sys);
     xAOD::JetContainer*      jets      = xaodJets(sysInfo,sys);
-    xAOD::TauJetContainer*   taus      = xaodTaus(sysInfo,sys);
+    //dantrim taus
+    //xAOD::TauJetContainer*   taus      = xaodTaus(sysInfo,sys);
     xAOD::PhotonContainer*   photons   = xaodPhotons(sysInfo,sys);
 
     // GetMET(met, jet, elec, muon, gamma, taujet, doTST = true, doJVT=true, invis = 0)
@@ -826,12 +832,15 @@ void XaodAnalysis::retrieveXaodMet( ST::SystInfo sysInfo, SusyNtSys sys)
                                       electrons,
                                       muons,
                                       photons,
-                                      taus);
+                                      //dantrim taus
+                                      0);
+                                      //taus);
    
     if(m_dbg>=5) cout <<"Rebuilt MET with " 
                       << " ele size " << electrons->size()
                       << " photons size " << photons->size()
-                      << " taus size " << taus->size()
+                    //dantrim taus
+                    //  << " taus size " << taus->size()
                       << " jets size " << jets->size()
                       << " muons size " << muons->size()
                       << std::endl;
@@ -867,7 +876,8 @@ void XaodAnalysis::selectBaselineObjects(SusyNtSys sys, ST::SystInfo sysInfo)
     xAOD::ElectronContainer* electrons = xaodElectrons(sysInfo,sys);
     xAOD::MuonContainer*     muons     = xaodMuons(sysInfo,sys);
     xAOD::JetContainer*      jets      = xaodJets(sysInfo,sys);
-    xAOD::TauJetContainer*   taus      = xaodTaus(sysInfo,sys);
+//dantrim taus
+//    xAOD::TauJetContainer*   taus      = xaodTaus(sysInfo,sys);
 
     //////////////////////////////////
     // Electrons
@@ -968,27 +978,28 @@ void XaodAnalysis::selectBaselineObjects(SusyNtSys sys, ST::SystInfo sysInfo)
     //////////////////////////////////
     // Taus
     //////////////////////////////////
-    int iTau=-1;
-    //xAOD::TauJetContainer* taus = xaodTaus(sysInfo,sys);
-    for(const auto& tau : *taus){
-        iTau++;
-        m_susyObj[m_eleIDDefault]->IsSignalTau(*tau);
-        if(m_dbg>=5) cout<<"Tau passing"
-                         <<" baseline? "<< bool(tau->auxdata< char >("baseline")==1)
-                         <<" signal? "<< bool(tau->auxdata< char >("signal")==1)
-                         <<" pt " << tau->pt()
-                         <<" eta " << tau->eta()
-                         <<" phi " << tau->phi()
-                         <<" q   " << tau->charge()
-                         <<endl;
-        //Container tau: tau->pt()>20*GeV && abs(tau->eta())<2.47 ???  //AT TO ADD
-        //if(tau->pt() * MeV2GeV > 20 && fabs(tau->eta())<2.47) m_preTaus.push_back(iTau);        
-        if((bool)tau->auxdata< char >("baseline")==1){
-            m_preTaus.push_back(iTau);
-            m_baseTaus.push_back(iTau);
-        }
-    }
-    if(m_dbg) cout<<"m_preTaus["<<m_preTaus.size()<<"]"<<endl;
+//dantrim taus
+//    int iTau=-1;
+//    //xAOD::TauJetContainer* taus = xaodTaus(sysInfo,sys);
+//    for(const auto& tau : *taus){
+//        iTau++;
+//        m_susyObj[m_eleIDDefault]->IsSignalTau(*tau);
+//        if(m_dbg>=5) cout<<"Tau passing"
+//                         <<" baseline? "<< bool(tau->auxdata< char >("baseline")==1)
+//                         <<" signal? "<< bool(tau->auxdata< char >("signal")==1)
+//                         <<" pt " << tau->pt()
+//                         <<" eta " << tau->eta()
+//                         <<" phi " << tau->phi()
+//                         <<" q   " << tau->charge()
+//                         <<endl;
+//        //Container tau: tau->pt()>20*GeV && abs(tau->eta())<2.47 ???  //AT TO ADD
+//        //if(tau->pt() * MeV2GeV > 20 && fabs(tau->eta())<2.47) m_preTaus.push_back(iTau);        
+//        if((bool)tau->auxdata< char >("baseline")==1){
+//            m_preTaus.push_back(iTau);
+//            m_baseTaus.push_back(iTau);
+//        }
+//    }
+//    if(m_dbg) cout<<"m_preTaus["<<m_preTaus.size()<<"]"<<endl;
 
     //////////////////////////////////
     // If Nom systematics keep track
@@ -1091,7 +1102,8 @@ void XaodAnalysis::selectSignalObjects(SusyNtSys sys, ST::SystInfo sysInfo)
     xAOD::ElectronContainer* electrons = xaodElectrons(sysInfo, sys);
     xAOD::MuonContainer*     muons     = xaodMuons(sysInfo, sys);
     xAOD::JetContainer*      jets      = xaodJets(sysInfo, sys);
-    xAOD::TauJetContainer*   taus      = xaodTaus(sysInfo, sys);
+//dantrim taus
+//    xAOD::TauJetContainer*   taus      = xaodTaus(sysInfo, sys);
     xAOD::PhotonContainer*   photons   = xaodPhotons(sysInfo, sys);
 
     //////////////////////////////////
@@ -1137,16 +1149,17 @@ void XaodAnalysis::selectSignalObjects(SusyNtSys sys, ST::SystInfo sysInfo)
     //////////////////////////////////
     // Taus
     //////////////////////////////////
-    int iTau=0;
-    //xAOD::TauJetContainer* taus = xaodTaus(sysInfo,sys);
-    for(const auto& tau : *taus){
-        if(tau->pt() * MeV2GeV >20.0 &&
-           (bool)tau->auxdata< char >("signal")==1)
-            // tau->auxdata< int >("passOR") && // tau not involved in OR?
-            m_sigTaus.push_back(iTau);
-        }
-        iTau++;
-    if(m_dbg) cout<<"m_sigTaus["<<m_sigTaus.size()<<"]"<<endl;
+//dantrim taus
+//    int iTau=0;
+//    //xAOD::TauJetContainer* taus = xaodTaus(sysInfo,sys);
+//    for(const auto& tau : *taus){
+//        if(tau->pt() * MeV2GeV >20.0 &&
+//           (bool)tau->auxdata< char >("signal")==1)
+//            // tau->auxdata< int >("passOR") && // tau not involved in OR?
+//            m_sigTaus.push_back(iTau);
+//        }
+//        iTau++;
+//    if(m_dbg) cout<<"m_sigTaus["<<m_sigTaus.size()<<"]"<<endl;
 
     //////////////////////////////////
     // Photons
@@ -2407,11 +2420,13 @@ XaodAnalysis& XaodAnalysis::retrieveCollections()
     xaodElectrons(systInfoList[0]);
     xaodMuons(systInfoList[0]);
     xaodJets(systInfoList[0]);
-    xaodTaus(systInfoList[0]);
+//dantrim taus
+//    xaodTaus(systInfoList[0]);
     xaodPhotons(systInfoList[0]);
     retrieveXaodMet(systInfoList[0]);//nominal
-    
-    xaodMET_Track();
+#warning not implementing Track MET forr n0208 production
+//     
+//   xaodMET_Track();
 
     xaodTruthEvent();
     xaodTruthParticles();
