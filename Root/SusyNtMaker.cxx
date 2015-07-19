@@ -336,7 +336,7 @@ void SusyNtMaker::fillJetVars()
     xAOD::JetContainer* jets = XaodAnalysis::xaodJets(systInfoList[0]);
     /////////////////////
     // Not super smart but tag along for the moment - ASM 25/5/2015
-    m_susyObj[m_eleIDDefault]->BtagSF(jets); // Decorate the jets w/ effscalefact
+    if(m_isMC) m_susyObj[m_eleIDDefault]->BtagSF(jets); // Decorate the jets w/ effscalefact
     /////////////////////
     for(auto &i : m_preJets){
             storeJet(*(jets->at(i)));
@@ -701,7 +701,7 @@ void SusyNtMaker::storeJet(const xAOD::Jet &in)
 
     out.sv1plusip3d   = (in.btagging())->SV1plusIP3D_discriminant();           
     out.bjet = m_susyObj[m_eleIDDefault]->IsBJet(in) ? 1 : 0;
-    out.effscalefact = in.auxdata< double >("effscalefact"); // dantrim Jul 19 2015 -- error says new type is float, but by float they mean double
+    out.effscalefact = m_isMC ? in.auxdata< double >("effscalefact") : 1; // dantrim Jul 19 2015 -- error says new type is float, but by float they mean double
 
   //  vector<float> test_values;
   //  test_values.push_back(out.effscalefact);
