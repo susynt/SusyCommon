@@ -303,7 +303,8 @@ XaodAnalysis& XaodAnalysis::initSusyTools()
         m_susyObj[i]->setProperty("PRWConfigFiles", prwFiles);
         // data luminosity profile
         std::vector<std::string> lumicalcFiles;
-        lumicalcFiles.push_back(m_data_dir+"SusyCommon/ilumicalc_histograms_None_266904-267639.root");
+        //lumicalcFiles.push_back(m_data_dir+"SusyCommon/ilumicalc_histograms_None_266904-267639.root");
+        lumicalcFiles.push_back(m_data_dir+"SusyCommon/ilumicalc_histograms_None_267073-267639.root"); // updated to latest GRL
         m_susyObj[i]->setProperty("PRWLumiCalcFiles", lumicalcFiles); 
         // default channel to use (if we do not have a prw config for a specific sample, this is what gets used)
         m_susyObj[i]->setProperty("PRWDefaultChannel", 410000);
@@ -822,8 +823,7 @@ void XaodAnalysis::retrieveXaodMet( ST::SystInfo sysInfo, SusyNtSys sys)
     xAOD::ElectronContainer* electrons = xaodElectrons(sysInfo,sys);
     xAOD::MuonContainer*     muons     = xaodMuons(sysInfo,sys);
     xAOD::JetContainer*      jets      = xaodJets(sysInfo,sys);
-    //dantrim taus
-    //xAOD::TauJetContainer*   taus      = xaodTaus(sysInfo,sys);
+    xAOD::TauJetContainer*   taus      = xaodTaus(sysInfo,sys);
     xAOD::PhotonContainer*   photons   = xaodPhotons(sysInfo,sys);
 
     // GetMET(met, jet, elec, muon, gamma, taujet, doTST = true, doJVT=true, invis = 0)
@@ -832,15 +832,12 @@ void XaodAnalysis::retrieveXaodMet( ST::SystInfo sysInfo, SusyNtSys sys)
                                       electrons,
                                       muons,
                                       photons,
-                                      //dantrim taus
-                                      0);
-                                      //taus);
+                                      taus);
    
     if(m_dbg>=5) cout <<"Rebuilt MET with " 
                       << " ele size " << electrons->size()
                       << " photons size " << photons->size()
-                    //dantrim taus
-                    //  << " taus size " << taus->size()
+                      << " taus size " << taus->size()
                       << " jets size " << jets->size()
                       << " muons size " << muons->size()
                       << std::endl;
@@ -876,8 +873,7 @@ void XaodAnalysis::selectBaselineObjects(SusyNtSys sys, ST::SystInfo sysInfo)
     xAOD::ElectronContainer* electrons = xaodElectrons(sysInfo,sys);
     xAOD::MuonContainer*     muons     = xaodMuons(sysInfo,sys);
     xAOD::JetContainer*      jets      = xaodJets(sysInfo,sys);
-//dantrim taus
-//    xAOD::TauJetContainer*   taus      = xaodTaus(sysInfo,sys);
+    xAOD::TauJetContainer*   taus      = xaodTaus(sysInfo,sys);
 
     //////////////////////////////////
     // Electrons
@@ -978,28 +974,27 @@ void XaodAnalysis::selectBaselineObjects(SusyNtSys sys, ST::SystInfo sysInfo)
     //////////////////////////////////
     // Taus
     //////////////////////////////////
-//dantrim taus
-//    int iTau=-1;
-//    //xAOD::TauJetContainer* taus = xaodTaus(sysInfo,sys);
-//    for(const auto& tau : *taus){
-//        iTau++;
-//        m_susyObj[m_eleIDDefault]->IsSignalTau(*tau);
-//        if(m_dbg>=5) cout<<"Tau passing"
-//                         <<" baseline? "<< bool(tau->auxdata< char >("baseline")==1)
-//                         <<" signal? "<< bool(tau->auxdata< char >("signal")==1)
-//                         <<" pt " << tau->pt()
-//                         <<" eta " << tau->eta()
-//                         <<" phi " << tau->phi()
-//                         <<" q   " << tau->charge()
-//                         <<endl;
-//        //Container tau: tau->pt()>20*GeV && abs(tau->eta())<2.47 ???  //AT TO ADD
-//        //if(tau->pt() * MeV2GeV > 20 && fabs(tau->eta())<2.47) m_preTaus.push_back(iTau);        
-//        if((bool)tau->auxdata< char >("baseline")==1){
-//            m_preTaus.push_back(iTau);
-//            m_baseTaus.push_back(iTau);
-//        }
-//    }
-//    if(m_dbg) cout<<"m_preTaus["<<m_preTaus.size()<<"]"<<endl;
+    int iTau=-1;
+    //xAOD::TauJetContainer* taus = xaodTaus(sysInfo,sys);
+    for(const auto& tau : *taus){
+        iTau++;
+        m_susyObj[m_eleIDDefault]->IsSignalTau(*tau);
+        if(m_dbg>=5) cout<<"Tau passing"
+                         <<" baseline? "<< bool(tau->auxdata< char >("baseline")==1)
+                         <<" signal? "<< bool(tau->auxdata< char >("signal")==1)
+                         <<" pt " << tau->pt()
+                         <<" eta " << tau->eta()
+                         <<" phi " << tau->phi()
+                         <<" q   " << tau->charge()
+                         <<endl;
+        //Container tau: tau->pt()>20*GeV && abs(tau->eta())<2.47 ???  //AT TO ADD
+        //if(tau->pt() * MeV2GeV > 20 && fabs(tau->eta())<2.47) m_preTaus.push_back(iTau);        
+        if((bool)tau->auxdata< char >("baseline")==1){
+            m_preTaus.push_back(iTau);
+            m_baseTaus.push_back(iTau);
+        }
+    }
+    if(m_dbg) cout<<"m_preTaus["<<m_preTaus.size()<<"]"<<endl;
 
     //////////////////////////////////
     // If Nom systematics keep track
@@ -1102,8 +1097,7 @@ void XaodAnalysis::selectSignalObjects(SusyNtSys sys, ST::SystInfo sysInfo)
     xAOD::ElectronContainer* electrons = xaodElectrons(sysInfo, sys);
     xAOD::MuonContainer*     muons     = xaodMuons(sysInfo, sys);
     xAOD::JetContainer*      jets      = xaodJets(sysInfo, sys);
-//dantrim taus
-//    xAOD::TauJetContainer*   taus      = xaodTaus(sysInfo, sys);
+    xAOD::TauJetContainer*   taus      = xaodTaus(sysInfo, sys);
     xAOD::PhotonContainer*   photons   = xaodPhotons(sysInfo, sys);
 
     //////////////////////////////////
@@ -1149,17 +1143,16 @@ void XaodAnalysis::selectSignalObjects(SusyNtSys sys, ST::SystInfo sysInfo)
     //////////////////////////////////
     // Taus
     //////////////////////////////////
-//dantrim taus
-//    int iTau=0;
-//    //xAOD::TauJetContainer* taus = xaodTaus(sysInfo,sys);
-//    for(const auto& tau : *taus){
-//        if(tau->pt() * MeV2GeV >20.0 &&
-//           (bool)tau->auxdata< char >("signal")==1)
-//            // tau->auxdata< int >("passOR") && // tau not involved in OR?
-//            m_sigTaus.push_back(iTau);
-//        }
-//        iTau++;
-//    if(m_dbg) cout<<"m_sigTaus["<<m_sigTaus.size()<<"]"<<endl;
+    int iTau=0;
+    //xAOD::TauJetContainer* taus = xaodTaus(sysInfo,sys);
+    for(const auto& tau : *taus){
+        if(tau->pt() * MeV2GeV >20.0 &&
+           (bool)tau->auxdata< char >("signal")==1)
+            // tau->auxdata< int >("passOR") && // tau not involved in OR?
+            m_sigTaus.push_back(iTau);
+        }
+        iTau++;
+    if(m_dbg) cout<<"m_sigTaus["<<m_sigTaus.size()<<"]"<<endl;
 
     //////////////////////////////////
     // Photons
@@ -2420,8 +2413,7 @@ XaodAnalysis& XaodAnalysis::retrieveCollections()
     xaodElectrons(systInfoList[0]);
     xaodMuons(systInfoList[0]);
     xaodJets(systInfoList[0]);
-//dantrim taus
-//    xaodTaus(systInfoList[0]);
+    xaodTaus(systInfoList[0]);
     xaodPhotons(systInfoList[0]);
     retrieveXaodMet(systInfoList[0]);//nominal
 #warning not implementing Track MET forr n0208 production

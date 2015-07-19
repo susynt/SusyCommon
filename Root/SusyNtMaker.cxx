@@ -53,7 +53,7 @@ SusyNtMaker::SusyNtMaker() :
     h_rawCutFlow(NULL),
     h_genCutFlow(NULL),
     m_cutstageCounters(SusyNtMaker::cutflowLabels().size(), 0),
-    h_passTrigLevel(NULL) // dantrim trig
+    h_passTrigLevel(NULL)
 {
     n_pre_ele=0;
     n_pre_muo=0;
@@ -173,7 +173,7 @@ Bool_t SusyNtMaker::Process(Long64_t entry)
         }
     }
 
-    fillTriggerHisto(); // dantrim trig
+    fillTriggerHisto();
     if(selectEvent() && m_fillNt){
         matchTriggers();
         // dantrim Jul 2 2015
@@ -286,7 +286,7 @@ void SusyNtMaker::fillEventVars()
     evt->hDecay           = m_hDecay;
     evt->eventWithSusyProp= m_hasSusyProp;
     
-    evt->trigBits         = m_evtTrigBits; // dantrim trig
+    evt->trigBits         = m_evtTrigBits;
 
     evt->wPileup          = m_isMC ? m_susyObj[m_eleIDDefault]->GetPileupWeight() : 1;
    
@@ -694,7 +694,6 @@ void SusyNtMaker::storeJet(const xAOD::Jet &in)
     // jetOut->matchTruth    = m_isMC? matchTruthJet(jetIdx) : false;
 
     // B-tagging 
-    //if(!is8TeV()) out.mv1 = (in.btagging())->MV1_discriminant();
     // dantrim July 3 2015 : mv1 is a goner
     double weight_mv2c20(0.);
     if(!in.btagging()->MVx_discriminant("MV2c20", weight_mv2c20)){ cout << "SusyNtMaker::storeJet ERROR    Failed to retrieve MV2c20 weight!" << endl; }
@@ -702,10 +701,10 @@ void SusyNtMaker::storeJet(const xAOD::Jet &in)
 
     out.sv1plusip3d   = (in.btagging())->SV1plusIP3D_discriminant();           
     out.bjet = m_susyObj[m_eleIDDefault]->IsBJet(in) ? 1 : 0;
-    out.effscalefact = 1;//in.auxdata< float >("effscalefact");
+    out.effscalefact = in.auxdata< double >("effscalefact"); // dantrim Jul 19 2015 -- error says new type is float, but by float they mean double
 
-    vector<float> test_values;
-    test_values.push_back(out.effscalefact);
+  //  vector<float> test_values;
+  //  test_values.push_back(out.effscalefact);
 
     // B-tagging systematics
     //AT 06-29-15: Coomented out btag decoration in SusyTools 
@@ -1726,7 +1725,7 @@ struct FillCutFlow { ///< local function object to fill the cutflow histograms
     FillCutFlow& enableFilterNextCuts() { includeThisCut_ = true; return *this; }
 };
 //----------------------------------------------------------
-void SusyNtMaker::fillTriggerHisto() // dantrim trig
+void SusyNtMaker::fillTriggerHisto()
 {
     std::vector<std::string> trigs = XaodAnalysis::xaodTriggers();
     for ( unsigned int iTrig = 0; iTrig < trigs.size(); iTrig++ ) {
