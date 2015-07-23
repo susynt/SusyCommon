@@ -304,7 +304,8 @@ XaodAnalysis& XaodAnalysis::initSusyTools()
         // data luminosity profile
         std::vector<std::string> lumicalcFiles;
         //lumicalcFiles.push_back(m_data_dir+"SusyCommon/ilumicalc_histograms_None_266904-267639.root");
-        lumicalcFiles.push_back(m_data_dir+"SusyCommon/ilumicalc_histograms_None_267073-267639.root"); // updated to latest GRL
+        //lumicalcFiles.push_back(m_data_dir+"SusyCommon/ilumicalc_histograms_None_267073-267639.root"); // updated to latest GRL
+        lumicalcFiles.push_back(m_data_dir+"SusyCommon/ilumicalc_histograms_None_267073-271744.root"); // updated to latest GRL (July 23 2015)
         m_susyObj[i]->setProperty("PRWLumiCalcFiles", lumicalcFiles); 
         // default channel to use (if we do not have a prw config for a specific sample, this is what gets used)
         m_susyObj[i]->setProperty("PRWDefaultChannel", 410000);
@@ -2171,7 +2172,9 @@ std::string XaodAnalysis::defauldGrlFile()
     // DA June 25 :: latest, now with run 267073
     //return std::string( "$ROOTCOREBIN/data/SusyCommon/data15_13TeV.periodA_DetStatus-v62-pro18_DQDefects-00-01-02_PHYS_StandardGRL_All_Good.xml");
     // DA July 8 
-    return std::string( "$ROOTCOREBIN/data/SusyCommon/data15_13TeV.periodAllYear_DetStatus-v62-pro18-01_DQDefects-00-01-02_PHYS_StandardGRL_All_Good.xml");
+    //return std::string( "$ROOTCOREBIN/data/SusyCommon/data15_13TeV.periodAllYear_DetStatus-v62-pro18-01_DQDefects-00-01-02_PHYS_StandardGRL_All_Good.xml");
+    // DA July 22 2015
+    return std::string( "$ROOTCOREBIN/data/SusyCommon/data15_13TeV.periodAllYear_DetStatus-v63-pro18-01_DQDefects-00-01-02_PHYS_StandardGRL_All_Good.xml");
 }
 //----------------------------------------------------------
 bool XaodAnalysis::initGrlTool()
