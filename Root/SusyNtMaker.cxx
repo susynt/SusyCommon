@@ -266,6 +266,7 @@ void SusyNtMaker::fillEventVars()
 
     evt->nVtx             = getNumGoodVtx();
     evt->avgMu            = eventinfo->averageInteractionsPerCrossing();
+    evt->avgMuCorr        = m_pileupReweightingTool->getLumiBlockMu(*eventinfo);
 
     evt->hfor             = m_isMC? getHFORDecision() : -1;
 

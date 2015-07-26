@@ -362,7 +362,7 @@ XaodAnalysis& XaodAnalysis::initLocalTools()
 {
 
 
-    //initPileupTool(); // this is now done in SUSYTools (as of ST-00-06-15)
+    initPileupTool(); // this is now done in SUSYTools (as of ST-00-06-15)
     initElectronTools();
     initMuonTools();
     initTauTools();
@@ -378,24 +378,18 @@ void XaodAnalysis::initPileupTool()
     // This function is obsolete now that SUSYTools implements its own tool
 
     m_pileupReweightingTool = new CP::PileupReweightingTool("PileupReweightingTool");
-   // CHECK( m_pileupReweightingTool->setProperty("DefaultChannel", 410000) );
-   // m_pileupReweightingTool->setProperty("Input","EventInfo");
-   // m_pileupReweightingTool->EnableDebugging(true);
 
     std::vector<std::string> prwFiles;
     std::vector<std::string> lumicalcFiles;
 
-    //prwFiles.push_back("PileupReweighting/mc14v1_defaults.prw.root");
-    // DA Juen 27 :: prw files from Anyes
-    prwFiles.push_back(m_data_dir+"SusyCommon/mc15_50ns.prw.root");
-    
-    lumicalcFiles.push_back(m_data_dir+"SusyCommon/ilumicalc_histograms_None_266904-267639.root");
-    CHECK( m_pileupReweightingTool->setProperty("ConfigFiles", prwFiles) );
-    CHECK( m_pileupReweightingTool->setProperty("LumiCalcFiles", lumicalcFiles) );
+    prwFiles.push_back(m_data_dir + "SusyCommon/mc15_50ns.prw.root");
+    lumicalcFiles.push_back(m_data_dir + "SusyCommon/ilumicalc_histograms_None_267073-271744.root");
+    CHECK(m_pileupReweightingTool->setProperty("ConfigFiles", prwFiles));
+    CHECK(m_pileupReweightingTool->setProperty("LumiCalcFiles", lumicalcFiles));
+    CHECK(m_pileupReweightingTool->setProperty("DefaultChannel", 410000));
+    CHECK(m_pileupReweightingTool->setProperty("DataScaleFactorUP", 1.20));
+    CHECK(m_pileupReweightingTool->setProperty("DataScaleFactorDOWN", 0.80));
 
-    //AT-2014-10-31 For systematic instanciate two more tools with difference SF
-    //CHECK( m_pileupReweightingTool->setProperty("DataScaleFactors",1/1.08) );
-    //CHECK( m_pileupReweightingTool->setProperty("DataScaleFactors",1/1.11) );
     CHECK( m_pileupReweightingTool->initialize() );
 
 }
