@@ -833,7 +833,9 @@ void XaodAnalysis::retrieveXaodMet( ST::SystInfo sysInfo, SusyNtSys sys)
                                       electrons,
                                       muons,
                                       photons,
-                                      taus);
+                                      taus,
+                                      true,
+                                      false);
    
     if(m_dbg>=5) cout <<"Rebuilt MET with " 
                       << " ele size " << electrons->size()
