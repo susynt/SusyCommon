@@ -289,10 +289,29 @@ void SusyNtMaker::fillEventVars()
     evt->trigBits         = m_evtTrigBits;
 
     evt->wPileup          = m_isMC ? m_susyObj[m_eleIDDefault]->GetPileupWeight() : 1;
-   
-    //evt->wPileup          = m_isMC? getPileupWeight(eventinfo) : 1;
-    //evt->wPileup_up       = m_isMC? getPileupWeightUp() : 1;
-    //evt->wPileup_dn       = m_isMC? getPileupWeightDown() : 1;
+
+    // Pileup systematic variations, varying data mu up/down and getting the resulting pupw
+    if(m_isMC && m_sys) {
+        for(const auto& sysInfo : systInfoList) {
+            if(!(sysInfo.affectsType == ST::SystObjType::EventWeight && sysInfo.affectsWeights)) continue;
+            const CP::SystematicSet& sys = sysInfo.systset;
+            SusyNtSys ourSys = CPsys2sys((sys.name()).c_str());
+            if(!(ourSys==NtSys::PILEUP_UP || ourSys==NtSys::PILEUP_DN)) continue;
+            bool do_down = ourSys==NtSys::PILEUP_DN;
+            // configure the tools
+            if ( m_susyObj[m_eleIDDefault]->applySystematicVariation(sys) != CP::SystematicCode::Ok) {
+                cout << "SusyNtMaker::fillEventVars    cannot configure SUSYTools for systematic " << sys.name() << " (" << SusyNtSysNames[ourSys] << ")" << endl;
+                continue;
+            }
+            // get and store
+            if(do_down) { evt->wPileup_dn = m_susyObj[m_eleIDDefault]->GetPileupWeight(); }
+            else { evt->wPileup_up = m_susyObj[m_eleIDDefault]->GetPileupWeight(); }
+        } // sysInfo
+        if( m_susyObj[m_eleIDDefault]->resetSystematics() != CP::SystematicCode::Ok) {
+            cout << "SusyNtMaker::fillEventVars    cannot rest SUSYTools systematics. Aborting." << endl;
+            abort();
+        }
+    }
 
     if(m_isMC){
         xAOD::TruthEventContainer::const_iterator truthE_itr = xaodTruthEvent()->begin();

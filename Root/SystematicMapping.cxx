@@ -206,6 +206,9 @@ SusyNtSys CPsys2sys(const std::string &s)
   else if( s== "TAUS_EFF_CONTJETID_SYST__1up" )            r = TAUS_EFF_CONTJETID_SYST_UP;
   else if( s== "TAUS_SME_TOTAL__1down" )                   r = TAUS_SME_TOTAL_DN;
   else if( s== "TAUS_SME_TOTAL__1up" )                     r = TAUS_SME_TOTAL_UP;
+  // PileupReweighting (mu) variations
+  else if( s== "PRW_DATASF__1down" )                       r = PILEUP_DN;
+  else if( s== "PRW_DATASF__1up" )                         r = PILEUP_UP;
   
   return r;
 }
