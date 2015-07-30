@@ -1368,18 +1368,44 @@ TBits XaodAnalysis::matchElectronTriggers(const xAOD::Electron &in)
     // may be out of sync w.r.t. the stored histogram... in any case, the non-passed triggers are always
     // false and on SusyNtuple side the user will provide specific string for the ele/muo trigger that
     // is checked against the trig histo
-    if(m_dbg>=5) cout << "XaodAnalysis::matchElectronTriggers" << endl;
+//    if(m_dbg>=5) cout << "XaodAnalysis::matchElectronTriggers" << endl;
+//    TBits eleTrigBits(m_nTriggerBits);
+//    eleTrigBits.ResetAllBits();
+//    std::vector<std::string> trigs = XaodAnalysis::xaodTriggers();
+//    for(unsigned int iTrig = 0; iTrig < trigs.size(); iTrig++) {
+//        // for electron trigger matching the tools expect the "HLT_" portion to be missing... just to make things logical
+//        std::string hlt_trigger = trigs[iTrig].replace(trigs[iTrig].begin(), trigs[iTrig].begin()+4, "");
+//        if(m_susyObj[m_eleIDDefault]->IsTrigMatched(&in, hlt_trigger)) eleTrigBits.SetBitNumber(iTrig, true);
+// //       if(m_trigEgammaMatchTool->matchHLT(&in, hlt_trigger)) eleTrigBits.SetBitNumber(iTrig, true);
+//    }
+//    return eleTrigBits;
+
     TBits eleTrigBits(m_nTriggerBits);
     eleTrigBits.ResetAllBits();
     std::vector<std::string> trigs = XaodAnalysis::xaodTriggers();
-    for(unsigned int iTrig = 0; iTrig < trigs.size(); iTrig++) {
-        // for electron trigger matching the tools expect the "HLT_" portion to be missing... just to make things logical
-        std::string hlt_trigger = trigs[iTrig].replace(trigs[iTrig].begin(), trigs[iTrig].begin()+4, "");
-        if(m_susyObj[m_eleIDDefault]->IsTrigMatched(&in, hlt_trigger)) eleTrigBits.SetBitNumber(iTrig, true);
- //       if(m_trigEgammaMatchTool->matchHLT(&in, hlt_trigger)) eleTrigBits.SetBitNumber(iTrig, true);
-    }
-    return eleTrigBits;
 
+    TLorentzVector inEle;
+    inEle.SetPtEtaPhiM( in.pt(), in.eta(), in.phi(), 0);
+    for(unsigned int iTrig = 0; iTrig < trigs.size(); iTrig++) {
+        std::string trigger = trigs[iTrig];
+        bool matched = false;
+        cout << "attempting : " << trigger << endl;
+        auto cg = m_susyObj[m_eleIDDefault]->GetTrigChainGroup(trigger);
+        auto fc = cg->features();
+        auto eleFeatureContainers = fc.containerFeature<xAOD::TrigElectronContainer>();
+        for(auto &econt : eleFeatureContainers) {
+            for( auto trige : *econt.cptr() ) {
+                TLorentzVector trig_tlv;
+                trig_tlv.SetPtEtaPhiM(trige->pt(), trige->eta(), trige->phi(), 0);
+                cout << trig_tlv.Pt() << endl;
+                float dR = inEle.DeltaR(trig_tlv);
+                if( dR < 0.15 ) matched = true;
+            } // trige
+        } // econt
+        if(matched) eleTrigBits.SetBitNumber(iTrig, true);
+    } // iTrig
+
+    return eleTrigBits;
 }
 /*--------------------------------------------------------------------------------*/
 // Electron trigger matching

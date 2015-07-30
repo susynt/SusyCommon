@@ -513,15 +513,16 @@ void SusyNtMaker::storeElectron(const xAOD::Electron &in)
     }
 
     // // Trigger flags
- //   out.trigBits = matchElectronTriggers(in);
- //   cout << "testing electron trigBits" << endl;
- //   int nbins = h_passTrigLevel->GetXaxis()->GetNbins();
- //   for(int iTrig=1; iTrig<26; iTrig++){
- //       bool bit = out.trigBits.TestBitNumber(iTrig);
- //       string trigger = h_passTrigLevel->GetXaxis()->GetBinLabel(iTrig);
- //       cout << "\t passed trigger " << trigger << "? " << (bit ? "yes" : "no") << endl;
- //   }
- //   cout << endl;
+    // I swear it's been 6 months and the ability to grab the trigger features still doesn't work
+//    out.trigBits = matchElectronTriggers(in);
+//    cout << "testing electron trigBits" << endl;
+//    int nbins = h_passTrigLevel->GetXaxis()->GetNbins();
+//    for(int iTrig=1; iTrig<26; iTrig++){
+//        bool bit = out.trigBits.TestBitNumber(iTrig);
+//        string trigger = h_passTrigLevel->GetXaxis()->GetBinLabel(iTrig);
+//        cout << "\t passed trigger " << trigger << "? " << (bit ? "yes" : "no") << endl;
+//    }
+//    cout << endl;
 
  
     if(m_dbg && !all_available) cout<<"missing some electron variables"<<endl;
@@ -648,6 +649,14 @@ void SusyNtMaker::storeMuon(const xAOD::Muon &in)
 
     // Trigger bits 
     out.trigBits   = matchMuonTriggers(in);
+//    cout << "testing electron trigBits" << endl;
+//    int nbins = h_passTrigLevel->GetXaxis()->GetNbins();
+//    for(int iTrig=1; iTrig<26; iTrig++){
+//        bool bit = out.trigBits.TestBitNumber(iTrig);
+//        string trigger = h_passTrigLevel->GetXaxis()->GetBinLabel(iTrig);
+//        cout << "\t passed trigger " << trigger << "? " << (bit ? "yes" : "no") << endl;
+//    }
+//    cout << endl;
 
     // Scale Factors
     // DA June 21 :: For now just store the nominal -- need to merge with xaod (xaod_muonSF) branch
@@ -1611,7 +1620,6 @@ SusyNtMaker& SusyNtMaker::initializeCutflowHistograms()
     std::vector<std::string> trigs = XaodAnalysis::xaodTriggers();
     h_passTrigLevel = new TH1F("trig", "Event Level Triggers Fired", trigs.size()+1, 0.0, trigs.size()+1); // dantrim trig
     h_passTrigLevel->GetXaxis()->SetLabelSize(0.8 * h_passTrigLevel->GetLabelSize());
-    h_passTrigLevel->GetXaxis()->SetLabelOffset(0.35 * h_passTrigLevel->GetLabelOffset());
     for ( unsigned int iTrig = 0; iTrig < trigs.size(); iTrig++) {
         h_passTrigLevel->GetXaxis()->SetBinLabel(iTrig+1, trigs[iTrig].c_str());
     }
