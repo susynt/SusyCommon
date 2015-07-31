@@ -1153,6 +1153,32 @@ void SusyNtMaker::doSystematic()
 {
     if(m_dbg>=5) cout<< "doSystematic " << systInfoList.size() << endl;
 
+/*    
+     useful for figuring out what we have and what we expect
+      for(const auto& sysInfo : systInfoList) {
+        const CP::SystematicSet& sys = sysInfo.systset;
+        if(sys.name()=="") continue;
+        SusyNtSys ourSys = CPsys2sys((sys.name()).c_str());
+        string affects = "";
+        if(sysInfo.affectsType == ST::SystObjType::Jet) affects = "JET";
+        else if(sysInfo.affectsType == ST::SystObjType::Muon) affects = "MUON";
+        else if(sysInfo.affectsType == ST::SystObjType::Egamma) affects = "EGAMMA";
+        else if(sysInfo.affectsType == ST::SystObjType::Electron) affects = "ELECTRON";
+        else if(sysInfo.affectsType == ST::SystObjType::Photon) affects = "PHOTON";
+        else if(sysInfo.affectsType == ST::SystObjType::Tau) affects = "TAU";
+        else if(sysInfo.affectsType == ST::SystObjType::BTag) affects = "BTAG";
+        else if(sysInfo.affectsType == ST::SystObjType::MET_TST) affects = "MET_TST";
+        else if(sysInfo.affectsType == ST::SystObjType::MET_CST) affects = "MET_CST";
+        else if(sysInfo.affectsType == ST::SystObjType::MET_Track) affects = "MET_TRACK";
+        else if(sysInfo.affectsType == ST::SystObjType::EventWeight) affects = "EVENTWEIGHT";
+        else { affects = "UKNOWN"; }
+        string kinOrSys = "";
+        if(sysInfo.affectsKinematics) kinOrSys = "Kinematics";
+        else if(sysInfo.affectsWeights) kinOrSys = "Weights";
+        cout << "systematic: " << (sys.name()).c_str() << "                 ours: " << NtSys::SusyNtSysNames[ourSys] << "   affects: " << affects << "  " << kinOrSys << endl;
+    }
+    cout << endl;
+*/
     for(const auto& sysInfo : systInfoList){
         const CP::SystematicSet& sys = sysInfo.systset;
         if(m_dbg>=5) std::cout << ">>>> Working on variation: \"" <<(sys.name()).c_str() << "\" <<<<<<" << std::endl;
