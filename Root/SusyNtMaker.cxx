@@ -661,20 +661,39 @@ void SusyNtMaker::storeMuon(const xAOD::Muon &in)
     // DA June 21 :: For now just store the nominal -- need to merge with xaod (xaod_muonSF) branch
     //  >>> add the baseline check since otherwise the muonSF tool complains
     out.effSF = (m_isMC && out.isBaseline) ? m_susyObj[m_eleIDDefault]->GetSignalMuonSF(in) : 1;
-    // ASM-2014-11-02 :: How to get the uncertatinty?
-   // {
-   //     float value = 1.0;
-   //     float value_err = 0.0; // ASM-2014-11-02 0. for the time being
-   //     if(m_isMC) {
-   //  //       CP::CorrectionCode result = m_muonEfficiencySFTool->getEfficiencyScaleFactor( in, value );
-   //  //       if( result == CP::CorrectionCode::OutOfValidityRange ) {
-   //  //           // cout << "ASM :: getEfficiencyScaleFactor out of validity range " << endl;
-   //  //           value = 0.0;
-   //  //       }
-   //     }
-   //     out.effSF    = value;
-   //     out.errEffSF = value_err;
-   // }
+    if(m_isMC && m_sys) {
+        for(const auto& sysInfo : systInfoList) {
+            if(!(sysInfo.affectsType == ST::SystObjType::Muon && sysInfo.affectsWeights)) continue;
+            // Read information
+            const CP::SystematicSet& sys = sysInfo.systset;
+            cout << "working on " << sys.name() << endl;
+            SusyNtSys ourSys = CPsys2sys((sys.name()).c_str());
+            // configure the tools
+            if(m_susyObj[m_eleIDDefault]->applySystematicVariation(sys) != CP::SystematicCode::Ok) {
+                cout << "SusyNtMaker::storeMuon    cannot configure SUSYTools for systematic " << sys.name() << endl;
+                continue;
+            }
+            // get and store the information
+            double scale_factor = m_susyObj[m_eleIDDefault]->GetSignalMuonSF(in);   
+            if(ourSys == NtSys::MUONSFSTAT_UP)      out.errEffSF_stat_up = abs(scale_factor - out.effSF);
+            else if(ourSys == NtSys::MUONSFSTAT_DN) out.errEffSF_stat_dn = abs(scale_factor - out.effSF);
+            else if(ourSys == NtSys::MUONSFSYS_UP)  out.errEffSF_syst_up = abs(scale_factor - out.effSF);
+            else if(ourSys == NtSys::MUONSFSYS_DN)  out.errEffSF_syst_dn = abs(scale_factor - out.effSF);
+        } // sysInfo
+        if(m_susyObj[m_eleIDDefault]->resetSystematics() != CP::SystematicCode::Ok) {
+            cout << "SusyNtMaker::storeMuon    cannot reset SUSYTools systematics. Aborting." << endl;
+            abort();
+        }
+    } // m_isMC && m_sys
+    else {
+        out.errEffSF_stat_up = out.errEffSF_stat_dn = out.errEffSF_syst_up = out.errEffSF_syst_dn = 0.;
+    }
+    if(m_dbg >= 15) cout << "Muon scale factors    nom: " << out.effSF << "  stat_up: " << out.errEffSF_stat_up
+                                        << "  stat_dn: " << out.errEffSF_stat_dn
+                                        << "  syst_up: " << out.errEffSF_syst_up
+                                        << "  syst_dn: " << out.errEffSF_syst_dn << endl;
+        
+
 
     // ASM-2014-11-02 :: Store to be true at the moment
     all_available =  false;

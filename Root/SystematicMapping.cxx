@@ -178,10 +178,14 @@ SusyNtSys CPsys2sys(const std::string &s)
   else if( s== "MET_SoftTrk_ScaleDown" )                   r = MET_SoftTrk_ScaleDown;
   else if( s== "MET_SoftTrk_ScaleUp" )                     r = MET_SoftTrk_ScaleUp;
 //NEW END
-  else if( s== "MUONSFSTAT__1down" )                       r = MUONSFSTAT_DN;
-  else if( s== "MUONSFSTAT__1up" )                         r = MUONSFSTAT_UP;
-  else if( s== "MUONSFSYS__1down" )                        r = MUONSFSYS_DN;
-  else if( s== "MUONSFSYS__1up" )                          r = MUONSFSYS_UP;
+//  else if( s== "MUONSFSTAT__1down" )                       r = MUONSFSTAT_DN;
+//  else if( s== "MUONSFSTAT__1up" )                         r = MUONSFSTAT_UP;
+//  else if( s== "MUONSFSYS__1down" )                        r = MUONSFSYS_DN;
+//  else if( s== "MUONSFSYS__1up" )                          r = MUONSFSYS_UP;
+  else if( s== "MUON_EFF_STAT__1down" )                    r = MUONSFSTAT_DN;
+  else if( s== "MUON_EFF_STAT__1up" )                      r = MUONSFSTAT_UP;
+  else if( s== "MUON_EFF_SYS__1down" )                     r = MUONSFSYS_DN;
+  else if( s== "MUON_EFF_SYS__1up" )                       r = MUONSFSYS_UP;
   else if( s== "MUONS_ID__1down" )                         r = MUONS_ID_DN;
   else if( s== "MUONS_ID__1up" )                           r = MUONS_ID_UP;
   else if( s== "MUONS_MS__1down" )                         r = MUONS_MS_DN;
