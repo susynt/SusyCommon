@@ -309,6 +309,8 @@ XaodAnalysis& XaodAnalysis::initSusyTools()
         m_susyObj[i]->setProperty("PRWLumiCalcFiles", lumicalcFiles); 
         // default channel to use (if we do not have a prw config for a specific sample, this is what gets used)
         m_susyObj[i]->setProperty("PRWDefaultChannel", 410000);
+        # warning Setting data mu uncertainty to ten percent
+        m_susyObj[i]->setProperty("PRWMuUncertainty", 0.1);
 
         #warning Setting recommended reduced JES systematics set to set 1
         m_susyObj[i]->setProperty("JESNuisanceParameterSet", 1);

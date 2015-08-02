@@ -456,26 +456,18 @@ void SusyNtMaker::storeElectron(const xAOD::Electron &in)
              << out.tightLH 
              << endl;
     
+    bool recoSF=true;
+    bool idSF=true;
+    bool trigSF=false;
     if(m_isMC){
         //Store the SF of the tightest ID
-        bool recoSF=true;
-        bool idSF=true;
-        bool trigSF=false;
         if(eleIsOfType(in, ElectronId::TightLH))
             out.effSF = m_susyObj[ElectronId::TightLH]->GetSignalElecSF(in, recoSF, idSF, trigSF);
         else if(eleIsOfType(in, ElectronId::MediumLH))
             out.effSF = m_susyObj[ElectronId::MediumLH]->GetSignalElecSF(in, recoSF, idSF, trigSF);
         else if(eleIsOfType(in, ElectronId::LooseLH))
             out.effSF = m_susyObj[ElectronId::LooseLH]->GetSignalElecSF(in, recoSF, idSF, trigSF);
-    
-      
-     //   >>> dantrim March 2 2015 -- calling AsgElectronEfficiencyTool causes seg-fault?
-     //   AT: Crash is in getting EventInfo L175 ???
-     //     const Root::TResult &result =  m_electronEfficiencySFTool->calculate(in);
-     //     out.effSF    = result.getScaleFactor();
-     //     out.errEffSF = result.getTotalUncertainty();
-     //     if(m_dbg) cout << "AT: electron SF " << out.effSF << " " << out.errEffSF << endl;
-  
+
         out.mcType = xAOD::TruthHelpers::getParticleTruthType(in);
         out.mcOrigin = xAOD::TruthHelpers::getParticleTruthOrigin(in);  
         const xAOD::TruthParticle* truthEle = xAOD::TruthHelpers::getTruthParticle(in);
@@ -486,6 +478,45 @@ void SusyNtMaker::storeElectron(const xAOD::Electron &in)
         //if(eleIsOfType(in, eleID::LooseLH))
         // crash p1874 out.isChargeFlip  = m_isMC ? isChargeFlip(in.charge(),truthElectronCharge(in)) : false;
     }
+   
+     if(m_isMC && m_sys && out.isBaseline) {
+        for(const auto& sysInfo : systInfoList) {
+            if(!(sysInfo.affectsType == ST::SystObjType::Electron && sysInfo.affectsWeights)) continue;
+            // Read information
+            const CP::SystematicSet& sys = sysInfo.systset;
+            SusyNtSys ourSys = CPsys2sys((sys.name()).c_str());
+            // configure the tools
+            if(m_susyObj[m_eleIDDefault]->applySystematicVariation(sys) != CP::SystematicCode::Ok) {
+                cout << "SusyNtMaker::storeElectron    cannot configure SUSYTools for systematic " << sys.name() << endl;
+                continue;
+            }
+            // get and store the information
+            double scale_factor = 0.0;
+            if(eleIsOfType(in, ElectronId::TightLH))
+                scale_factor = m_susyObj[ElectronId::TightLH]->GetSignalElecSF(in, recoSF, idSF, trigSF);
+            else if(eleIsOfType(in, ElectronId::MediumLH))
+                scale_factor = m_susyObj[ElectronId::MediumLH]->GetSignalElecSF(in, recoSF, idSF, trigSF);
+            else if(eleIsOfType(in, ElectronId::LooseLH))
+                scale_factor = m_susyObj[ElectronId::LooseLH]->GetSignalElecSF(in, recoSF, idSF, trigSF);
+
+            if(ourSys == NtSys::EL_EFF_ID_TotalCorrUncertainty_UP)  out.errEffSF_id_corr_up = scale_factor - out.effSF;
+            else if(ourSys == NtSys::EL_EFF_ID_TotalCorrUncertainty_DN) out.errEffSF_id_corr_dn = scale_factor - out.effSF;
+            else if(ourSys == NtSys::EL_EFF_Reco_TotalCorrUncertainty_UP) out.errEffSF_reco_corr_up = scale_factor - out.effSF;
+            else if(ourSys == NtSys::EL_EFF_Reco_TotalCorrUncertainty_DN) out.errEffSF_reco_corr_dn = scale_factor - out.effSF;
+        } // sysInfo
+        if(m_susyObj[m_eleIDDefault]->resetSystematics() != CP::SystematicCode::Ok){
+            cout << "SusyNtMaker::storeElectron    cannot reset SUSYTools systematics. Aborting." << endl;
+            abort();
+        }
+    } // m_isMC && m_sys
+    else {
+        out.errEffSF_id_corr_up = out.errEffSF_id_corr_dn = out.errEffSF_reco_corr_up = out.errEffSF_reco_corr_dn = 0.;
+    }
+    if(m_dbg >= 15) cout << "Electron scale factors    nom: " << out.effSF << "   id up: " << out.errEffSF_id_corr_up
+                                                        << "  id dn: " << out.errEffSF_id_corr_dn
+                                                        << "  reco up: " << out.errEffSF_reco_corr_up
+                                                        << "  reco dn: " << out.errEffSF_reco_corr_dn << endl;
+      
 
     if(const xAOD::CaloCluster* c = in.caloCluster()) {
         out.clusE   = c->e()*MeV2GeV;
@@ -674,10 +705,10 @@ void SusyNtMaker::storeMuon(const xAOD::Muon &in)
             }
             // get and store the information
             double scale_factor = m_susyObj[m_eleIDDefault]->GetSignalMuonSF(in);   
-            if(ourSys == NtSys::MUONSFSTAT_UP)      out.errEffSF_stat_up = abs(scale_factor - out.effSF);
-            else if(ourSys == NtSys::MUONSFSTAT_DN) out.errEffSF_stat_dn = abs(scale_factor - out.effSF);
-            else if(ourSys == NtSys::MUONSFSYS_UP)  out.errEffSF_syst_up = abs(scale_factor - out.effSF);
-            else if(ourSys == NtSys::MUONSFSYS_DN)  out.errEffSF_syst_dn = abs(scale_factor - out.effSF);
+            if(ourSys == NtSys::MUONSFSTAT_UP)      out.errEffSF_stat_up = scale_factor - out.effSF;
+            else if(ourSys == NtSys::MUONSFSTAT_DN) out.errEffSF_stat_dn = scale_factor - out.effSF;
+            else if(ourSys == NtSys::MUONSFSYS_UP)  out.errEffSF_syst_up = scale_factor - out.effSF;
+            else if(ourSys == NtSys::MUONSFSYS_DN)  out.errEffSF_syst_dn = scale_factor - out.effSF;
         } // sysInfo
         if(m_susyObj[m_eleIDDefault]->resetSystematics() != CP::SystematicCode::Ok) {
             cout << "SusyNtMaker::storeMuon    cannot reset SUSYTools systematics. Aborting." << endl;
@@ -1200,7 +1231,7 @@ void SusyNtMaker::doSystematic()
     if(m_dbg>=5) cout<< "doSystematic " << systInfoList.size() << endl;
 
 /*    
-     useful for figuring out what we have and what we expect
+//     useful for figuring out what we have and what we expect
       for(const auto& sysInfo : systInfoList) {
         const CP::SystematicSet& sys = sysInfo.systset;
         if(sys.name()=="") continue;

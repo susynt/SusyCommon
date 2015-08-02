@@ -66,10 +66,15 @@ SusyNtSys CPsys2sys(const std::string &s)
   // else if( s== "EG_SCALE_ZEESTAT__1up" )                   r = EG_SCALE_ZEESTAT_UP;
   // else if( s== "EG_SCALE_ZEESYST__1down" )                 r = EG_SCALE_ZEESYST_DN;
   // else if( s== "EG_SCALE_ZEESYST__1up" )                   r = EG_SCALE_ZEESYST_UP;
-  else if( s== "EL_EFF_CorrUncertainty__1down" )           r = EL_EFF_CorrUncertainty_DN;
-  else if( s== "EL_EFF_CorrUncertainty__1up" )             r = EL_EFF_CorrUncertainty_UP;
-  else if( s== "EL_EFF_UncorrUncertainty__1down" )         r = EL_EFF_UncorrUncertainty_DN;
-  else if( s== "EL_EFF_UncorrUncertainty__1up" )           r = EL_EFF_UncorrUncertainty_UP;
+  //else if( s== "EL_EFF_CorrUncertainty__1down" )           r = EL_EFF_CorrUncertainty_DN;         // no longer there
+  //else if( s== "EL_EFF_CorrUncertainty__1up" )             r = EL_EFF_CorrUncertainty_UP;         // no longer there
+  //else if( s== "EL_EFF_UncorrUncertainty__1down" )         r = EL_EFF_UncorrUncertainty_DN;       // no longer there
+  //else if( s== "EL_EFF_UncorrUncertainty__1up" )           r = EL_EFF_UncorrUncertainty_UP;       // no longer there
+  else if( s== "EL_EFF_ID_TotalCorrUncertainty__1down" )   r = EL_EFF_ID_TotalCorrUncertainty_DN;
+  else if( s== "EL_EFF_ID_TotalCorrUncertainty__1up" )     r = EL_EFF_ID_TotalCorrUncertainty_UP;
+  else if( s== "EL_EFF_Reco_TotalCorrUncertainty__1down" ) r = EL_EFF_Reco_TotalCorrUncertainty_DN;
+  else if( s== "EL_EFF_Reco_TotalCorrUncertainty__1up" )   r = EL_EFF_Reco_TotalCorrUncertainty_UP;
+
   // else if( s== "EL_SCALE_MOMENTUM__1down" )                r = EL_SCALE_MOMENTUM_DN;
   // else if( s== "EL_SCALE_MOMENTUM__1up" )                  r = EL_SCALE_MOMENTUM_UP;
   else if( s== "FT_Eigen_B_0__1down" )                     r = FT_Eigen_B_0_DN;
