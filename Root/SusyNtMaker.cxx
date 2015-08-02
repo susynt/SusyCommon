@@ -661,12 +661,11 @@ void SusyNtMaker::storeMuon(const xAOD::Muon &in)
     // DA June 21 :: For now just store the nominal -- need to merge with xaod (xaod_muonSF) branch
     //  >>> add the baseline check since otherwise the muonSF tool complains
     out.effSF = (m_isMC && out.isBaseline) ? m_susyObj[m_eleIDDefault]->GetSignalMuonSF(in) : 1;
-    if(m_isMC && m_sys) {
+    if(m_isMC && m_sys && out.isBaseline) {
         for(const auto& sysInfo : systInfoList) {
             if(!(sysInfo.affectsType == ST::SystObjType::Muon && sysInfo.affectsWeights)) continue;
             // Read information
             const CP::SystematicSet& sys = sysInfo.systset;
-            cout << "working on " << sys.name() << endl;
             SusyNtSys ourSys = CPsys2sys((sys.name()).c_str());
             // configure the tools
             if(m_susyObj[m_eleIDDefault]->applySystematicVariation(sys) != CP::SystematicCode::Ok) {
