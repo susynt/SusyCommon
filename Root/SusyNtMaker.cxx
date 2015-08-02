@@ -233,8 +233,7 @@ void SusyNtMaker::fillNtVars()
     fillTauVars();
     fillJetVars();
     fillMetVars();
-//dantrim n0208
-//    fillMetTrackVars();
+    fillTrackMetVars();
     fillPhotonVars();
     if(m_isMC && getSelectTruthObjects() ) {
         fillTruthParticleVars();
@@ -1054,27 +1053,56 @@ void SusyNtMaker::fillMetVars(SusyNtSys sys)
 
 }
 //----------------------------------------------------------
-void SusyNtMaker::fillMetTrackVars(SusyNtSys sys)
+void SusyNtMaker::fillTrackMetVars(SusyNtSys sys)
 {
-    if(m_dbg>=15) cout<<"SusyNtMaker::fillMetTrackVars " <<endl;
+    if(m_dbg>=15) cout<<"SusyNtMaker::fillTrackMetVars " <<endl;
 
-    xAOD::MissingETContainer::const_iterator metTrack_it = m_metTrackContainer->find("Track");
+    xAOD::MissingETContainer::const_iterator trackMet_it = m_trackMetContainer->find("Track");
     
-    if (metTrack_it == m_metTrackContainer->end())
+    if (trackMet_it == m_trackMetContainer->end())
     {
-        cout << "No Track inside METTrack container" << endl;
+        cout << "No Track inside MET_Track container" << endl;
         return;
     }
     
-    m_susyNt.mtk()->push_back(Susy::MetTrack());
-    Susy::MetTrack* metTrackOut = &m_susyNt.mtk()->back();
+    m_susyNt.tkm()->push_back(Susy::TrackMet());
+    Susy::TrackMet* trackMetOut = &m_susyNt.tkm()->back();
     
-    metTrackOut->Et = (*metTrack_it)->met()*MeV2GeV;// m_met.Et();
-    metTrackOut->phi = (*metTrack_it)->phi();// m_met.Phi();
-    metTrackOut->sys = sys;
-    metTrackOut->sumet = (*metTrack_it)->sumet()*MeV2GeV;
+    trackMetOut->Et =  (*trackMet_it)->met()*MeV2GeV;// m_met.Et();
+    trackMetOut->phi = (*trackMet_it)->phi();// m_met.Phi();
+    trackMetOut->sys = sys;
+    trackMetOut->sumet = (*trackMet_it)->sumet()*MeV2GeV;
+
+    // let's get the electron term
+    xAOD::MissingETContainer::const_iterator met_find = m_trackMetContainer->find("RefEle");
+    if(met_find != m_trackMetContainer->end()) {
+        trackMetOut->refEle_et = (*met_find)->met()*MeV2GeV;
+        trackMetOut->refEle_phi = (*met_find)->phi();
+        trackMetOut->refEle_sumet = (*met_find)->sumet()*MeV2GeV;
+    }
+    // muon term
+    met_find = m_trackMetContainer->find("Muons");
+    if(met_find != m_trackMetContainer->end()) {
+        trackMetOut->refMuo_et = (*met_find)->met()*MeV2GeV;
+        trackMetOut->refMuo_phi = (*met_find)->phi();
+        trackMetOut->refMuo_sumet = (*met_find)->sumet()*MeV2GeV;
+    }
+    // jet term
+    met_find = m_trackMetContainer->find("RefJet");
+    if(met_find != m_trackMetContainer->end()) {
+        trackMetOut->refJet_et = (*met_find)->met()*MeV2GeV;
+        trackMetOut->refJet_phi = (*met_find)->phi();
+        trackMetOut->refJet_sumet = (*met_find)->sumet()*MeV2GeV;
+    }
+    // soft term
+    met_find = m_trackMetContainer->find("PVSoftTrk");
+    if(met_find != m_trackMetContainer->end()) {
+        trackMetOut->softTerm_et = (*met_find)->met()*MeV2GeV;
+        trackMetOut->softTerm_phi = (*met_find)->phi();
+        trackMetOut->softTerm_sumet = (*met_find)->sumet()*MeV2GeV;
+    } 
     
-    if (m_dbg) cout << " AT:fillMetTrackVars " << metTrackOut->Et << " " << metTrackOut->phi << " " << metTrackOut->lv().Pt() << endl;
+    if (m_dbg) cout << " AT:fillTrackMetVars " << trackMetOut->Et << " " << trackMetOut->phi << " " << trackMetOut->lv().Pt() << endl;
 }
 //----------------------------------------------------------
 void SusyNtMaker::storeTruthParticle(const xAOD::TruthParticle &in)
@@ -1205,6 +1233,7 @@ void SusyNtMaker::doSystematic()
         deleteShallowCopies(false);//Don't clear the nominal containers
         selectObjects(ourSys, sysInfo);
         retrieveXaodMet(sysInfo,ourSys);
+        retrieveXaodTrackMet(sysInfo,ourSys);
         assignEventCleaningFlags(); //AT really needed for each systematic ? CHECK
         assignObjectCleaningFlags(sysInfo, ourSys);//AT really needed for each systematic ? CHECK
 
@@ -1215,7 +1244,7 @@ void SusyNtMaker::doSystematic()
         //storePhotonKinSys(sysInfo,ourSys);//To be implemented if needed
 
         fillMetVars(ourSys);    
-//        fillMetTrackVars(ourSys);
+        fillTrackMetVars(ourSys);
         // m_susyNt.evt()->cutFlags[sys] = m_cutFlags;
 
         //Reset the systematics for all tools

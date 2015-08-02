@@ -616,27 +616,54 @@ const xAOD::EventInfo* XaodAnalysis::xaodEventInfo()
     }
     return m_xaodEventInfo;
 }
-//---------------------------------------------------------- MET_Track
-const xAOD::MissingETContainer* XaodAnalysis::retrieveMET_Track(xAOD::TEvent &e, bool dbg)
-{
-    const xAOD::MissingETContainer* met_track = NULL;
-#warning p1872 need to use AODfix MET_RefinalFix and MET_TrackFix
-    e.retrieve(met_track, "MET_Track");
-    if(dbg){
-        if (met_track) cout << "XaodAnalysis::retrieveMET_Track: retrieved" << endl;
-        else    cout << "XaodAnalysis::retrieveMET_Track: failed" << endl;
-    }
-    return met_track;
-}
+////---------------------------------------------------------- MET_Track
+//const xAOD::MissingETContainer* XaodAnalysis::retrieveMET_Track(xAOD::TEvent &e, bool dbg)
+//{
+//    const xAOD::MissingETContainer* met_track = NULL;
+//#warning p1872 need to use AODfix MET_RefinalFix and MET_TrackFix
+//    e.retrieve(met_track, "MET_Track");
+//    if(dbg){
+//        if (met_track) cout << "XaodAnalysis::retrieveMET_Track: retrieved" << endl;
+//        else    cout << "XaodAnalysis::retrieveMET_Track: failed" << endl;
+//    }
+//    return met_track;
+//}
 //----------------------------------------------------------
-const xAOD::MissingETContainer* XaodAnalysis::xaodMET_Track()
+void XaodAnalysis::retrieveXaodTrackMet(ST::SystInfo sysInfo, SusyNtSys sys)
 {
-    if (m_metTrackContainer == NULL){
-        if(m_dbg>=5) std::cout << "Retrieving track MET " << std::endl;
-        m_metTrackContainer = retrieveMET_Track(m_event, m_dbg);
-    }
-    return m_metTrackContainer;
+    if(m_dbg>=5) cout << "retrieveXaodTrackMet " << SusyNtSysNames[sys] << endl;
+    
+    m_trackMetContainer = new xAOD::MissingETContainer;
+    m_trackMetAuxContainer = new xAOD::MissingETAuxContainer;
+    m_trackMetContainer->setStore( m_trackMetAuxContainer );
+    if(m_dbg>=5) cout << "Made trackMetContainer pointers " << m_trackMetContainer << " eleID " << m_eleIDDefault << endl;
+
+    xAOD::ElectronContainer* electrons = xaodElectrons(sysInfo, sys);
+    xAOD::MuonContainer*     muons     = xaodMuons(sysInfo, sys);
+    xAOD::JetContainer*      jets      = xaodJets(sysInfo, sys);
+
+    // GetTrackMET( met, jet, elec, muon)
+    m_susyObj[m_eleIDDefault]->GetTrackMET(*m_trackMetContainer,
+                                            jets,
+                                            electrons,
+                                            muons);
+
+    if(m_dbg>=5) cout << "Rebult TrackMet with "
+                      << " ele size " << electrons->size()
+                      << " muo size " << muons->size()
+                      << " jet size " << jets->size()
+                      << endl;
 }
+    
+
+//const xAOD::MissingETContainer* XaodAnalysis::xaodMET_Track()
+//{
+//    if (m_metTrackContainer == NULL){
+//        if(m_dbg>=5) std::cout << "Retrieving track MET " << std::endl;
+//        m_metTrackContainer = retrieveMET_Track(m_event, m_dbg);
+//    }
+//    return m_metTrackContainer;
+//}
 //----------------------------------------------------------
 xAOD::MuonContainer* XaodAnalysis::xaodMuons(ST::SystInfo sysInfo, SusyNtSys sys)
 {
@@ -2349,6 +2376,8 @@ XaodAnalysis& XaodAnalysis::deleteShallowCopies(bool deleteNominal)
 
     if(m_metContainer     ) delete m_metContainer;
     if(m_metAuxContainer  ) delete m_metAuxContainer;
+    if(m_trackMetContainer ) delete m_trackMetContainer;
+    if(m_trackMetAuxContainer ) delete m_trackMetAuxContainer;
 
     if(m_dbg>5) cout << "Check delete shallowCopied mu " << m_xaodMuons
                      << " ele "  << m_xaodElectrons
@@ -2360,7 +2389,7 @@ XaodAnalysis& XaodAnalysis::deleteShallowCopies(bool deleteNominal)
     
     if(deleteNominal){
         //m_store.print();
-        m_store.clear(); // this clears m_metTrackContainer, m_xaodTruthEvent and m_xaodTruthParticles
+        m_store.clear(); // this clears m_trackMetContainer, m_xaodTruthEvent and m_xaodTruthParticles
         //and any objs recorded with TStore 
 
         if(m_xaodMuons_nom         ) delete m_xaodMuons_nom;
@@ -2398,6 +2427,8 @@ XaodAnalysis& XaodAnalysis::clearContainerPointers(bool deleteNominal)
 
     m_metContainer           = NULL;
     m_metAuxContainer        = NULL;
+    m_trackMetContainer      = NULL;
+    m_trackMetAuxContainer   = NULL;
 
     if(deleteNominal){
         m_xaodMuons_nom          = NULL;
@@ -2410,8 +2441,6 @@ XaodAnalysis& XaodAnalysis::clearContainerPointers(bool deleteNominal)
         m_xaodJetsAux_nom        = NULL;
         m_xaodPhotons_nom        = NULL;
         m_xaodPhotonsAux_nom     = NULL;
-
-        m_metTrackContainer      = NULL; 
 
         m_xaodTruthEvent         = NULL;
         m_xaodTruthParticles     = NULL;
@@ -2442,6 +2471,7 @@ XaodAnalysis& XaodAnalysis::retrieveCollections()
 #warning not implementing Track MET forr n0208 production
 //     
 //   xaodMET_Track();
+    retrieveXaodTrackMet(systInfoList[0]);
 
     xaodTruthEvent();
     xaodTruthParticles();

@@ -141,8 +141,8 @@ namespace Susy {
     /// wrapper of retrieveEventInfo; store result as datamember ptrs
     virtual const xAOD::EventInfo* xaodEventInfo();
     /// access the default collection of muons from SUSYObjDef_xAOD
-    const xAOD::MissingETContainer* retrieveMET_Track(xAOD::TEvent &e, bool dbg);
-    const xAOD::MissingETContainer* xaodMET_Track();
+    //const xAOD::MissingETContainer* retrieveMET_Track(xAOD::TEvent &e, bool dbg);
+    //const xAOD::MissingETContainer* xaodMET_Track();
     /**
        By default this function returns a pointer to
        mu_staco. However, if we always call this function (rather than
@@ -185,6 +185,9 @@ namespace Susy {
 
     /// retrieve & build met
     virtual void retrieveXaodMet(ST::SystInfo sysInfo, SusyNtSys sys = NtSys::NOM);
+
+    /// retrieve & build trackMET
+    virtual void retrieveXaodTrackMet(ST::SystInfo sysInfo, SusyNtSys sys = NtSys::NOM);
 
     /// access the vertices
     static const xAOD::VertexContainer* retrieveVertices(xAOD::TEvent &e, bool dbg);
@@ -542,7 +545,8 @@ namespace Susy {
     */
     xAOD::MissingETContainer*           m_metContainer;
     xAOD::MissingETAuxContainer*        m_metAuxContainer;
-    const xAOD::MissingETContainer*     m_metTrackContainer;
+    xAOD::MissingETContainer*           m_trackMetContainer;
+    xAOD::MissingETAuxContainer*        m_trackMetAuxContainer;
 
     //VertexContainer
     const xAOD::VertexContainer*        m_xaodVertices; 
