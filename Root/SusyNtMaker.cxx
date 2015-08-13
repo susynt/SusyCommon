@@ -429,11 +429,11 @@ void SusyNtMaker::storeElectron(const xAOD::Electron &in)
     out.tightLH_nod0  = eleIsOfType(in, ElectronId::TightLH_nod0);
 
     // Isolation flags
-    out.isoGradientLoose  = m_isoToolGradientLoose->accept(in) ? true : false;
-    out.isoGradient       = m_isoToolGradient->accept(in) ? true : false;
-    out.isoLooseTrackOnly = m_isoToolLooseTrackOnly->accept(in) ? true : false;
-    out.isoLoose          = m_isoToolLoose->accept(in) ? true : false;
-    out.isoTight          = m_isoToolTight->accept(in) ? true : false;
+    out.isoGradientLoose  = in.auxdata<char>("isol");
+    //out.isoGradient       = m_isoToolGradient->accept(in) ? true : false;
+    //out.isoLooseTrackOnly = m_isoToolLooseTrackOnly->accept(in) ? true : false;
+    //out.isoLoose          = m_isoToolLoose->accept(in) ? true : false;
+    //out.isoTight          = m_isoToolTight->accept(in) ? true : false;
 
     //Isolations
     out.etconetopo20 = in.isolationValue(xAOD::Iso::topoetcone20) * MeV2GeV;
@@ -603,11 +603,11 @@ void SusyNtMaker::storeMuon(const xAOD::Muon &in)
     out.tight = muIsOfType(in, MuonId::Tight);
 
     // Isolation flags
-    out.isoGradientLoose = m_isoToolGradientLoose->accept(in) ? true : false;
-    out.isoGradient = m_isoToolGradient->accept(in) ? true : false;
-    out.isoLooseTrackOnly = m_isoToolLooseTrackOnly->accept(in) ? true : false;
-    out.isoLoose = m_isoToolLoose->accept(in) ? true : false;
-    out.isoTight = m_isoToolTight->accept(in) ? true : false;
+    out.isoGradientLoose = in.auxdata<char>("isol");
+    //out.isoGradient = m_isoToolGradient->accept(in) ? true : false;
+    //out.isoLooseTrackOnly = m_isoToolLooseTrackOnly->accept(in) ? true : false;
+    //out.isoLoose = m_isoToolLoose->accept(in) ? true : false;
+    //out.isoTight = m_isoToolTight->accept(in) ? true : false;
 
     bool all_available=true;
 
@@ -887,11 +887,11 @@ void SusyNtMaker::storePhoton(const xAOD::Photon &in)
     out.topoEtcone40 = in.isolationValue(xAOD::Iso::topoetcone40) * MeV2GeV;
 
     // isolation
-    out.isoGradientLoose  = m_isoToolGradientLoose->accept(in) ? true : false;
-    out.isoGradient       = m_isoToolGradient->accept(in) ? true : false;
-    out.isoLooseTrackOnly = m_isoToolLooseTrackOnly->accept(in) ? true : false;
-    out.isoLoose          = m_isoToolLoose->accept(in) ? true : false;
-    out.isoTight          = m_isoToolTight->accept(in) ? true : false;
+    out.isoGradientLoose  = in.auxdata<char>("isol");
+    //out.isoGradient       = m_isoToolGradient->accept(in) ? true : false;
+    //out.isoLooseTrackOnly = m_isoToolLooseTrackOnly->accept(in) ? true : false;
+    //out.isoLoose          = m_isoToolLoose->accept(in) ? true : false;
+    //out.isoTight          = m_isoToolTight->accept(in) ? true : false;
     
     if(m_dbg) cout << "AT: storePhoton: " << out.pt << " " << out.tight << " " << out.isConv << endl;
     if(m_dbg && !all_available) cout<<"missing some photon variables"<<endl;
