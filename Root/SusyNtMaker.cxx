@@ -598,7 +598,7 @@ void SusyNtMaker::storeMuon(const xAOD::Muon &in)
     out.isSignal   = (bool)in.auxdata< char >("signal");
     out.isCombined = in.muonType()==xAOD::Muon::Combined;
     out.isCosmic   = (bool)in.auxdata< char >("cosmic");
-    out.isBadMuon  = m_susyObj[m_eleIDDefault]->IsBadMuon(in) ? 1 : 0;
+    out.isBadMuon  = (bool)in.auxdata<char>("bad");
 
     // muon quality
     out.veryLoose = muIsOfType(in, MuonId::VeryLoose);
