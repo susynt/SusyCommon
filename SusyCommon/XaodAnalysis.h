@@ -64,7 +64,7 @@
 #include "TrigMuonMatching/TrigMuonMatching.h"
 //#include "TrigEgammaMatchingTool/TrigEgammaMatchingTool.h"
 //#include "TrigEgammaMatchingTool/ITrigEgammaMatchingTool.h"
-#include "SusyNtuple/Trigger.h"
+#include "SusyNtuple/TriggerTools.h"
 
 #include "SusyCommon/XaodAnalysis_types.h"
 
@@ -609,9 +609,9 @@ namespace Susy {
     CP::MuonSelectionTool               *m_muonSelectionToolTight;
 
     // Lepton isolation tools
-    CP::IsolationSelectionTool *m_isoToolGradientLoose;
-    CP::IsolationSelectionTool *m_isoToolGradient;
-    CP::IsolationSelectionTool *m_isoToolLooseTrackOnly;
+    CP::IsolationSelectionTool *m_isoToolGradientLooseCone40Calo;
+    CP::IsolationSelectionTool *m_isoToolGradientCone40;
+    CP::IsolationSelectionTool *m_isoToolLooseTrackOnlyCone20;
     CP::IsolationSelectionTool *m_isoToolLoose;
     CP::IsolationSelectionTool *m_isoToolTight;
 

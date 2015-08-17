@@ -7,7 +7,7 @@
 #include "SusyCommon/SystematicMapping.h"
 
 
-#include "SusyNtuple/Trigger.h"
+#include "SusyNtuple/TriggerTools.h"
 
 
 #include "TStopwatch.h"
