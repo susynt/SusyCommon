@@ -21,7 +21,7 @@
 // Amg include
 #include "EventPrimitives/EventPrimitivesHelpers.h"
 
-#include "SusyNtuple/Trigger.h"
+#include "SusyNtuple/TriggerTools.h"
 
 
 #include <algorithm> // max_element
@@ -95,10 +95,10 @@ const std::vector< std::string > SusyNtMaker::cutflowLabels()
     labels.push_back("Initial"        );
     labels.push_back("GRL"            );
     labels.push_back("error flags"    );
-    labels.push_back("bad muon"       );
-    labels.push_back("jet cleaning"   );
     labels.push_back("good pvx"       );
+    labels.push_back("bad muon"       );
     labels.push_back("pass cosmic"    );
+    labels.push_back("jet cleaning"   );
     labels.push_back("base lepton >= 1"   );
     labels.push_back("sig. lepton >= 1"   );
   //  labels.push_back("1 == base jet"  );
@@ -264,7 +264,6 @@ void SusyNtMaker::fillEventVars()
 
 
     evt->nVtx             = getNumGoodVtx();
-    evt->avgMu            = eventinfo->averageInteractionsPerCrossing();
 
     evt->hfor             = m_isMC? getHFORDecision() : -1;
 
@@ -288,6 +287,10 @@ void SusyNtMaker::fillEventVars()
     evt->trigBits         = m_evtTrigBits;
 
     evt->wPileup          = m_isMC ? m_susyObj[m_eleIDDefault]->GetPileupWeight() : 1;
+
+    // in recent versions of PRW tool the 'getLumiBlockMu' should
+    // be able to return the MC mu
+    evt->avgMu            = m_isMC ? eventinfo->averageInteractionsPerCrossing() : m_pileupReweightingTool->getLumiBlockMu(*eventinfo);
 
     // Pileup systematic variations, varying data mu up/down and getting the resulting pupw
     if(m_isMC && m_sys) {
@@ -429,9 +432,10 @@ void SusyNtMaker::storeElectron(const xAOD::Electron &in)
     out.tightLH_nod0  = eleIsOfType(in, ElectronId::TightLH_nod0);
 
     // Isolation flags
-    out.isoGradientLoose  = m_isoToolGradientLoose->accept(in) ? true : false;
-    out.isoGradient       = m_isoToolGradient->accept(in) ? true : false;
-    out.isoLooseTrackOnly = m_isoToolLooseTrackOnly->accept(in) ? true : false;
+    out.isoGradientLoose  = in.auxdata<char>("isol");
+   //out.isoGradientLoose  = m_isoToolGradientLooseCone40Calo->accept(in) ? true : false;
+    out.isoGradient       = m_isoToolGradientCone40->accept(in) ? true : false;
+    out.isoLooseTrackOnly = m_isoToolLooseTrackOnlyCone20->accept(in) ? true : false;
     out.isoLoose          = m_isoToolLoose->accept(in) ? true : false;
     out.isoTight          = m_isoToolTight->accept(in) ? true : false;
 
@@ -603,9 +607,10 @@ void SusyNtMaker::storeMuon(const xAOD::Muon &in)
     out.tight = muIsOfType(in, MuonId::Tight);
 
     // Isolation flags
-    out.isoGradientLoose = m_isoToolGradientLoose->accept(in) ? true : false;
-    out.isoGradient = m_isoToolGradient->accept(in) ? true : false;
-    out.isoLooseTrackOnly = m_isoToolLooseTrackOnly->accept(in) ? true : false;
+    out.isoGradientLoose = in.auxdata<char>("isol");
+    //out.isoGradientLoose = m_isoToolGradientLooseCone40Calo->accept(in) ? true : false;
+    out.isoGradient = m_isoToolGradientCone40->accept(in) ? true : false;
+    out.isoLooseTrackOnly = m_isoToolLooseTrackOnlyCone20->accept(in) ? true : false;
     out.isoLoose = m_isoToolLoose->accept(in) ? true : false;
     out.isoTight = m_isoToolTight->accept(in) ? true : false;
 
@@ -887,12 +892,10 @@ void SusyNtMaker::storePhoton(const xAOD::Photon &in)
     out.topoEtcone40 = in.isolationValue(xAOD::Iso::topoetcone40) * MeV2GeV;
 
     // isolation
-    out.isoGradientLoose  = m_isoToolGradientLoose->accept(in) ? true : false;
-    out.isoGradient       = m_isoToolGradient->accept(in) ? true : false;
-    out.isoLooseTrackOnly = m_isoToolLooseTrackOnly->accept(in) ? true : false;
-    out.isoLoose          = m_isoToolLoose->accept(in) ? true : false;
-    out.isoTight          = m_isoToolTight->accept(in) ? true : false;
-    
+    out.isoCone40CaloOnly   = m_isoToolGradientLooseCone40Calo->accept(in) ? true : false;
+    out.isoCone40           = m_isoToolGradientCone40->accept(in) ? true : false;
+    out.isoCone20           = m_isoToolLooseTrackOnlyCone20->accept(in) ? true : false;
+   
     if(m_dbg) cout << "AT: storePhoton: " << out.pt << " " << out.tight << " " << out.isConv << endl;
     if(m_dbg && !all_available) cout<<"missing some photon variables"<<endl;
     m_susyNt.pho()->push_back(out);
