@@ -834,21 +834,17 @@ void XaodAnalysis::retrieveXaodMet( ST::SystInfo sysInfo, SusyNtSys sys)
     xAOD::ElectronContainer* electrons = xaodElectrons(sysInfo,sys);
     xAOD::MuonContainer*     muons     = xaodMuons(sysInfo,sys);
     xAOD::JetContainer*      jets      = xaodJets(sysInfo,sys);
-    xAOD::TauJetContainer*   taus      = xaodTaus(sysInfo,sys);
-    xAOD::PhotonContainer*   photons   = xaodPhotons(sysInfo,sys);
 
     // GetMET(met, jet, elec, muon, gamma, taujet, doTST = true, doJVT=true, invis = 0)
     m_susyObj[m_eleIDDefault]->GetMET(*m_metContainer,
                                       jets,
                                       electrons,
                                       muons,
-                                      photons,
-                                      taus);
+                                      0,
+                                      0);
    
     if(m_dbg>=5) cout <<"Rebuilt MET with " 
                       << " ele size " << electrons->size()
-                      << " photons size " << photons->size()
-                      << " taus size " << taus->size()
                       << " jets size " << jets->size()
                       << " muons size " << muons->size()
                       << std::endl;
