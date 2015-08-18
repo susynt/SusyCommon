@@ -67,6 +67,7 @@
 #include "SusyNtuple/TriggerTools.h"
 
 #include "SusyCommon/XaodAnalysis_types.h"
+#include "SusyCommon/SusyObjId.h"
 
 
 #include "TSelector.h"
@@ -502,8 +503,8 @@ namespace Susy {
     xAOD::TEvent m_event;
     xAOD::TStore m_store;
 
-    ST::SUSYObjDef_xAOD* m_susyObj[ElectronId::ElectronIdInvalid];      // SUSY object definitions
-    ElectronId m_eleIDDefault;
+    ST::SUSYObjDef_xAOD* m_susyObj[SusyObjId::Invalid];      // SUSY object definitions
+    SusyObjId m_eleIDDefault;
 
     std::vector<CP::SystematicSet> sysList;  //CP Systematic list
     std::vector<ST::SystInfo> systInfoList;  //SystInfo is a SUSYTools simplify version struct

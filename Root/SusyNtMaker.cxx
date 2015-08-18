@@ -6,6 +6,7 @@
 
 #include "SusyCommon/SusyNtMaker.h"
 #include "SusyCommon/TruthTools.h"
+#include "SusyCommon/SusyObjId.h"
 #include "SusyNtuple/SusyNtTools.h"
 #include "SusyNtuple/WhTruthExtractor.h"
 #include "SusyNtuple/mc_truth_utils.h"
@@ -464,13 +465,17 @@ void SusyNtMaker::storeElectron(const xAOD::Electron &in)
     bool idSF=true;
     bool trigSF=false;
     if(m_isMC){
-        //Store the SF of the tightest ID
-        if(eleIsOfType(in, ElectronId::TightLH))
-            out.effSF = m_susyObj[ElectronId::TightLH]->GetSignalElecSF(in, recoSF, idSF, trigSF);
-        else if(eleIsOfType(in, ElectronId::MediumLH))
-            out.effSF = m_susyObj[ElectronId::MediumLH]->GetSignalElecSF(in, recoSF, idSF, trigSF);
-        else if(eleIsOfType(in, ElectronId::LooseLH))
-            out.effSF = m_susyObj[ElectronId::LooseLH]->GetSignalElecSF(in, recoSF, idSF, trigSF);
+        // Store the SF for each electron LH working point
+        // (only do LooseLH, MediumLH, TightLH for now)
+        out.eleEffSF[ElectronId::TightLH] = m_susyObj[SusyObjId::eleTightLH]->GetSignalElecSF(in, recoSF, idSF, trigSF);
+        out.eleEffSF[ElectronId::MediumLH] = m_susyObj[SusyObjId::eleMediumLH]->GetSignalElecSF(in, recoSF, idSF, trigSF);
+        out.eleEffSF[ElectronId::LooseLH] = m_susyObj[SusyObjId::eleLooseLH]->GetSignalElecSF(in, recoSF, idSF, trigSF);
+        //if(eleIsOfType(in, ElectronId::TightLH))
+        //    out.effSF = m_susyObj[ElectronId::TightLH]->GetSignalElecSF(in, recoSF, idSF, trigSF);
+        //else if(eleIsOfType(in, ElectronId::MediumLH))
+        //    out.effSF = m_susyObj[ElectronId::MediumLH]->GetSignalElecSF(in, recoSF, idSF, trigSF);
+        //else if(eleIsOfType(in, ElectronId::LooseLH))
+        //    out.effSF = m_susyObj[ElectronId::LooseLH]->GetSignalElecSF(in, recoSF, idSF, trigSF);
 
         out.mcType = xAOD::TruthHelpers::getParticleTruthType(in);
         out.mcOrigin = xAOD::TruthHelpers::getParticleTruthOrigin(in);  
@@ -482,44 +487,86 @@ void SusyNtMaker::storeElectron(const xAOD::Electron &in)
         //if(eleIsOfType(in, eleID::LooseLH))
         // crash p1874 out.isChargeFlip  = m_isMC ? isChargeFlip(in.charge(),truthElectronCharge(in)) : false;
     }
-   
-     if(m_isMC && m_sys && out.isBaseline) {
+
+
+    if(m_isMC && m_sys && (out.veryLooseLH || out.looseLH || out.mediumLH || out.tightLH)) {
         for(const auto& sysInfo : systInfoList) {
             if(!(sysInfo.affectsType == ST::SystObjType::Electron && sysInfo.affectsWeights)) continue;
-            // Read information
+
             const CP::SystematicSet& sys = sysInfo.systset;
             SusyNtSys ourSys = CPsys2sys((sys.name()).c_str());
-            // configure the tools
-            if(m_susyObj[m_eleIDDefault]->applySystematicVariation(sys) != CP::SystematicCode::Ok) {
-                cout << "SusyNtMaker::storeElectron    cannot configure SUSYTools for systematic " << sys.name() << endl;
-                continue;
-            }
-            // get and store the information
-            double scale_factor = 0.0;
-            if(eleIsOfType(in, ElectronId::TightLH))
-                scale_factor = m_susyObj[ElectronId::TightLH]->GetSignalElecSF(in, recoSF, idSF, trigSF);
-            else if(eleIsOfType(in, ElectronId::MediumLH))
-                scale_factor = m_susyObj[ElectronId::MediumLH]->GetSignalElecSF(in, recoSF, idSF, trigSF);
-            else if(eleIsOfType(in, ElectronId::LooseLH))
-                scale_factor = m_susyObj[ElectronId::LooseLH]->GetSignalElecSF(in, recoSF, idSF, trigSF);
+            for(int i=SusyObjId::eleTightLH; i<=SusyObjId::eleLooseLH; i++){
+                if(m_susyObj[i]->applySystematicVariation(sys) != CP::SystematicCode::Ok) {
+                    cout << "SusyNtMaker::storeElectron    cannot configure SUSYTools for systematic " << sys.name() << endl;
+                    continue;
+                }
+            } // i 
+            vector<float> sf;
+            sf.assign(ElectronId::ElectronIdInvalid, 1);
+            sf[ElectronId::TightLH] = m_susyObj[SusyObjId::eleTightLH]->GetSignalElecSF(in, recoSF, idSF, trigSF);
+            sf[ElectronId::MediumLH] = m_susyObj[SusyObjId::eleMediumLH]->GetSignalElecSF(in, recoSF, idSF, trigSF);
+            sf[ElectronId::LooseLH] = m_susyObj[SusyObjId::eleLooseLH]->GetSignalElecSF(in, recoSF, idSF, trigSF);
 
-            if(ourSys == NtSys::EL_EFF_ID_TotalCorrUncertainty_UP)  out.errEffSF_id_corr_up = scale_factor - out.effSF;
-            else if(ourSys == NtSys::EL_EFF_ID_TotalCorrUncertainty_DN) out.errEffSF_id_corr_dn = scale_factor - out.effSF;
-            else if(ourSys == NtSys::EL_EFF_Reco_TotalCorrUncertainty_UP) out.errEffSF_reco_corr_up = scale_factor - out.effSF;
-            else if(ourSys == NtSys::EL_EFF_Reco_TotalCorrUncertainty_DN) out.errEffSF_reco_corr_dn = scale_factor - out.effSF;
+            for(int i=ElectronId::TightLH; i<ElectronIdInvalid; i++){
+                if     (ourSys == NtSys::EL_EFF_ID_TotalCorrUncertainty_UP) out.errEffSF_id_corr_up[i] = sf[i] - out.eleEffSF[i];
+                else if(ourSys == NtSys::EL_EFF_ID_TotalCorrUncertainty_DN) out.errEffSF_id_corr_dn[i] = sf[i] - out.eleEffSF[i];
+                else if(ourSys == NtSys::EL_EFF_Reco_TotalCorrUncertainty_UP) out.errEffSF_reco_corr_up[i] = sf[i] - out.eleEffSF[i];
+                else if(ourSys == NtSys::EL_EFF_Reco_TotalCorrUncertainty_DN) out.errEffSF_reco_corr_dn[i] = sf[i] - out.eleEffSF[i];
+            }
         } // sysInfo
-        if(m_susyObj[m_eleIDDefault]->resetSystematics() != CP::SystematicCode::Ok){
-            cout << "SusyNtMaker::storeElectron    cannot reset SUSYTools systematics. Aborting." << endl;
-            abort();
+        for(int i=SusyObjId::eleTightLH; i<=SusyObjId::eleLooseLH; i++){
+            if(m_susyObj[i]->resetSystematics() != CP::SystematicCode::Ok){
+                cout << "SusyNtMaker::storeMuon    cannot reset SUSYTools systematics. Aborting." << endl;
+                abort();
+            }
         }
-    } // m_isMC && m_sys
+    } // if isMC
     else {
-        out.errEffSF_id_corr_up = out.errEffSF_id_corr_dn = out.errEffSF_reco_corr_up = out.errEffSF_reco_corr_dn = 0.;
+        for(int i=ElectronId::TightLH; i<ElectronIdInvalid; i++){
+            out.errEffSF_id_corr_up[i] = out.errEffSF_id_corr_dn[i] = 0;
+            out.errEffSF_reco_corr_up[i] = out.errEffSF_reco_corr_dn[i] = 0;
+        }
     }
-    if(m_dbg >= 15) cout << "Electron scale factors    nom: " << out.effSF << "   id up: " << out.errEffSF_id_corr_up
-                                                        << "  id dn: " << out.errEffSF_id_corr_dn
-                                                        << "  reco up: " << out.errEffSF_reco_corr_up
-                                                        << "  reco dn: " << out.errEffSF_reco_corr_dn << endl;
+        
+   
+//     if(m_isMC && m_sys && out.isBaseline) {
+//        for(const auto& sysInfo : systInfoList) {
+//            if(!(sysInfo.affectsType == ST::SystObjType::Electron && sysInfo.affectsWeights)) continue;
+//            // Read information
+//            const CP::SystematicSet& sys = sysInfo.systset;
+//            SusyNtSys ourSys = CPsys2sys((sys.name()).c_str());
+//            // configure the tools
+//            if(m_susyObj[m_eleIDDefault]->applySystematicVariation(sys) != CP::SystematicCode::Ok) {
+//                cout << "SusyNtMaker::storeElectron    cannot configure SUSYTools for systematic " << sys.name() << endl;
+//                continue;
+//            }
+//            // get and store the information
+//            double scale_factor = 0.0;
+//            if(eleIsOfType(in, ElectronId::TightLH))
+//                scale_factor = m_susyObj[ElectronId::TightLH]->GetSignalElecSF(in, recoSF, idSF, trigSF);
+//            else if(eleIsOfType(in, ElectronId::MediumLH))
+//                scale_factor = m_susyObj[ElectronId::MediumLH]->GetSignalElecSF(in, recoSF, idSF, trigSF);
+//            else if(eleIsOfType(in, ElectronId::LooseLH))
+//                scale_factor = m_susyObj[ElectronId::LooseLH]->GetSignalElecSF(in, recoSF, idSF, trigSF);
+//
+//            if(ourSys == NtSys::EL_EFF_ID_TotalCorrUncertainty_UP)  out.errEffSF_id_corr_up = scale_factor - out.effSF;
+//            else if(ourSys == NtSys::EL_EFF_ID_TotalCorrUncertainty_DN) out.errEffSF_id_corr_dn = scale_factor - out.effSF;
+//            else if(ourSys == NtSys::EL_EFF_Reco_TotalCorrUncertainty_UP) out.errEffSF_reco_corr_up = scale_factor - out.effSF;
+//            else if(ourSys == NtSys::EL_EFF_Reco_TotalCorrUncertainty_DN) out.errEffSF_reco_corr_dn = scale_factor - out.effSF;
+//        } // sysInfo
+//        if(m_susyObj[m_eleIDDefault]->resetSystematics() != CP::SystematicCode::Ok){
+//            cout << "SusyNtMaker::storeElectron    cannot reset SUSYTools systematics. Aborting." << endl;
+//            abort();
+//        }
+//    } // m_isMC && m_sys
+//    else {
+//        out.errEffSF_id_corr_up = out.errEffSF_id_corr_dn = out.errEffSF_reco_corr_up = out.errEffSF_reco_corr_dn = 0.;
+//    }
+  // need to change now that we store these as vectors
+  //  if(m_dbg >= 15) cout << "Electron scale factors    nom: " << out.effSF << "   id up: " << out.errEffSF_id_corr_up
+  //                                                      << "  id dn: " << out.errEffSF_id_corr_dn
+  //                                                      << "  reco up: " << out.errEffSF_reco_corr_up
+  //                                                      << "  reco dn: " << out.errEffSF_reco_corr_dn << endl;
       
 
     if(const xAOD::CaloCluster* c = in.caloCluster()) {
@@ -696,37 +743,77 @@ void SusyNtMaker::storeMuon(const xAOD::Muon &in)
     // Scale Factors
     // DA June 21 :: For now just store the nominal -- need to merge with xaod (xaod_muonSF) branch
     //  >>> add the baseline check since otherwise the muonSF tool complains
-    out.effSF = (m_isMC && out.isBaseline) ? m_susyObj[m_eleIDDefault]->GetSignalMuonSF(in) : 1;
-    if(m_isMC && m_sys && out.isBaseline) {
+    //out.effSF = (m_isMC && out.isBaseline) ? m_susyObj[m_eleIDDefault]->GetSignalMuonSF(in) : 1;
+    if(m_isMC && (out.loose || out.medium)) {
+        out.muoEffSF[MuonId::Loose] = m_susyObj[SusyObjId::muoLoose]->GetSignalMuonSF(in);
+        out.muoEffSF[MuonId::Medium] = m_susyObj[SusyObjId::muoMedium]->GetSignalMuonSF(in);
+    }
+    if(m_isMC && m_sys && (out.veryLoose || out.loose || out.medium)) {
         for(const auto& sysInfo : systInfoList) {
             if(!(sysInfo.affectsType == ST::SystObjType::Muon && sysInfo.affectsWeights)) continue;
-            // Read information
             const CP::SystematicSet& sys = sysInfo.systset;
             SusyNtSys ourSys = CPsys2sys((sys.name()).c_str());
-            // configure the tools
-            if(m_susyObj[m_eleIDDefault]->applySystematicVariation(sys) != CP::SystematicCode::Ok) {
-                cout << "SusyNtMaker::storeMuon    cannot configure SUSYTools for systematic " << sys.name() << endl;
-                continue;
+            for(int i=SusyObjId::muoLoose; i<=SusyObjId::muoMedium; i++){
+                if(m_susyObj[i]->applySystematicVariation(sys) != CP::SystematicCode::Ok) {
+                    cout << "SusyNtMaker::storeMuon    cannot configure SUSYTools for systematic " << sys.name() << endl;
+                    continue;
+                }
             }
-            // get and store the information
-            double scale_factor = m_susyObj[m_eleIDDefault]->GetSignalMuonSF(in);   
-            if(ourSys == NtSys::MUONSFSTAT_UP)      out.errEffSF_stat_up = scale_factor - out.effSF;
-            else if(ourSys == NtSys::MUONSFSTAT_DN) out.errEffSF_stat_dn = scale_factor - out.effSF;
-            else if(ourSys == NtSys::MUONSFSYS_UP)  out.errEffSF_syst_up = scale_factor - out.effSF;
-            else if(ourSys == NtSys::MUONSFSYS_DN)  out.errEffSF_syst_dn = scale_factor - out.effSF;
+            vector<float> sf;
+            sf.assign(MuonId::MuonIdInvalid, 1);
+            sf[MuonId::Medium] = m_susyObj[SusyObjId::muoMedium]->GetSignalMuonSF(in);
+            sf[MuonId::Loose] = m_susyObj[SusyObjId::muoLoose]->GetSignalMuonSF(in);
+            for(int i=MuonId::VeryLoose; i<MuonId::MuonIdInvalid; i++){
+                if     (ourSys == NtSys::MUONSFSTAT_UP)  out.errEffSF_stat_up[i] = sf[i] - out.muoEffSF[i];
+                else if(ourSys == NtSys::MUONSFSTAT_DN) out.errEffSF_stat_dn[i] = sf[i] - out.muoEffSF[i];
+                else if(ourSys == NtSys::MUONSFSYS_UP) out.errEffSF_syst_up[i] = sf[i] - out.muoEffSF[i];
+                else if(ourSys == NtSys::MUONSFSYS_DN) out.errEffSF_syst_dn[i] = sf[i] - out.muoEffSF[i];
+            }
         } // sysInfo
-        if(m_susyObj[m_eleIDDefault]->resetSystematics() != CP::SystematicCode::Ok) {
-            cout << "SusyNtMaker::storeMuon    cannot reset SUSYTools systematics. Aborting." << endl;
-            abort();
+        for(int i=SusyObjId::muoLoose; i<=SusyObjId::muoMedium; i++){
+            if(m_susyObj[i]->resetSystematics() != CP::SystematicCode::Ok){
+                cout << "SusyNtMaker::storeMuon    cannot reset SUSYTools systematics. Aborting." << endl;
+                abort();
+            }
         }
-    } // m_isMC && m_sys
+    } // ifMC && sys 
     else {
-        out.errEffSF_stat_up = out.errEffSF_stat_dn = out.errEffSF_syst_up = out.errEffSF_syst_dn = 0.;
+        for(int i=MuonId::VeryLoose; i<MuonId::MuonIdInvalid; i++){
+            out.errEffSF_stat_up[i] = out.errEffSF_stat_dn[i] = 0;
+            out.errEffSF_syst_up[i] = out.errEffSF_syst_dn[i] = 0;
+        }
     }
-    if(m_dbg >= 15) cout << "Muon scale factors    nom: " << out.effSF << "  stat_up: " << out.errEffSF_stat_up
-                                        << "  stat_dn: " << out.errEffSF_stat_dn
-                                        << "  syst_up: " << out.errEffSF_syst_up
-                                        << "  syst_dn: " << out.errEffSF_syst_dn << endl;
+
+//    if(m_isMC && m_sys && out.isBaseline) {
+//        for(const auto& sysInfo : systInfoList) {
+//            if(!(sysInfo.affectsType == ST::SystObjType::Muon && sysInfo.affectsWeights)) continue;
+//            // Read information
+//            const CP::SystematicSet& sys = sysInfo.systset;
+//            SusyNtSys ourSys = CPsys2sys((sys.name()).c_str());
+//            // configure the tools
+//            if(m_susyObj[m_eleIDDefault]->applySystematicVariation(sys) != CP::SystematicCode::Ok) {
+//                cout << "SusyNtMaker::storeMuon    cannot configure SUSYTools for systematic " << sys.name() << endl;
+//                continue;
+//            }
+//            // get and store the information
+//            double scale_factor = m_susyObj[m_eleIDDefault]->GetSignalMuonSF(in);   
+//            if(ourSys == NtSys::MUONSFSTAT_UP)      out.errEffSF_stat_up = scale_factor - out.effSF;
+//            else if(ourSys == NtSys::MUONSFSTAT_DN) out.errEffSF_stat_dn = scale_factor - out.effSF;
+//            else if(ourSys == NtSys::MUONSFSYS_UP)  out.errEffSF_syst_up = scale_factor - out.effSF;
+//            else if(ourSys == NtSys::MUONSFSYS_DN)  out.errEffSF_syst_dn = scale_factor - out.effSF;
+//        } // sysInfo
+//        if(m_susyObj[m_eleIDDefault]->resetSystematics() != CP::SystematicCode::Ok) {
+//            cout << "SusyNtMaker::storeMuon    cannot reset SUSYTools systematics. Aborting." << endl;
+//            abort();
+//        }
+//    } // m_isMC && m_sys
+//    else {
+//        out.errEffSF_stat_up = out.errEffSF_stat_dn = out.errEffSF_syst_up = out.errEffSF_syst_dn = 0.;
+//    }
+//    if(m_dbg >= 15) cout << "Muon scale factors    nom: " << out.effSF << "  stat_up: " << out.errEffSF_stat_up
+//                                        << "  stat_dn: " << out.errEffSF_stat_dn
+//                                        << "  syst_up: " << out.errEffSF_syst_up
+//                                        << "  syst_dn: " << out.errEffSF_syst_dn << endl;
         
 
 

@@ -1,3 +1,5 @@
+
+// SusyCommon
 #include "SusyCommon/XaodAnalysis.h"
 //#include "SusyCommon/get_object_functions.h"
 
@@ -80,7 +82,7 @@ XaodAnalysis::XaodAnalysis() :
     //m_event(xAOD::TEvent::kClassAccess),
     m_event(xAOD::TEvent::kBranchAccess), ///> dantrim -- (in PAT threads, TDT is supposed to work with kBranchAccess option)
     m_store(),
-    m_eleIDDefault(TightLH),
+    m_eleIDDefault(eleTightLH),
 	m_electronEfficiencySFTool(0),
     m_elecSelLikelihoodVeryLoose(0),
     m_elecSelLikelihoodLoose(0),
@@ -268,30 +270,38 @@ void XaodAnalysis::Terminate()
   //  delete m_trigMuonMatchTool;
   //  //delete m_trigEgammaMatchTool;
     
-    for(int i=TightLH; i<=LooseLH; i++){
+    //for(int i=TightLH; i<=LooseLH; i++){
+    for(int i=SusyObjId::eleTightLH; i<SusyObjId::Invalid; i++){
         delete m_susyObj[i];
     }
 }
 //----------------------------------------------------------
 XaodAnalysis& XaodAnalysis::initSusyTools()
 {
-    for(int i=TightLH; i<=LooseLH; i++){
-        string electronIdName = ElectronId2str(static_cast<ElectronId>(i));
-        string name = "SUSYObjDef_xAOD_" + electronIdName;
-        m_susyObj[i] = new ST::SUSYObjDef_xAOD(name);
+    for(int susyObjId=SusyObjId::eleTightLH; susyObjId<SusyObjId::Invalid; susyObjId++){
+        string idName = SusyObjId2str(static_cast<SusyObjId>(susyObjId));
+        bool isEle = isEleObj(static_cast<SusyObjId>(susyObjId)); 
+        string name = "SUSYObjDef_xAOD_" + idName;
+        m_susyObj[susyObjId] = new ST::SUSYObjDef_xAOD(name);
         cout << "------------------------------------------------------------" << endl;
         cout << "XaodAnalysis::initSusyTools: " << name <<endl;
         cout << "------------------------------------------------------------" << endl;
 
         // set the verbosity level of SUSYTools
-        m_susyObj[i]->msg().setLevel(m_dbg ? MSG::DEBUG : MSG::WARNING);
+        m_susyObj[susyObjId]->msg().setLevel(m_dbg ? MSG::DEBUG : MSG::WARNING);
     
         // set the electron Id used for this SUSYTools instance
-        m_susyObj[i]->setProperty("EleId", electronIdName);
+        if(isEle) { m_susyObj[susyObjId]->setProperty("EleId", idName ); }
+        // set the muon ID if that is the case
+        else {
+            SusyObjId thisId = static_cast<SusyObjId>(susyObjId);
+            if(thisId==SusyObjId::muoMedium) { m_susyObj[susyObjId]->setProperty("MuId", xAOD::Muon::Medium); }
+            else if(thisId==SusyObjId::muoLoose) { m_susyObj[susyObjId]->setProperty("MuId", xAOD::Muon::Loose); }
+        }
 
         // set "datasource" for determining run configuration in SUSYTools
         ST::SettingDataSource datasource = !m_isMC ? ST::Data : (m_isAF2 ? ST::AtlfastII : ST::FullSim);
-        CHECK( m_susyObj[i]->setProperty("DataSource",datasource) );
+        CHECK( m_susyObj[susyObjId]->setProperty("DataSource",datasource) );
 
         ///////////////////////////////////////
         // set up the pileup reweighting tool
@@ -300,55 +310,55 @@ XaodAnalysis& XaodAnalysis::initSusyTools()
         // prw config files
         std::vector<std::string> prwFiles;
         prwFiles.push_back(m_data_dir+"SusyCommon/mc15_50ns.prw.root");
-        m_susyObj[i]->setProperty("PRWConfigFiles", prwFiles);
+        m_susyObj[susyObjId]->setProperty("PRWConfigFiles", prwFiles);
         // data luminosity profile
         std::vector<std::string> lumicalcFiles;
         //lumicalcFiles.push_back(m_data_dir+"SusyCommon/ilumicalc_histograms_None_266904-267639.root");
         //lumicalcFiles.push_back(m_data_dir+"SusyCommon/ilumicalc_histograms_None_267073-267639.root"); // updated to latest GRL
         lumicalcFiles.push_back(m_data_dir+"SusyCommon/ilumicalc_histograms_None_267073-271744.root"); // updated to latest GRL (July 23 2015)
-        m_susyObj[i]->setProperty("PRWLumiCalcFiles", lumicalcFiles); 
+        m_susyObj[susyObjId]->setProperty("PRWLumiCalcFiles", lumicalcFiles); 
         // default channel to use (if we do not have a prw config for a specific sample, this is what gets used)
-        m_susyObj[i]->setProperty("PRWDefaultChannel", 410000);
+        m_susyObj[susyObjId]->setProperty("PRWDefaultChannel", 410000);
         # warning Setting data mu uncertainty to ten percent
-        m_susyObj[i]->setProperty("PRWMuUncertainty", 0.1);
+        m_susyObj[susyObjId]->setProperty("PRWMuUncertainty", 0.1);
 
         #warning Setting recommended reduced JES systematics set to set 1
-        m_susyObj[i]->setProperty("JESNuisanceParameterSet", 1);
+        m_susyObj[susyObjId]->setProperty("JESNuisanceParameterSet", 1);
 
-        if(m_susyObj[i]->SUSYToolsInit().isFailure() ) {
+        if(m_susyObj[susyObjId]->SUSYToolsInit().isFailure() ) {
             cout << "XaodAnalysis: Failed to initialise tools in SUSYToolsInit()... Aborting" << endl;
             abort();
         }       
-        if(m_susyObj[i]->initialize() != StatusCode::SUCCESS){
+        if(m_susyObj[susyObjId]->initialize() != StatusCode::SUCCESS){
             cout << "XaodAnalysis: Cannot intialize SUSYObjDef_xAOD...Aborting" << endl;
             abort();
         }
         
         std::cout << " INITIALIZED SUSYTOOLS with properties " << std::endl;
-        for(auto& x:m_susyObj[i]->getPropertyMgr()->getProperties()){
+        for(auto& x:m_susyObj[susyObjId]->getPropertyMgr()->getProperties()){
             if(x.second->typeName()=="string"){
                 string foo;
-                m_susyObj[i]->getPropertyMgr()->getProperty(x.first, foo);
+                m_susyObj[susyObjId]->getPropertyMgr()->getProperty(x.first, foo);
                 cout << " Property << " << x.first << ": " << foo << endl;
             }
             else if(x.second->typeName()=="int"){
                 int foo;
-                m_susyObj[i]->getPropertyMgr()->getProperty(x.first, foo);
+                m_susyObj[susyObjId]->getPropertyMgr()->getProperty(x.first, foo);
                 cout << " Property << " << x.first << ": " << foo << endl;
             }
             else if(x.second->typeName()=="float"){
                 float foo;
-                m_susyObj[i]->getPropertyMgr()->getProperty(x.first, foo);
+                m_susyObj[susyObjId]->getPropertyMgr()->getProperty(x.first, foo);
                 cout << " Property << " << x.first << ": " << foo << endl;
             }
             else if(x.second->typeName()=="double"){
                 double foo;
-                m_susyObj[i]->getPropertyMgr()->getProperty(x.first, foo);
+                m_susyObj[susyObjId]->getPropertyMgr()->getProperty(x.first, foo);
                 cout << " Property << " << x.first << ": " << foo << endl;
             }
             else if(x.second->typeName()=="bool"){
                 bool foo;
-                m_susyObj[i]->getPropertyMgr()->getProperty(x.first, foo);
+                m_susyObj[susyObjId]->getPropertyMgr()->getProperty(x.first, foo);
                 string value = foo ? "True" : "False";
                 cout << " Property << " << x.first << ": " << value << endl;
             }
@@ -357,8 +367,95 @@ XaodAnalysis& XaodAnalysis::initSusyTools()
     }
 
     return *this;
-
 }
+
+//----------------------------------------------------------
+//XaodAnalysis& XaodAnalysis::initSusyTools()
+//{
+//    for(int i=ElectronId::TightLH; i<=ElectronId::LooseLH; i++){
+//        string electronIdName = ElectronId2str(static_cast<ElectronId>(i));
+//        string name = "SUSYObjDef_xAOD_" + electronIdName;
+//        m_susyObj[i] = new ST::SUSYObjDef_xAOD(name);
+//        cout << "------------------------------------------------------------" << endl;
+//        cout << "XaodAnalysis::initSusyTools: " << name <<endl;
+//        cout << "------------------------------------------------------------" << endl;
+//
+//        // set the verbosity level of SUSYTools
+//        m_susyObj[i]->msg().setLevel(m_dbg ? MSG::DEBUG : MSG::WARNING);
+//    
+//        // set the electron Id used for this SUSYTools instance
+//        m_susyObj[i]->setProperty("EleId", electronIdName);
+//
+//        // set "datasource" for determining run configuration in SUSYTools
+//        ST::SettingDataSource datasource = !m_isMC ? ST::Data : (m_isAF2 ? ST::AtlfastII : ST::FullSim);
+//        CHECK( m_susyObj[i]->setProperty("DataSource",datasource) );
+//
+//        ///////////////////////////////////////
+//        // set up the pileup reweighting tool
+//        // inside of ST
+//        ///////////////////////////////////////
+//        // prw config files
+//        std::vector<std::string> prwFiles;
+//        prwFiles.push_back(m_data_dir+"SusyCommon/mc15_50ns.prw.root");
+//        m_susyObj[i]->setProperty("PRWConfigFiles", prwFiles);
+//        // data luminosity profile
+//        std::vector<std::string> lumicalcFiles;
+//        //lumicalcFiles.push_back(m_data_dir+"SusyCommon/ilumicalc_histograms_None_266904-267639.root");
+//        //lumicalcFiles.push_back(m_data_dir+"SusyCommon/ilumicalc_histograms_None_267073-267639.root"); // updated to latest GRL
+//        lumicalcFiles.push_back(m_data_dir+"SusyCommon/ilumicalc_histograms_None_267073-271744.root"); // updated to latest GRL (July 23 2015)
+//        m_susyObj[i]->setProperty("PRWLumiCalcFiles", lumicalcFiles); 
+//        // default channel to use (if we do not have a prw config for a specific sample, this is what gets used)
+//        m_susyObj[i]->setProperty("PRWDefaultChannel", 410000);
+//        # warning Setting data mu uncertainty to ten percent
+//        m_susyObj[i]->setProperty("PRWMuUncertainty", 0.1);
+//
+//        #warning Setting recommended reduced JES systematics set to set 1
+//        m_susyObj[i]->setProperty("JESNuisanceParameterSet", 1);
+//
+//        if(m_susyObj[i]->SUSYToolsInit().isFailure() ) {
+//            cout << "XaodAnalysis: Failed to initialise tools in SUSYToolsInit()... Aborting" << endl;
+//            abort();
+//        }       
+//        if(m_susyObj[i]->initialize() != StatusCode::SUCCESS){
+//            cout << "XaodAnalysis: Cannot intialize SUSYObjDef_xAOD...Aborting" << endl;
+//            abort();
+//        }
+//        
+//        std::cout << " INITIALIZED SUSYTOOLS with properties " << std::endl;
+//        for(auto& x:m_susyObj[i]->getPropertyMgr()->getProperties()){
+//            if(x.second->typeName()=="string"){
+//                string foo;
+//                m_susyObj[i]->getPropertyMgr()->getProperty(x.first, foo);
+//                cout << " Property << " << x.first << ": " << foo << endl;
+//            }
+//            else if(x.second->typeName()=="int"){
+//                int foo;
+//                m_susyObj[i]->getPropertyMgr()->getProperty(x.first, foo);
+//                cout << " Property << " << x.first << ": " << foo << endl;
+//            }
+//            else if(x.second->typeName()=="float"){
+//                float foo;
+//                m_susyObj[i]->getPropertyMgr()->getProperty(x.first, foo);
+//                cout << " Property << " << x.first << ": " << foo << endl;
+//            }
+//            else if(x.second->typeName()=="double"){
+//                double foo;
+//                m_susyObj[i]->getPropertyMgr()->getProperty(x.first, foo);
+//                cout << " Property << " << x.first << ": " << foo << endl;
+//            }
+//            else if(x.second->typeName()=="bool"){
+//                bool foo;
+//                m_susyObj[i]->getPropertyMgr()->getProperty(x.first, foo);
+//                string value = foo ? "True" : "False";
+//                cout << " Property << " << x.first << ": " << value << endl;
+//            }
+//        }
+//    //    CHECK( m_susyObj[i]->SUSYToolsInit() );
+//    }
+//
+//    return *this;
+//
+//}
 //----------------------------------------------------------
 XaodAnalysis& XaodAnalysis::initLocalTools()
 {
