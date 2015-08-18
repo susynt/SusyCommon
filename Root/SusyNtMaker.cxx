@@ -1939,10 +1939,10 @@ bool SusyNtMaker::passObjectlevelSelection()
     bool pass_e1sj(1==(m_sigJets.size()));
     bool pass_exactly2sig(2==(m_sigElectrons.size()+m_sigMuons.size()));
 
-    fillCutFlow(pass_bad_muon, w);
-    fillCutFlow(pass_JetCleaning, w);
     fillCutFlow(pass_goodpv, w);
+    fillCutFlow(pass_bad_muon, w);
     fillCutFlow(pass_cosmic, w);
+    fillCutFlow(pass_JetCleaning, w);
     fillCutFlow(pass_ge1bl, w);
     fillCutFlow(pass_ge1sl, w);
 
