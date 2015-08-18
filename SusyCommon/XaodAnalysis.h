@@ -10,7 +10,7 @@
 
 #include "GoodRunsLists/GoodRunsListSelectionTool.h"
 #include "SUSYTools/SUSYObjDef_xAOD.h"
-#include "LeptonTruthTools/RecoTauMatch.h"
+//#include "LeptonTruthTools/RecoTauMatch.h" // dantrim Aug 18 obsolete package
 
 #include "SusyNtuple/ElectronId.h"
 #include "SusyCommon/LeptonInfo.h"
@@ -80,7 +80,6 @@ using namespace Susy;
 using namespace NtSys;
 
 // fw declarations
-// (dantrim trig)
 namespace TrigConf {
     class xAODConfigTool;
 }
@@ -491,7 +490,7 @@ namespace Susy {
     /* SUSY::CrossSectionDB*                       m_susyXsec;     // SUSY cross section database */
     /* std::map<int,SUSY::CrossSectionDB::Process> m_xsecMap;      // our own xsec map for faster lookup times */
 
-    RecoTauMatch                m_recoTruthMatch;       // Lepton truth matching tool
+    //RecoTauMatch                m_recoTruthMatch;       // Lepton truth matching tool // dantrim Aug 18 -- Obsolete package LeptonTruthTools
 
     TTree* m_tree;              // Current tree
     Long64_t m_entry;           // Current entry in the current tree (not chain index!)
