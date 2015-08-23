@@ -39,3 +39,4 @@ doc/doxygen/
 
 # vim autosave
 *.swp
+*.swo
