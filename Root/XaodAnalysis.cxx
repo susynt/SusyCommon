@@ -2325,8 +2325,9 @@ bool XaodAnalysis::isDataFromSamplename(const TString &sample)
 //----------------------------------------------------------
 bool XaodAnalysis::isSimuFromSamplename(const TString &s)
 {
-    cout<<"isSimu: ("<<s<<") "<<(!XaodAnalysis::isDataFromSamplename(s))<<endl;
-    return !XaodAnalysis::isDataFromSamplename(s);
+    bool isMCsample = !XaodAnalysis::isDataFromSamplename(s);
+    cout<<"Sample ("<<s<<") treated as simulation? " << (isMCsample ? "YES" : "NO") << endl;
+    return isMCsample;
 }
 //----------------------------------------------------------
 bool XaodAnalysis::isDerivationFromMetaData(TTree* intree, bool verbose)
