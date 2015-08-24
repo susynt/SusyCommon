@@ -446,8 +446,7 @@ void SusyNtMaker::storeElectron(const xAOD::Electron &in)
     //////////////////////////////////////
     // Isolation flags (IsolationSelectionTool)
     //////////////////////////////////////
-    out.isoGradientLoose  = in.auxdata<char>("isol");
-   //out.isoGradientLoose  = m_isoToolGradientLooseCone40Calo->accept(in) ? true : false;
+    out.isoGradientLoose  = m_isoToolGradientLooseCone40Calo->accept(in) ? true : false;
     out.isoGradient       = m_isoToolGradientCone40->accept(in) ? true : false;
     out.isoLooseTrackOnly = m_isoToolLooseTrackOnlyCone20->accept(in) ? true : false;
     out.isoLoose          = m_isoToolLoose->accept(in) ? true : false;
@@ -651,8 +650,7 @@ void SusyNtMaker::storeMuon(const xAOD::Muon &in)
     //////////////////////////////////////
     // Isolation flags (IsolationSelectionTool)
     //////////////////////////////////////
-    out.isoGradientLoose = in.auxdata<char>("isol");
-    //out.isoGradientLoose = m_isoToolGradientLooseCone40Calo->accept(in) ? true : false;
+    out.isoGradientLoose = m_isoToolGradientLooseCone40Calo->accept(in) ? true : false;
     out.isoGradient = m_isoToolGradientCone40->accept(in) ? true : false;
     out.isoLooseTrackOnly = m_isoToolLooseTrackOnlyCone20->accept(in) ? true : false;
     out.isoLoose = m_isoToolLoose->accept(in) ? true : false;
