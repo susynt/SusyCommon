@@ -581,13 +581,13 @@ void SusyNtMaker::storeElectron(const xAOD::Electron &in)
     // Trigger matching
     //////////////////////////////////////
     // I swear it's been 6 months and the ability to grab the trigger features still doesn't work
-//    out.trigBits = matchElectronTriggers(in);
+    out.trigBits = matchElectronTriggers(in);
 //    cout << "testing electron trigBits" << endl;
 //    int nbins = h_passTrigLevel->GetXaxis()->GetNbins();
-//    for(int iTrig=1; iTrig<26; iTrig++){
+//    for(int iTrig=0; iTrig<26; iTrig++){
 //        bool bit = out.trigBits.TestBitNumber(iTrig);
-//        string trigger = h_passTrigLevel->GetXaxis()->GetBinLabel(iTrig);
-//        cout << "\t passed trigger " << trigger << "? " << (bit ? "yes" : "no") << endl;
+//        string trigger = h_passTrigLevel->GetXaxis()->GetBinLabel(iTrig+1);
+//        cout << "\t passed trigger [" << iTrig << "] " << trigger << "? " << (bit ? "yes" : "no") << endl;
 //    }
 //    cout << endl;
 

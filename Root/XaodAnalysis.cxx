@@ -1467,7 +1467,7 @@ void XaodAnalysis::fillEventTriggers()
 /*--------------------------------------------------------------------------------*/
 TBits XaodAnalysis::matchMuonTriggers(const xAOD::Muon &in)
 {
-    if(m_dbg>=5) cout << "XaodAnalysis::matchMuonTriggers" << endl;
+    if(m_dbg>=10) cout << "XaodAnalysis::matchMuonTriggers" << endl;
     TBits muoTrigBits(m_nTriggerBits);
     muoTrigBits.ResetAllBits();
     std::vector<std::string> trigs = XaodAnalysis::xaodTriggers();
@@ -1486,44 +1486,43 @@ TBits XaodAnalysis::matchElectronTriggers(const xAOD::Electron &in)
     // may be out of sync w.r.t. the stored histogram... in any case, the non-passed triggers are always
     // false and on SusyNtuple side the user will provide specific string for the ele/muo trigger that
     // is checked against the trig histo
-//    if(m_dbg>=5) cout << "XaodAnalysis::matchElectronTriggers" << endl;
-//    TBits eleTrigBits(m_nTriggerBits);
-//    eleTrigBits.ResetAllBits();
-//    std::vector<std::string> trigs = XaodAnalysis::xaodTriggers();
-//    for(unsigned int iTrig = 0; iTrig < trigs.size(); iTrig++) {
-//        // for electron trigger matching the tools expect the "HLT_" portion to be missing... just to make things logical
-//        std::string hlt_trigger = trigs[iTrig].replace(trigs[iTrig].begin(), trigs[iTrig].begin()+4, "");
-//        if(m_susyObj[m_eleIDDefault]->IsTrigMatched(&in, hlt_trigger)) eleTrigBits.SetBitNumber(iTrig, true);
-// //       if(m_trigEgammaMatchTool->matchHLT(&in, hlt_trigger)) eleTrigBits.SetBitNumber(iTrig, true);
-//    }
-//    return eleTrigBits;
-
+    if(m_dbg>=10) cout << "XaodAnalysis::matchElectronTriggers" << endl;
     TBits eleTrigBits(m_nTriggerBits);
     eleTrigBits.ResetAllBits();
     std::vector<std::string> trigs = XaodAnalysis::xaodTriggers();
-
-    TLorentzVector inEle;
-    inEle.SetPtEtaPhiM( in.pt(), in.eta(), in.phi(), 0);
     for(unsigned int iTrig = 0; iTrig < trigs.size(); iTrig++) {
-        std::string trigger = trigs[iTrig];
-        bool matched = false;
-        cout << "attempting : " << trigger << endl;
-        auto cg = m_susyObj[m_eleIDDefault]->GetTrigChainGroup(trigger);
-        auto fc = cg->features();
-        auto eleFeatureContainers = fc.containerFeature<xAOD::TrigElectronContainer>();
-        for(auto &econt : eleFeatureContainers) {
-            for( auto trige : *econt.cptr() ) {
-                TLorentzVector trig_tlv;
-                trig_tlv.SetPtEtaPhiM(trige->pt(), trige->eta(), trige->phi(), 0);
-                cout << trig_tlv.Pt() << endl;
-                float dR = inEle.DeltaR(trig_tlv);
-                if( dR < 0.15 ) matched = true;
-            } // trige
-        } // econt
-        if(matched) eleTrigBits.SetBitNumber(iTrig, true);
-    } // iTrig
-
+        // for electron trigger matching the tools expect the "HLT_" portion to be missing... just to make things consistent with the naturally agreed upon inconsistency
+        std::string hlt_trigger = trigs[iTrig].replace(trigs[iTrig].begin(), trigs[iTrig].begin()+4, "");
+        bool ismatch = m_susyObj[m_eleIDDefault]->IsTrigMatched(&in, hlt_trigger);
+        if(ismatch) eleTrigBits.SetBitNumber(iTrig, true);
+    }
     return eleTrigBits;
+
+//    TBits eleTrigBits(m_nTriggerBits);
+//    eleTrigBits.ResetAllBits();
+//    std::vector<std::string> trigs = XaodAnalysis::xaodTriggers();
+//
+//    TLorentzVector inEle;
+//    inEle.SetPtEtaPhiM( in.pt(), in.eta(), in.phi(), 0);
+//    for(unsigned int iTrig = 0; iTrig < trigs.size(); iTrig++) {
+//        std::string trigger = trigs[iTrig];
+//        bool matched = false;
+//        auto cg = m_susyObj[m_eleIDDefault]->GetTrigChainGroup(trigger);
+//        auto fc = cg->features();
+//        auto eleFeatureContainers = fc.containerFeature<xAOD::TrigElectronContainer>();
+//        for(auto &econt : eleFeatureContainers) {
+//            for( auto trige : *econt.cptr() ) {
+//                TLorentzVector trig_tlv;
+//                trig_tlv.SetPtEtaPhiM(trige->pt(), trige->eta(), trige->phi(), 0);
+//                cout << "trig ele pt: " << trig_tlv.Pt() << endl;
+//                float dR = inEle.DeltaR(trig_tlv);
+//                if( dR < 0.15 ) matched = true;
+//            } // trige
+//        } // econt
+//        if(matched) eleTrigBits.SetBitNumber(iTrig, true);
+//    } // iTrig
+//
+//    return eleTrigBits;
 }
 /*--------------------------------------------------------------------------------*/
 // Electron trigger matching
@@ -1828,7 +1827,7 @@ int XaodAnalysis::classifyTau(const xAOD::TauJet &in)
 }
 
 //----------------------------------------------------------
-XaodAnalysis& XaodAnalysis::setGRLFile(TString fileName)
+XaodAnalysis& XaodAnalysis::setGRLFile(std::string fileName)
 {
     m_grlFileName = fileName; return *this;
 }
@@ -2288,8 +2287,8 @@ bool XaodAnalysis::runningOptionsAreValid()
 //----------------------------------------------------------
 std::string XaodAnalysis::defaultGrlFile()
 {
-    m_grlFileName = "$ROOTCOREBIN/data/SusyCommon/data15_13TeV.periodAllYear_DetStatus-v63-pro18-01_DQDefects-00-01-02_PHYS_StandardGRL_All_Good.xml";
-    return m_grlFileName;
+    std::string grl_file = "$ROOTCOREBIN/data/SusyCommon/data15_13TeV.periodAllYear_DetStatus-v63-pro18-01_DQDefects-00-01-02_PHYS_StandardGRL_All_Good.xml";
+    return grl_file;
 }
 //----------------------------------------------------------
 bool XaodAnalysis::initGrlTool()
@@ -2313,7 +2312,7 @@ DataStream XaodAnalysis::streamFromSamplename(const TString &sample, bool isMC)
     if     (isMC) stream = Stream_MC;
     else if(sample.Contains("main", TString::kIgnoreCase) && isData) stream = Stream_PhysicsMain;
     else
-        cout<<"XaodAnalysis::streamFromSamplename('"<<sample<<"',isdata="<<(isdata?"true":"false")<<")"
+        cout<<"XaodAnalysis::streamFromSamplename('"<<sample<<"',isData="<<(isData?"true":"false")<<")"
             <<" : cannot determine the stream, returning "<<streamName(stream)<<endl;
     return stream;
 }
@@ -2337,7 +2336,7 @@ bool XaodAnalysis::isDerivationFromMetaData(TTree* intree, bool verbose)
     TTree* metadata = nullptr;
 
     if(TDirectory* treeDir = getDirectoryFromTreeOrChain(intree, verbose)){
-        if(TObject *obj = dynamic_cast<TTree*>(treeDir->Get("MetaData"))){
+        if(treeDir->Get("MetaData")){
             metadata = dynamic_cast<TTree*>(treeDir->Get("MetaData"));
         }
     }

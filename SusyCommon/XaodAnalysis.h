@@ -267,7 +267,7 @@ namespace Susy {
     //
 
     // grl
-    XaodAnalysis& setGRLFile(TString fileName);
+    XaodAnalysis& setGRLFile(std::string fileName);
     static std::string defaultGrlFile();
     bool initGrlTool();
     bool passGRL(const xAOD::EventInfo* eventinfo); ///< good run list
