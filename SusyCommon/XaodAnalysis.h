@@ -268,7 +268,7 @@ namespace Susy {
 
     // grl
     XaodAnalysis& setGRLFile(TString fileName);
-    static std::string defauldGrlFile();
+    static std::string defaultGrlFile();
     bool initGrlTool();
     bool passGRL(const xAOD::EventInfo* eventinfo); ///< good run list
     bool passTTCVeto(const xAOD::EventInfo* eventinfo); ///< incomplete event 
@@ -354,7 +354,7 @@ namespace Susy {
     void dumpBaselineObjects();
     void dumpSignalObjects();
     // helpers
-    static DataStream streamFromSamplename(const TString &s, bool isdata); ///< guess data stream from sample name
+    static DataStream streamFromSamplename(const TString &s, bool isMC); ///< guess data stream from sample name
     static bool isDataFromSamplename(const TString &s); ///< guess from sample name whether it's data sample
     static bool isSimuFromSamplename(const TString &s); ///< guess from sample name whether it's a simulated sample
     static bool isDerivationFromMetaData(TTree* tree, bool verbose); ///< From sample MetaData, determine if sample is a derivation
@@ -479,7 +479,7 @@ namespace Susy {
 
     /* Root::TElectronEfficiencyCorrectionTool* m_eleMediumSFTool; */
 
-    TString                     m_grlFileName;  // grl file name
+    std::string                  m_grlFileName;  // grl file name
     GoodRunsListSelectionTool*   m_grl;         // good runs list
 
     /* Root::TPileupReweighting*   m_pileup;       // pileup reweighting */

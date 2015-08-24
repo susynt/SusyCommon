@@ -123,31 +123,30 @@ void XaodAnalysis::Init(TTree *tree)
     xAOD::Init("Susy::XaodAnalysis").ignore();
 
     m_isMC = XaodAnalysis::isSimuFromSamplename(m_sample);
-    bool isData = XaodAnalysis::isDataFromSamplename(m_sample);
 
     if(m_isMC){
-    // get the inital (pre-skimmed) counters
-    TObjArray* chainFiles = m_input_chain->GetListOfFiles();
-    TIter next(chainFiles);
-    TChainElement *chFile=0;
-    while (( chFile=(TChainElement*)next() )) {
-        cout << "XaodAnalysis::Init    CutBookkeeper info for: " << chFile->GetTitle() << endl;
-        TFile* f = TFile::Open(chFile->GetTitle());
-        m_event.readFrom(f);
-        m_event.getEntry(0);
-        XaodAnalysis::getCutBookkeeperInfo(m_event);
-        f->Close();
-        f->Delete();
-    }
-    cout << "XaodAnalysis::Init    CutBookkeeper info totals: " << endl;
-    cout << "    > m_nEventsProcessed   : " << m_nEventsProcessed << endl;
-    cout << "    > m_sumOfWeights       : " << m_sumOfWeights << endl;
-    cout << "    > m_sumOfWeightsSquared: " << m_sumOfWeightsSquared << endl;
-    }
+        // get the inital (pre-skimmed) counters
+        TObjArray* chainFiles = m_input_chain->GetListOfFiles();
+        TIter next(chainFiles);
+        TChainElement *chFile=0;
+            while (( chFile=(TChainElement*)next() )) {
+                cout << "XaodAnalysis::Init    CutBookkeeper info for: " << chFile->GetTitle() << endl;
+                TFile* f = TFile::Open(chFile->GetTitle());
+                m_event.readFrom(f);
+                m_event.getEntry(0);
+                XaodAnalysis::getCutBookkeeperInfo(m_event);
+                f->Close();
+                f->Delete();
+            } // while
+        cout << "XaodAnalysis::Init    CutBookkeeper info totals: " << endl;
+        cout << "    > m_nEventsProcessed   : " << m_nEventsProcessed << endl;
+        cout << "    > m_sumOfWeights       : " << m_sumOfWeights << endl;
+        cout << "    > m_sumOfWeightsSquared: " << m_sumOfWeightsSquared << endl;
+    } // if MC
 
     m_event.readFrom(tree);
-    m_isDerivation = XaodAnalysis::isDerivationFromMetaData(tree, verbose); // dantrim event shape
-    m_stream = XaodAnalysis::streamFromSamplename(m_sample, isData);
+    m_isDerivation = XaodAnalysis::isDerivationFromMetaData(tree, verbose);
+    m_stream = XaodAnalysis::streamFromSamplename(m_sample, m_isMC);
 
     // get the directory for the data/
     char *tmparea=getenv("ROOTCOREBIN");
@@ -167,8 +166,18 @@ void XaodAnalysis::Init(TTree *tree)
         exit(-1);
     }
 
+    // GRL tool (if data)
+    if(!m_isMC) {
+        if(!initGrlTool()) {
+            cout << "XaodAnalysis::Init ERROR    Unable to initialize GRL tool. Exiting." << endl;
+            exit(1);
+        }
+    }
+    // initialize SUSYTools
     initSusyTools();
+    // initialize other analysis tools
     initLocalTools();
+    // grab the systematics list for our tools
     if(m_isMC && m_sys) getSystematicList();
     else{
         ST::SystInfo infodef;
@@ -188,11 +197,9 @@ void XaodAnalysis::SlaveBegin(TTree *tree)
 {
 
     if(m_dbg) cout << "XaodAnalysis::SlaveBegin" << endl;
-    bool isData(!m_isMC);
 
 //#warning TElectronEfficiencyCorrectionTool not initialized
 #warning fakemet_est tool not initialized
-    if(isData){ initGrlTool(); }
     if(m_isMC){
 #warning susy xsec tool not initialized
 #warning pileup rew tool not initialized
@@ -2244,8 +2251,8 @@ bool XaodAnalysis::runningOptionsAreValid()
     if(m_isMC != isSimulation) {
         valid=false;
         if(m_dbg)
-            cout<<"XaodAnalysis::runningOptionsAreValid invalid isMc:"
-                <<" (m_isMC:"<<m_isMC<<" != isSimulation:"<<isSimulation<<")"
+            cout<<"XaodAnalysis::runningOptionsAreValid invalid isMC:"
+                <<" (m_isMC: "<<m_isMC<<" != isSimulation: "<<isSimulation<<")"
                 <<endl;
     }
     if(isData) { // check stream
@@ -2259,13 +2266,6 @@ bool XaodAnalysis::runningOptionsAreValid()
         bool isPhysicsMain = (find(streamnames.begin(), streamnames.end(), "Main") != streamnames.end());
         bool consistentStream = (isPhysicsMain ? m_stream==Stream_PhysicsMain : false); 
 
-     //   bool isEgamma = (find(streamnames.begin(), streamnames.end(), "Egamma") != streamnames.end());
-     //   bool isJetEt  = (find(streamnames.begin(), streamnames.end(), "JetTauEtmiss") != streamnames.end());
-     //   bool isMuons  = (find(streamnames.begin(), streamnames.end(), "Muons") != streamnames.end());
-     //   bool consistentStream = (isMuons  ? m_stream==Stream_Muons :
-     //                            isEgamma ? m_stream==Stream_Egamma :
-     //                            isJetEt  ? m_stream==Stream_JetTauEtmiss :
-     //                            false);
         if(!consistentStream) {
             valid=false;
             if(m_dbg)
@@ -2279,19 +2279,6 @@ bool XaodAnalysis::runningOptionsAreValid()
                                 })
                      << endl;
 
-               // cout<<"XaodAnalysis::runningOptionsAreValid: inconsistent stream"
-               //     <<" m_stream: "
-               //     <<(m_stream==Stream_Muons        ? "Stream_Muons":
-               //        m_stream==Stream_Egamma       ? "Stream_Egamma":
-               //        m_stream==Stream_JetTauEtmiss ? "Stream_JetTauEtmiss":
-               //        "unknown")
-               //     <<" eventinfo: "
-               //     <<accumulate(streamnames.begin(), streamnames.end(), std::string(),
-               //                  [](const std::string& a, const std::string& b) -> std::string {
-               //                      return a + (a.length() > 0 ? "," : "") + b;
-               //                  })
-               //     <<endl;
-
         } // !consistentStream
     } // isData
     if(m_dbg)
@@ -2299,45 +2286,32 @@ bool XaodAnalysis::runningOptionsAreValid()
     return valid;
 }
 //----------------------------------------------------------
-std::string XaodAnalysis::defauldGrlFile()
+std::string XaodAnalysis::defaultGrlFile()
 {
-    //return std::string( "$ROOTCOREBIN/data/SUSYTools/GRL/Summer2013/"
-    //                    "data12_8TeV.periodAllYear_DetStatus-v61-pro14-02"
-    //                    "_DQDefects-00-01-00_PHYS_StandardGRL_All_Good.xml");
-    //return std::string( "$ROOTCOREBIN/data/SusyCommon/data15_13TeV.periodA1_DetStatus-v62-pro17_DQDefects-00-01-02_PHYS_CombinedPerf_Tracking_Tracking.xml");
-    // DA June 22 :: using most recent GRL for period A
-    //return std::string( "$ROOTCOREBIN/data/SusyCommon/data15_13TeV.periodA_DetStatus-v62-pro18_DQDefects-00-01-02_PHYS_StandardModel_MinimuBias2010.xml");
-    // DA June 25 :: latest, now with run 267073
-    //return std::string( "$ROOTCOREBIN/data/SusyCommon/data15_13TeV.periodA_DetStatus-v62-pro18_DQDefects-00-01-02_PHYS_StandardGRL_All_Good.xml");
-    // DA July 8 
-    //return std::string( "$ROOTCOREBIN/data/SusyCommon/data15_13TeV.periodAllYear_DetStatus-v62-pro18-01_DQDefects-00-01-02_PHYS_StandardGRL_All_Good.xml");
-    // DA July 22 2015
-    return std::string( "$ROOTCOREBIN/data/SusyCommon/data15_13TeV.periodAllYear_DetStatus-v63-pro18-01_DQDefects-00-01-02_PHYS_StandardGRL_All_Good.xml");
+    m_grlFileName = "$ROOTCOREBIN/data/SusyCommon/data15_13TeV.periodAllYear_DetStatus-v63-pro18-01_DQDefects-00-01-02_PHYS_StandardGRL_All_Good.xml";
+    return m_grlFileName;
 }
 //----------------------------------------------------------
 bool XaodAnalysis::initGrlTool()
 {
-    bool success = false;
+    bool success = true;
     m_grl = new GoodRunsListSelectionTool("GoodRunsListSelectionTool");
     std::vector<std::string> grl_files;
-    grl_files.push_back(XaodAnalysis::defauldGrlFile());
+    grl_files.push_back(XaodAnalysis::defaultGrlFile());
     cout << "XaodAnalysis::initGrlTool    Using GRL: " << grl_files[0] << endl;
     m_grl->setProperty("GoodRunsListVec", grl_files);
     m_grl->setProperty("PassThrough", false);
-    success = m_grl->initialize(); // DG any check we should do here? (file_exists?)
+    if(!m_grl->initialize().isSuccess()) success = false;
     return success;
 }
 //----------------------------------------------------------
-DataStream XaodAnalysis::streamFromSamplename(const TString &sample, bool isdata)
+DataStream XaodAnalysis::streamFromSamplename(const TString &sample, bool isMC)
 {
-    bool ismc(!isdata);
+    bool isData(!isMC);
 //    TString sample(s.c_str());
     DataStream stream = Stream_Unknown;
-    if     (ismc) stream = Stream_MC;
-    else if(sample.Contains("main",         TString::kIgnoreCase)) stream = Stream_PhysicsMain;
-    //else if(sample.Contains("muons",        TString::kIgnoreCase)) stream = Stream_Muons;
-    //else if(sample.Contains("egamma",       TString::kIgnoreCase)) stream = Stream_Egamma;
-    //else if(sample.Contains("jettauetmiss", TString::kIgnoreCase)) stream = Stream_JetTauEtmiss;
+    if     (isMC) stream = Stream_MC;
+    else if(sample.Contains("main", TString::kIgnoreCase) && isData) stream = Stream_PhysicsMain;
     else
         cout<<"XaodAnalysis::streamFromSamplename('"<<sample<<"',isdata="<<(isdata?"true":"false")<<")"
             <<" : cannot determine the stream, returning "<<streamName(stream)<<endl;
