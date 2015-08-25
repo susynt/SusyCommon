@@ -752,7 +752,7 @@ void SusyNtMaker::storeMuon(const xAOD::Muon &in)
     // - one for each MuonId that we use:
     // - Loose and Medium
     //////////////////////////////////////
-    if(m_isMC && (out.loose || out.medium) && (fabs(out.eta)<2.5)) {
+    if(m_isMC && (out.veryLoose || out.loose || out.medium) && (fabs(out.eta)<2.5)) {
         out.muoEffSF[MuonId::Loose] = m_susyObj[SusyObjId::muoLoose]->GetSignalMuonSF(in);
         out.muoEffSF[MuonId::Medium] = m_susyObj[SusyObjId::muoMedium]->GetSignalMuonSF(in);
     }
@@ -1958,7 +1958,9 @@ bool SusyNtMaker::passEventlevelSelection()
     if(m_dbg>=5 &&  !(keep_all_events || fillCutFlow.passAll) ) 
         cout << "SusyNtMaker fail passEventlevelSelection " 
              << keep_all_events << " " << fillCutFlow.passAll <<  endl;
-    return (keep_all_events || fillCutFlow.passAll);
+    //return (keep_all_events || fillCutFlow.passAll);
+    #warning bypassing any filtering in passEventlevelSelection
+    return true;
 }
 //----------------------------------------------------------
 bool SusyNtMaker::passObjectlevelSelection()
