@@ -1390,7 +1390,7 @@ const xAOD::Vertex* XaodAnalysis::getPV()
     xAOD::Vertex* vtx = NULL;
     const xAOD::VertexContainer* vertices = xaodVertices();
     for(auto it=vertices->begin(), end=vertices->end(); it!=end; ++it){
-        if((**it).vertexType()==1)  vtx = *it;
+        if((**it).vertexType()==xAOD::VxType::PriVtx)  vtx = *it;
     }
     return vtx;
 }
