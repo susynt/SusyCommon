@@ -12,6 +12,9 @@
 #include "SusyNtuple/mc_truth_utils.h"
 #include "SusyNtuple/RecoTruthClassification.h"
 
+// SUSYTools
+#include "SUSYTools/SUSYCrossSection.h"
+
 #include "ElectronEfficiencyCorrection/TElectronEfficiencyCorrectionTool.h"
 
 #include "xAODPrimitives/IsolationType.h"
@@ -269,10 +272,13 @@ void SusyNtMaker::fillEventVars()
     evt->hfor             = m_isMC? getHFORDecision() : -1;
 
     // SUSY final state
+    int susy_pdg_1 = 0;
+    int susy_pdg_2 = 0;
+    if(m_isMC) m_susyObj[m_eleIDDefault]->FindSusyHP(xaodTruthParticles(), susy_pdg_1, susy_pdg_2);
+    if(susy_pdg_1 != 0 && susy_pdg_2 != 0) m_susyFinalState = SUSY::finalState(susy_pdg_1, susy_pdg_2); // c.f. SUSYTools/SUSYCrossSection.h
     evt->susyFinalState   = m_susyFinalState;
-    // \todo for later (DG could become obsolete?)
-    // evt->susySpartId1     = m_event.SUSY.Spart1_pdgId.IsAvailable()? m_event.SUSY.Spart1_pdgId() : 0;
-    // evt->susySpartId2     = m_event.SUSY.Spart2_pdgId.IsAvailable()? m_event.SUSY.Spart2_pdgId() : 0;
+    evt->susySpartId1     = susy_pdg_1;
+    evt->susySpartId2     = susy_pdg_2;
 
     float mZ = -1.0, mZtruthMax = 40.0;
     if(m_isMC){
@@ -289,9 +295,8 @@ void SusyNtMaker::fillEventVars()
 
     evt->wPileup          = m_isMC ? m_susyObj[m_eleIDDefault]->GetPileupWeight() : 1;
 
-    // in recent versions of PRW tool the 'getLumiBlockMu' should
-    // be able to return the MC mu
-    evt->avgMu            = m_isMC ? eventinfo->averageInteractionsPerCrossing() : m_pileupReweightingTool->getLumiBlockMu(*eventinfo);
+    evt->avgMu            = m_susyObj[m_eleIDDefault]->GetCorrectedAverageInteractionsPerCrossing();
+    //evt->avgMu            = m_isMC ? eventinfo->averageInteractionsPerCrossing() : m_pileupReweightingTool->getLumiBlockMu(*eventinfo);
 
     // Pileup systematic variations, varying data mu up/down and getting the resulting pupw
     if(m_isMC && m_sys) {
