@@ -316,13 +316,12 @@ XaodAnalysis& XaodAnalysis::initSusyTools()
         ///////////////////////////////////////
         // prw config files
         std::vector<std::string> prwFiles;
-        prwFiles.push_back(m_data_dir+"SusyCommon/mc15_50ns.prw.root");
+        //prwFiles.push_back(m_data_dir+"SusyCommon/mc15_50ns.prw.root"); //50ns period c
+        prwFiles.push_back(m_data_dir+"SusyCommon/mc15_25ns_prw_410000.root"); //25ns
         m_susyObj[susyObjId]->setProperty("PRWConfigFiles", prwFiles);
         // data luminosity profile
         std::vector<std::string> lumicalcFiles;
-        //lumicalcFiles.push_back(m_data_dir+"SusyCommon/ilumicalc_histograms_None_266904-267639.root");
-        //lumicalcFiles.push_back(m_data_dir+"SusyCommon/ilumicalc_histograms_None_267073-267639.root"); // updated to latest GRL
-        lumicalcFiles.push_back(m_data_dir+"SusyCommon/ilumicalc_histograms_None_267073-271744.root"); // updated to latest GRL (July 23 2015)
+        lumicalcFiles.push_back(m_data_dir+"SusyCommon/ilumicalc_histograms_None_276262-279598.root"); // updated to GRL from September 23
         m_susyObj[susyObjId]->setProperty("PRWLumiCalcFiles", lumicalcFiles); 
         // default channel to use (if we do not have a prw config for a specific sample, this is what gets used)
         m_susyObj[susyObjId]->setProperty("PRWDefaultChannel", 410000);
@@ -488,13 +487,16 @@ void XaodAnalysis::initPileupTool()
     std::vector<std::string> prwFiles;
     std::vector<std::string> lumicalcFiles;
 
-    prwFiles.push_back(m_data_dir + "SusyCommon/mc15_50ns.prw.root");
-    lumicalcFiles.push_back(m_data_dir + "SusyCommon/ilumicalc_histograms_None_267073-271744.root");
+    //prwFiles.push_back(m_data_dir + "SusyCommon/mc15_50ns.prw.root"); // 50ns
+    prwFiles.push_back(m_data_dir + "SusyCommon/mc15_25ns_prw_410000.root"); // 25ns
+    //lumicalcFiles.push_back(m_data_dir + "SusyCommon/ilumicalc_histograms_None_267073-271744.root"); // 50ns period C
+    lumicalcFiles.push_back(m_data_dir + "SusyCommon/ilumicalc_histograms_None_276262-279598.root"); // 25ns September 23 GRL
     CHECK(m_pileupReweightingTool->setProperty("ConfigFiles", prwFiles));
     CHECK(m_pileupReweightingTool->setProperty("LumiCalcFiles", lumicalcFiles));
     CHECK(m_pileupReweightingTool->setProperty("DefaultChannel", 410000));
-    CHECK(m_pileupReweightingTool->setProperty("DataScaleFactorUP", 1.10));
-    CHECK(m_pileupReweightingTool->setProperty("DataScaleFactorDOWN", 0.90));
+    CHECK(m_pileupReweightingTool->setProperty("DataScaleFactor",     1./ 1.16));
+    CHECK(m_pileupReweightingTool->setProperty("DataScaleFactorUP",   1.));
+    CHECK(m_pileupReweightingTool->setProperty("DataScaleFactorDOWN", 1./ 1.23));
 
     CHECK( m_pileupReweightingTool->initialize() );
 
@@ -2287,7 +2289,10 @@ bool XaodAnalysis::runningOptionsAreValid()
 //----------------------------------------------------------
 std::string XaodAnalysis::defaultGrlFile()
 {
-    std::string grl_file = "$ROOTCOREBIN/data/SusyCommon/data15_13TeV.periodAllYear_DetStatus-v63-pro18-01_DQDefects-00-01-02_PHYS_StandardGRL_All_Good.xml";
+    // 50 ns period C GRL
+    //std::string grl_file = "$ROOTCOREBIN/data/SusyCommon/data15_13TeV.periodAllYear_DetStatus-v63-pro18-01_DQDefects-00-01-02_PHYS_StandardGRL_All_Good.xml";
+    // 25 ns GRL from September 23
+    std::string grl_file = "$ROOTCOREBIN/data/SusyCommon/data15_13TeV.periodAllYear_DetStatus-v65-pro19-01_DQDefects-00-01-02_PHYS_StandardGRL_All_Good.xml";
     return grl_file;
 }
 //----------------------------------------------------------
