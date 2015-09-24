@@ -99,6 +99,8 @@ XaodAnalysis::XaodAnalysis() :
     m_muonSelectionToolTight(0),
     m_isoToolGradientLooseCone40Calo(0),
     m_isoToolGradientCone40(0),
+    m_isoToolGradientT1Cone40(0),
+    m_isoToolGradientT2Cone40(0),
     m_isoToolLooseTrackOnlyCone20(0),
     m_isoToolLoose(0),
     m_isoToolTight(0),
@@ -267,6 +269,8 @@ void XaodAnalysis::Terminate()
 
     delete m_isoToolGradientLooseCone40Calo;
     delete m_isoToolGradientCone40;
+    delete m_isoToolGradientT1Cone40;
+    delete m_isoToolGradientT2Cone40;
     delete m_isoToolLooseTrackOnlyCone20;
     delete m_isoToolLoose;
     delete m_isoToolTight;
@@ -608,27 +612,6 @@ void XaodAnalysis::initIsoTools()
 {
     // see: https://twiki.cern.ch/twiki/bin/view/AtlasProtected/IsolationSelectionTool
 
-    // track and calo based isolation efficiencies (and combined)
-    // LooseTrackOnly
-    //      > xAOD::Iso::ptvarcone30 : 99%
-    //      > Combined 99%
-    // Loose
-    //      > xAOD::Iso::ptvarcone30  : 99%
-    //      > xAOD::Iso::topoetcone20 : 99%
-    //      > Combined 99%
-    // Tight
-    //      > xAOD::Iso::ptvarcone30  : 99%
-    //      > xAOD::Iso::topoetcone20 : 96%
-    //      > Combined 95%
-    // Gradient
-    //      > xAOD::Iso::ptvarcone30  : "0.1143*x + 92.14"
-    //      > xAOD::Iso::topoetcone20 : "0.1143*x + 92.14"
-    //      > Combined: Constructed such that F(25 GeV) = 90%, F(60 GeV) = 99%
-    // GradientLoose
-    //      > xAOD::Iso::ptvarcone30  : "0.057*x + 95.57"
-    //      > xAOD::Iso::topoetcone20 : "0.057*x + 95.57"
-    //      > Combined: Constructed such that F(25 GeV) = 95%, F(60 GeV) = 99%
-
     // Gradient Loose WP for leptons, Cone40CaloOnly WP for photons
     m_isoToolGradientLooseCone40Calo = new CP::IsolationSelectionTool( "IsolationSelectionTool_GradientLoose" );
     CHECK( m_isoToolGradientLooseCone40Calo->setProperty( "ElectronWP",   "GradientLoose") );
@@ -642,6 +625,20 @@ void XaodAnalysis::initIsoTools()
     CHECK( m_isoToolGradientCone40->setProperty( "MuonWP",       "Gradient") );
     CHECK( m_isoToolGradientCone40->setProperty( "PhotonWP",     "Cone40") );
     CHECK( m_isoToolGradientCone40->initialize() );
+
+    // GradientT1 WP for leptons, stick with Cone40 for photons
+    m_isoToolGradientT1Cone40 = new CP::IsolationSelectionTool( "IsolationSelectionTool_GradientT1" );
+    CHECK( m_isoToolGradientT1Cone40->setProperty( "ElectronWP", "GradientT1") );
+    CHECK( m_isoToolGradientT1Cone40->setProperty( "MuonWP",     "GradientT1") );
+    CHECK( m_isoToolGradientT1Cone40->setProperty( "PhotonWP",   "Cone40") );
+    CHECK( m_isoToolGradientT1Cone40->initialize() );
+
+    // GradientT2 WP for leptons, stick with Cone40 for photons
+    m_isoToolGradientT2Cone40 = new CP::IsolationSelectionTool( "IsolationSelectionTool_GradientT2" );
+    CHECK( m_isoToolGradientT2Cone40->setProperty( "ElectronWP", "GradientT2") );
+    CHECK( m_isoToolGradientT2Cone40->setProperty( "MuonWP",     "GradientT2") );
+    CHECK( m_isoToolGradientT2Cone40->setProperty( "PhotonWP",   "Cone40") );
+    CHECK( m_isoToolGradientT2Cone40->initialize() );
    
     // LooseTrackOnly WP, Cone20 WP for photons
     m_isoToolLooseTrackOnlyCone20 = new CP::IsolationSelectionTool( "IsolationSelectionTool_LooseTrackOnly" );

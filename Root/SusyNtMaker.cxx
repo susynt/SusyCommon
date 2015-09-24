@@ -453,6 +453,8 @@ void SusyNtMaker::storeElectron(const xAOD::Electron &in)
     //////////////////////////////////////
     out.isoGradientLoose  = m_isoToolGradientLooseCone40Calo->accept(in) ? true : false;
     out.isoGradient       = m_isoToolGradientCone40->accept(in) ? true : false;
+    out.isoGradientT1     = m_isoToolGradientT1Cone40->accept(in) ? true : false;
+    out.isoGradientT2     = m_isoToolGradientT2Cone40->accept(in) ? true : false;
     out.isoLooseTrackOnly = m_isoToolLooseTrackOnlyCone20->accept(in) ? true : false;
     out.isoLoose          = m_isoToolLoose->accept(in) ? true : false;
     out.isoTight          = m_isoToolTight->accept(in) ? true : false;
@@ -484,6 +486,7 @@ void SusyNtMaker::storeElectron(const xAOD::Electron &in)
     bool recoSF=true;
     bool idSF=true;
     bool trigSF=false;
+    bool isoSF=true;
 
     if(m_isMC){
         //////////////////////////////////////
@@ -491,9 +494,11 @@ void SusyNtMaker::storeElectron(const xAOD::Electron &in)
         // - one for each electron LH WP
         // - (only Loose, Medium, Tight for now)
         //////////////////////////////////////
-        out.eleEffSF[ElectronId::TightLH] = m_susyObj[SusyObjId::eleTightLH]->GetSignalElecSF(in, recoSF, idSF, trigSF);
-        out.eleEffSF[ElectronId::MediumLH] = m_susyObj[SusyObjId::eleMediumLH]->GetSignalElecSF(in, recoSF, idSF, trigSF);
-        out.eleEffSF[ElectronId::LooseLH] = m_susyObj[SusyObjId::eleLooseLH]->GetSignalElecSF(in, recoSF, idSF, trigSF);
+        // signature: (input electron, bool doRecoSF, bool doIDSF, bool doTrigSF, bool doIsoSF)
+        out.eleEffSF[ElectronId::TightLH] =  m_susyObj[SusyObjId::eleTightLH]->GetSignalElecSF (in, recoSF, idSF, trigSF, isoSF);
+        out.eleEffSF[ElectronId::MediumLH] = m_susyObj[SusyObjId::eleMediumLH]->GetSignalElecSF(in, recoSF, idSF, trigSF, isoSF);
+        // there are no isolation SF's for electron ID looseLH
+        //out.eleEffSF[ElectronId::LooseLH] = m_susyObj[SusyObjId::eleLooseLH]->GetSignalElecSF(in, recoSF, idSF, trigSF, isoSF);
 
         //////////////////////////////////////
         // Truth matching/info
@@ -584,7 +589,6 @@ void SusyNtMaker::storeElectron(const xAOD::Electron &in)
     //////////////////////////////////////
     // Trigger matching
     //////////////////////////////////////
-    // I swear it's been 6 months and the ability to grab the trigger features still doesn't work
     out.trigBits = matchElectronTriggers(in);
 //    cout << "testing electron trigBits" << endl;
 //    int nbins = h_passTrigLevel->GetXaxis()->GetNbins();
@@ -655,11 +659,13 @@ void SusyNtMaker::storeMuon(const xAOD::Muon &in)
     //////////////////////////////////////
     // Isolation flags (IsolationSelectionTool)
     //////////////////////////////////////
-    out.isoGradientLoose = m_isoToolGradientLooseCone40Calo->accept(in) ? true : false;
-    out.isoGradient = m_isoToolGradientCone40->accept(in) ? true : false;
-    out.isoLooseTrackOnly = m_isoToolLooseTrackOnlyCone20->accept(in) ? true : false;
-    out.isoLoose = m_isoToolLoose->accept(in) ? true : false;
-    out.isoTight = m_isoToolTight->accept(in) ? true : false;
+    out.isoGradientLoose    = m_isoToolGradientLooseCone40Calo->accept(in) ? true : false;
+    out.isoGradient         = m_isoToolGradientCone40->accept(in) ? true : false;
+    out.isoGradientT1       = m_isoToolGradientT1Cone40->accept(in) ? true : false;
+    out.isoGradientT2       = m_isoToolGradientT2Cone40->accept(in) ? true : false;
+    out.isoLooseTrackOnly   = m_isoToolLooseTrackOnlyCone20->accept(in) ? true : false;
+    out.isoLoose            = m_isoToolLoose->accept(in) ? true : false;
+    out.isoTight            = m_isoToolTight->accept(in) ? true : false;
 
     bool all_available=true;
 
@@ -757,14 +763,16 @@ void SusyNtMaker::storeMuon(const xAOD::Muon &in)
     // - one for each MuonId that we use:
     // - Loose and Medium
     //////////////////////////////////////
-    if(m_isMC && (out.veryLoose || out.loose || out.medium) && (fabs(out.eta)<2.5)) {
-        out.muoEffSF[MuonId::Loose] = m_susyObj[SusyObjId::muoLoose]->GetSignalMuonSF(in);
-        out.muoEffSF[MuonId::Medium] = m_susyObj[SusyObjId::muoMedium]->GetSignalMuonSF(in);
+    bool recoSF = true;
+    bool isoSF = true;
+    if(m_isMC && fabs(out.eta)<2.5 && out.pt>20){ // SF's are not binned for pt < 20 GeV
+        out.muoEffSF[MuonId::Loose]  = m_susyObj[SusyObjId::muoLoose]->GetSignalMuonSF (in, recoSF, isoSF);
+        out.muoEffSF[MuonId::Medium] = m_susyObj[SusyObjId::muoMedium]->GetSignalMuonSF(in, recoSF, isoSF);
     }
     //////////////////////////////////////
     // Systematic variation on muon SF
     //////////////////////////////////////
-    if(m_isMC && m_sys && (out.veryLoose || out.loose || out.medium) && (fabs(out.eta)<2.5)) {
+    if(m_isMC && m_sys && fabs(out.eta)<2.5 && out.pt>20){
         for(const auto& sysInfo : systInfoList) {
             if(!(sysInfo.affectsType == ST::SystObjType::Muon && sysInfo.affectsWeights)) continue;
             const CP::SystematicSet& sys = sysInfo.systset;
@@ -777,8 +785,8 @@ void SusyNtMaker::storeMuon(const xAOD::Muon &in)
             }
             vector<float> sf;
             sf.assign(MuonId::MuonIdInvalid, 1);
-            sf[MuonId::Medium] = m_susyObj[SusyObjId::muoMedium]->GetSignalMuonSF(in);
-            sf[MuonId::Loose] = m_susyObj[SusyObjId::muoLoose]->GetSignalMuonSF(in);
+            sf[MuonId::Medium] = m_susyObj[SusyObjId::muoMedium]->GetSignalMuonSF(in, recoSF, isoSF);
+            sf[MuonId::Loose] = m_susyObj[SusyObjId::muoLoose]->GetSignalMuonSF(in, recoSF, isoSF);
             for(int i=MuonId::VeryLoose; i<MuonId::MuonIdInvalid; i++){
                 if     (ourSys == NtSys::MUONSFSTAT_UP)  out.errEffSF_stat_up[i] = sf[i] - out.muoEffSF[i];
                 else if(ourSys == NtSys::MUONSFSTAT_DN) out.errEffSF_stat_dn[i] = sf[i] - out.muoEffSF[i];
