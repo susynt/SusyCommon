@@ -178,6 +178,13 @@ Bool_t SusyNtMaker::Process(Long64_t entry)
     }
 
     fillTriggerHisto();
+
+    // SUSY final state -- grab m_susyFinalState here since (as the code is written now) this is needed inside of selectEvent()
+    int pdg_1 = 0;
+    int pdg_2 = 0;
+    if(m_isMC) m_susyObj[m_eleIDDefault]->FindSusyHP(xaodTruthParticles(), pdg_1, pdg_2);
+    if(pdg_1 != 0 && pdg_2 != 0) m_susyFinalState = SUSY::finalState(pdg_1, pdg_2); // c.f. SUSYTools/SUSYCrossSection.h
+
     if(selectEvent() && m_fillNt){
         matchTriggers();
         // dantrim Jul 2 2015
@@ -275,7 +282,7 @@ void SusyNtMaker::fillEventVars()
     int susy_pdg_1 = 0;
     int susy_pdg_2 = 0;
     if(m_isMC) m_susyObj[m_eleIDDefault]->FindSusyHP(xaodTruthParticles(), susy_pdg_1, susy_pdg_2);
-    if(susy_pdg_1 != 0 && susy_pdg_2 != 0) m_susyFinalState = SUSY::finalState(susy_pdg_1, susy_pdg_2); // c.f. SUSYTools/SUSYCrossSection.h
+    //if(susy_pdg_1 != 0 && susy_pdg_2 != 0) m_susyFinalState = SUSY::finalState(susy_pdg_1, susy_pdg_2); // c.f. SUSYTools/SUSYCrossSection.h
     evt->susyFinalState   = m_susyFinalState;
     evt->susySpartId1     = susy_pdg_1;
     evt->susySpartId2     = susy_pdg_2;
