@@ -382,7 +382,8 @@ void SusyNtMaker::fillTauVars()
     if(m_dbg>=5) cout<<"fillTauVars"<<endl;
     xAOD::TauJetContainer* taus =  XaodAnalysis::xaodTaus(systInfoList[0]);
     // vector<int>& saveTaus = m_saveContTaus? m_contTaus : m_preTaus; // container taus are meant to be used only for background estimates?
-    vector<int>& saveTaus = m_preTaus;
+    //vector<int>& saveTaus = m_preTaus;
+    vector<int>& saveTaus = m_saveContTaus ? m_contTaus : m_preTaus;
     for(auto &i : saveTaus){
         storeTau(*(taus->at(i)));
     }
@@ -1035,15 +1036,18 @@ void SusyNtMaker::storeTau(const xAOD::TauJet &in)
         //in.auxdata<int>("TruthCharge");
         //in.auxdata<bool>("IsHadronicTau");
 
-        m_TauEffEleTool->applyEfficiencyScaleFactor(in);
-
-        //AT: Add errors!    
-        //m_TauEffEleTool->getEfficiencyScaleFactor(tau, out.looseEffS);
-        //How is the ID dealt with
-        //This is not correct... we need the tool initialize with various selection!
-        out.looseEffSF = in.auxdata<double>("TauScaleFactorContJetID");//ok
-        out.mediumEffSF = in.auxdata<double>("TauScaleFactorContJetID");//ok
-        out.tightEffSF = in.auxdata<double>("TauScaleFactorContJetID");//ok
+        // MJF: Scale factors are only valid for pre-selected taus
+        if ( in.auxdata< char >("baseline") )
+        {
+            //if (in.nTracks() > 0) m_TauEffEleTool->applyEfficiencyScaleFactor(in);
+            // these #'s are dummies for testing the various SF's!
+            out.looseEffSF  = m_susyObj[m_eleIDDefault]->GetSignalTauSF(in);
+            out.mediumEffSF = m_susyObj[m_eleIDDefault]->GetSignalTauSF(in);
+            out.tightEffSF  = m_susyObj[m_eleIDDefault]->GetSignalTauSF(in);
+            //out.looseEffSF  = in.auxdata<double>("TauScaleFactorReconstructionHadTau");
+            //out.mediumEffSF = in.auxdata<double>("TauScaleFactorJetIDHadTau");
+            //out.tightEffSF  = in.auxdata<double>("TauScaleFactorEleOLRHadTau");
+        }
         // stat errors not supported
         // systematics not included here
         double EVetoSF = 0.0;
@@ -1664,15 +1668,17 @@ void SusyNtMaker::storeTauKinSys(ST::SystInfo sysInfo, SusyNtSys sys)
     xAOD::TauJetContainer* taus_nom = xaodTaus(sysInfo,NtSys::NOM);
 
     if(m_dbg>=15) cout << "storeTauKinSys " << NtSys::SusyNtSysNames[sys]  << endl;
-    for(const auto &iTau : m_preTaus){ //loop over array containing the xAOD tau idx
+    vector<int>& saveTaus     = m_saveContTaus ? m_contTaus : m_preTaus;
+    vector<int>& saveTaus_nom = m_saveContTaus ? m_contTaus_nom : m_preTaus_nom;
+    for(const auto &iTau : saveTaus) { // loop over array containing the xAOD tau idx
         const xAOD::TauJet* tau = taus->at(iTau);
         if(m_dbg>=5)  cout << "This tau pt " << tau->pt() << " eta " << tau->eta() << " phi " << tau->phi() << endl; 
     
         const xAOD::TauJet* tau_nom = NULL;
         Susy::Tau* tau_susyNt = NULL;
         int idx_susyNt=-1;
-        for(uint idx=0; idx<m_preTaus_nom.size(); idx++){
-            int iTau_nom = m_preTaus_nom[idx];
+        for(uint idx=0; idx<saveTaus_nom.size(); idx++){
+            int iTau_nom = saveTaus_nom[idx];
             if(iTau == iTau_nom){
                 tau_nom = taus_nom->at(iTau_nom);
                 tau_susyNt = & m_susyNt.tau()->at(idx);
@@ -1693,7 +1699,7 @@ void SusyNtMaker::storeTauKinSys(ST::SystInfo sysInfo, SusyNtSys sys)
             if(m_dbg>=5) cout << " Tau not found - adding to susyNt" << endl;
             tau_nom = taus_nom->at(iTau);//assume order is preserved
             storeTau(*tau_nom);//this add the tau at the end... 
-            m_preTaus_nom.push_back(iTau);
+            saveTaus_nom.push_back(iTau);
             tau_susyNt = & m_susyNt.tau()->back(); //get the newly inserted taument
         }
 
