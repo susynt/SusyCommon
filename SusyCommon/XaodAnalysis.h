@@ -434,6 +434,7 @@ namespace Susy {
     std::vector<int>            m_preMuons_nom;     // selected muons
     std::vector<LeptonInfo>     m_preLeptons_nom;   // selected leptons
     std::vector<int>            m_preJets_nom;      // selected jets
+    std::vector<int>            m_contTaus_nom;     // container taus
     std::vector<int>            m_preTaus_nom;      // selected taus
 
 

@@ -600,9 +600,9 @@ void XaodAnalysis::initTauTools()
     //m_tauTruthMatchingTool->setProperty("SampleType", (int)TauAnalysisTools::PYTHIA);//default
 
     m_TauEffEleTool = new TauAnalysisTools::TauEfficiencyCorrectionsTool("TauEfficiencyTool");
-    m_TauEffEleTool->msg().setLevel(MSG::INFO);
+    m_TauEffEleTool->msg().setLevel(MSG::ERROR); // don't need warnings about histogram binning
 
-    CHECK(m_TauEffEleTool->setProperty("EfficiencyCorrectionType", (int) TauAnalysisTools::SFContJetID));
+    //CHECK(m_TauEffEleTool->setProperty("EfficiencyCorrectionType", (int) TauAnalysisTools::SFContJetID)); // this is mc12 rec, use default mc15
     CHECK(m_TauEffEleTool->initialize());
 }
 //----------------------------------------------------------
@@ -1099,12 +1099,18 @@ void XaodAnalysis::selectBaselineObjects(SusyNtSys sys, ST::SystInfo sysInfo)
                          <<endl;
         //Container tau: tau->pt()>20*GeV && abs(tau->eta())<2.47 ???  //AT TO ADD
         //if(tau->pt() * MeV2GeV > 20 && fabs(tau->eta())<2.47) m_preTaus.push_back(iTau);        
+
+        // MJF: Apply very loose pre-selection to container taus
+        int nTracks = tau->nTracks();
+        if (std::abs(tau->charge()) == 1 && (nTracks==1 || nTracks==3 || nTracks==5)) {
+            m_contTaus.push_back(iTau);
+        }
         if((bool)tau->auxdata< char >("baseline")==1){
             m_preTaus.push_back(iTau);
             m_baseTaus.push_back(iTau);
         }
     }
-    if(m_dbg) cout<<"m_preTaus["<<m_preTaus.size()<<"]"<<endl;
+    //if(m_dbg) cout<<"m_preTaus["<<m_preTaus.size()<<"]"<<endl;
 
     //////////////////////////////////
     // If Nom systematics keep track
@@ -1114,6 +1120,7 @@ void XaodAnalysis::selectBaselineObjects(SusyNtSys sys, ST::SystInfo sysInfo)
         m_preElectrons_nom = m_preElectrons;
         m_preMuons_nom     = m_preMuons;
         m_preJets_nom      = m_preJets;
+        m_contTaus_nom     = m_contTaus;
         m_preTaus_nom      = m_preTaus;
         m_preLeptons_nom   = m_preLeptons;
     }
@@ -1326,6 +1333,7 @@ void XaodAnalysis::clearOutputObjects(bool deleteNominal)
     m_preElectrons.clear();
     m_preMuons.clear();
     m_preJets.clear();
+    m_contTaus.clear();
     m_preTaus.clear();
     m_preLeptons.clear();
     m_baseElectrons.clear();
@@ -1350,6 +1358,7 @@ void XaodAnalysis::clearOutputObjects(bool deleteNominal)
         m_preElectrons_nom.clear();
         m_preMuons_nom.clear();
         m_preJets_nom.clear();
+        m_contTaus_nom.clear();
         m_preTaus_nom.clear();
         m_preLeptons_nom.clear();
     }
@@ -2166,7 +2175,8 @@ void XaodAnalysis::dumpSignalObjects()
 {
     uint nEle = m_sigElectrons.size();
     uint nMu  = m_sigMuons.size();
-    //uint nTau = m_sigTaus.size();
+    // taus
+    uint nTau = m_sigTaus.size();
     uint nJet = m_sigJets.size();
     ST::SystInfo sysInfo = systInfoList[0]; // nominal
 
