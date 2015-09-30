@@ -437,6 +437,9 @@ void SusyNtMaker::storeElectron(const xAOD::Electron &in)
     out.m   = m;
     out.q   = in.charge();
 
+    // is electron track overlapping with a muon track?
+    out.isMuon = in.auxdata < char >("elIsMuon"); // decorator defined in XaodAnalysis.cxx
+
     //////////////////////////////////////
     // SUSYTools flags (flags from default
     // SUSYTools object)

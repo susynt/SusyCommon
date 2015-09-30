@@ -43,6 +43,8 @@ using Susy::XaodAnalysis;
     } while( false )
 
 
+// decorate electrons that share tracks with muons
+static SG::AuxElement::Decorator<char> dec_elIsMuon("elIsMuon");
 //----------------------------------------------------------
 XaodAnalysis::XaodAnalysis() :
     m_input_chain(0),
@@ -982,6 +984,24 @@ void XaodAnalysis::selectBaselineObjects(SusyNtSys sys, ST::SystInfo sysInfo)
     xAOD::MuonContainer*     muons     = xaodMuons(sysInfo,sys);
     xAOD::JetContainer*      jets      = xaodJets(sysInfo,sys);
     xAOD::TauJetContainer*   taus      = xaodTaus(sysInfo,sys);
+
+    //////////////////////////////////
+    // check here for electrons sharing 
+    // tracks with muons and decorate
+    // them so that this info is available
+    // when we store the electrons
+    //////////////////////////////////
+    for(const auto& el : *electrons) {
+        dec_elIsMuon(*el) = false;
+        const xAOD::TrackParticle* elTrk = xAOD::EgammaHelpers::getOriginalTrackParticle(el);
+        for(const auto& mu : *muons) {
+            const xAOD::TrackParticle* muTrk = mu->trackParticle(xAOD::Muon::InnerDetectorTrackParticle);
+            if(elTrk == muTrk) {
+                if(m_dbg >= 5) cout << "Electron (pt: " << el->pt() << ", eta: " << el->eta() << ") sharing track with muon (pt: " << mu->pt() << ", eta: " << mu->eta() << ")" << endl;
+                dec_elIsMuon(*el) = true;
+            }
+        } // mu
+    } // el
 
     //////////////////////////////////
     // Electrons
