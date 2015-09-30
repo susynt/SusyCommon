@@ -149,9 +149,6 @@ class SusyNtMaker : public XaodAnalysis
     // Set light lepton + tau filter
     void setNLepTauFilter(uint nLepTau) { m_nLepTauFilter = nLepTau; }
 
-    // Toggle trigger filtering
-    void setFilterTrigger(bool filter=true) { m_filterTrigger = filter; }
-
     // Toggle saving container taus instead of selected taus
     void setSaveContTaus(bool saveContTaus=true) { m_saveContTaus = saveContTaus; }
     static bool guessWhetherIsWhSample(const TString &samplename);
@@ -192,9 +189,6 @@ class SusyNtMaker : public XaodAnalysis
     bool                m_filter;       // Flag to turn off filtering for signal samples
     uint                m_nLepFilter;   // Number of light leptons to filter on.
     uint                m_nLepTauFilter;// Number of leptons (light+tau) to filter on.
-    bool                m_filterTrigger;// Only save events that pass any of our triggers
-    int                 m_triggerSet;   // Set which triggers are stored
-    std::vector<std::string> m_triggerNames;
     bool                m_saveContTaus; // Save container taus instead of selected taus
 
     // Some useful flags

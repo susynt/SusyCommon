@@ -50,7 +50,6 @@ SusyNtMaker::SusyNtMaker() :
     m_filter(true),
     m_nLepFilter(0),
     m_nLepTauFilter(2),
-    m_filterTrigger(false),
     m_saveContTaus(false),
     m_isWhSample(false),
     m_hDecay(0),
@@ -2041,11 +2040,6 @@ bool SusyNtMaker::passObjectlevelSelection()
     if(m_filter) {
         pass = pass_nLepFilter;
     }
-  //  bool trig_has_fired( h_passTrigLevel->Integral(0,-1) > 0. ); // check if any of the triggers fired
-  //  if(m_filter) {
-  //      if(m_filterTrigger) { pass = (pass_nLepFilter && trig_has_fired); }
-  //      else { pass = pass_nLepFilter; }
-  //  }
     if(m_dbg>=5 && !pass)
         cout << "SusyNtMaker: fail passObjectlevelSelection " << endl;
     return pass;
