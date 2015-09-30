@@ -55,11 +55,9 @@ XaodAnalysis::XaodAnalysis() :
     m_sumOfWeightsSquared(0),
     m_isAF2(false),
     m_is8TeV(true),
-    m_d3pdTag(D3PD_p1328),
     m_selectPhotons(false),
     m_selectTaus(false),
     m_selectTruth(false),
-    // m_metFlavor(SUSYMet::Default),
     m_doMetMuCorr(false),
     m_doMetFix(false),
     m_lumi(LUMI_A_A4),
@@ -2092,18 +2090,6 @@ int XaodAnalysis::getHFORDecision()
     //                               m_event.mc.parent_index(),
     //                               m_event.mc.child_index(),
     //                               HforToolD3PD::ALL); //HforToolD3PD::DEFAULT
-}
-//----------------------------------------------------------
-void XaodAnalysis::setMetFlavor(string metFlav)
-{
-    // if(metFlav=="STVF") m_metFlavor = SUSYMet::STVF;
-    // else if(metFlav=="STVF_JVF") m_metFlavor = SUSYMet::STVF_JVF;
-    // else if(metFlav=="Default") m_metFlavor = SUSYMet::Default;
-    // else{
-    //   cout << "XaodAnalysis::setMetFlavor : ERROR : MET flavor " << metFlav
-    //        << " is not supported!" << endl;
-    //   abort();
-    // }
 }
 //----------------------------------------------------------
 void XaodAnalysis::dumpEvent()

@@ -317,13 +317,11 @@ namespace Susy {
     TString sample() { return m_sample; } ///< Sample name - used to set isMC flag
     XaodAnalysis& setSample(TString s) { m_sample = s; return *this; }
     void setAF2(bool isAF2=true) { m_isAF2 = isAF2; } ///< AF2 flag
-    void setD3PDTag(D3PDTag tag) { m_d3pdTag = tag; } ///< Set SUSY D3PD tag to know which branches are ok
     void setSys(bool sysOn){ m_sys = sysOn; }; ///< Set sys run
     void setSelectPhotons(bool doIt) { m_selectPhotons = doIt; } ///< Toggle photon selection
     void setSelectTaus(bool doIt) { m_selectTaus = doIt; } ///< Toggle tau selection and overlap removal
     void setSelectTruthObjects(bool doIt) { m_selectTruth = doIt; } ///< Set-Get truth selection
     bool getSelectTruthObjects(         ) { return m_selectTruth; }
-    void setMetFlavor(std::string metFlav); ///< only STVF and STVF_JVF are available (anything else will raise an error)
     void setDoMetMuonCorrection(bool doMetMuCorr) { m_doMetMuCorr = doMetMuCorr; }
     void setDoMetFix(bool doMetFix) { m_doMetFix = doMetFix; }
     /// whether the options specified by the user are consistent with the event info
@@ -389,13 +387,10 @@ namespace Susy {
     bool                        m_isSusySample; // is susy grid sample
     int                         m_susyFinalState;// susy subprocess
 
-    D3PDTag                     m_d3pdTag;      // SUSY D3PD tag
-
     bool                        m_selectPhotons;// Toggle photon selection
     bool                        m_selectTaus;   // Toggle tau selection and overlap removal
     bool                        m_selectTruth;  // Toggle truth selection
 
-    /* SUSYMet::met_definition     m_metFlavor;    // MET flavor enum (e.g. STVF, STVF_JVF) */
     bool                        m_doMetMuCorr;  // Control MET muon Eloss correction in SUSYTools
     bool                        m_doMetFix;     // Control MET Egamma-jet overlap fix in SUSYTools
     //bool                      m_useMetMuons;  // Use appropriate muons for met
