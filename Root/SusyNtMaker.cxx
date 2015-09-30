@@ -520,6 +520,7 @@ void SusyNtMaker::storeElectron(const xAOD::Electron &in)
         //AT: 05-02-15: Issue accessing Aux of trackParticle in truthElectronCharge. Info not in derived AOD ?
         //if(eleIsOfType(in, eleID::LooseLH))
         // crash p1874 out.isChargeFlip  = m_isMC ? isChargeFlip(in.charge(),truthElectronCharge(in)) : false;
+        out.truthCharge =  truthEle ? truthEle->charge() : 0;
     }
 
     //////////////////////////////////////
