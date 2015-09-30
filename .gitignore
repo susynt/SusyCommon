@@ -1,0 +1,42 @@
+# Compiled Object files
+*.slo
+*.lo
+*.o
+*.obj
+
+# Compiled Dynamic libraries
+*.so
+*.dylib
+*.dll
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+*.lib
+
+# Executables
+*.exe
+*.out
+*.app
+
+# Directories created by Rootcore
+Standalone/
+bin/
+obj/
+
+# python bytecode
+*.pyc
+
+# aclic files
+*cxx.d
+
+# directory created by doxygen
+doc/doxygen/
+
+# emacs autosave
+*~
+
+# vim autosave
+*.swp
+*.swo

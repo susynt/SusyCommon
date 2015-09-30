@@ -3,11 +3,11 @@
 # edit with care
 
 PACKAGE          = SusyCommon
-PACKAGE_PRELOAD  = Tree
+PACKAGE_PRELOAD  = 
 PACKAGE_CXXFLAGS = 
-PACKAGE_LDFLAGS  = 
-PACKAGE_BINFLAGS = -lCintex -lReflex
-PACKAGE_DEP      = SusyNtuple MultiLep LeptonTruthTools
+PACKAGE_LDFLAGS  = $(shell root-config --libs --glibs)
+PACKAGE_BINFLAGS = -lPyROOT -lXMLParser -lEG 
+PACKAGE_DEP		 = SusyNtuple TrigDecisionTool TrigConfxAOD xAODTrigCalo xAODTrigEgamma TrigMuonMatching JetMomentTools
 PACKAGE_NOOPT    = 0
 
 # PDFTool switch, set this variable to allow pdf reweighting of 7TeV to 8TeV
