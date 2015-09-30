@@ -545,7 +545,8 @@ void SusyNtMaker::storeElectron(const xAOD::Electron &in)
             sf.assign(ElectronId::ElectronIdInvalid, 1);
             sf[ElectronId::TightLH]  = m_susyObj[SusyObjId::eleTightLH] ->GetSignalElecSF(in, recoSF, idSF, trigSF);
             sf[ElectronId::MediumLH] = m_susyObj[SusyObjId::eleMediumLH]->GetSignalElecSF(in, recoSF, idSF, trigSF);
-            sf[ElectronId::LooseLH]  = m_susyObj[SusyObjId::eleLooseLH] ->GetSignalElecSF(in, recoSF, idSF, trigSF);
+            // there are no isolation SF's for electrion ID looseLH
+            //sf[ElectronId::LooseLH]  = m_susyObj[SusyObjId::eleLooseLH] ->GetSignalElecSF(in, recoSF, idSF, trigSF);
 
             for(int i=ElectronId::TightLH; i<ElectronIdInvalid; i++){
                 if     (ourSys == NtSys::EL_EFF_ID_TotalCorrUncertainty_UP)   out.errEffSF_id_corr_up[i]   = sf[i] - out.eleEffSF[i];
