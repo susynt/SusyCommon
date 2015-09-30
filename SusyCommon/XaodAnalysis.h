@@ -322,7 +322,6 @@ namespace Susy {
     void setSelectTaus(bool doIt) { m_selectTaus = doIt; } ///< Toggle tau selection and overlap removal
     void setSelectTruthObjects(bool doIt) { m_selectTruth = doIt; } ///< Set-Get truth selection
     bool getSelectTruthObjects(         ) { return m_selectTruth; }
-    void setMetFlavor(std::string metFlav); ///< only STVF and STVF_JVF are available (anything else will raise an error)
     void setDoMetMuonCorrection(bool doMetMuCorr) { m_doMetMuCorr = doMetMuCorr; }
     void setDoMetFix(bool doMetFix) { m_doMetFix = doMetFix; }
     /// whether the options specified by the user are consistent with the event info
@@ -392,7 +391,6 @@ namespace Susy {
     bool                        m_selectTaus;   // Toggle tau selection and overlap removal
     bool                        m_selectTruth;  // Toggle truth selection
 
-    /* SUSYMet::met_definition     m_metFlavor;    // MET flavor enum (e.g. STVF, STVF_JVF) */
     bool                        m_doMetMuCorr;  // Control MET muon Eloss correction in SUSYTools
     bool                        m_doMetFix;     // Control MET Egamma-jet overlap fix in SUSYTools
     //bool                      m_useMetMuons;  // Use appropriate muons for met
