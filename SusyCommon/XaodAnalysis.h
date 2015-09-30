@@ -317,7 +317,6 @@ namespace Susy {
     TString sample() { return m_sample; } ///< Sample name - used to set isMC flag
     XaodAnalysis& setSample(TString s) { m_sample = s; return *this; }
     void setAF2(bool isAF2=true) { m_isAF2 = isAF2; } ///< AF2 flag
-    void setD3PDTag(D3PDTag tag) { m_d3pdTag = tag; } ///< Set SUSY D3PD tag to know which branches are ok
     void setSys(bool sysOn){ m_sys = sysOn; }; ///< Set sys run
     void setSelectPhotons(bool doIt) { m_selectPhotons = doIt; } ///< Toggle photon selection
     void setSelectTaus(bool doIt) { m_selectTaus = doIt; } ///< Toggle tau selection and overlap removal
@@ -388,8 +387,6 @@ namespace Susy {
 
     bool                        m_isSusySample; // is susy grid sample
     int                         m_susyFinalState;// susy subprocess
-
-    D3PDTag                     m_d3pdTag;      // SUSY D3PD tag
 
     bool                        m_selectPhotons;// Toggle photon selection
     bool                        m_selectTaus;   // Toggle tau selection and overlap removal

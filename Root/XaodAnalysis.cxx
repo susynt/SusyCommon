@@ -55,7 +55,6 @@ XaodAnalysis::XaodAnalysis() :
     m_sumOfWeightsSquared(0),
     m_isAF2(false),
     m_is8TeV(true),
-    m_d3pdTag(D3PD_p1328),
     m_selectPhotons(false),
     m_selectTaus(false),
     m_selectTruth(false),
