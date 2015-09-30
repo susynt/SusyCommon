@@ -128,7 +128,6 @@ int main(int argc, char** argv)
   bool writeNt    = true;
   D3PDTag tag     = D3PD_p1328;
   string metFlav  = "Default";
-  //bool doMetFix   = false;
   bool filter     = true;
   uint nLepFilter = 0;
   uint nLepTauFilter = 2;
@@ -139,63 +138,40 @@ int main(int argc, char** argv)
   cout << "SusyNtMaker" << endl;
   cout << endl;
 
-  // Read inputs to program
-  for(int i = 1; i < argc; i++) {
-    if (strcmp(argv[i], "-n") == 0)
-      nEvt = atoi(argv[++i]);
-    else if (strcmp(argv[i], "-k") == 0)
-      nSkip = atoi(argv[++i]);
-    else if (strcmp(argv[i], "-d") == 0)
-      dbg = atoi(argv[++i]);
-    else if (strcmp(argv[i], "-f") == 0)
-      fileList = argv[++i];
-    else if (strcmp(argv[i], "-s") == 0)
-      sample = argv[++i];
-    else if (strcmp(argv[i], "-l") == 0)
-      lumi = atof(argv[++i]);
-    else if (strcmp(argv[i], "-m") == 0)
-      writeNt = atoi(argv[++i]);
-    else if (strcmp(argv[i], "--grl") == 0)
-      grl = argv[++i];
-    else if (strcmp(argv[i], "--sys") == 0)
-      sysOn = true;
-    else if (strcmp(argv[i], "--savePh") == 0)
-    savePh = true;
-    else if (strcmp(argv[i], "--saveTau") == 0)
-      saveTau = true;
-    else if (strcmp(argv[i], "--saveContTau") == 0){
-      saveTau = true;
-      saveContTau = true;
-    }
-    else if (strcmp(argv[i], "--saveTruth") == 0)
-      saveTruth = true;
-    else if (strcmp(argv[i], "--af2") == 0)
-      isAF2 = true;
-    else if (strcmp(argv[i], "--d3pd1032") == 0)
-      tag = D3PD_p1032;
-    else if (strcmp(argv[i], "--metFlav") == 0)
-      metFlav = argv[++i];
-    //else if (strcmp(argv[i], "--doMetFix") == 0)
-      //doMetFix = true;
-    else if (strcmp(argv[i], "--filterOff") == 0)
-      filter = false;
-    else if (strcmp(argv[i], "--nLepFilter") == 0)
-      nLepFilter = atoi(argv[++i]);
-    else if (strcmp(argv[i], "--nLepTauFilter") == 0)
-      nLepTauFilter = atoi(argv[++i]);
-    else if (strcmp(argv[i], "--filterTrig") == 0)
-      filterTrig = true;
-    else if (strcmp(argv[i], "--triggerSet") == 0)
-      trigset = argv[++i];
-    else if (strcmp(argv[i], "--input") == 0) inputContainer = argv[++i];
-    else if (strcmp(argv[i], "--output") == 0) outputContainer = argv[++i];
-    else if (strcmp(argv[i], "--tag") == 0) ntTag = argv[++i];
-    else
-    {
-      help();
-      return 0;
-    }
-  }
+  int optind(1);
+  while(optind < argc) {
+      std::string sw = argv[optind];
+      if      (sw=="-n" || sw=="--num-events") { nEvt = atoi(argv[++optind]); }
+      else if (sw=="-k" || sw=="--num-skip"  ) { nSkip = atoi(argv[++optind]); }
+      else if (sw=="-d" || sw=="--dbg-level" ) { dbg = atoi(argv[++optind]); }
+      else if (sw=="-f" || sw=="--filelist"  ) { fileList = argv[++optind]; }
+      else if (sw=="-s" || sw=="--sample"    ) { sample = argv[++optind]; }
+      else if (sw=="-l" || sw=="--lumi"      ) { lumi = atof(argv[++optind]); }
+      else if (sw=="-m" || sw=="--write-nt"  ) { writeNt = atoi(argv[++optind]); }
+      else if (sw=="--grl"          ) { grl = argv[++optind]; }
+      else if (sw=="--sys"          ) { sysOn = true; }
+      else if (sw=="--savePh"       ) { savePh = true; }
+      else if (sw=="--saveTau"      ) { saveTau = true; }
+      else if (sw=="--saveContTau"  ) { saveTau = saveContTau = true; }
+      else if (sw=="--saveTruth"    ) { saveTruth = true; }
+      else if (sw=="--af2"          ) { isAF2 = true; }
+      else if (sw=="--d3pd1032"     ) { tag = D3PD_p1032; }
+      else if (sw=="--metFlav"      ) { metFlav = argv[++optind]; }
+      else if (sw=="--filterOff"    ) { filter = false; }
+      else if (sw=="--nLepFilter"   ) { nLepFilter = atoi(argv[++optind]); }
+      else if (sw=="--nLepTauFilter") { nLepTauFilter = atoi(argv[++optind]); }
+      else if (sw=="--filterTrig"   ) { filterTrig = true; }
+      else if (sw=="--triggerSet"   ) { trigset = argv[++optind]; }
+      else if (sw=="--input"        ) { inputContainer = argv[++optind]; }
+      else if (sw=="--output"       ) { outputContainer = argv[++optind]; }
+      else if (sw=="--tag"          ) { ntTag = argv[++optind]; }
+      else {
+          cout<<"Unknown switch '"<<sw<<"'"<<endl;
+          help();
+          return 0;
+      }
+      optind++;
+  } // while(optind)
 
   cout << "flags:" << endl;
   cout << "  sample        " << sample   << endl;
@@ -212,7 +188,6 @@ int main(int argc, char** argv)
   cout << "  isAF2         " << isAF2    << endl;
   cout << "  d3pdtag       " << tag      << endl;
   cout << "  metFlav       " << metFlav  << endl;
-  //cout << "  doMetFix      " << doMetFix << endl;
   cout << "  lumi          " << lumi     << endl;
   cout << "  filter        " << filter   << endl;
   cout << "  nLepFilter    " << nLepFilter    << endl;
@@ -248,7 +223,6 @@ int main(int argc, char** argv)
   susyAna->setD3PDTag(tag);
   susyAna->setMetFlavor(metFlav);
   susyAna->setSelectTruthObjects(saveTruth);
-  //susyAna->setDoMetFix(doMetFix);
   susyAna->setFilter(filter);
   susyAna->setNLepFilter(nLepFilter);
   susyAna->setNLepTauFilter(nLepTauFilter);
