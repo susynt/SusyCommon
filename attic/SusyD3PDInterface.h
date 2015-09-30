@@ -33,12 +33,6 @@
 #include "SusyNtuple/SusyDefs.h"
 
 
-/*
-
-    SusyD3PDContainer - A basic class for holding the D3PDObjects
-
-*/
-
 
 typedef D3PDReader::ElectronD3PDObjectElement ElectronElement;
 typedef D3PDReader::MuonD3PDObjectElement MuonElement;
@@ -48,6 +42,7 @@ typedef D3PDReader::PhotonD3PDObjectElement PhotonElement;
 typedef D3PDReader::TruthMuonD3PDObjectElement TruthMuonElement;
 typedef D3PDReader::JetD3PDObjectElement TruthJetElement;
 
+/// A basic class for holding the D3PDObjects
 class SusyD3PDContainer
 {
   public:
@@ -93,13 +88,7 @@ class SusyD3PDContainer
 
 
 
-/*
-
-    SusyD3PDInterface
-    A class for reading SUSY D3PDs using the interfaces defined in the SUSY MultiLep common code package
-
-*/
-
+/// A class for reading SUSY D3PDs using the interfaces defined in the SUSY MultiLep common code package
 class SusyD3PDInterface : public TSelector
 {
 

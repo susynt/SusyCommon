@@ -117,7 +117,7 @@ class SusyNtMaker : public XaodAnalysis
       //AT 05-09-15 obsolete
     // Systematic enum checks
     bool isElecSys(SusyNtSys s){
-      return (s == NtSys::EES_Z_UP   || s == NtSys::EES_Z_DN ||
+    return (s == NtSys::EES_Z_UP   || s == NtSys::EES_Z_DN ||
 	      s == NtSys::EES_MAT_UP || s == NtSys::EES_MAT_DN ||
 	      s == NtSys::EES_PS_UP  || s == NtSys::EES_PS_DN ||
 	      s == NtSys::EES_LOW_UP || s == NtSys::EES_LOW_DN ||
@@ -198,7 +198,7 @@ class SusyNtMaker : public XaodAnalysis
     bool                m_saveContTaus; // Save container taus instead of selected taus
 
     // Some useful flags
-    bool                m_isWhSample;   // is WH sample
+    bool                m_isWhSample; // is WH signal sample
     int                 m_hDecay;       // higgs decay type (see WhTruthExtractor::Hdecays)
     bool                m_hasSusyProp;  // whether this event is affected by the susy propagator bug (only for c1c1)
 

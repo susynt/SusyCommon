@@ -10,13 +10,7 @@
 #include "SusyCommon/SusyD3PDSkimmer.h"
 
 
-/*
-
-    SusyMetValidation - a class for validating the MET from SUSYTools
-    
-*/
-
-//class SusyMetValidation : public SusyD3PDAna
+/// SusyMetValidation - a class for validating the MET from SUSYTools
 class SusyMetValidation : public SusyD3PDSkimmer
 {
   

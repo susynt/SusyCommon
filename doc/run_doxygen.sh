@@ -11,8 +11,8 @@
 
 # trigger doxygen build only when the commit message title contains "[build-doxygen]"
 LAST_COMMIT_MSG=$(git log  --pretty=oneline  -n 1)
-if [[ "${LAST_COMMIT_MSG}" == *\[build-doxygen\]* ]] && [ "$TRAVIS_REPO_SLUG" == "gerbaudo/SusyCommon" ] && [ "$TRAVIS_PULL_REQUEST" == "false" ]; then
-
+if [[ "${LAST_COMMIT_MSG}" == *\[build-doxygen\]* ]] && [ "$TRAVIS_REPO_SLUG" == "susynt/SusyCommon" ] && [ "$TRAVIS_PULL_REQUEST" == "false" ]
+then
   echo -e "Publishing doxygen...\n"
   doxygen  doc/doxygen.conf
   cp -R doc/doxygen/html $HOME/doxygen-latest
@@ -20,7 +20,7 @@ if [[ "${LAST_COMMIT_MSG}" == *\[build-doxygen\]* ]] && [ "$TRAVIS_REPO_SLUG" ==
   cd $HOME
   git config --global user.email "travis@travis-ci.org"
   git config --global user.name "travis-ci"
-  git clone --quiet --branch=gh-pages https://${GH_TOKEN}@github.com/gerbaudo/SusyCommon gh-pages > /dev/null
+  git clone --quiet --branch=gh-pages https://${GH_TOKEN}@github.com/susynt/SusyCommon gh-pages > /dev/null
 
   cd gh-pages
   git rm -rf ./doxygen-html

@@ -10,6 +10,7 @@
 #include "SusyNtuple/SusyNtTools.h"
 #include "SusyNtuple/WhTruthExtractor.h"
 #include "SusyNtuple/mc_truth_utils.h"
+#include "SusyNtuple/vec_utils.h"
 #include "SusyNtuple/RecoTruthClassification.h"
 
 // SUSYTools
