@@ -24,89 +24,29 @@ using Susy::SusyNtMaker;
 
 void help()
 {
-  cout<<"  Options:"                         <<endl;
-  cout<<"  -n number of events to process"   <<endl;
-  cout<<"     defaults: -1 (all events)"     <<endl;
-
-  cout<<"  -k number of events to skip"      <<endl;
-  cout<<"     defaults: 0"                   <<endl;
-
-  cout<<"  -d debug printout level"          <<endl;
-  cout<<"     defaults: 0 (quiet) "          <<endl;
-
-  cout<<"  -f name of input filelist"        <<endl;
-  cout<<"     defaults: fileList.txt"        <<endl;
-
-  cout<<"  -s sample name, sets isMC flag"   <<endl;
-  cout<<"     use e.g. 'ttbar', 'DataG', etc"<<endl;
-
-  cout<<"  -w set sum of mc weights for norm"<<endl;
-  cout<<"     default: 1"                    <<endl;
-
-  cout<<"  -x set cross section"             <<endl;
-  cout<<"     default: -1 (use susy db)"     <<endl;
-
-  cout<<"  -l set lumi"                      <<endl;
-  cout<<"     default: 5312/pb"              <<endl;
-
-  cout<<"  -m write output ntuple"           <<endl;
-  cout<<"     default: 1 (true)"             <<endl;
-
-  cout<<"  --grl specify GRL"                <<endl;
-  cout<<"     default: set in cxx"           <<endl;
-
-  cout<<"  --sys will turn on systematic run"<<endl;
-  cout<<"     default: off"                  <<endl;
-
-  cout<<"  --savePh will save photons"       <<endl;
-  cout<<"     default: off"                  <<endl;
-
-  cout<<"  --saveTau will save taus"         <<endl;
-  cout<<"     default: off"                  <<endl;
-
-  cout<<"  --saveContTau will save container"<<endl;
-  cout<<"     taus instead of selected"      <<endl;
-
-  cout<<"  --saveTruth will save truth"      <<endl;
-  cout<<"     default: off"                  <<endl;
-
-  cout<<"  --af2 specifies AF2 samples"      <<endl;
-  cout<<"     default: off"                  <<endl;
-
-  cout<<"  --d3pd1032 sets d3pd tag to p1032"<<endl;
-  cout<<"     default: p1181"                <<endl;
-
-  cout<<"  --metFlav set met flavor"         <<endl;
-  cout<<"     default: Default"              <<endl;
-
-  //cout<<"  --useMetMuons set to use met muons"<< endl;
-  //cout<<"     for calculating missing energy "<< endl;
-  //cout<<"     default: off"                  <<endl;
-
-  //cout<<"  --doMetFix turn on MET ele-jet"   <<endl;
-  //cout<<"     overlap fix"                   <<endl;
-  //cout<<"     default: off"                  <<endl;
-
-  cout<<"  --filterOff turns off filtering"  <<endl;
-  cout<<"     default: filter is on"         <<endl;
-
-  cout<<"  --nLepFilter number of light leps"<<endl;
-  cout<<"     to filter on. Default: 0"      <<endl;
-
-  cout<<"  --nLepTauFilter number of total"  <<endl;
-  cout<<"     light+tau to filter on."       <<endl;
-  cout<<"     Default: 2"                    <<endl;
-
-  cout<<"  --filterTrig turns on trigger"    <<endl;
-  cout<<"     filtering."                    <<endl;
-
-  cout<<"  --trig set which triggers are  "  <<endl;
-  cout<<"    stored.                      "  <<endl;
-  cout<<"    Default: 1 (0: Run1, 1:Run2) "  <<endl;
-  cout<<"--input  name of the input container" <<endl;
-  cout<<"--output name of the output container"<<endl;
-  cout<<"--tag    SustNtuple production tag"   <<endl;
-  cout<<"  -h print this help"               <<endl;
+  cout<<"Options:"                                                    <<endl
+      <<"  -i|--input       name of the input container"              <<endl
+      <<"  -o|--output      name of the output container"             <<endl
+      <<"  -t|--tag         SustNtuple production tag"                <<endl
+      <<"  -n|--num-events  default: -1 (all events)"                 <<endl
+      <<"  -k|--num-skip    default: 0"                               <<endl
+      <<"  -d|--dbg-level   default: 0 (quiet) "                      <<endl
+      <<"  -f|--filelist    default: fileList.txt"                    <<endl
+      <<"  -s|--sample      default: ''"                              <<endl
+      <<"  -h|--help        print this help"                          <<endl
+      <<"  -l|--lumi        default: 5312/pb"                         <<endl /// \todo obsolete option?
+      <<"  -m|--write-nt    default: 1 (true, write tuple)"           <<endl
+      <<"  --grl            default: XaodAnalysis::defaultGrlFile()"  <<endl
+      <<"  --sys            default: off"                             <<endl
+      <<"  --savePh         save photons"                             <<endl
+      <<"  --saveTau        save taus"                                <<endl
+      <<"  --saveContTau    save container taus (instead of selected)"<<endl
+      <<"  --saveTruth      save truth info"                          <<endl
+      <<"  --af2            toggle atlas-fast-2 sample"               <<endl
+      <<"  --filterOff      save all events"                          <<endl
+      <<"  --nLepFilter     default 0 (require N  light leptons)"     <<endl
+      <<"  --nLepTauFilter  default 2 (require N lepton+tau)"         <<endl
+      <<endl;
 }
 
 
@@ -126,13 +66,9 @@ int main(int argc, char** argv)
   bool saveTruth  = false;
   bool isAF2      = false;
   bool writeNt    = true;
-  D3PDTag tag     = D3PD_p1328;
-  string metFlav  = "Default";
   bool filter     = true;
   uint nLepFilter = 0;
   uint nLepTauFilter = 2;
-  bool filterTrig = false;
-  string trigset     = "run2";
   string inputContainer, outputContainer, ntTag;
 
   cout<<"SusyNtMaker"<<endl;
@@ -141,11 +77,15 @@ int main(int argc, char** argv)
   int optind(1);
   while(optind < argc) {
       std::string sw = argv[optind];
-      if      (sw=="-n" || sw=="--num-events") { nEvt = atoi(argv[++optind]); }
+      if      (sw=="-i" || sw=="--input"     ) { inputContainer = argv[++optind]; }
+      else if (sw=="-o" || sw=="--output"    ) { outputContainer = argv[++optind]; }
+      else if (sw=="-t" || sw=="--tag"       ) { ntTag = argv[++optind]; }
+      else if (sw=="-n" || sw=="--num-events") { nEvt = atoi(argv[++optind]); }
       else if (sw=="-k" || sw=="--num-skip"  ) { nSkip = atoi(argv[++optind]); }
       else if (sw=="-d" || sw=="--dbg-level" ) { dbg = atoi(argv[++optind]); }
       else if (sw=="-f" || sw=="--filelist"  ) { fileList = argv[++optind]; }
       else if (sw=="-s" || sw=="--sample"    ) { sample = argv[++optind]; }
+      else if (sw=="-h" || sw=="--help"      ) { help(); return 0; }
       else if (sw=="-l" || sw=="--lumi"      ) { lumi = atof(argv[++optind]); }
       else if (sw=="-m" || sw=="--write-nt"  ) { writeNt = atoi(argv[++optind]); }
       else if (sw=="--grl"          ) { grl = argv[++optind]; }
@@ -155,16 +95,9 @@ int main(int argc, char** argv)
       else if (sw=="--saveContTau"  ) { saveTau = saveContTau = true; }
       else if (sw=="--saveTruth"    ) { saveTruth = true; }
       else if (sw=="--af2"          ) { isAF2 = true; }
-      else if (sw=="--d3pd1032"     ) { tag = D3PD_p1032; }
-      else if (sw=="--metFlav"      ) { metFlav = argv[++optind]; }
       else if (sw=="--filterOff"    ) { filter = false; }
       else if (sw=="--nLepFilter"   ) { nLepFilter = atoi(argv[++optind]); }
       else if (sw=="--nLepTauFilter") { nLepTauFilter = atoi(argv[++optind]); }
-      else if (sw=="--filterTrig"   ) { filterTrig = true; }
-      else if (sw=="--triggerSet"   ) { trigset = argv[++optind]; }
-      else if (sw=="--input"        ) { inputContainer = argv[++optind]; }
-      else if (sw=="--output"       ) { outputContainer = argv[++optind]; }
-      else if (sw=="--tag"          ) { ntTag = argv[++optind]; }
       else {
           cout<<"Unknown switch '"<<sw<<"'"<<endl;
           help();
@@ -186,14 +119,10 @@ int main(int argc, char** argv)
   cout<<"  saveContTau   "<<saveContTau<<endl;
   cout<<"  saveTru       "<<saveTruth<< endl;
   cout<<"  isAF2         "<<isAF2   <<endl;
-  cout<<"  d3pdtag       "<<tag     <<endl;
-  cout<<"  metFlav       "<<metFlav <<endl;
   cout<<"  lumi          "<<lumi    <<endl;
   cout<<"  filter        "<<filter  <<endl;
   cout<<"  nLepFilter    "<<nLepFilter   <<endl;
   cout<<"  nLepTauFilter "<<nLepTauFilter<<endl;
-  cout<<"  filterTrig    "<<filterTrig   <<endl;
-  cout<<"  triggerSet    "<<trigset      <<endl;
   cout<<"  input         "<<inputContainer <<endl;
   cout<<"  output        "<<outputContainer<<endl;
   cout<<"  ntTag         "<<ntTag          <<endl;
@@ -211,7 +140,6 @@ int main(int argc, char** argv)
   SusyNtMaker* susyAna = new SusyNtMaker();
   susyAna->setChain(chain);
   susyAna->setDebug(dbg);
-  susyAna->setTriggerSet(trigset);
   susyAna->setSample(sample);
   susyAna->setLumi(lumi);
   susyAna->setSys(sysOn);
@@ -220,13 +148,10 @@ int main(int argc, char** argv)
   susyAna->setSaveContTaus(saveContTau);
   susyAna->setAF2(isAF2);
   susyAna->setFillNt(writeNt);
-  susyAna->setD3PDTag(tag);
-  susyAna->setMetFlavor(metFlav);
   susyAna->setSelectTruthObjects(saveTruth);
   susyAna->setFilter(filter);
   susyAna->setNLepFilter(nLepFilter);
   susyAna->setNLepTauFilter(nLepTauFilter);
-  susyAna->setFilterTrigger(filterTrig);
   susyAna->m_inputContainerName = inputContainer;
   susyAna->m_outputContainerName = outputContainer;
   susyAna->m_productionTag = ntTag;
