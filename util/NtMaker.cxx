@@ -101,7 +101,7 @@ int main(int argc, char** argv)
       else {
           cout<<"Unknown switch '"<<sw<<"'"<<endl;
           help();
-          return 0;
+          return 1;
       }
       optind++;
   } // while(optind)
