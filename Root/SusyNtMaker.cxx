@@ -87,7 +87,8 @@ void SusyNtMaker::SlaveBegin(TTree* tree)
         cout<<"SusyNtMaker::SlaveBegin"<<endl;
     if(m_fillNt || true)
         initializeOuputTree();
-    m_isWhSample = guessWhetherIsWhSample(m_sample);
+    m_isWhSample = guessWhetherIsWhSample(m_inputContainerName);
+    //m_isWhSample = guessWhetherIsWhSample(m_sample);
     initializeCutflowHistograms();
 
     m_timer.Start();
@@ -1812,7 +1813,10 @@ void SusyNtMaker::addMissingTau(int index, SusyNtSys sys)
 //----------------------------------------------------------
 SusyNtMaker& SusyNtMaker::initializeOuputTree()
 {
-    m_outTreeFile = new TFile("susyNt.root", "recreate");
+    //TString name = m_sample + ".susyNt.root";
+    //m_outTreeFile = new TFile(name, "recreate");
+    m_outTreeFile = new TFile(m_outputFileName.c_str(), "recreate");
+    //m_outTreeFile = new TFile("susyNt.root", "recreate");
     //m_outTreeFile->SetCompressionLevel(9); //Default =1, 9 is max AT:05-02-15
     m_outTree = new TTree("susyNt", "susyNt");
     m_outTree->SetAutoSave(10000000); // DG-2014-08-15 magic numbers, ask Steve

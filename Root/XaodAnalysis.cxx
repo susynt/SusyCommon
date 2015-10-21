@@ -124,7 +124,7 @@ void XaodAnalysis::Init(TTree *tree)
     bool verbose = m_dbg>0;
     xAOD::Init("Susy::XaodAnalysis").ignore();
 
-    m_isMC = XaodAnalysis::isSimuFromSamplename(m_sample);
+    m_isMC = XaodAnalysis::isSimuFromSamplename(m_inputContainerName);
 
     if(m_isMC){
         // get the inital (pre-skimmed) counters
@@ -148,7 +148,7 @@ void XaodAnalysis::Init(TTree *tree)
 
     m_event.readFrom(tree);
     m_isDerivation = XaodAnalysis::isDerivationFromMetaData(tree, verbose);
-    m_stream = XaodAnalysis::streamFromSamplename(m_sample, m_isMC);
+    m_stream = XaodAnalysis::streamFromSamplename(m_inputContainerName, m_isMC);
 
     // get the directory for the data/
     char *tmparea=getenv("ROOTCOREBIN");

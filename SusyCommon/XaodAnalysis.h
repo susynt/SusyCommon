@@ -369,6 +369,17 @@ namespace Susy {
     // return the flag "m_is8TeV"
     bool is8TeV() { return m_is8TeV; }
 
+    /**
+     * \defgroup SusyNt-specific metadata. Must be specified before writing the output.
+     * @{
+     */
+    std::string         m_inputContainerName; ///< name of the dq2 input container
+    std::string         m_outputContainerName; ///< name of the dq2 output container
+    std::string         m_productionTag;       ///< SusyNtuple production tag
+    std::string         m_productionCommand;   ///< command used to create the ntuple (with all options and flags)
+    std::string         m_outputFileName;      ///< name of output file in which the output susyNt is stored
+    /**@}*/
+
 
   protected:
 

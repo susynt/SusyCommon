@@ -36,6 +36,7 @@ void help()
       <<"  -h|--help        print this help"                          <<endl
       <<"  -l|--lumi        default: 5312/pb"                         <<endl /// \todo obsolete option?
       <<"  -m|--write-nt    default: 1 (true, write tuple)"           <<endl
+      <<"  --outfile-name   default: 'susyNt.root'"                   <<endl
       <<"  --grl            default: XaodAnalysis::defaultGrlFile()"  <<endl
       <<"  --sys            default: off"                             <<endl
       <<"  --savePh         save photons"                             <<endl
@@ -70,6 +71,7 @@ int main(int argc, char** argv)
   uint nLepFilter = 0;
   uint nLepTauFilter = 2;
   string inputContainer, outputContainer, ntTag;
+  string outputFileName = "susyNt.root";
 
   cout<<"SusyNtMaker"<<endl;
   cout<<endl;
@@ -88,6 +90,7 @@ int main(int argc, char** argv)
       else if (sw=="-h" || sw=="--help"      ) { help(); return 0; }
       else if (sw=="-l" || sw=="--lumi"      ) { lumi = atof(argv[++optind]); }
       else if (sw=="-m" || sw=="--write-nt"  ) { writeNt = atoi(argv[++optind]); }
+      else if (sw=="--outfile-name"          ) { outputFileName = argv[++optind]; } 
       else if (sw=="--grl"          ) { grl = argv[++optind]; }
       else if (sw=="--sys"          ) { sysOn = true; }
       else if (sw=="--savePh"       ) { savePh = true; }
@@ -107,25 +110,26 @@ int main(int argc, char** argv)
   } // while(optind)
 
   cout<<"flags:"<<endl;
-  cout<<"  sample        "<<sample  <<endl;
-  cout<<"  nEvt          "<<nEvt    <<endl;
-  cout<<"  nSkip         "<<nSkip   <<endl;
-  cout<<"  dbg           "<<dbg     <<endl;
-  cout<<"  fileList      "<<fileList<<endl;
-  cout<<"  grl           "<<grl     <<endl;
-  cout<<"  sys           "<<sysOn   <<endl;
-  cout<<"  savePh        "<<savePh  <<endl;
-  cout<<"  saveTau       "<<saveTau <<endl;
-  cout<<"  saveContTau   "<<saveContTau<<endl;
-  cout<<"  saveTru       "<<saveTruth<< endl;
-  cout<<"  isAF2         "<<isAF2   <<endl;
-  cout<<"  lumi          "<<lumi    <<endl;
-  cout<<"  filter        "<<filter  <<endl;
-  cout<<"  nLepFilter    "<<nLepFilter   <<endl;
-  cout<<"  nLepTauFilter "<<nLepTauFilter<<endl;
-  cout<<"  input         "<<inputContainer <<endl;
-  cout<<"  output        "<<outputContainer<<endl;
-  cout<<"  ntTag         "<<ntTag          <<endl;
+  cout<<"  sample         "<<sample  <<endl;
+  cout<<"  nEvt           "<<nEvt    <<endl;
+  cout<<"  nSkip          "<<nSkip   <<endl;
+  cout<<"  dbg            "<<dbg     <<endl;
+  cout<<"  fileList       "<<fileList<<endl;
+  cout<<"  grl            "<<grl     <<endl;
+  cout<<"  sys            "<<sysOn   <<endl;
+  cout<<"  savePh         "<<savePh  <<endl;
+  cout<<"  saveTau        "<<saveTau <<endl;
+  cout<<"  saveContTau    "<<saveContTau<<endl;
+  cout<<"  saveTru        "<<saveTruth<< endl;
+  cout<<"  isAF2          "<<isAF2   <<endl;
+  cout<<"  lumi           "<<lumi    <<endl;
+  cout<<"  filter         "<<filter  <<endl;
+  cout<<"  nLepFilter     "<<nLepFilter   <<endl;
+  cout<<"  nLepTauFilter  "<<nLepTauFilter<<endl;
+  cout<<"  input          "<<inputContainer <<endl;
+  cout<<"  output         "<<outputContainer<<endl;
+  cout<<"  ntTag          "<<ntTag          <<endl;
+  cout<<"  outputFileName "<<outputFileName <<endl;
   cout<<endl;
 
 
@@ -155,6 +159,7 @@ int main(int argc, char** argv)
   susyAna->m_inputContainerName = inputContainer;
   susyAna->m_outputContainerName = outputContainer;
   susyAna->m_productionTag = ntTag;
+  susyAna->m_outputFileName = outputFileName;
   susyAna->m_productionCommand = Susy::utils::commandLineArguments(argc, argv);
   // GRL - default is set in SusyD3PDAna::Begin, but now we can override it here
   susyAna->setGRLFile(grl);
