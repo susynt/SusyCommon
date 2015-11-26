@@ -542,7 +542,7 @@ void SusyNtMaker::storeElectron(const xAOD::Electron &in)
 
             const CP::SystematicSet& sys = sysInfo.systset;
             SusyNtSys ourSys = CPsys2sys((sys.name()).c_str());
-            for(int i=SusyObjId::eleTightLH; i<=SusyObjId::eleLooseLH; i++){
+            for(int i : Susy::electronIds()){
                 if(m_susyObj[i]->applySystematicVariation(sys) != CP::SystematicCode::Ok) {
                     cout << "SusyNtMaker::storeElectron    cannot configure SUSYTools for systematic " << sys.name() << endl;
                     continue;
@@ -562,7 +562,8 @@ void SusyNtMaker::storeElectron(const xAOD::Electron &in)
                 else if(ourSys == NtSys::EL_EFF_Reco_TotalCorrUncertainty_DN) out.errEffSF_reco_corr_dn[i] = sf[i] - out.eleEffSF[i];
             }
         } // sysInfo
-        for(int i=SusyObjId::eleTightLH; i<=SusyObjId::eleLooseLH; i++){
+
+        for(int i : Susy::electronIds()){
             if(m_susyObj[i]->resetSystematics() != CP::SystematicCode::Ok){
                 cout << "SusyNtMaker::storeElectron    cannot reset SUSYTools systematics. Aborting." << endl;
                 abort();
@@ -797,7 +798,7 @@ void SusyNtMaker::storeMuon(const xAOD::Muon &in)
             if(!(sysInfo.affectsType == ST::SystObjType::Muon && sysInfo.affectsWeights)) continue;
             const CP::SystematicSet& sys = sysInfo.systset;
             SusyNtSys ourSys = CPsys2sys((sys.name()).c_str());
-            for(int i=SusyObjId::muoLoose; i<=SusyObjId::muoMedium; i++){
+            for(int i : Susy::muonIds()){
                 if(m_susyObj[i]->applySystematicVariation(sys) != CP::SystematicCode::Ok) {
                     cout << "SusyNtMaker::storeMuon    cannot configure SUSYTools for systematic " << sys.name() << endl;
                     continue;
@@ -814,7 +815,7 @@ void SusyNtMaker::storeMuon(const xAOD::Muon &in)
                 else if(ourSys == NtSys::MUONSFSYS_DN) out.errEffSF_syst_dn[i] = sf[i] - out.muoEffSF[i];
             }
         } // sysInfo
-        for(int i=SusyObjId::muoLoose; i<=SusyObjId::muoMedium; i++){
+        for(int i : Susy::muonIds()){
             if(m_susyObj[i]->resetSystematics() != CP::SystematicCode::Ok){
                 cout << "SusyNtMaker::storeMuon    cannot reset SUSYTools systematics. Aborting." << endl;
                 abort();

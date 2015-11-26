@@ -281,15 +281,15 @@ void XaodAnalysis::Terminate()
   //  delete m_trigMuonMatchTool;
   //  //delete m_trigEgammaMatchTool;
     
-    //for(int i=TightLH; i<=LooseLH; i++){
-    for(int i=SusyObjId::eleTightLH; i<SusyObjId::Invalid; i++){
+  // for(int i=TightLH; i<=LooseLH; i++){
+    for(int i : Susy::leptonIds()){
         delete m_susyObj[i];
     }
 }
 //----------------------------------------------------------
 XaodAnalysis& XaodAnalysis::initSusyTools()
 {
-    for(int susyObjId=SusyObjId::eleTightLH; susyObjId<SusyObjId::Invalid; susyObjId++){
+    for(int susyObjId : Susy::leptonIds()){
         string idName = SusyObjId2str(static_cast<SusyObjId>(susyObjId));
         bool isEle = isEleObj(static_cast<SusyObjId>(susyObjId)); 
         string name = "SUSYObjDef_xAOD_" + idName;
