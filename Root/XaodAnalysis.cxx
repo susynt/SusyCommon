@@ -336,10 +336,6 @@ XaodAnalysis& XaodAnalysis::initSusyTools()
         #warning Setting recommended reduced JES systematics set to set 1
         m_susyObj[susyObjId]->setProperty("JESNuisanceParameterSet", 1);
 
-        if(m_susyObj[susyObjId]->SUSYToolsInit().isFailure() ) {
-            cout << "XaodAnalysis: Failed to initialise tools in SUSYToolsInit()... Aborting" << endl;
-            abort();
-        }       
         if(m_susyObj[susyObjId]->initialize() != StatusCode::SUCCESS){
             cout << "XaodAnalysis: Cannot intialize SUSYObjDef_xAOD...Aborting" << endl;
             abort();
