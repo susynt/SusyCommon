@@ -322,7 +322,9 @@ XaodAnalysis& XaodAnalysis::initSusyTools()
         // prw config files
         std::vector<std::string> prwFiles;
         //prwFiles.push_back(m_data_dir+"SusyCommon/mc15_50ns.prw.root"); //50ns period c
-        prwFiles.push_back(m_data_dir+"SusyCommon/mc15_25ns_prw_410000.root"); //25ns
+        #warning USING A DUMMY PRW INPUT F ILE!!
+        //prwFiles.push_back(m_data_dir+"SusyCommon/mc15_25ns_prw_410000.root"); //25ns
+        prwFiles.push_back(m_data_dir+"SusyCommon/MC15b.prw.ttbar_DUMMY.root"); // this is a dummy file (for now) for testing over mc15b
         m_susyObj[susyObjId]->setProperty("PRWConfigFiles", prwFiles);
         // data luminosity profile
         std::vector<std::string> lumicalcFiles;
@@ -489,7 +491,9 @@ void XaodAnalysis::initPileupTool()
     std::vector<std::string> lumicalcFiles;
 
     //prwFiles.push_back(m_data_dir + "SusyCommon/mc15_50ns.prw.root"); // 50ns
-    prwFiles.push_back(m_data_dir + "SusyCommon/mc15_25ns_prw_410000.root"); // 25ns
+    #warning USING A DUMMY PRW CONFIG F ILE
+    //prwFiles.push_back(m_data_dir + "SusyCommon/mc15_25ns_prw_410000.root"); // 25ns
+    prwFiles.push_back(m_data_dir + "SusyCommon/MC15b.prw.ttbar_DUMMY.root"); // this is a dummy file (for now) for testing mc15b
     //lumicalcFiles.push_back(m_data_dir + "SusyCommon/ilumicalc_histograms_None_267073-271744.root"); // 50ns period C
     lumicalcFiles.push_back(m_data_dir + "SusyCommon/ilumicalc_histograms_None_276262-279984.root"); // 25ns Oct 2
     CHECK(m_pileupReweightingTool->setProperty("ConfigFiles", prwFiles));
