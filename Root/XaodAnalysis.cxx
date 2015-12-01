@@ -1499,7 +1499,7 @@ TBits XaodAnalysis::matchElectronTriggers(const xAOD::Electron &in)
     std::vector<std::string> trigs = XaodAnalysis::xaodTriggers();
     for(unsigned int iTrig = 0; iTrig < trigs.size(); iTrig++) {
         // for electron trigger matching the tools expect the "HLT_" portion to be missing... just to make things consistent with the naturally agreed upon inconsistency
-        std::string hlt_trigger = trigs[iTrig].replace(trigs[iTrig].begin(), trigs[iTrig].begin()+4, "");
+        std::string hlt_trigger = trigs[iTrig];
         bool ismatch = m_susyObj[m_eleIDDefault]->IsTrigMatched(&in, hlt_trigger);
         if(ismatch) eleTrigBits.SetBitNumber(iTrig, true);
     }
