@@ -12,6 +12,7 @@
 #include "SusyNtuple/mc_truth_utils.h"
 #include "SusyNtuple/vec_utils.h"
 #include "SusyNtuple/RecoTruthClassification.h"
+#include "SusyCommon/ss3l_chargeflip.h"
 
 // SUSYTools
 #include "SUSYTools/SUSYCrossSection.h"
@@ -296,7 +297,7 @@ void SusyNtMaker::fillEventVars()
 
     float mZ = -1.0, mZtruthMax = 40.0;
     if(m_isMC){
-        // int dsid = m_event.eventinfo.mc_channel_number();
+        // int dsid = xaodEventInfo()->mcChannelNumber();
         // if(IsAlpgenLowMass(dsid) || IsAlpgenPythiaZll(dsid)) mZ = MllForAlpgen(&m_event.mc);
         // else if(IsSherpaZll(dsid)) mZ = MllForSherpa(&m_event.mc);
     }
@@ -357,6 +358,10 @@ void SusyNtMaker::fillElectronVars()
 {
     if(m_dbg>=5) cout<<"fillElectronVars"<<endl;
     xAOD::ElectronContainer* electrons = XaodAnalysis::xaodElectrons(systInfoList[0]);
+    if(m_isMC) {
+        int datasetid = xaodEventInfo()->mcChannelNumber();
+        fillElectronChargeFlip(electrons, xaodTruthParticles(), datasetid);
+    }
     for(auto &i : m_preElectrons){
         storeElectron(*(electrons->at(i)));
     }
@@ -532,6 +537,7 @@ void SusyNtMaker::storeElectron(const xAOD::Electron &in)
         //if(eleIsOfType(in, eleID::LooseLH))
         // crash p1874 out.isChargeFlip  = m_isMC ? isChargeFlip(in.charge(),truthElectronCharge(in)) : false;
         out.truthCharge =  truthEle ? truthEle->charge() : 0;
+        out.ss3lChargeFlip = in.auxdataConst<int>("chargeFlip");
     }
 
     //////////////////////////////////////
