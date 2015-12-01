@@ -504,7 +504,8 @@ void SusyNtMaker::storeElectron(const xAOD::Electron &in)
     bool recoSF=true;
     bool idSF=true;
     bool trigSF=false;
-    bool isoSF=true;
+    #warning reenable isoSF in GetSignalElecSF
+    bool isoSF=false; // DG-2015-12-01: temporarily disable true;
 
     if(m_isMC){
         //////////////////////////////////////
