@@ -26,6 +26,7 @@
 
 // Amg include
 #include "EventPrimitives/EventPrimitivesHelpers.h"
+#include "AthContainers/AuxElement.h"
 
 #include "SusyNtuple/TriggerTools.h"
 
@@ -679,11 +680,15 @@ void SusyNtMaker::storeMuon(const xAOD::Muon &in)
     //////////////////////////////////////
     // MuonId flags (MuonSelectionTool)
     //////////////////////////////////////
-    out.veryLoose   = muIsOfType(in, MuonId::VeryLoose);
-    out.loose       = muIsOfType(in, MuonId::Loose);
-    out.medium      = muIsOfType(in, MuonId::Medium);
-    out.tight       = muIsOfType(in, MuonId::Tight);
-
+    static SG::AuxElement::Accessor<float> mePt_acc("MuonSpectrometerPt");
+    static SG::AuxElement::Accessor<float> idPt_acc("InnerDetectorPt");
+    bool mu_has_decorations =  mePt_acc.isAvailable(in) and idPt_acc.isAvailable(in);
+    if(mu_has_decorations) {
+        out.veryLoose   = muIsOfType(in, MuonId::VeryLoose);
+        out.loose       = muIsOfType(in, MuonId::Loose);
+        out.medium      = muIsOfType(in, MuonId::Medium);
+        out.tight       = muIsOfType(in, MuonId::Tight);
+    }
     //////////////////////////////////////
     // Isolation flags (IsolationSelectionTool)
     //////////////////////////////////////
