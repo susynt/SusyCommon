@@ -12,6 +12,7 @@
 #include "SusyNtuple/mc_truth_utils.h"
 #include "SusyNtuple/vec_utils.h"
 #include "SusyNtuple/RecoTruthClassification.h"
+#include "SusyCommon/ss3l_chargeflip.h"
 
 // SUSYTools
 #include "SUSYTools/SUSYCrossSection.h"
@@ -25,6 +26,7 @@
 
 // Amg include
 #include "EventPrimitives/EventPrimitivesHelpers.h"
+#include "AthContainers/AuxElement.h"
 
 #include "SusyNtuple/TriggerTools.h"
 
@@ -296,7 +298,7 @@ void SusyNtMaker::fillEventVars()
 
     float mZ = -1.0, mZtruthMax = 40.0;
     if(m_isMC){
-        // int dsid = m_event.eventinfo.mc_channel_number();
+        // int dsid = xaodEventInfo()->mcChannelNumber();
         // if(IsAlpgenLowMass(dsid) || IsAlpgenPythiaZll(dsid)) mZ = MllForAlpgen(&m_event.mc);
         // else if(IsSherpaZll(dsid)) mZ = MllForSherpa(&m_event.mc);
     }
@@ -357,6 +359,10 @@ void SusyNtMaker::fillElectronVars()
 {
     if(m_dbg>=5) cout<<"fillElectronVars"<<endl;
     xAOD::ElectronContainer* electrons = XaodAnalysis::xaodElectrons(systInfoList[0]);
+    if(m_isMC) {
+        int datasetid = xaodEventInfo()->mcChannelNumber();
+        fillElectronChargeFlip(electrons, xaodTruthParticles(), datasetid);
+    }
     for(auto &i : m_preElectrons){
         storeElectron(*(electrons->at(i)));
     }
@@ -504,7 +510,8 @@ void SusyNtMaker::storeElectron(const xAOD::Electron &in)
     bool recoSF=true;
     bool idSF=true;
     bool trigSF=false;
-    bool isoSF=true;
+    #warning reenable isoSF in GetSignalElecSF
+    bool isoSF=false; // DG-2015-12-01: temporarily disable true;
 
     if(m_isMC){
         //////////////////////////////////////
@@ -531,6 +538,7 @@ void SusyNtMaker::storeElectron(const xAOD::Electron &in)
         //if(eleIsOfType(in, eleID::LooseLH))
         // crash p1874 out.isChargeFlip  = m_isMC ? isChargeFlip(in.charge(),truthElectronCharge(in)) : false;
         out.truthCharge =  truthEle ? truthEle->charge() : 0;
+        out.ss3lChargeFlip = in.auxdataConst<int>("chargeFlip");
     }
 
     //////////////////////////////////////
@@ -542,7 +550,7 @@ void SusyNtMaker::storeElectron(const xAOD::Electron &in)
 
             const CP::SystematicSet& sys = sysInfo.systset;
             SusyNtSys ourSys = CPsys2sys((sys.name()).c_str());
-            for(int i=SusyObjId::eleTightLH; i<=SusyObjId::eleLooseLH; i++){
+            for(int i : Susy::electronIds()){
                 if(m_susyObj[i]->applySystematicVariation(sys) != CP::SystematicCode::Ok) {
                     cout << "SusyNtMaker::storeElectron    cannot configure SUSYTools for systematic " << sys.name() << endl;
                     continue;
@@ -562,7 +570,8 @@ void SusyNtMaker::storeElectron(const xAOD::Electron &in)
                 else if(ourSys == NtSys::EL_EFF_Reco_TotalCorrUncertainty_DN) out.errEffSF_reco_corr_dn[i] = sf[i] - out.eleEffSF[i];
             }
         } // sysInfo
-        for(int i=SusyObjId::eleTightLH; i<=SusyObjId::eleLooseLH; i++){
+
+        for(int i : Susy::electronIds()){
             if(m_susyObj[i]->resetSystematics() != CP::SystematicCode::Ok){
                 cout << "SusyNtMaker::storeElectron    cannot reset SUSYTools systematics. Aborting." << endl;
                 abort();
@@ -671,11 +680,15 @@ void SusyNtMaker::storeMuon(const xAOD::Muon &in)
     //////////////////////////////////////
     // MuonId flags (MuonSelectionTool)
     //////////////////////////////////////
-    out.veryLoose   = muIsOfType(in, MuonId::VeryLoose);
-    out.loose       = muIsOfType(in, MuonId::Loose);
-    out.medium      = muIsOfType(in, MuonId::Medium);
-    out.tight       = muIsOfType(in, MuonId::Tight);
-
+    static SG::AuxElement::Accessor<float> mePt_acc("MuonSpectrometerPt");
+    static SG::AuxElement::Accessor<float> idPt_acc("InnerDetectorPt");
+    bool mu_has_decorations =  mePt_acc.isAvailable(in) and idPt_acc.isAvailable(in);
+    if(mu_has_decorations) {
+        out.veryLoose   = muIsOfType(in, MuonId::VeryLoose);
+        out.loose       = muIsOfType(in, MuonId::Loose);
+        out.medium      = muIsOfType(in, MuonId::Medium);
+        out.tight       = muIsOfType(in, MuonId::Tight);
+    }
     //////////////////////////////////////
     // Isolation flags (IsolationSelectionTool)
     //////////////////////////////////////
@@ -797,7 +810,7 @@ void SusyNtMaker::storeMuon(const xAOD::Muon &in)
             if(!(sysInfo.affectsType == ST::SystObjType::Muon && sysInfo.affectsWeights)) continue;
             const CP::SystematicSet& sys = sysInfo.systset;
             SusyNtSys ourSys = CPsys2sys((sys.name()).c_str());
-            for(int i=SusyObjId::muoLoose; i<=SusyObjId::muoMedium; i++){
+            for(int i : Susy::muonIds()){
                 if(m_susyObj[i]->applySystematicVariation(sys) != CP::SystematicCode::Ok) {
                     cout << "SusyNtMaker::storeMuon    cannot configure SUSYTools for systematic " << sys.name() << endl;
                     continue;
@@ -814,7 +827,7 @@ void SusyNtMaker::storeMuon(const xAOD::Muon &in)
                 else if(ourSys == NtSys::MUONSFSYS_DN) out.errEffSF_syst_dn[i] = sf[i] - out.muoEffSF[i];
             }
         } // sysInfo
-        for(int i=SusyObjId::muoLoose; i<=SusyObjId::muoMedium; i++){
+        for(int i : Susy::muonIds()){
             if(m_susyObj[i]->resetSystematics() != CP::SystematicCode::Ok){
                 cout << "SusyNtMaker::storeMuon    cannot reset SUSYTools systematics. Aborting." << endl;
                 abort();
