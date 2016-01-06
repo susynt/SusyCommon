@@ -97,11 +97,9 @@ XaodAnalysis::XaodAnalysis() :
     m_muonSelectionToolLoose(0),
     m_muonSelectionToolMedium(0),
     m_muonSelectionToolTight(0),
-    m_isoToolGradientLooseCone40Calo(0),
-    m_isoToolGradientCone40(0),
-    m_isoToolGradientT1Cone40(0),
-    m_isoToolGradientT2Cone40(0),
-    m_isoToolLooseTrackOnlyCone20(0),
+    m_isoToolGradientLooseTight(0),
+    m_isoToolGradientTightCalo(0),
+    m_isoToolLooseTrackOnlyLoose(0),
     m_isoToolLoose(0),
     m_isoToolTight(0),
 	//m_tauTruthMatchingTool(0), // memory leak check
@@ -267,11 +265,9 @@ void XaodAnalysis::Terminate()
     delete m_TauEffEleTool;
     delete m_tauTruthTrackMatchingTool;
 
-    delete m_isoToolGradientLooseCone40Calo;
-    delete m_isoToolGradientCone40;
-    delete m_isoToolGradientT1Cone40;
-    delete m_isoToolGradientT2Cone40;
-    delete m_isoToolLooseTrackOnlyCone20;
+    delete m_isoToolGradientLooseTight;
+    delete m_isoToolGradientTightCalo;
+    delete m_isoToolLooseTrackOnlyLoose;
     delete m_isoToolLoose;
     delete m_isoToolTight;
 
@@ -600,53 +596,39 @@ void XaodAnalysis::initIsoTools()
 {
     // see: https://twiki.cern.ch/twiki/bin/view/AtlasProtected/IsolationSelectionTool
 
-    // Gradient Loose WP for leptons, Cone40CaloOnly WP for photons
-    m_isoToolGradientLooseCone40Calo = new CP::IsolationSelectionTool( "IsolationSelectionTool_GradientLoose" );
-    CHECK( m_isoToolGradientLooseCone40Calo->setProperty( "ElectronWP",   "GradientLoose") );
-    CHECK( m_isoToolGradientLooseCone40Calo->setProperty( "MuonWP",       "GradientLoose") );
-    CHECK( m_isoToolGradientLooseCone40Calo->setProperty( "PhotonWP",     "Cone40CaloOnly") );
-    CHECK( m_isoToolGradientLooseCone40Calo->initialize() );
+    // Gradient Loose WP for leptons, FixedCutTight WP for photons
+    m_isoToolGradientLooseTight = new CP::IsolationSelectionTool( "IsolationSelectionTool_GradientLoose" );
+    CHECK( m_isoToolGradientLooseTight->setProperty( "ElectronWP",   "GradientLoose") );
+    CHECK( m_isoToolGradientLooseTight->setProperty( "MuonWP",       "GradientLoose") );
+    CHECK( m_isoToolGradientLooseTight->setProperty( "PhotonWP",     "FixedCutTight") );
+    CHECK( m_isoToolGradientLooseTight->initialize() );
     
-    // Gradient WP for leptons, Cone40 WP for photons
-    m_isoToolGradientCone40 = new CP::IsolationSelectionTool( "IsolationSelectionTool_Gradient" );
-    CHECK( m_isoToolGradientCone40->setProperty( "ElectronWP",   "Gradient") );
-    CHECK( m_isoToolGradientCone40->setProperty( "MuonWP",       "Gradient") );
-    CHECK( m_isoToolGradientCone40->setProperty( "PhotonWP",     "Cone40") );
-    CHECK( m_isoToolGradientCone40->initialize() );
+    // Gradient WP for leptons, FixedCutTightCaloOnly WP for photons
+    m_isoToolGradientTightCalo = new CP::IsolationSelectionTool( "IsolationSelectionTool_Gradient" );
+    CHECK( m_isoToolGradientTightCalo->setProperty( "ElectronWP",   "Gradient") );
+    CHECK( m_isoToolGradientTightCalo->setProperty( "MuonWP",       "Gradient") );
+    CHECK( m_isoToolGradientTightCalo->setProperty( "PhotonWP",     "FixedCutTightCaloOnly") );
+    CHECK( m_isoToolGradientTightCalo->initialize() );
 
-    // GradientT1 WP for leptons, stick with Cone40 for photons
-    m_isoToolGradientT1Cone40 = new CP::IsolationSelectionTool( "IsolationSelectionTool_GradientT1" );
-    CHECK( m_isoToolGradientT1Cone40->setProperty( "ElectronWP", "GradientT1") );
-    CHECK( m_isoToolGradientT1Cone40->setProperty( "MuonWP",     "GradientT1") );
-    CHECK( m_isoToolGradientT1Cone40->setProperty( "PhotonWP",   "Cone40") );
-    CHECK( m_isoToolGradientT1Cone40->initialize() );
-
-    // GradientT2 WP for leptons, stick with Cone40 for photons
-    m_isoToolGradientT2Cone40 = new CP::IsolationSelectionTool( "IsolationSelectionTool_GradientT2" );
-    CHECK( m_isoToolGradientT2Cone40->setProperty( "ElectronWP", "GradientT2") );
-    CHECK( m_isoToolGradientT2Cone40->setProperty( "MuonWP",     "GradientT2") );
-    CHECK( m_isoToolGradientT2Cone40->setProperty( "PhotonWP",   "Cone40") );
-    CHECK( m_isoToolGradientT2Cone40->initialize() );
-   
-    // LooseTrackOnly WP, Cone20 WP for photons
-    m_isoToolLooseTrackOnlyCone20 = new CP::IsolationSelectionTool( "IsolationSelectionTool_LooseTrackOnly" );
-    CHECK( m_isoToolLooseTrackOnlyCone20->setProperty( "ElectronWP",   "LooseTrackOnly") );
-    CHECK( m_isoToolLooseTrackOnlyCone20->setProperty( "MuonWP",       "LooseTrackOnly") );
-    CHECK( m_isoToolLooseTrackOnlyCone20->setProperty( "PhotonWP",     "Cone20") );
-    CHECK( m_isoToolLooseTrackOnlyCone20->initialize() );
+    // LooseTrackOnly WP, Loose WP for photons
+    m_isoToolLooseTrackOnlyLoose = new CP::IsolationSelectionTool( "IsolationSelectionTool_LooseTrackOnly" );
+    CHECK( m_isoToolLooseTrackOnlyLoose->setProperty( "ElectronWP",   "LooseTrackOnly") );
+    CHECK( m_isoToolLooseTrackOnlyLoose->setProperty( "MuonWP",       "LooseTrackOnly") );
+    CHECK( m_isoToolLooseTrackOnlyLoose->setProperty( "PhotonWP",     "FixedCutLoose") );
+    CHECK( m_isoToolLooseTrackOnlyLoose->initialize() );
     
-    // Loose WP
+    // Loose WP for leptons, FixedCutTight WP for photons
     m_isoToolLoose = new CP::IsolationSelectionTool( "IsolationSelectionTool_Loose" );
     CHECK( m_isoToolLoose->setProperty( "ElectronWP",   "Loose") );
     CHECK( m_isoToolLoose->setProperty( "MuonWP",       "Loose") );
-    CHECK( m_isoToolLoose->setProperty( "PhotonWP",     "Cone20") );
+    CHECK( m_isoToolLoose->setProperty( "PhotonWP",     "FixedCutTight") );
     CHECK( m_isoToolLoose->initialize() );
     
-    // Tight WP
+    // Tight WP for leptons, FixedCutTight WP for photons
     m_isoToolTight = new CP::IsolationSelectionTool( "IsolationSelectionTool_Tight" );
     CHECK( m_isoToolTight->setProperty( "ElectronWP",   "Tight") );
     CHECK( m_isoToolTight->setProperty( "MuonWP",       "Tight") );
-    CHECK( m_isoToolTight->setProperty( "PhotonWP",     "Cone20") );
+    CHECK( m_isoToolTight->setProperty( "PhotonWP",     "FixedCutTight") );
     CHECK( m_isoToolTight->initialize() );
 
 }
@@ -1923,11 +1905,9 @@ bool XaodAnalysis::passBadMuon(ST::SystInfo sysInfo, SusyNtSys sys)
 {
     xAOD::MuonContainer* muons = xaodMuons(sysInfo, sys);
     bool pass_bad_muon = true;
-    const xAOD::EventInfo* eventinfo = xaodEventInfo();
     for(auto &i : m_preMuons) {
         if(muons->at(i)->auxdata<char>("baseline")==1 && muons->at(i)->auxdata<char>("bad")==1) { 
             pass_bad_muon = false;
-            cout << "bad muon at eventno: " << eventinfo->eventNumber() << endl;
         }
     }
    // for(auto &i : m_baseMuons) {

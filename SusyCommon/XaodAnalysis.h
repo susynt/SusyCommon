@@ -616,11 +616,9 @@ namespace Susy {
     CP::MuonSelectionTool               *m_muonSelectionToolTight;
 
     // Lepton isolation tools
-    CP::IsolationSelectionTool *m_isoToolGradientLooseCone40Calo;
-    CP::IsolationSelectionTool *m_isoToolGradientCone40;
-    CP::IsolationSelectionTool *m_isoToolGradientT1Cone40;
-    CP::IsolationSelectionTool *m_isoToolGradientT2Cone40;
-    CP::IsolationSelectionTool *m_isoToolLooseTrackOnlyCone20;
+    CP::IsolationSelectionTool *m_isoToolGradientLooseTight;
+    CP::IsolationSelectionTool *m_isoToolGradientTightCalo;
+    CP::IsolationSelectionTool *m_isoToolLooseTrackOnlyLoose;
     CP::IsolationSelectionTool *m_isoToolLoose;
     CP::IsolationSelectionTool *m_isoToolTight;
 

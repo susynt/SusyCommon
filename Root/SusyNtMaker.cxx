@@ -475,11 +475,9 @@ void SusyNtMaker::storeElectron(const xAOD::Electron &in)
     //////////////////////////////////////
     // Isolation flags (IsolationSelectionTool)
     //////////////////////////////////////
-    out.isoGradientLoose  = m_isoToolGradientLooseCone40Calo->accept(in) ? true : false;
-    out.isoGradient       = m_isoToolGradientCone40->accept(in) ? true : false;
-    out.isoGradientT1     = m_isoToolGradientT1Cone40->accept(in) ? true : false;
-    out.isoGradientT2     = m_isoToolGradientT2Cone40->accept(in) ? true : false;
-    out.isoLooseTrackOnly = m_isoToolLooseTrackOnlyCone20->accept(in) ? true : false;
+    out.isoGradientLoose  = m_isoToolGradientLooseTight->accept(in) ? true : false;
+    out.isoGradient       = m_isoToolGradientTightCalo->accept(in) ? true : false;
+    out.isoLooseTrackOnly = m_isoToolLooseTrackOnlyLoose->accept(in) ? true : false;
     out.isoLoose          = m_isoToolLoose->accept(in) ? true : false;
     out.isoTight          = m_isoToolTight->accept(in) ? true : false;
 
@@ -510,8 +508,7 @@ void SusyNtMaker::storeElectron(const xAOD::Electron &in)
     bool recoSF=true;
     bool idSF=true;
     bool trigSF=false;
-    #warning reenable isoSF in GetSignalElecSF
-    bool isoSF=false; // DG-2015-12-01: temporarily disable true;
+    bool isoSF=true;
 
     if(m_isMC){
         //////////////////////////////////////
@@ -692,11 +689,9 @@ void SusyNtMaker::storeMuon(const xAOD::Muon &in)
     //////////////////////////////////////
     // Isolation flags (IsolationSelectionTool)
     //////////////////////////////////////
-    out.isoGradientLoose    = m_isoToolGradientLooseCone40Calo->accept(in) ? true : false;
-    out.isoGradient         = m_isoToolGradientCone40->accept(in) ? true : false;
-    out.isoGradientT1       = m_isoToolGradientT1Cone40->accept(in) ? true : false;
-    out.isoGradientT2       = m_isoToolGradientT2Cone40->accept(in) ? true : false;
-    out.isoLooseTrackOnly   = m_isoToolLooseTrackOnlyCone20->accept(in) ? true : false;
+    out.isoGradientLoose    = m_isoToolGradientLooseTight->accept(in) ? true : false;
+    out.isoGradient         = m_isoToolGradientTightCalo->accept(in) ? true : false;
+    out.isoLooseTrackOnly   = m_isoToolLooseTrackOnlyLoose->accept(in) ? true : false;
     out.isoLoose            = m_isoToolLoose->accept(in) ? true : false;
     out.isoTight            = m_isoToolTight->accept(in) ? true : false;
 
@@ -1003,9 +998,9 @@ void SusyNtMaker::storePhoton(const xAOD::Photon &in)
     out.topoEtcone40 = in.isolationValue(xAOD::Iso::topoetcone40) * MeV2GeV;
 
     // isolation
-    out.isoCone40CaloOnly   = m_isoToolGradientLooseCone40Calo->accept(in) ? true : false;
-    out.isoCone40           = m_isoToolGradientCone40->accept(in) ? true : false;
-    out.isoCone20           = m_isoToolLooseTrackOnlyCone20->accept(in) ? true : false;
+    out.isoFixedCutTight         = m_isoToolGradientLooseTight->accept(in) ? true : false;
+    out.isoFixedCutTightCaloOnly = m_isoToolGradientTightCalo->accept(in) ? true : false;
+    out.isoFixedCutLoose         = m_isoToolLooseTrackOnlyLoose->accept(in) ? true : false;
    
     if(m_dbg) cout << "AT: storePhoton: " << out.pt << " " << out.tight << " " << out.isConv << endl;
     if(m_dbg && !all_available) cout<<"missing some photon variables"<<endl;
