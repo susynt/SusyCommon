@@ -6,7 +6,6 @@
 #include "SusyCommon/XaodAnalysis.h"
 #include "SusyCommon/SystematicMapping.h"
 
-
 #include "SusyNtuple/TriggerTools.h"
 
 
