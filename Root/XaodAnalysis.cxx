@@ -77,6 +77,7 @@ XaodAnalysis::XaodAnalysis() :
     m_entry(0),
     m_dbg(0),
     m_isMC(false),
+    m_isMC15b(false),
     m_flagsAreConsistent(false),
     m_flagsHaveBeenChecked(false),
     //m_event(xAOD::TEvent::kClassAccess),
@@ -123,6 +124,9 @@ void XaodAnalysis::Init(TTree *tree)
     xAOD::Init("Susy::XaodAnalysis").ignore();
 
     m_isMC = XaodAnalysis::isSimuFromSamplename(m_inputContainerName);
+    if(!m_isMC && m_isMC15b) { 
+        m_isMC15b = false;
+    }
 
     if(m_isMC){
         // get the inital (pre-skimmed) counters
@@ -173,6 +177,9 @@ void XaodAnalysis::Init(TTree *tree)
             exit(1);
         }
     }
+    // is this an MC15b sample?
+    cout << "XaodAnalysis::Init    Treating sample as " << (m_isMC15b ? "mc15b" : "mc15a") << endl;
+
     // initialize SUSYTools
     initSusyTools();
     // initialize other analysis tools

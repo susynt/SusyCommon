@@ -116,6 +116,7 @@ namespace Susy {
     virtual XaodAnalysis& setDebug(int debugLevel) { m_dbg = debugLevel; return *this; }
     virtual void setChain(TChain* input_chain) { m_input_chain = input_chain; }
     void setTriggerSet(std::string set) { m_triggerSet = set; }
+    virtual void setMC15b(bool isMC15b) { m_isMC15b = isMC15b; }
     XaodAnalysis& initSusyTools(); ///< initialize SUSYObjDef_xAOD
     
     /**
@@ -504,6 +505,7 @@ namespace Susy {
     Long64_t m_entry;           // Current entry in the current tree (not chain index!)
     int m_dbg;                  // debug level
     bool m_isMC;                // is MC flag
+    bool m_isMC15b;             // flag for whether this sample is mc15b (if false, then mc15a)
     bool m_flagsAreConsistent;  ///< whether the cmd-line flags are consistent with the event
     bool m_flagsHaveBeenChecked;///< whether the cmd-line have been checked
 

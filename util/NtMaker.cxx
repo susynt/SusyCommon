@@ -47,6 +47,7 @@ void help()
       <<"  --filterOff      save all events"                          <<endl
       <<"  --nLepFilter     default 0 (require N  light leptons)"     <<endl
       <<"  --nLepTauFilter  default 2 (require N lepton+tau)"         <<endl
+      <<"  --mc15b          toggle mc15b (default: false)"            <<endl
       <<endl;
 }
 
@@ -70,6 +71,7 @@ int main(int argc, char** argv)
   bool filter     = true;
   uint nLepFilter = 0;
   uint nLepTauFilter = 2;
+  bool mc15b      = false;
   string inputContainer, outputContainer, ntTag;
   string outputFileName = "susyNt.root";
 
@@ -101,6 +103,7 @@ int main(int argc, char** argv)
       else if (sw=="--filterOff"    ) { filter = false; }
       else if (sw=="--nLepFilter"   ) { nLepFilter = atoi(argv[++optind]); }
       else if (sw=="--nLepTauFilter") { nLepTauFilter = atoi(argv[++optind]); }
+      else if (sw=="--mc15b"        ) { mc15b = true; }
       else {
           cout<<"Unknown switch '"<<sw<<"'"<<endl;
           help();
@@ -111,6 +114,7 @@ int main(int argc, char** argv)
 
   cout<<"flags:"<<endl;
   cout<<"  sample         "<<sample  <<endl;
+  cout<<"  mc15b          "<<mc15b   <<endl;
   cout<<"  nEvt           "<<nEvt    <<endl;
   cout<<"  nSkip          "<<nSkip   <<endl;
   cout<<"  dbg            "<<dbg     <<endl;
@@ -145,6 +149,7 @@ int main(int argc, char** argv)
   susyAna->setChain(chain);
   susyAna->setDebug(dbg);
   susyAna->setSample(sample);
+  susyAna->setMC15b(mc15b);
   susyAna->setLumi(lumi);
   susyAna->setSys(sysOn);
   susyAna->setSelectPhotons(savePh);
