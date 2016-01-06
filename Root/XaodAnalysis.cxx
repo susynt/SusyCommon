@@ -489,9 +489,16 @@ void XaodAnalysis::initPileupTool()
     CHECK(m_pileupReweightingTool->setProperty("ConfigFiles", prwFiles));
     CHECK(m_pileupReweightingTool->setProperty("LumiCalcFiles", lumicalcFiles));
     CHECK(m_pileupReweightingTool->setProperty("DefaultChannel", 410000));
-    CHECK(m_pileupReweightingTool->setProperty("DataScaleFactor",     1./ 1.16));
-    CHECK(m_pileupReweightingTool->setProperty("DataScaleFactorUP",   1.));
-    CHECK(m_pileupReweightingTool->setProperty("DataScaleFactorDOWN", 1./ 1.23));
+    if(!m_isMC15b) {
+        CHECK(m_pileupReweightingTool->setProperty("DataScaleFactor",     1./ 1.16));
+        CHECK(m_pileupReweightingTool->setProperty("DataScaleFactorUP",   1.));
+        CHECK(m_pileupReweightingTool->setProperty("DataScaleFactorDOWN", 1./ 1.23));
+    }
+    else {
+        CHECK(m_pileupReweightingTool->setProperty("DataScaleFactor",     1.) );
+        CHECK(m_pileupReweightingTool->setProperty("DataScaleFactorUP",   1. / 0.93) );
+        CHECK(m_pileupReweightingTool->setProperty("DataScaleFactorDOWN", 1. / 1.07) );
+    }
 
     CHECK( m_pileupReweightingTool->initialize() );
 
