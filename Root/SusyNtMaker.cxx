@@ -24,6 +24,10 @@
 #include "xAODTracking/TrackParticlexAODHelpers.h"  // xAOD::TrackingHelpers
 #include "xAODEgamma/EgammaxAODHelpers.h"
 
+// for muon trigger SF
+#include "xAODMuon/MuonContainer.h"
+#include "xAODMuon/MuonAuxContainer.h"
+
 // Amg include
 #include "EventPrimitives/EventPrimitivesHelpers.h"
 #include "AthContainers/AuxElement.h"
@@ -796,6 +800,21 @@ void SusyNtMaker::storeMuon(const xAOD::Muon &in)
     if(m_isMC && fabs(out.eta)<2.5 && out.pt>20){ // SF's are not binned for pt < 20 GeV
         out.muoEffSF[MuonId::Loose]  = m_susyObj[SusyObjId::muoLoose]->GetSignalMuonSF (in, recoSF, isoSF);
         out.muoEffSF[MuonId::Medium] = m_susyObj[SusyObjId::muoMedium]->GetSignalMuonSF(in, recoSF, isoSF);
+
+        // dantrim Jan 5 2015 : trigger SF kludge -- this is not absolutely correct as the SF are meant for the final signal muons
+        // going into your selection, which is not the case here as we are forcing the tool to provide us
+        // the SF on a per-muon basis
+        xAOD::MuonContainer *sf_muon = new xAOD::MuonContainer;
+        xAOD::MuonAuxContainer *sf_muon_aux = new xAOD::MuonAuxContainer;
+        sf_muon->setStore(sf_muon_aux);
+        xAOD::Muon* sfMu = new xAOD::Muon;
+        sfMu->makePrivateStore(in);
+        sf_muon->push_back(sfMu);
+        out.muoTrigSF[MuonId::Loose] = m_susyObj[SusyObjId::muoLoose]->GetTotalMuonSF(*sf_muon, false, false);
+        out.muoTrigSF[MuonId::Medium] = m_susyObj[SusyObjId::muoMedium]->GetTotalMuonSF(*sf_muon, false, false);
+
+        delete sf_muon;
+        delete sf_muon_aux;
     }
     //////////////////////////////////////
     // Systematic variation on muon SF
@@ -813,6 +832,7 @@ void SusyNtMaker::storeMuon(const xAOD::Muon &in)
             }
             vector<float> sf;
             sf.assign(MuonId::MuonIdInvalid, 1);
+            #warning not handling trigger SF in muon systematic loop
             sf[MuonId::Medium] = m_susyObj[SusyObjId::muoMedium]->GetSignalMuonSF(in, recoSF, isoSF);
             sf[MuonId::Loose] = m_susyObj[SusyObjId::muoLoose]->GetSignalMuonSF(in, recoSF, isoSF);
             for(int i=MuonId::VeryLoose; i<MuonId::MuonIdInvalid; i++){
