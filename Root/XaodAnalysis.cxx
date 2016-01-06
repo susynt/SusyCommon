@@ -295,25 +295,24 @@ XaodAnalysis& XaodAnalysis::initSusyTools()
         string name = "SUSYObjDef_xAOD_" + idName;
         m_susyObj[susyObjId] = new ST::SUSYObjDef_xAOD(name);
         cout << "------------------------------------------------------------" << endl;
-        cout << "XaodAnalysis::initSusyTools: " << name <<endl;
+        cout << "XaodAnalysis::initSusyTools    " << name <<endl;
         cout << "------------------------------------------------------------" << endl;
 
-        CHECK( m_susyObj[susyObjId]->setProperty("ConfigFile", "SusyCommon/SUSYTools_SusyNt.conf") );
+        string config_type = isEle ? "ele" : "muo";
+        string config_name = "SusyCommon/SUSYTools_SusyNt_" + config_type + idName + ".conf";
+        cout << "XaodAnalysis::initSusyTools    Using SUSYTools configuration file: " << config_name << endl; 
+        //CHECK( m_susyObj[susyObjId]->setProperty("ConfigFile", "SusyCommon/SUSYTools_SusyNt.conf") );
+        CHECK( m_susyObj[susyObjId]->setProperty("ConfigFile", config_name) );
+        
         // set the verbosity level of SUSYTools
         m_susyObj[susyObjId]->msg().setLevel(m_dbg ? MSG::DEBUG : MSG::WARNING);
     
-        // set the electron Id used for this SUSYTools instance
-        if(isEle) { m_susyObj[susyObjId]->setProperty("EleId", idName ); }
-        // set the muon ID if that is the case
-        else {
-            SusyObjId thisId = static_cast<SusyObjId>(susyObjId);
-            if(thisId==SusyObjId::muoMedium) { m_susyObj[susyObjId]->setProperty("MuId", xAOD::Muon::Medium); }
-            else if(thisId==SusyObjId::muoLoose) { m_susyObj[susyObjId]->setProperty("MuId", xAOD::Muon::Loose); }
-        }
-
         // set "datasource" for determining run configuration in SUSYTools
         ST::SettingDataSource datasource = !m_isMC ? ST::Data : (m_isAF2 ? ST::AtlfastII : ST::FullSim);
         CHECK( m_susyObj[susyObjId]->setProperty("DataSource",datasource) );
+
+        // set whether mc15b or not
+        CHECK( m_susyObj[susyObjId]->setProperty("IsMC15b", m_isMC15b) );
 
         ///////////////////////////////////////
         // set up the pileup reweighting tool
@@ -321,21 +320,13 @@ XaodAnalysis& XaodAnalysis::initSusyTools()
         ///////////////////////////////////////
         // prw config files
         std::vector<std::string> prwFiles;
-        //prwFiles.push_back(m_data_dir+"SusyCommon/mc15_50ns.prw.root"); //50ns period c
-        prwFiles.push_back(m_data_dir+"SusyCommon/mc15_25ns_prw_410000.root"); //25ns
-        // prwFiles.push_back(m_data_dir+"SusyCommon/MC15b.prw.ttbar_DUMMY.root"); // this is a dummy file (for now) for testing over mc15b
+        prwFiles.push_back("dev/SUSYTools/merged_prw.root"); //group 25ns
+        prwFiles.push_back("dev/SUSYTools/merged_prw_mc15b.root"); //group 25ns mc15b mu profile
         m_susyObj[susyObjId]->setProperty("PRWConfigFiles", prwFiles);
         // data luminosity profile
         std::vector<std::string> lumicalcFiles;
-        lumicalcFiles.push_back(m_data_dir+"SusyCommon/ilumicalc_histograms_None_276262-279984.root"); // updated to GRL from Oct 2
+        lumicalcFiles.push_back(m_data_dir+"SusyCommon/ilumicalc_histograms_None_276262-284484.root"); // updated with GRL v73 25ns
         m_susyObj[susyObjId]->setProperty("PRWLumiCalcFiles", lumicalcFiles); 
-        // default channel to use (if we do not have a prw config for a specific sample, this is what gets used)
-        m_susyObj[susyObjId]->setProperty("PRWDefaultChannel", 410000);
-        # warning Setting data mu uncertainty to ten percent
-        m_susyObj[susyObjId]->setProperty("PRWMuUncertainty", 0.1);
-
-        #warning Setting recommended reduced JES systematics set to set 1
-        m_susyObj[susyObjId]->setProperty("JESNuisanceParameterSet", 1);
 
         if(m_susyObj[susyObjId]->initialize() != StatusCode::SUCCESS){
             cout << "XaodAnalysis: Cannot intialize SUSYObjDef_xAOD...Aborting" << endl;
@@ -489,11 +480,9 @@ void XaodAnalysis::initPileupTool()
     std::vector<std::string> prwFiles;
     std::vector<std::string> lumicalcFiles;
 
-    //prwFiles.push_back(m_data_dir + "SusyCommon/mc15_50ns.prw.root"); // 50ns
-    prwFiles.push_back(m_data_dir + "SusyCommon/mc15_25ns_prw_410000.root"); // 25ns
-    // prwFiles.push_back(m_data_dir + "SusyCommon/MC15b.prw.ttbar_DUMMY.root"); // this is a dummy file (for now) for testing mc15b
-    //lumicalcFiles.push_back(m_data_dir + "SusyCommon/ilumicalc_histograms_None_267073-271744.root"); // 50ns period C
-    lumicalcFiles.push_back(m_data_dir + "SusyCommon/ilumicalc_histograms_None_276262-279984.root"); // 25ns Oct 2
+    prwFiles.push_back("dev/SUSYTools/merged_prw.root"); //group 25ns
+    prwFiles.push_back("dev/SUSYTools/merged_prw_mc15b.root"); //group 25ns mc15b mu profile
+    lumicalcFiles.push_back(m_data_dir + "SusyCommon/ilumicalc_histograms_None_276262-279984.root"); // v73 25ns
     CHECK(m_pileupReweightingTool->setProperty("ConfigFiles", prwFiles));
     CHECK(m_pileupReweightingTool->setProperty("LumiCalcFiles", lumicalcFiles));
     CHECK(m_pileupReweightingTool->setProperty("DefaultChannel", 410000));
