@@ -2266,10 +2266,7 @@ bool XaodAnalysis::runningOptionsAreValid()
 //----------------------------------------------------------
 std::string XaodAnalysis::defaultGrlFile()
 {
-    // 50 ns period C GRL
-    //std::string grl_file = "$ROOTCOREBIN/data/SusyCommon/data15_13TeV.periodAllYear_DetStatus-v63-pro18-01_DQDefects-00-01-02_PHYS_StandardGRL_All_Good.xml";
-    // 25 ns GRL from October 2
-    std::string grl_file = "$ROOTCOREBIN/data/SusyCommon/data15_13TeV.periodAllYear_DetStatus-v65-pro19-01_DQDefects-00-01-02_PHYS_StandardGRL_All_Good.xml";
+    std::string grl_file = "$ROOTCOREBIN/data/SusyCommon/data15_13TeV.periodAllYear_DetStatus-v73-pro19-08_DQDefects-00-01-02_PHYS_StandardGRL_All_Good_25ns.xml";
     return grl_file;
 }
 //----------------------------------------------------------
