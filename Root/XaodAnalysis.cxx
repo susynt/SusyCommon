@@ -48,7 +48,7 @@ static SG::AuxElement::Decorator<char> dec_elIsMuon("elIsMuon");
 //----------------------------------------------------------
 XaodAnalysis::XaodAnalysis() :
     m_input_chain(0),
-    m_sample(""),
+    //m_sample(""),
     m_triggerSet("run2"),
     m_stream(Stream_Unknown),
     m_isDerivation(false), // dantrim event shape

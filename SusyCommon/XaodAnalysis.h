@@ -315,8 +315,8 @@ namespace Susy {
 
 
     // Running conditions
-    TString sample() { return m_sample; } ///< Sample name - used to set isMC flag
-    XaodAnalysis& setSample(TString s) { m_sample = s; return *this; }
+    //TString sample() { return m_sample; } ///< Sample name - used to set isMC flag
+    //XaodAnalysis& setSample(TString s) { m_sample = s; return *this; }
     void setAF2(bool isAF2=true) { m_isAF2 = isAF2; } ///< AF2 flag
     void setSys(bool sysOn){ m_sys = sysOn; }; ///< Set sys run
     void setSelectPhotons(bool doIt) { m_selectPhotons = doIt; } ///< Toggle photon selection
@@ -385,7 +385,7 @@ namespace Susy {
   protected:
 
     TChain*                     m_input_chain;  // input chain
-    TString                     m_sample;       // sample name
+    //TString                     m_sample;       // sample name
     std::string                 m_triggerSet;   // trigger set to store
     std::vector<std::string>    m_triggerNames; 
     DataStream                  m_stream;       // data stream enum, taken from sample name

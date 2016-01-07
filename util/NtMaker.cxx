@@ -148,7 +148,7 @@ int main(int argc, char** argv)
   SusyNtMaker* susyAna = new SusyNtMaker();
   susyAna->setChain(chain);
   susyAna->setDebug(dbg);
-  susyAna->setSample(sample);
+  //susyAna->setSample(sample);
   susyAna->setMC15b(mc15b);
   susyAna->setLumi(lumi);
   susyAna->setSys(sysOn);
