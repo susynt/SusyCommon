@@ -66,17 +66,29 @@ SusyNtSys CPsys2sys(const std::string &s)
   // else if( s== "EG_SCALE_ZEESTAT__1up" )                   r = EG_SCALE_ZEESTAT_UP;
   // else if( s== "EG_SCALE_ZEESYST__1down" )                 r = EG_SCALE_ZEESYST_DN;
   // else if( s== "EG_SCALE_ZEESYST__1up" )                   r = EG_SCALE_ZEESYST_UP;
-  //else if( s== "EL_EFF_CorrUncertainty__1down" )           r = EL_EFF_CorrUncertainty_DN;         // no longer there
-  //else if( s== "EL_EFF_CorrUncertainty__1up" )             r = EL_EFF_CorrUncertainty_UP;         // no longer there
-  //else if( s== "EL_EFF_UncorrUncertainty__1down" )         r = EL_EFF_UncorrUncertainty_DN;       // no longer there
-  //else if( s== "EL_EFF_UncorrUncertainty__1up" )           r = EL_EFF_UncorrUncertainty_UP;       // no longer there
+  
   else if( s== "EL_EFF_ID_TotalCorrUncertainty__1down" )   r = EL_EFF_ID_TotalCorrUncertainty_DN;
   else if( s== "EL_EFF_ID_TotalCorrUncertainty__1up" )     r = EL_EFF_ID_TotalCorrUncertainty_UP;
+  else if( s== "EL_EFF_Iso_TotalCorrUncertainty__1down" )  r = EL_EFF_Iso_TotalCorrUncertainty_DN;
+  else if( s== "EL_EFF_Iso_TotalCorrUncertainty__1up" )    r = EL_EFF_Iso_TotalCorrUncertainty_UP;
   else if( s== "EL_EFF_Reco_TotalCorrUncertainty__1down" ) r = EL_EFF_Reco_TotalCorrUncertainty_DN;
   else if( s== "EL_EFF_Reco_TotalCorrUncertainty__1up" )   r = EL_EFF_Reco_TotalCorrUncertainty_UP;
+  else if( s== "EL_EFF_Trigger_TotalCorrUncertainty__1down" ) r = EL_EFF_Trigger_TotalCorrUncertainty_DN;
+  else if( s== "EL_EFF_Trigger_TotalCorrUncertainty__1up" )   r = EL_EFF_Trigger_TotalCorrUncertainty_UP;
 
   // else if( s== "EL_SCALE_MOMENTUM__1down" )                r = EL_SCALE_MOMENTUM_DN;
   // else if( s== "EL_SCALE_MOMENTUM__1up" )                  r = EL_SCALE_MOMENTUM_UP;
+  else if( s== "FT_EFF_B_systematics__1down" )             r = FT_EFF_B_systematics_DN;
+  else if( s== "FT_EFF_B_systematics__1up" )               r = FT_EFF_B_systematics_UP;
+  else if( s== "FT_EFF_C_systematics__1down" )             r = FT_EFF_C_systematics_DN;
+  else if( s== "FT_EFF_C_systematics__1up" )               r = FT_EFF_C_systematics_UP;
+  else if( s== "FT_EFF_Light_systematics__1down" )         r = FT_EFF_Light_systematics_DN;
+  else if( s== "FT_EFF_Light_systematics__1up" )           r = FT_EFF_Light_systematics_UP;
+  else if( s== "FT_EFF_extrapolation__1down" )             r = FT_EFF_extrapolation_DN;
+  else if( s== "FT_EFF_extrapolation__1up" )               r = FT_EFF_extrapolation_UP;
+  else if( s== "FT_EFF_extrapolation from charm__1down" )  r = FT_EFF_extrapolation_charm_DN;
+  else if( s== "FT_EFF_extrapolation from charm__1up" )    r = FT_EFF_extrapolation_charm_UP;
+/*
   else if( s== "FT_Eigen_B_0__1down" )                     r = FT_Eigen_B_0_DN;
   else if( s== "FT_Eigen_B_0__1up" )                       r = FT_Eigen_B_0_UP;
   else if( s== "FT_Eigen_B_1__1down" )                     r = FT_Eigen_B_1_DN;
@@ -129,6 +141,7 @@ SusyNtSys CPsys2sys(const std::string &s)
   else if( s== "FT_Eigen_Light_8__1up" )                   r = FT_Eigen_Light_8_UP;
   else if( s== "FT_Eigen_Light_9__1down" )                 r = FT_Eigen_Light_9_DN;
   else if( s== "FT_Eigen_Light_9__1up" )                   r = FT_Eigen_Light_9_UP;
+*/
   else if( s== "JET_JER_SINGLE_NP__1up" )                  r = JER;
   else if( s== "JET_GroupedNP_1__1up" )                    r = JET_GroupedNP_1_UP;
   else if( s== "JET_GroupedNP_1__1down" )                  r = JET_GroupedNP_1_DN;

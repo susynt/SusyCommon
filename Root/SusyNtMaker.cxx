@@ -917,6 +917,37 @@ void SusyNtMaker::storeJet(const xAOD::Jet &in)
     out.bjet = m_susyObj[m_eleIDDefault]->IsBJet(in) ? 1 : 0;
     out.effscalefact = m_isMC ? in.auxdata< double >("effscalefact") : 1; // dantrim Jul 19 2015 -- error says new type is float, but by float they mean double
 
+
+    if(m_isMC && m_sys) {
+        for(const auto& sysInfo : systInfoList) {
+            if(!(sysInfo.affectsType == ST::SystObjType::BTag && sysInfo.affectsWeights)) continue;
+            const CP::SystematicSet& sys = sysInfo.systset;
+            if(m_susyObj[m_eleIDDefault]->applySystematicVariation(sys) != CP::SystematicCode::Ok) {
+                cout << "SusyNtMaker::storeJet    cannot configure SUSYTools for systematic " << sys.name() << endl;
+                continue;
+            }
+            SusyNtSys ourSys = CPsys2sys((sys.name()).c_str());
+            if(!(ourSys==NtSys::FT_EFF_B_systematics_UP       || ourSys==NtSys::FT_EFF_B_systematics_DN
+               ||ourSys==NtSys::FT_EFF_C_systematics_UP       || ourSys==NtSys::FT_EFF_C_systematics_DN
+               ||ourSys==NtSys::FT_EFF_Light_systematics_UP   || ourSys==NtSys::FT_EFF_Light_systematics_DN
+               ||ourSys==NtSys::FT_EFF_extrapolation_UP       || ourSys==NtSys::FT_EFF_extrapolation_DN
+               ||ourSys==NtSys::FT_EFF_extrapolation_charm_UP || ourSys==NtSys::FT_EFF_extrapolation_charm_DN) ) continue;
+
+            // redecorate the jets
+            m_susyObj[m_eleIDDefault]->BtagSF(XaodAnalysis::xaodJets(systInfoList[0]));
+
+            double sf_out = out.effscalefact - in.auxdata< double >("effscalefact");
+            out.setFTSys(ourSys, sf_out);
+
+        } // sysInfo
+        // reset systematics
+        if(m_susyObj[m_eleIDDefault]->resetSystematics() != CP::SystematicCode::Ok){
+            cout << "SusyNtMaker::storeJet    cannot reset SUSYTools systematics. Aborting." << endl;
+            abort();
+        }
+    } // isMC && sys
+
+
   //  vector<float> test_values;
   //  test_values.push_back(out.effscalefact);
 
