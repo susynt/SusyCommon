@@ -868,10 +868,33 @@ void SusyNtMaker::storeMuon(const xAOD::Muon &in)
             sf[MuonId::Medium] = m_susyObj[SusyObjId::muoMedium]->GetSignalMuonSF(in, recoSF, isoSF);
             sf[MuonId::Loose] = m_susyObj[SusyObjId::muoLoose]->GetSignalMuonSF(in, recoSF, isoSF);
             for(int i=MuonId::VeryLoose; i<MuonId::MuonIdInvalid; i++){
-                if     (ourSys == NtSys::MUONSFSTAT_UP)  out.errEffSF_stat_up[i] = sf[i] - out.muoEffSF[i];
-                else if(ourSys == NtSys::MUONSFSTAT_DN) out.errEffSF_stat_dn[i] = sf[i] - out.muoEffSF[i];
-                else if(ourSys == NtSys::MUONSFSYS_UP) out.errEffSF_syst_up[i] = sf[i] - out.muoEffSF[i];
-                else if(ourSys == NtSys::MUONSFSYS_DN) out.errEffSF_syst_dn[i] = sf[i] - out.muoEffSF[i];
+                if     (ourSys == NtSys::MUON_EFF_STAT_UP)        out.errEffSF_stat_up[i] = sf[i] - out.muoEffSF[i];
+                else if(ourSys == NtSys::MUON_EFF_STAT_DN)        out.errEffSF_stat_dn[i] = sf[i] - out.muoEffSF[i];
+                else if(ourSys == NtSys::MUON_EFF_SYS_UP)         out.errEffSF_syst_up[i] = sf[i] - out.muoEffSF[i];
+                else if(ourSys == NtSys::MUON_EFF_SYS_DN)         out.errEffSF_syst_dn[i] = sf[i] - out.muoEffSF[i];
+                else if(ourSys == NtSys::MUON_EFF_STAT_LOWPT_UP)  out.errEffSF_stat_lowpt_up[i] = sf[i] - out.muoEffSF[i];
+                else if(ourSys == NtSys::MUON_EFF_STAT_LOWPT_DN)  out.errEffSF_stat_lowpt_dn[i] = sf[i] - out.muoEffSF[i];
+                else if(ourSys == NtSys::MUON_EFF_SYS_LOWPT_UP)   out.errEffSF_syst_lowpt_up[i] = sf[i] - out.muoEffSF[i];
+                else if(ourSys == NtSys::MUON_EFF_SYS_LOWPT_DN)   out.errEffSF_syst_lowpt_dn[i] = sf[i] - out.muoEffSF[i];
+                else if(ourSys == NtSys::MUON_ISO_STAT_UP)        out.errIso_stat_up[i] = sf[i] - out.muoEffSF[i];
+                else if(ourSys == NtSys::MUON_ISO_STAT_DN)        out.errIso_stat_dn[i] = sf[i] - out.muoEffSF[i];
+                else if(ourSys == NtSys::MUON_ISO_SYS_UP)         out.errIso_syst_up[i] = sf[i] - out.muoEffSF[i];
+                else if(ourSys == NtSys::MUON_ISO_SYS_DN)         out.errIso_syst_dn[i] = sf[i] - out.muoEffSF[i];
+
+/*
+                if(i==1 || i==2) {
+                if(i==1)
+                    cout << "MuonId: Loose " << endl;
+                else if(i==2) 
+                    cout << "MuonId: Medium" << endl;
+                cout << "    effstat        : " << out.errEffSF_stat_up[i] << "  " << out.errEffSF_stat_dn[i] << endl;
+                cout << "    effsyst        : " << out.errEffSF_syst_up[i] << "  " << out.errEffSF_syst_dn[i] << endl;
+                cout << "    eff_stat_lowpt : " << out.errEffSF_stat_lowpt_up[i] << "  " << out.errEffSF_stat_lowpt_dn[i] << endl;
+                cout << "    eff_syst_lowpt : " << out.errEffSF_syst_lowpt_up[i] << "  " << out.errEffSF_syst_lowpt_dn[i] << endl;
+                cout << "    eff_iso_stat   : " << out.errIso_stat_up[i] << "  " << out.errIso_stat_dn[i] << endl;
+                cout << "    eff_iso_syst   : " << out.errIso_syst_up[i] << "  " << out.errIso_syst_dn[i] << endl;
+                }
+*/
             }
         } // sysInfo
         for(int i : Susy::muonIds()){
@@ -1425,7 +1448,7 @@ void SusyNtMaker::doSystematic()
 {
     if(m_dbg>=5) cout<< "doSystematic " << systInfoList.size() << endl;
 
-/*    
+/*
 //     useful for figuring out what we have and what we expect
       for(const auto& sysInfo : systInfoList) {
         const CP::SystematicSet& sys = sysInfo.systset;
