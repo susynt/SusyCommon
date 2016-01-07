@@ -565,17 +565,42 @@ void SusyNtMaker::storeElectron(const xAOD::Electron &in)
             } // i 
             vector<float> sf;
             sf.assign(ElectronId::ElectronIdInvalid, 1);
-            sf[ElectronId::TightLH]  = m_susyObj[SusyObjId::eleTightLH] ->GetSignalElecSF(in, recoSF, idSF, trigSF);
-            sf[ElectronId::MediumLH] = m_susyObj[SusyObjId::eleMediumLH]->GetSignalElecSF(in, recoSF, idSF, trigSF);
+            sf[ElectronId::TightLH]  = m_susyObj[SusyObjId::eleTightLH] ->GetSignalElecSF(in, recoSF, idSF, trigSF, isoSF);
+            sf[ElectronId::MediumLH] = m_susyObj[SusyObjId::eleMediumLH]->GetSignalElecSF(in, recoSF, idSF, trigSF, isoSF);
+
+            vector<float> sf_trig;
+            sf_trig.assign(ElectronId::ElectronIdInvalid, 1);
+            sf_trig[ElectronId::TightLH]  = m_susyObj[SusyObjId::eleTightLH] ->GetSignalElecSF(in, false, false, true, false);
+            sf_trig[ElectronId::MediumLH] = m_susyObj[SusyObjId::eleMediumLH]->GetSignalElecSF(in, false, false, true, false);
+            
             // there are no isolation SF's for electrion ID looseLH
             //sf[ElectronId::LooseLH]  = m_susyObj[SusyObjId::eleLooseLH] ->GetSignalElecSF(in, recoSF, idSF, trigSF);
 
-            #warning not dealing with trigger SF in electron systematic loop
+            #warning storeElectron check method at getting trigger sf
             for(int i=ElectronId::TightLH; i<ElectronIdInvalid; i++){
-                if     (ourSys == NtSys::EL_EFF_ID_TotalCorrUncertainty_UP)   out.errEffSF_id_corr_up[i]   = sf[i] - out.eleEffSF[i];
-                else if(ourSys == NtSys::EL_EFF_ID_TotalCorrUncertainty_DN)   out.errEffSF_id_corr_dn[i]   = sf[i] - out.eleEffSF[i];
-                else if(ourSys == NtSys::EL_EFF_Reco_TotalCorrUncertainty_UP) out.errEffSF_reco_corr_up[i] = sf[i] - out.eleEffSF[i];
-                else if(ourSys == NtSys::EL_EFF_Reco_TotalCorrUncertainty_DN) out.errEffSF_reco_corr_dn[i] = sf[i] - out.eleEffSF[i];
+                if     (ourSys == NtSys::EL_EFF_ID_TotalCorrUncertainty_UP)      out.errEffSF_id_corr_up[i]   = sf[i] - out.eleEffSF[i];
+                else if(ourSys == NtSys::EL_EFF_ID_TotalCorrUncertainty_DN)      out.errEffSF_id_corr_dn[i]   = sf[i] - out.eleEffSF[i];
+                else if(ourSys == NtSys::EL_EFF_Reco_TotalCorrUncertainty_UP)    out.errEffSF_reco_corr_up[i] = sf[i] - out.eleEffSF[i];
+                else if(ourSys == NtSys::EL_EFF_Reco_TotalCorrUncertainty_DN)    out.errEffSF_reco_corr_dn[i] = sf[i] - out.eleEffSF[i];
+                else if(ourSys == NtSys::EL_EFF_Iso_TotalCorrUncertainty_UP)     out.errEffSF_iso_corr_up[i]  = sf[i] - out.eleEffSF[i];
+                else if(ourSys == NtSys::EL_EFF_Iso_TotalCorrUncertainty_DN)     out.errEffSF_iso_corr_dn[i]  = sf[i] - out.eleEffSF[i];
+                else if(ourSys == NtSys::EL_EFF_Trigger_TotalCorrUncertainty_UP) out.errEffSF_trig_corr_up[i] = sf_trig[i] - out.eleTrigSF[i];
+                else if(ourSys == NtSys::EL_EFF_Trigger_TotalCorrUncertainty_DN) out.errEffSF_trig_corr_dn[i] = sf_trig[i] - out.eleTrigSF[i];
+/*
+                if(i==0 || i==1 || i==2){
+                if(i==0)
+                    cout << "ElectronId : TightLH " <<  endl;
+                else if(i==1)
+                    cout << "ElectronId : MediumLH " <<  endl;
+                else if(i==2)
+                    cout << "ElectronId : LooseLH " <<  endl;
+        
+                cout << "   effId           : " << out.errEffSF_id_corr_up[i] << "  " << out.errEffSF_id_corr_dn[i] << endl;
+                cout << "   effReco         : " << out.errEffSF_reco_corr_up[i] << "  " << out.errEffSF_reco_corr_dn[i] << endl;
+                cout << "   effIso          : " << out.errEffSF_iso_corr_up[i] << "  " << out.errEffSF_iso_corr_dn[i] << endl;
+                cout << "   effTrig         : " << out.errEffSF_trig_corr_up[i] << "  " << out.errEffSF_trig_corr_dn[i] << endl;
+                }
+*/                
             }
         } // sysInfo
 
