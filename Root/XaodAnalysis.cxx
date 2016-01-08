@@ -178,7 +178,7 @@ void XaodAnalysis::Init(TTree *tree)
         }
     }
     // is this an MC15b sample?
-    cout << "XaodAnalysis::Init    Treating sample as " << (m_isMC15b ? "mc15b" : "mc15a") << endl;
+    cout << "XaodAnalysis::Init    Treating sample as " << (m_isMC ? (m_isMC15b ? "mc15b" : "mc15a") : "data") << endl;
 
     // initialize SUSYTools
     initSusyTools();
@@ -1483,7 +1483,6 @@ TBits XaodAnalysis::matchElectronTriggers(const xAOD::Electron &in)
     eleTrigBits.ResetAllBits();
     std::vector<std::string> trigs = XaodAnalysis::xaodTriggers();
     for(unsigned int iTrig = 0; iTrig < trigs.size(); iTrig++) {
-        // for electron trigger matching the tools expect the "HLT_" portion to be missing... just to make things consistent with the naturally agreed upon inconsistency
         std::string hlt_trigger = trigs[iTrig];
         bool ismatch = m_susyObj[m_eleIDDefault]->IsTrigMatched(&in, hlt_trigger);
         if(ismatch) eleTrigBits.SetBitNumber(iTrig, true);
