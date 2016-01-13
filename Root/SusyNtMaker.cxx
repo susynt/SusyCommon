@@ -319,8 +319,6 @@ void SusyNtMaker::fillEventVars()
     //evt->avgMu            = m_isMC ? eventinfo->averageInteractionsPerCrossing() : m_pileupReweightingTool->getLumiBlockMu(*eventinfo);
 
     // Pileup systematic variations, varying data mu up/down and getting the resulting pupw
-    #warning REMOVING PILEUP SYSTEMATICS
-    /*
     if(m_isMC && m_sys) {
         for(const auto& sysInfo : systInfoList) {
             if(!(sysInfo.affectsType == ST::SystObjType::EventWeight && sysInfo.affectsWeights)) continue;
@@ -342,7 +340,6 @@ void SusyNtMaker::fillEventVars()
             abort();
         }
     }
-    */
 
     if(m_isMC){
         xAOD::TruthEventContainer::const_iterator truthE_itr = xaodTruthEvent()->begin();
