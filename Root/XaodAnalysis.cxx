@@ -503,7 +503,7 @@ void XaodAnalysis::initElectronTools()
     // Initialize the electron likelihood ID tools for each of the
     // working points
 
-    std::string confDir = "ElectronPhotonSelectorTools/offline/mc15_20150429/";
+    std::string confDir = "ElectronPhotonSelectorTools/offline/mc15_20150712/";
 
     // VeryLooseLH
     m_elecSelLikelihoodVeryLoose = new AsgElectronLikelihoodTool("AsgElectronLikelihoodToolVeryLoose");
