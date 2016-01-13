@@ -93,7 +93,6 @@ XaodAnalysis::XaodAnalysis() :
     m_elecSelLikelihoodMedium_nod0(0),
     m_elecSelLikelihoodTight_nod0(0),
 	m_pileupReweightingTool(0),
-	m_muonEfficiencySFTool(0),
     m_muonSelectionToolVeryLoose(0),
     m_muonSelectionToolLoose(0),
     m_muonSelectionToolMedium(0),
@@ -205,11 +204,8 @@ void XaodAnalysis::SlaveBegin(TTree *tree)
 
     if(m_dbg) cout << "XaodAnalysis::SlaveBegin" << endl;
 
-//#warning TElectronEfficiencyCorrectionTool not initialized
-#warning fakemet_est tool not initialized
     if(m_isMC){
-#warning susy xsec tool not initialized
-#warning pileup rew tool not initialized
+    // do nothing
     }
 }
 
@@ -263,7 +259,6 @@ void XaodAnalysis::Terminate()
     delete m_elecSelLikelihoodTight_nod0;
 
     delete m_pileupReweightingTool;
-    delete m_muonEfficiencySFTool;
     delete m_muonSelectionToolVeryLoose;
     delete m_muonSelectionToolLoose;
     delete m_muonSelectionToolMedium;
@@ -2094,7 +2089,7 @@ void XaodAnalysis::dumpBaselineObjects()
 {
     uint nEle = m_baseElectrons.size();
     uint nMu  = m_baseMuons.size();
-    uint nTau = m_baseTaus.size();
+    //uint nTau = m_baseTaus.size();
     uint nJet = m_baseJets.size();
     ST::SystInfo sysInfo = systInfoList[0]; // nominal
     cout.precision(2);
@@ -2159,7 +2154,7 @@ void XaodAnalysis::dumpSignalObjects()
     uint nEle = m_sigElectrons.size();
     uint nMu  = m_sigMuons.size();
     // taus
-    uint nTau = m_sigTaus.size();
+    //uint nTau = m_sigTaus.size();
     uint nJet = m_sigJets.size();
     ST::SystInfo sysInfo = systInfoList[0]; // nominal
 

@@ -611,7 +611,6 @@ namespace Susy {
     ToolHandle<CP::IPileupReweightingTool> *m_pileup;
     
     
-    CP::MuonEfficiencyScaleFactors      *m_muonEfficiencySFTool; 
     CP::MuonSelectionTool               *m_muonSelectionToolVeryLoose;
     CP::MuonSelectionTool               *m_muonSelectionToolLoose;
     CP::MuonSelectionTool               *m_muonSelectionToolMedium;
