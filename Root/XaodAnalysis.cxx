@@ -551,30 +551,25 @@ void XaodAnalysis::initElectronTools()
 void XaodAnalysis::initMuonTools()
 {
 
-    // Initialize muon scale-factor tools
-    m_muonEfficiencySFTool = new CP::MuonEfficiencyScaleFactors("MuonEfficiencyScaleFactors");
-    CHECK( m_muonEfficiencySFTool->setProperty("WorkingPoint","Medium") );
-    CHECK( m_muonEfficiencySFTool->initialize() );
-
     // Initialize muon selection tools
 
     m_muonSelectionToolVeryLoose = new CP::MuonSelectionTool("MuonSelectionTool_VeryLoose");
-    CHECK( m_muonSelectionToolVeryLoose->setProperty( "MaxEta", 2.5 ) );
+    CHECK( m_muonSelectionToolVeryLoose->setProperty( "MaxEta", 2.7 ) );
     CHECK( m_muonSelectionToolVeryLoose->setProperty( "MuQuality", int(xAOD::Muon::VeryLoose) ));// Warning: includes bad muons!
     CHECK( m_muonSelectionToolVeryLoose->initialize() );
 
     m_muonSelectionToolLoose = new CP::MuonSelectionTool("MuonSelectionTool_Loose");
-    CHECK( m_muonSelectionToolLoose->setProperty( "MaxEta", 2.5 ) );
+    CHECK( m_muonSelectionToolLoose->setProperty( "MaxEta", 2.7 ) );
     CHECK( m_muonSelectionToolLoose->setProperty( "MuQuality", int(xAOD::Muon::Loose) ));
     CHECK( m_muonSelectionToolLoose->initialize() );
     
     m_muonSelectionToolMedium = new CP::MuonSelectionTool("MuonSelectionTool_Medium");
-    CHECK( m_muonSelectionToolMedium->setProperty( "MaxEta", 2.5 ) );
+    CHECK( m_muonSelectionToolMedium->setProperty( "MaxEta", 2.7 ) );
     CHECK( m_muonSelectionToolMedium->setProperty( "MuQuality", int(xAOD::Muon::Medium) ));
     CHECK( m_muonSelectionToolMedium->initialize() );
 
     m_muonSelectionToolTight = new CP::MuonSelectionTool("MuonSelectionTool_Tight");
-    CHECK( m_muonSelectionToolTight->setProperty( "MaxEta", 2.5 ) );
+    CHECK( m_muonSelectionToolTight->setProperty( "MaxEta", 2.7 ) );
     CHECK( m_muonSelectionToolTight->setProperty( "MuQuality", int(xAOD::Muon::Tight) ));
     CHECK( m_muonSelectionToolTight->initialize() );
 }
