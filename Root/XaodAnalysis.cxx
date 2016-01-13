@@ -318,8 +318,11 @@ XaodAnalysis& XaodAnalysis::initSusyTools()
         ///////////////////////////////////////
         // prw config files
         std::vector<std::string> prwFiles;
-        prwFiles.push_back("dev/SUSYTools/merged_prw.root"); //group 25ns
-        prwFiles.push_back("dev/SUSYTools/merged_prw_mc15b.root"); //group 25ns mc15b mu profile
+        if(!m_isMC15b) {
+            prwFiles.push_back("dev/SUSYTools/merged_prw.root"); //group 25ns
+        } else {
+            prwFiles.push_back("dev/SUSYTools/merged_prw_mc15b.root"); //group 25ns mc15b mu profile
+        }
         m_susyObj[susyObjId]->setProperty("PRWConfigFiles", prwFiles);
         // data luminosity profile
         std::vector<std::string> lumicalcFiles;
@@ -478,22 +481,18 @@ void XaodAnalysis::initPileupTool()
     std::vector<std::string> prwFiles;
     std::vector<std::string> lumicalcFiles;
 
-    prwFiles.push_back("dev/SUSYTools/merged_prw.root"); //group 25ns
-    prwFiles.push_back("dev/SUSYTools/merged_prw_mc15b.root"); //group 25ns mc15b mu profile
-    lumicalcFiles.push_back(m_data_dir + "SusyCommon/ilumicalc_histograms_None_276262-279984.root"); // v73 25ns
+    if(!m_isMC15b) {
+        prwFiles.push_back("dev/SUSYTools/merged_prw.root"); //group 25ns
+    } else {
+        prwFiles.push_back("dev/SUSYTools/merged_prw_mc15b.root"); //group 25ns mc15b mu profile
+    }
+    lumicalcFiles.push_back(m_data_dir+"SusyCommon/ilumicalc_histograms_None_276262-284484.root"); // updated with GRL v73 25ns
     CHECK(m_pileupReweightingTool->setProperty("ConfigFiles", prwFiles));
     CHECK(m_pileupReweightingTool->setProperty("LumiCalcFiles", lumicalcFiles));
     CHECK(m_pileupReweightingTool->setProperty("DefaultChannel", 410000));
-    if(!m_isMC15b) {
-        CHECK(m_pileupReweightingTool->setProperty("DataScaleFactor",     1./ 1.16));
-        CHECK(m_pileupReweightingTool->setProperty("DataScaleFactorUP",   1.));
-        CHECK(m_pileupReweightingTool->setProperty("DataScaleFactorDOWN", 1./ 1.23));
-    }
-    else {
-        CHECK(m_pileupReweightingTool->setProperty("DataScaleFactor",     1.) );
-        CHECK(m_pileupReweightingTool->setProperty("DataScaleFactorUP",   1. / 0.93) );
-        CHECK(m_pileupReweightingTool->setProperty("DataScaleFactorDOWN", 1. / 1.07) );
-    }
+    CHECK(m_pileupReweightingTool->setProperty("DataScaleFactor",     1./ 1.16));
+    CHECK(m_pileupReweightingTool->setProperty("DataScaleFactorUP",   1.));
+    CHECK(m_pileupReweightingTool->setProperty("DataScaleFactorDOWN", 1./ 1.23));
 
     CHECK( m_pileupReweightingTool->initialize() );
 
