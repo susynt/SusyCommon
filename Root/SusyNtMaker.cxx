@@ -24,10 +24,6 @@
 #include "xAODTracking/TrackParticlexAODHelpers.h"  // xAOD::TrackingHelpers
 #include "xAODEgamma/EgammaxAODHelpers.h"
 
-// for muon trigger SF
-#include "xAODMuon/MuonContainer.h"
-#include "xAODMuon/MuonAuxContainer.h"
-
 // Amg include
 #include "EventPrimitives/EventPrimitivesHelpers.h"
 #include "AthContainers/AuxElement.h"
@@ -512,7 +508,7 @@ void SusyNtMaker::storeElectron(const xAOD::Electron &in)
     bool recoSF=true;
     bool idSF=true;
     bool trigSF=false;
-    bool isoSF=true;
+    bool isoSF=false;
 
     if(m_isMC){
         //////////////////////////////////////
@@ -523,9 +519,7 @@ void SusyNtMaker::storeElectron(const xAOD::Electron &in)
         // signature: (input electron, bool doRecoSF, bool doIDSF, bool doTrigSF, bool doIsoSF, string trigExpr)
         // default trigExpr: "e24_lhmedium_L1EM20VH_OR_e60_lhmedium_OR_e120_lhloose"
         out.eleEffSF[ElectronId::TightLH] =  m_susyObj[SusyObjId::eleTightLH]->GetSignalElecSF (in, recoSF, idSF, trigSF, isoSF);
-        out.eleTrigSF[ElectronId::TightLH] = m_susyObj[SusyObjId::eleTightLH]->GetSignalElecSF (in, false, false, true, false);
         out.eleEffSF[ElectronId::MediumLH] = m_susyObj[SusyObjId::eleMediumLH]->GetSignalElecSF(in, recoSF, idSF, trigSF, isoSF);
-        out.eleTrigSF[ElectronId::MediumLH] = m_susyObj[SusyObjId::eleMediumLH]->GetSignalElecSF(in, false, false, true, false);
         // there are no isolation SF's for electron ID looseLH
         //out.eleEffSF[ElectronId::LooseLH] = m_susyObj[SusyObjId::eleLooseLH]->GetSignalElecSF(in, recoSF, idSF, trigSF, isoSF);
 
@@ -564,40 +558,14 @@ void SusyNtMaker::storeElectron(const xAOD::Electron &in)
             sf.assign(ElectronId::ElectronIdInvalid, 1);
             sf[ElectronId::TightLH]  = m_susyObj[SusyObjId::eleTightLH] ->GetSignalElecSF(in, recoSF, idSF, trigSF, isoSF);
             sf[ElectronId::MediumLH] = m_susyObj[SusyObjId::eleMediumLH]->GetSignalElecSF(in, recoSF, idSF, trigSF, isoSF);
-
-            vector<float> sf_trig;
-            sf_trig.assign(ElectronId::ElectronIdInvalid, 1);
-            sf_trig[ElectronId::TightLH]  = m_susyObj[SusyObjId::eleTightLH] ->GetSignalElecSF(in, false, false, true, false);
-            sf_trig[ElectronId::MediumLH] = m_susyObj[SusyObjId::eleMediumLH]->GetSignalElecSF(in, false, false, true, false);
-            
             // there are no isolation SF's for electrion ID looseLH
             //sf[ElectronId::LooseLH]  = m_susyObj[SusyObjId::eleLooseLH] ->GetSignalElecSF(in, recoSF, idSF, trigSF);
 
-            #warning storeElectron check method at getting trigger sf
             for(int i=ElectronId::TightLH; i<ElectronIdInvalid; i++){
-                if     (ourSys == NtSys::EL_EFF_ID_TotalCorrUncertainty_UP)      out.errEffSF_id_corr_up[i]   = sf[i] - out.eleEffSF[i];
-                else if(ourSys == NtSys::EL_EFF_ID_TotalCorrUncertainty_DN)      out.errEffSF_id_corr_dn[i]   = sf[i] - out.eleEffSF[i];
-                else if(ourSys == NtSys::EL_EFF_Reco_TotalCorrUncertainty_UP)    out.errEffSF_reco_corr_up[i] = sf[i] - out.eleEffSF[i];
-                else if(ourSys == NtSys::EL_EFF_Reco_TotalCorrUncertainty_DN)    out.errEffSF_reco_corr_dn[i] = sf[i] - out.eleEffSF[i];
-                else if(ourSys == NtSys::EL_EFF_Iso_TotalCorrUncertainty_UP)     out.errEffSF_iso_corr_up[i]  = sf[i] - out.eleEffSF[i];
-                else if(ourSys == NtSys::EL_EFF_Iso_TotalCorrUncertainty_DN)     out.errEffSF_iso_corr_dn[i]  = sf[i] - out.eleEffSF[i];
-                else if(ourSys == NtSys::EL_EFF_Trigger_TotalCorrUncertainty_UP) out.errEffSF_trig_corr_up[i] = sf_trig[i] - out.eleTrigSF[i];
-                else if(ourSys == NtSys::EL_EFF_Trigger_TotalCorrUncertainty_DN) out.errEffSF_trig_corr_dn[i] = sf_trig[i] - out.eleTrigSF[i];
-/*
-                if(i==0 || i==1 || i==2){
-                if(i==0)
-                    cout << "ElectronId : TightLH " <<  endl;
-                else if(i==1)
-                    cout << "ElectronId : MediumLH " <<  endl;
-                else if(i==2)
-                    cout << "ElectronId : LooseLH " <<  endl;
-        
-                cout << "   effId           : " << out.errEffSF_id_corr_up[i] << "  " << out.errEffSF_id_corr_dn[i] << endl;
-                cout << "   effReco         : " << out.errEffSF_reco_corr_up[i] << "  " << out.errEffSF_reco_corr_dn[i] << endl;
-                cout << "   effIso          : " << out.errEffSF_iso_corr_up[i] << "  " << out.errEffSF_iso_corr_dn[i] << endl;
-                cout << "   effTrig         : " << out.errEffSF_trig_corr_up[i] << "  " << out.errEffSF_trig_corr_dn[i] << endl;
-                }
-*/                
+                if     (ourSys == NtSys::EL_EFF_ID_TotalCorrUncertainty_UP)   out.errEffSF_id_corr_up[i]   = sf[i] - out.eleEffSF[i];
+                else if(ourSys == NtSys::EL_EFF_ID_TotalCorrUncertainty_DN)   out.errEffSF_id_corr_dn[i]   = sf[i] - out.eleEffSF[i];
+                else if(ourSys == NtSys::EL_EFF_Reco_TotalCorrUncertainty_UP) out.errEffSF_reco_corr_up[i] = sf[i] - out.eleEffSF[i];
+                else if(ourSys == NtSys::EL_EFF_Reco_TotalCorrUncertainty_DN) out.errEffSF_reco_corr_dn[i] = sf[i] - out.eleEffSF[i];
             }
         } // sysInfo
 
@@ -829,21 +797,6 @@ void SusyNtMaker::storeMuon(const xAOD::Muon &in)
     if(m_isMC && fabs(out.eta)<2.5 && out.pt>20){ // SF's are not binned for pt < 20 GeV
         out.muoEffSF[MuonId::Loose]  = m_susyObj[SusyObjId::muoLoose]->GetSignalMuonSF (in, recoSF, isoSF);
         out.muoEffSF[MuonId::Medium] = m_susyObj[SusyObjId::muoMedium]->GetSignalMuonSF(in, recoSF, isoSF);
-
-        // dantrim Jan 5 2015 : trigger SF kludge -- this is not absolutely correct as the SF are meant for the final signal muons
-        // going into your selection, which is not the case here as we are forcing the tool to provide us
-        // the SF on a per-muon basis
-        xAOD::MuonContainer *sf_muon = new xAOD::MuonContainer;
-        xAOD::MuonAuxContainer *sf_muon_aux = new xAOD::MuonAuxContainer;
-        sf_muon->setStore(sf_muon_aux);
-        xAOD::Muon* sfMu = new xAOD::Muon;
-        sfMu->makePrivateStore(in);
-        sf_muon->push_back(sfMu);
-        out.muoTrigSF[MuonId::Loose] = m_susyObj[SusyObjId::muoLoose]->GetTotalMuonSF(*sf_muon, false, false);
-        out.muoTrigSF[MuonId::Medium] = m_susyObj[SusyObjId::muoMedium]->GetTotalMuonSF(*sf_muon, false, false);
-
-        delete sf_muon;
-        delete sf_muon_aux;
     }
     //////////////////////////////////////
     // Systematic variation on muon SF
@@ -861,37 +814,13 @@ void SusyNtMaker::storeMuon(const xAOD::Muon &in)
             }
             vector<float> sf;
             sf.assign(MuonId::MuonIdInvalid, 1);
-            #warning not handling trigger SF in muon systematic loop
             sf[MuonId::Medium] = m_susyObj[SusyObjId::muoMedium]->GetSignalMuonSF(in, recoSF, isoSF);
             sf[MuonId::Loose] = m_susyObj[SusyObjId::muoLoose]->GetSignalMuonSF(in, recoSF, isoSF);
             for(int i=MuonId::VeryLoose; i<MuonId::MuonIdInvalid; i++){
-                if     (ourSys == NtSys::MUON_EFF_STAT_UP)        out.errEffSF_stat_up[i] = sf[i] - out.muoEffSF[i];
-                else if(ourSys == NtSys::MUON_EFF_STAT_DN)        out.errEffSF_stat_dn[i] = sf[i] - out.muoEffSF[i];
-                else if(ourSys == NtSys::MUON_EFF_SYS_UP)         out.errEffSF_syst_up[i] = sf[i] - out.muoEffSF[i];
-                else if(ourSys == NtSys::MUON_EFF_SYS_DN)         out.errEffSF_syst_dn[i] = sf[i] - out.muoEffSF[i];
-                else if(ourSys == NtSys::MUON_EFF_STAT_LOWPT_UP)  out.errEffSF_stat_lowpt_up[i] = sf[i] - out.muoEffSF[i];
-                else if(ourSys == NtSys::MUON_EFF_STAT_LOWPT_DN)  out.errEffSF_stat_lowpt_dn[i] = sf[i] - out.muoEffSF[i];
-                else if(ourSys == NtSys::MUON_EFF_SYS_LOWPT_UP)   out.errEffSF_syst_lowpt_up[i] = sf[i] - out.muoEffSF[i];
-                else if(ourSys == NtSys::MUON_EFF_SYS_LOWPT_DN)   out.errEffSF_syst_lowpt_dn[i] = sf[i] - out.muoEffSF[i];
-                else if(ourSys == NtSys::MUON_ISO_STAT_UP)        out.errIso_stat_up[i] = sf[i] - out.muoEffSF[i];
-                else if(ourSys == NtSys::MUON_ISO_STAT_DN)        out.errIso_stat_dn[i] = sf[i] - out.muoEffSF[i];
-                else if(ourSys == NtSys::MUON_ISO_SYS_UP)         out.errIso_syst_up[i] = sf[i] - out.muoEffSF[i];
-                else if(ourSys == NtSys::MUON_ISO_SYS_DN)         out.errIso_syst_dn[i] = sf[i] - out.muoEffSF[i];
-
-/*
-                if(i==1 || i==2) {
-                if(i==1)
-                    cout << "MuonId: Loose " << endl;
-                else if(i==2) 
-                    cout << "MuonId: Medium" << endl;
-                cout << "    effstat        : " << out.errEffSF_stat_up[i] << "  " << out.errEffSF_stat_dn[i] << endl;
-                cout << "    effsyst        : " << out.errEffSF_syst_up[i] << "  " << out.errEffSF_syst_dn[i] << endl;
-                cout << "    eff_stat_lowpt : " << out.errEffSF_stat_lowpt_up[i] << "  " << out.errEffSF_stat_lowpt_dn[i] << endl;
-                cout << "    eff_syst_lowpt : " << out.errEffSF_syst_lowpt_up[i] << "  " << out.errEffSF_syst_lowpt_dn[i] << endl;
-                cout << "    eff_iso_stat   : " << out.errIso_stat_up[i] << "  " << out.errIso_stat_dn[i] << endl;
-                cout << "    eff_iso_syst   : " << out.errIso_syst_up[i] << "  " << out.errIso_syst_dn[i] << endl;
-                }
-*/
+                if     (ourSys == NtSys::MUONSFSTAT_UP)  out.errEffSF_stat_up[i] = sf[i] - out.muoEffSF[i];
+                else if(ourSys == NtSys::MUONSFSTAT_DN) out.errEffSF_stat_dn[i] = sf[i] - out.muoEffSF[i];
+                else if(ourSys == NtSys::MUONSFSYS_UP) out.errEffSF_syst_up[i] = sf[i] - out.muoEffSF[i];
+                else if(ourSys == NtSys::MUONSFSYS_DN) out.errEffSF_syst_dn[i] = sf[i] - out.muoEffSF[i];
             }
         } // sysInfo
         for(int i : Susy::muonIds()){
@@ -961,37 +890,6 @@ void SusyNtMaker::storeJet(const xAOD::Jet &in)
     out.sv1plusip3d   = (in.btagging())->SV1plusIP3D_discriminant();           
     out.bjet = m_susyObj[m_eleIDDefault]->IsBJet(in) ? 1 : 0;
     out.effscalefact = m_isMC ? in.auxdata< double >("effscalefact") : 1; // dantrim Jul 19 2015 -- error says new type is float, but by float they mean double
-
-
-    if(m_isMC && m_sys) {
-        for(const auto& sysInfo : systInfoList) {
-            if(!(sysInfo.affectsType == ST::SystObjType::BTag && sysInfo.affectsWeights)) continue;
-            const CP::SystematicSet& sys = sysInfo.systset;
-            if(m_susyObj[m_eleIDDefault]->applySystematicVariation(sys) != CP::SystematicCode::Ok) {
-                cout << "SusyNtMaker::storeJet    cannot configure SUSYTools for systematic " << sys.name() << endl;
-                continue;
-            }
-            SusyNtSys ourSys = CPsys2sys((sys.name()).c_str());
-            if(!(ourSys==NtSys::FT_EFF_B_systematics_UP       || ourSys==NtSys::FT_EFF_B_systematics_DN
-               ||ourSys==NtSys::FT_EFF_C_systematics_UP       || ourSys==NtSys::FT_EFF_C_systematics_DN
-               ||ourSys==NtSys::FT_EFF_Light_systematics_UP   || ourSys==NtSys::FT_EFF_Light_systematics_DN
-               ||ourSys==NtSys::FT_EFF_extrapolation_UP       || ourSys==NtSys::FT_EFF_extrapolation_DN
-               ||ourSys==NtSys::FT_EFF_extrapolation_charm_UP || ourSys==NtSys::FT_EFF_extrapolation_charm_DN) ) continue;
-
-            // redecorate the jets
-            m_susyObj[m_eleIDDefault]->BtagSF(XaodAnalysis::xaodJets(systInfoList[0]));
-
-            double sf_out = out.effscalefact - in.auxdata< double >("effscalefact");
-            out.setFTSys(ourSys, sf_out);
-
-        } // sysInfo
-        // reset systematics
-        if(m_susyObj[m_eleIDDefault]->resetSystematics() != CP::SystematicCode::Ok){
-            cout << "SusyNtMaker::storeJet    cannot reset SUSYTools systematics. Aborting." << endl;
-            abort();
-        }
-    } // isMC && sys
-
 
   //  vector<float> test_values;
   //  test_values.push_back(out.effscalefact);
@@ -1101,9 +999,9 @@ void SusyNtMaker::storePhoton(const xAOD::Photon &in)
     out.topoEtcone40 = in.isolationValue(xAOD::Iso::topoetcone40) * MeV2GeV;
 
     // isolation
-    out.isoFixedCutTight         = m_isoToolGradientLooseTight->accept(in) ? true : false;
-    out.isoFixedCutTightCaloOnly = m_isoToolGradientTightCalo->accept(in) ? true : false;
-    out.isoFixedCutLoose         = m_isoToolLooseTrackOnlyLoose->accept(in) ? true : false;
+    out.isoCone40         = m_isoToolGradientLooseTight->accept(in) ? true : false;
+    out.isoCone40CaloOnly = m_isoToolGradientTightCalo->accept(in) ? true : false;
+    out.isoCone20         = m_isoToolLooseTrackOnlyLoose->accept(in) ? true : false;
    
     if(m_dbg) cout << "AT: storePhoton: " << out.pt << " " << out.tight << " " << out.isConv << endl;
     if(m_dbg && !all_available) cout<<"missing some photon variables"<<endl;
