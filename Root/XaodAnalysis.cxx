@@ -83,7 +83,7 @@ XaodAnalysis::XaodAnalysis() :
     //m_event(xAOD::TEvent::kClassAccess),
     m_event(xAOD::TEvent::kBranchAccess), ///> dantrim -- (in PAT threads, TDT is supposed to work with kBranchAccess option)
     m_store(),
-    m_eleIDDefault(eleTightLH),
+    m_eleIDDefault(eleTightLLH),
 	m_electronEfficiencySFTool(0),
     m_elecSelLikelihoodVeryLoose(0),
     m_elecSelLikelihoodLoose(0),
@@ -1395,14 +1395,14 @@ bool XaodAnalysis::matchTruthJet(int iJet)
 /*--------------------------------------------------------------------------------*/
 bool XaodAnalysis::eleIsOfType(const xAOD::Electron &in, ElectronId id)
 {
-    if     (id==ElectronId::VeryLooseLH  && m_elecSelLikelihoodVeryLoose->accept(in))  return true;
-    else if(id==ElectronId::LooseLH  && m_elecSelLikelihoodLoose->accept(in))  return true;
-    else if(id==ElectronId::MediumLH && m_elecSelLikelihoodMedium->accept(in)) return true;
-    else if(id==ElectronId::TightLH  && m_elecSelLikelihoodTight->accept(in))  return true;
+    if     (id==ElectronId::VeryLooseLLH  && m_elecSelLikelihoodVeryLoose->accept(in))  return true;
+    else if(id==ElectronId::LooseLLH  && m_elecSelLikelihoodLoose->accept(in))  return true;
+    else if(id==ElectronId::MediumLLH && m_elecSelLikelihoodMedium->accept(in)) return true;
+    else if(id==ElectronId::TightLLH  && m_elecSelLikelihoodTight->accept(in))  return true;
 
-    else if(id==ElectronId::LooseLH_nod0  && m_elecSelLikelihoodLoose_nod0->accept(in))  return true;
-    else if(id==ElectronId::MediumLH_nod0 && m_elecSelLikelihoodMedium_nod0->accept(in)) return true;
-    else if(id==ElectronId::TightLH_nod0  && m_elecSelLikelihoodTight_nod0->accept(in))  return true;
+    else if(id==ElectronId::LooseLLH_nod0  && m_elecSelLikelihoodLoose_nod0->accept(in))  return true;
+    else if(id==ElectronId::MediumLLH_nod0 && m_elecSelLikelihoodMedium_nod0->accept(in)) return true;
+    else if(id==ElectronId::TightLLH_nod0  && m_elecSelLikelihoodTight_nod0->accept(in))  return true;
     return false;
 }
 /*--------------------------------------------------------------------------------*/

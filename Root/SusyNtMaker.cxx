@@ -471,13 +471,13 @@ void SusyNtMaker::storeElectron(const xAOD::Electron &in)
     //////////////////////////////////////
     // Electron LH ID 
     //////////////////////////////////////
-    out.veryLooseLH   = eleIsOfType(in, ElectronId::VeryLooseLH);
-    out.looseLH       = eleIsOfType(in, ElectronId::LooseLH);
-    out.mediumLH      = eleIsOfType(in, ElectronId::MediumLH);
-    out.tightLH       = eleIsOfType(in, ElectronId::TightLH);
-    out.looseLH_nod0  = eleIsOfType(in, ElectronId::LooseLH_nod0);
-    out.mediumLH_nod0 = eleIsOfType(in, ElectronId::MediumLH_nod0);
-    out.tightLH_nod0  = eleIsOfType(in, ElectronId::TightLH_nod0);
+    out.veryLooseLLH   = eleIsOfType(in, ElectronId::VeryLooseLLH);
+    out.looseLLH       = eleIsOfType(in, ElectronId::LooseLLH);
+    out.mediumLLH      = eleIsOfType(in, ElectronId::MediumLLH);
+    out.tightLLH       = eleIsOfType(in, ElectronId::TightLLH);
+    out.looseLLH_nod0  = eleIsOfType(in, ElectronId::LooseLLH_nod0);
+    out.mediumLLH_nod0 = eleIsOfType(in, ElectronId::MediumLLH_nod0);
+    out.tightLLH_nod0  = eleIsOfType(in, ElectronId::TightLLH_nod0);
 
     //////////////////////////////////////
     // Isolation flags (IsolationSelectionTool)
@@ -504,11 +504,11 @@ void SusyNtMaker::storeElectron(const xAOD::Electron &in)
     if(m_dbg>=10) 
         cout << "AT: storing in susyNt electron Et "
              << out.pt
-             << " LH type "
-             << out.veryLooseLH << " "  
-             << out.looseLH << " "  
-             << out.mediumLH << " "  
-             << out.tightLH 
+             << " LLH type "
+             << out.veryLooseLLH << " "  
+             << out.looseLLH << " "  
+             << out.mediumLLH << " "  
+             << out.tightLLH 
              << endl;
 
     // toggles for which SF to include in electron SF 
@@ -525,10 +525,10 @@ void SusyNtMaker::storeElectron(const xAOD::Electron &in)
         //////////////////////////////////////
         // signature: (input electron, bool doRecoSF, bool doIDSF, bool doTrigSF, bool doIsoSF, string trigExpr)
         // default trigExpr: "e24_lhmedium_L1EM20VH_OR_e60_lhmedium_OR_e120_lhloose"
-        out.eleEffSF[ElectronId::TightLH] =  m_susyObj[SusyObjId::eleTightLH]->GetSignalElecSF (in, recoSF, idSF, trigSF, isoSF);
-        out.eleTrigSF[ElectronId::TightLH] = m_susyObj[SusyObjId::eleTightLH]->GetSignalElecSF (in, false, false, true, false);
-        out.eleEffSF[ElectronId::MediumLH] = m_susyObj[SusyObjId::eleMediumLH]->GetSignalElecSF(in, recoSF, idSF, trigSF, isoSF);
-        out.eleTrigSF[ElectronId::MediumLH] = m_susyObj[SusyObjId::eleMediumLH]->GetSignalElecSF(in, false, false, true, false);
+        out.eleEffSF[ElectronId::TightLLH] =  m_susyObj[SusyObjId::eleTightLLH]->GetSignalElecSF (in, recoSF, idSF, trigSF, isoSF);
+        out.eleTrigSF[ElectronId::TightLLH] = m_susyObj[SusyObjId::eleTightLLH]->GetSignalElecSF (in, false, false, true, false);
+        out.eleEffSF[ElectronId::MediumLLH] = m_susyObj[SusyObjId::eleMediumLLH]->GetSignalElecSF(in, recoSF, idSF, trigSF, isoSF);
+        out.eleTrigSF[ElectronId::MediumLLH] = m_susyObj[SusyObjId::eleMediumLLH]->GetSignalElecSF(in, false, false, true, false);
         // there are no isolation SF's for electron ID looseLH
         //out.eleEffSF[ElectronId::LooseLH] = m_susyObj[SusyObjId::eleLooseLH]->GetSignalElecSF(in, recoSF, idSF, trigSF, isoSF);
 
@@ -551,7 +551,7 @@ void SusyNtMaker::storeElectron(const xAOD::Electron &in)
     //////////////////////////////////////
     // Systematic variation on electron SF
     //////////////////////////////////////
-    if(m_isMC && m_sys && (out.veryLooseLH || out.looseLH || out.mediumLH || out.tightLH)) {
+    if(m_isMC && m_sys && (out.veryLooseLLH || out.looseLLH || out.mediumLLH || out.tightLLH)) {
         for(const auto& sysInfo : systInfoList) {
             if(!(sysInfo.affectsType == ST::SystObjType::Electron && sysInfo.affectsWeights)) continue;
 
@@ -565,19 +565,19 @@ void SusyNtMaker::storeElectron(const xAOD::Electron &in)
             } // i 
             vector<float> sf;
             sf.assign(ElectronId::ElectronIdInvalid, 1);
-            sf[ElectronId::TightLH]  = m_susyObj[SusyObjId::eleTightLH] ->GetSignalElecSF(in, recoSF, idSF, trigSF, isoSF);
-            sf[ElectronId::MediumLH] = m_susyObj[SusyObjId::eleMediumLH]->GetSignalElecSF(in, recoSF, idSF, trigSF, isoSF);
+            sf[ElectronId::TightLLH]  = m_susyObj[SusyObjId::eleTightLLH] ->GetSignalElecSF(in, recoSF, idSF, trigSF, isoSF);
+            sf[ElectronId::MediumLLH] = m_susyObj[SusyObjId::eleMediumLLH]->GetSignalElecSF(in, recoSF, idSF, trigSF, isoSF);
 
             vector<float> sf_trig;
             sf_trig.assign(ElectronId::ElectronIdInvalid, 1);
-            sf_trig[ElectronId::TightLH]  = m_susyObj[SusyObjId::eleTightLH] ->GetSignalElecSF(in, false, false, true, false);
-            sf_trig[ElectronId::MediumLH] = m_susyObj[SusyObjId::eleMediumLH]->GetSignalElecSF(in, false, false, true, false);
+            sf_trig[ElectronId::TightLLH]  = m_susyObj[SusyObjId::eleTightLLH] ->GetSignalElecSF(in, false, false, true, false);
+            sf_trig[ElectronId::MediumLLH] = m_susyObj[SusyObjId::eleMediumLLH]->GetSignalElecSF(in, false, false, true, false);
             
             // there are no isolation SF's for electrion ID looseLH
             //sf[ElectronId::LooseLH]  = m_susyObj[SusyObjId::eleLooseLH] ->GetSignalElecSF(in, recoSF, idSF, trigSF);
 
             #warning storeElectron check method at getting trigger sf
-            for(int i=ElectronId::TightLH; i<ElectronIdInvalid; i++){
+            for(int i=ElectronId::TightLLH; i<ElectronIdInvalid; i++){
                 if     (ourSys == NtSys::EL_EFF_ID_TotalCorrUncertainty_UP)      out.errEffSF_id_corr_up[i]   = sf[i] - out.eleEffSF[i];
                 else if(ourSys == NtSys::EL_EFF_ID_TotalCorrUncertainty_DN)      out.errEffSF_id_corr_dn[i]   = sf[i] - out.eleEffSF[i];
                 else if(ourSys == NtSys::EL_EFF_Reco_TotalCorrUncertainty_UP)    out.errEffSF_reco_corr_up[i] = sf[i] - out.eleEffSF[i];
@@ -612,7 +612,7 @@ void SusyNtMaker::storeElectron(const xAOD::Electron &in)
         }
     } // if isMC
     else {
-        for(int i=ElectronId::TightLH; i<ElectronIdInvalid; i++){
+        for(int i=ElectronId::TightLLH; i<ElectronIdInvalid; i++){
             out.errEffSF_id_corr_up[i] = out.errEffSF_id_corr_dn[i] = 0;
             out.errEffSF_reco_corr_up[i] = out.errEffSF_reco_corr_dn[i] = 0;
         }
