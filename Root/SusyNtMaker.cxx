@@ -47,6 +47,9 @@ namespace smc =Susy::mc;
 
 using Susy::SusyNtMaker;
 
+using GhostList_t = std::vector< ElementLink<xAOD::IParticleContainer> >;
+static SG::AuxElement::ConstAccessor<GhostList_t> ghostAcc("GhostTrack");
+
 //----------------------------------------------------------
 SusyNtMaker::SusyNtMaker() :
     m_outTreeFile(NULL),
@@ -808,6 +811,29 @@ void SusyNtMaker::storeMuon(const xAOD::Muon &in)
     }
 
     //////////////////////////////////////
+    // Ghost Associated ID track
+    //////////////////////////////////////
+    const xAOD::TrackParticle* idtrack = in.trackParticle( xAOD::Muon::InnerDetectorTrackParticle );
+    out.ghostTrack.resize(m_preJets.size(), 0);
+    out.ghostTrack.assign(m_preJets.size(), 0);
+    if(idtrack) {
+        xAOD::JetContainer* jets = XaodAnalysis::xaodJets(systInfoList[0]);
+        for(int ij = 0; ij < (int)m_preJets.size(); ij++) {
+            for(const auto& ghostLink : ghostAcc(*(jets->at(m_preJets[ij]))) ) {
+                if(ghostLink.isValid() && (idtrack == *ghostLink)) {
+                    out.ghostTrack.at(ij) = 1;
+                    break; // move to next jet
+                }
+              //  else {
+              //      out.ghostTrack.at(ij) = 0;
+              //  }
+            } // ghostLink loop
+        } // preJets loop
+    } else {
+        out.ghostTrack.assign(m_preJets.size(), 0);
+    }
+
+    //////////////////////////////////////
     // Trigger matching
     //////////////////////////////////////
     out.trigBits   = matchMuonTriggers(in);
@@ -1073,6 +1099,7 @@ void SusyNtMaker::storeJet(const xAOD::Jet &in)
     // bool passSWord = (MissingETTags::DEFAULT == sWord);       // Note assuming default met..
 
     if(m_dbg && !all_available) cout<<"missing some jet variables"<<endl;
+    out.idx = (m_susyNt.jet()->size()); // add index of this jet in the susyNt jet container
     m_susyNt.jet()->push_back(out);
 }
 //----------------------------------------------------------
