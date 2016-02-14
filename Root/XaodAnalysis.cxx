@@ -87,6 +87,7 @@ XaodAnalysis::XaodAnalysis() :
 	m_electronEfficiencySFTool(0),
     m_elecSelLikelihoodVeryLoose(0),
     m_elecSelLikelihoodLoose(0),
+    m_elecSelLikelihoodLooseBLayer(0),
     m_elecSelLikelihoodMedium(0),
     m_elecSelLikelihoodTight(0),
     m_elecSelLikelihoodLoose_nod0(0),
@@ -252,6 +253,7 @@ void XaodAnalysis::Terminate()
     delete m_electronEfficiencySFTool;
     delete m_elecSelLikelihoodVeryLoose;
     delete m_elecSelLikelihoodLoose;
+    delete m_elecSelLikelihoodLooseBLayer;
     delete m_elecSelLikelihoodMedium;
     delete m_elecSelLikelihoodTight;
     delete m_elecSelLikelihoodLoose_nod0;
@@ -502,43 +504,49 @@ void XaodAnalysis::initElectronTools()
 
     std::string confDir = "ElectronPhotonSelectorTools/offline/mc15_20150712/";
 
-    // VeryLooseLH
+    // VeryLooseLLH
     m_elecSelLikelihoodVeryLoose = new AsgElectronLikelihoodTool("AsgElectronLikelihoodToolVeryLoose");
     CHECK( m_elecSelLikelihoodVeryLoose->setProperty("primaryVertexContainer","PrimaryVertices") );
     CHECK( m_elecSelLikelihoodVeryLoose->setProperty("ConfigFile",confDir+"ElectronLikelihoodVeryLooseOfflineConfig2015.conf"));
     CHECK( m_elecSelLikelihoodVeryLoose->initialize() );
 
-    // LooseLH
+    // LooseLLH
     m_elecSelLikelihoodLoose = new AsgElectronLikelihoodTool("AsgElectronLikelihoodToolLoose");
     CHECK( m_elecSelLikelihoodLoose->setProperty("primaryVertexContainer","PrimaryVertices") );
     CHECK( m_elecSelLikelihoodLoose->setProperty("ConfigFile",confDir+"ElectronLikelihoodLooseOfflineConfig2015.conf"));
     CHECK( m_elecSelLikelihoodLoose->initialize() );
+
+    // LooseAndBLayerLLH
+    m_elecSelLikelihoodLooseBLayer = new AsgElectronLikelihoodTool("AsgElectronLikelihoodToolLooseBLayer");
+    CHECK( m_elecSelLikelihoodLooseBLayer->setProperty("primaryVertexContainer", "PrimaryVertices") );
+    CHECK( m_elecSelLikelihoodLooseBLayer->setProperty("ConfigFile", confDir+"ElectronLikelihoodLooseOfflineConfig2015_CutBL.conf"));
+    CHECK( m_elecSelLikelihoodLooseBLayer->initialize() );
     
-    // MediumLH
+    // MediumLLH
     m_elecSelLikelihoodMedium = new AsgElectronLikelihoodTool("AsgElectronLikelihoodToolMedium");
     CHECK( m_elecSelLikelihoodMedium->setProperty("primaryVertexContainer","PrimaryVertices") );
     CHECK( m_elecSelLikelihoodMedium->setProperty("ConfigFile",confDir+"ElectronLikelihoodMediumOfflineConfig2015.conf") );
     CHECK( m_elecSelLikelihoodMedium->initialize() );
 
-    // TightLH
+    // TightLLH
     m_elecSelLikelihoodTight = new AsgElectronLikelihoodTool("AsgElectronLikelihoodToolTight");
     CHECK( m_elecSelLikelihoodTight->setProperty("primaryVertexContainer","PrimaryVertices") );
     CHECK( m_elecSelLikelihoodTight->setProperty("ConfigFile",confDir+"ElectronLikelihoodTightOfflineConfig2015.conf") );
     CHECK( m_elecSelLikelihoodTight->initialize() );
 
-    // LooseLH (noD0)
+    // LooseLLH (noD0)
     m_elecSelLikelihoodLoose_nod0 = new AsgElectronLikelihoodTool("AsgElectronLikelihoodToolLoose_nod0");
     CHECK( m_elecSelLikelihoodLoose_nod0->setProperty("primaryVertexContainer","PrimaryVertices") );
     CHECK( m_elecSelLikelihoodLoose_nod0->setProperty("ConfigFile",confDir+"ElectronLikelihoodLooseNoD0OfflineConfig2015.conf"));
     CHECK( m_elecSelLikelihoodLoose_nod0->initialize() );
     
-    // MediumLH (noD0)
+    // MediumLLH (noD0)
     m_elecSelLikelihoodMedium_nod0 = new AsgElectronLikelihoodTool("AsgElectronLikelihoodToolMedium_nod0");
     CHECK( m_elecSelLikelihoodMedium_nod0->setProperty("primaryVertexContainer","PrimaryVertices") );
     CHECK( m_elecSelLikelihoodMedium_nod0->setProperty("ConfigFile",confDir+"ElectronLikelihoodMediumNoD0OfflineConfig2015.conf") );
     CHECK( m_elecSelLikelihoodMedium_nod0->initialize() );
 
-    // TightLH (noD0)
+    // TightLLH (noD0)
     m_elecSelLikelihoodTight_nod0 = new AsgElectronLikelihoodTool("AsgElectronLikelihoodToolTight_nod0");
     CHECK( m_elecSelLikelihoodTight_nod0->setProperty("primaryVertexContainer","PrimaryVertices") );
     CHECK( m_elecSelLikelihoodTight_nod0->setProperty("ConfigFile",confDir+"ElectronLikelihoodTightNoD0OfflineConfig2015.conf") );
@@ -1396,6 +1404,7 @@ bool XaodAnalysis::eleIsOfType(const xAOD::Electron &in, ElectronId id)
 {
     if     (id==ElectronId::VeryLooseLLH  && m_elecSelLikelihoodVeryLoose->accept(in))  return true;
     else if(id==ElectronId::LooseLLH  && m_elecSelLikelihoodLoose->accept(in))  return true;
+    else if(id==ElectronId::LooseLLHBLayer && m_elecSelLikelihoodLooseBLayer->accept(in)) return true;
     else if(id==ElectronId::MediumLLH && m_elecSelLikelihoodMedium->accept(in)) return true;
     else if(id==ElectronId::TightLLH  && m_elecSelLikelihoodTight->accept(in))  return true;
 

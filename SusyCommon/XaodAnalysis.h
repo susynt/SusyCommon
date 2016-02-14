@@ -600,6 +600,7 @@ namespace Susy {
     AsgElectronEfficiencyCorrectionTool *m_electronEfficiencySFTool;
     AsgElectronLikelihoodTool *m_elecSelLikelihoodVeryLoose;
     AsgElectronLikelihoodTool *m_elecSelLikelihoodLoose;
+    AsgElectronLikelihoodTool *m_elecSelLikelihoodLooseBLayer;
     AsgElectronLikelihoodTool *m_elecSelLikelihoodMedium;
     AsgElectronLikelihoodTool *m_elecSelLikelihoodTight;
 

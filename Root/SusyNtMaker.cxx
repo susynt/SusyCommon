@@ -474,6 +474,7 @@ void SusyNtMaker::storeElectron(const xAOD::Electron &in)
     out.veryLooseLLH   = eleIsOfType(in, ElectronId::VeryLooseLLH);
     out.looseLLH       = eleIsOfType(in, ElectronId::LooseLLH);
     out.mediumLLH      = eleIsOfType(in, ElectronId::MediumLLH);
+    out.looseLLHBLayer = eleIsOfType(in, ElectronId::LooseLLHBLayer);
     out.tightLLH       = eleIsOfType(in, ElectronId::TightLLH);
     out.looseLLH_nod0  = eleIsOfType(in, ElectronId::LooseLLH_nod0);
     out.mediumLLH_nod0 = eleIsOfType(in, ElectronId::MediumLLH_nod0);
