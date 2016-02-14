@@ -309,9 +309,6 @@ XaodAnalysis& XaodAnalysis::initSusyTools()
         ST::SettingDataSource datasource = !m_isMC ? ST::Data : (m_isAF2 ? ST::AtlfastII : ST::FullSim);
         CHECK( m_susyObj[susyObjId]->setProperty("DataSource",datasource) );
 
-        // set whether mc15b or not
-        CHECK( m_susyObj[susyObjId]->setProperty("IsMC15b", m_isMC15b) );
-
         ///////////////////////////////////////
         // set up the pileup reweighting tool
         // inside of ST
