@@ -1037,7 +1037,7 @@ void XaodAnalysis::selectBaselineObjects(SusyNtSys sys, ST::SystInfo sysInfo)
     int iJet=-1;
     for(const auto& jet : *jets){
         iJet++;
-        if((bool)jet->auxdata< char >("baseline")==1 ) m_preJets.push_back(iJet);//AT: save baseline pT>20GeV only
+        if(jet->pt()*MeV2GeV > 20) m_preJets.push_back(iJet);
         // defaults ST::00-06-15: IsBadJet(const xAOD::Jet&, jvtcut=0.64)
         // defaults ST::00-06-15: IsSignalJet(const xAOD::Jet&, ptcut=20000., etacut=2.8, jvtcut=0.64)
         //    !!--> IsBadJet must be called before IsSignalJet !!
