@@ -1457,8 +1457,17 @@ TBits XaodAnalysis::matchMuonTriggers(const xAOD::Muon &in)
     TBits muoTrigBits(m_nTriggerBits);
     muoTrigBits.ResetAllBits();
     std::vector<std::string> trigs = XaodAnalysis::xaodTriggers();
+    std::string L1_item = "L1_";
     for(unsigned int iTrig=0; iTrig<trigs.size(); iTrig++){
-        if(m_susyObj[m_eleIDDefault]->IsTrigMatched(&in, trigs[iTrig])) muoTrigBits.SetBitNumber(iTrig, true);
+        std::size_t find_L1 = trigs[iTrig].find(L1_item);
+        bool do_L1_match = false;
+        if(find_L1!=std::string::npos) do_L1_match = true;
+        if(!do_L1_match) {
+            if(m_susyObj[m_eleIDDefault]->IsTrigMatched(&in, trigs[iTrig])) muoTrigBits.SetBitNumber(iTrig, true);
+        }
+        else if(do_L1_match) {
+            if(m_susyObj[m_eleIDDefault]->IsTrigMatchedL1(&in, trigs[iTrig])) muoTrigBits.SetBitNumber(iTrig, true);
+        }
         //if(m_trigMuonMatchTool->match(&in, trigs[iTrig]))  muoTrigBits.SetBitNumber(iTrig, true);
     }
     return muoTrigBits;
