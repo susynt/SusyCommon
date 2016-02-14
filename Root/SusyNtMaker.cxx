@@ -481,6 +481,11 @@ void SusyNtMaker::storeElectron(const xAOD::Electron &in)
     out.tightLLH_nod0  = eleIsOfType(in, ElectronId::TightLLH_nod0);
 
     //////////////////////////////////////
+    // Object Quality
+    //////////////////////////////////////
+    out.passOQBadClusElectron = (in.isGoodOQ(xAOD::EgammaParameters::BADCLUSELECTRON) ? true : false);
+
+    //////////////////////////////////////
     // Isolation flags (IsolationSelectionTool)
     //////////////////////////////////////
     out.isoGradientLoose  = m_isoToolGradientLooseTight->accept(in) ? true : false;
