@@ -552,6 +552,10 @@ void SusyNtMaker::storeElectron(const xAOD::Electron &in)
         // crash p1874 out.isChargeFlip  = m_isMC ? isChargeFlip(in.charge(),truthElectronCharge(in)) : false;
         out.truthCharge =  truthEle ? truthEle->charge() : 0;
         out.ss3lChargeFlip = in.auxdataConst<int>("chargeFlip");
+
+        // Electron bkg origins
+        out.mcBkgMotherPdgId = in.auxdata<int>("bkgMotherPdgId");
+        out.mcBkgTruthOrigin = in.auxdata<int>("bkgTruthOrigin");
     }
 
     //////////////////////////////////////
