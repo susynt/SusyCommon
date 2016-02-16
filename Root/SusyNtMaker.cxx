@@ -220,7 +220,7 @@ Bool_t SusyNtMaker::Process(Long64_t entry)
         }
     }
     clearOutputObjects();
-    deleteShallowCopies();
+    deleteShallowCopies(); // delete shallow copies here to clear all of the containers (including nominal) before next event
     return kTRUE;
 }
 //----------------------------------------------------------
@@ -1534,7 +1534,7 @@ void SusyNtMaker::doSystematic()
           Recheck the event selection and save objects scale variation
         */
         clearOutputObjects(false);
-        deleteShallowCopies(false);//Don't clear the nominal containers
+        deleteShallowCopies(false);//Don't clear the nominal containers -- only want to refresh the systematic varied objects
         selectObjects(ourSys, sysInfo);
         retrieveXaodMet(sysInfo,ourSys);
         retrieveXaodTrackMet(sysInfo,ourSys);
