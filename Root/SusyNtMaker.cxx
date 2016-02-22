@@ -1136,7 +1136,7 @@ void SusyNtMaker::storePhoton(const xAOD::Photon &in)
 
     if(const xAOD::CaloCluster* c = in.caloCluster()) {
         out.clusE   = c->e()*MeV2GeV;
-        out.clusEta = c->eta();
+        out.clusEta = c->etaBE(2);
         out.clusPhi = c->phi();
     } else {
         all_available = false;
