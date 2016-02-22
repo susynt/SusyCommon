@@ -1124,6 +1124,11 @@ void SusyNtMaker::storePhoton(const xAOD::Photon &in)
     out.eta = eta;
     out.phi = phi;
     out.m   = m;
+
+    out.author = static_cast<int>(in.author());
+    out.authorPhoton = in.author() & xAOD::EgammaParameters::AuthorPhoton;
+    out.authorAmbiguous = in.author() & xAOD::EgammaParameters::AuthorAmbiguous;
+
     out.isConv = xAOD::EgammaHelpers::isConvertedPhoton(&in);
     bool all_available=true;
 
