@@ -34,6 +34,8 @@
 
 #include "SusyNtuple/TriggerTools.h"
 
+#include "xAODTau/TauxAODHelpers.h"
+
 
 #include <algorithm> // max_element
 #include <iomanip> // setw
@@ -194,23 +196,14 @@ Bool_t SusyNtMaker::Process(Long64_t entry)
     int pdg_2 = 0;
     if(m_isMC && !xaodTruthParticles()->empty() && xaodTruthParticles()!=NULL){
         m_susyObj[m_eleIDDefault]->FindSusyHP(xaodTruthParticles(), pdg_1, pdg_2);
-    //if(m_isMC) m_susyObj[m_eleIDDefault]->FindSusyHP(xaodTruthParticles(), pdg_1, pdg_2);
     }
     if(pdg_1 != 0 && pdg_2 != 0) m_susyFinalState = SUSY::finalState(pdg_1, pdg_2); // c.f. SUSYTools/SUSYCrossSection.h
 
     if(selectEvent() && m_fillNt){
+        if(m_isMC) {
+            m_tauTruthMatchingTool->initializeEvent(); // give the tool the truth info 
+        }
         matchTriggers();
-        // dantrim Jul 2 2015
-     //   if(m_isMC) { 
-     //       //xaodTruthParticles();
-     //       m_tauTruthMatchingTool->setTruthParticleContainer(xaodTruthParticles());
-     //       m_tauTruthMatchingTool->initializeEvent();
-     //   }
-
-        //if(m_isMC){
-        //    //m_tauTruthMatchingTool->setTruthParticleContainer(xaodTruthParticles()); // comment out for memory leak check
-        //    //m_tauTruthMatchingTool->createTruthTauContainer(); // DA: gets called automatically when calling setTruthParticleContainer
-        //}
         fillNtVars();
         if(m_isMC && m_sys) doSystematic();
         int bytes = m_outTree->Fill();
@@ -1082,7 +1075,6 @@ void SusyNtMaker::storeJet(const xAOD::Jet &in)
     float fracSamplingMax, samplingMax;
     in.getAttribute(xAOD::JetAttribute::SamplingMax, samplingMax);
     in.getAttribute(xAOD::JetAttribute::FracSamplingMax, fracSamplingMax);
-    const xAOD::EventInfo* eventinfo = XaodAnalysis::xaodEventInfo();
     //AT Removed in SUSYTools-00-005-00-29
     /*
     out.isHotTile = m_susyObj[m_eleIDDefault]->isHotTile(eventinfo->runNumber(),
@@ -1168,41 +1160,37 @@ void SusyNtMaker::storeTau(const xAOD::TauJet &in)
     out.phi = phi;
     out.m   = m;
     out.q = int(in.charge());
-    out.author = 0;//remove ?
-/*
-    if(in.isTau(xAOD::TauJetParameters::tauRec))  out.author |= 1<<0;
-    if(in.isTau(xAOD::TauJetParameters::tau1P3P)) out.author |= 1<<1;
-    if(in.isTau(xAOD::TauJetParameters::PanTau))  out.author |= 1<<2;
-*/
+
+    //////////////////////////////////////
+    // TauSelectionTool WP
+    //////////////////////////////////////
+    out.loose   = static_cast<bool>( m_tauSelToolLoose->accept(in) );
+    out.medium  = static_cast<bool>( m_tauSelToolMedium->accept(in) );
+    out.tight   = static_cast<bool>( m_tauSelToolTight->accept(in) );
    
     out.nTrack = in.nTracks();
-    out.eleBDT = in.discriminant(xAOD::TauJetParameters::BDTEleScore);
-    out.jetBDT = in.discriminant(xAOD::TauJetParameters::BDTJetScore);
 
-    out.jetBDTSigLoose = in.isTau(xAOD::TauJetParameters::JetBDTSigLoose);
-    out.jetBDTSigMedium = in.isTau(xAOD::TauJetParameters::JetBDTSigMedium);
-    out.jetBDTSigTight = in.isTau(xAOD::TauJetParameters::JetBDTSigTight);
-
-    out.eleBDTLoose = in.isTau(xAOD::TauJetParameters::EleBDTLoose);
-    out.eleBDTMedium = in.isTau(xAOD::TauJetParameters::EleBDTMedium);
-    out.eleBDTTight = in.isTau(xAOD::TauJetParameters::EleBDTTight);
-
-    out.muonVeto = in.isTau(xAOD::TauJetParameters::MuonVeto);
-    
     if (m_isMC){
-       // // dantrim Jul 3 2015 : SUSYTools' examples don't even work...
-       // const xAOD::TruthParticle* truthTau = m_tauTruthMatchingTool->applyTruthMatch(in);
-       // if((bool)in.auxdata< char >("IsTruthMatched")) {
-       //     cout << "tau IsTruthMatched == True    nProngs: " << int(in.auxdata<size_t>("TruthProng")) << "   charge: " << int(in.auxdata<int>("TruthCharge")) << endl;
-       //     out.trueTau = true;
-       // }
+        auto truthTau = m_tauTruthMatchingTool->getTruth(in);
+        out.isTruthMatched = (bool)in.auxdata<char>("IsTruthMatched");
+        if(out.isTruthMatched) {
+            if(truthTau->isTau()) {
+                out.truthNProngs = int(truthTau->auxdata<size_t>("numCharged"));
+                out.isHadronicTau = (bool)truthTau->auxdata<char>("IsHadronicTau");
+            } //isTau
+            out.truthCharge = int(truthTau->charge());
+            out.truthPdgId = int(truthTau->absPdgId());
 
-        //m_tauTruthMatchingTool->applyTruthMatch(tau); // memory leak check
-        //if (in.auxdata<bool>("IsTruthMatched")) out.trueTau = true; // memory leak check
-        //else out.trueTau = false;  // memory leak check
-        //in.auxdata<size_t>("TruthProng");
-        //in.auxdata<int>("TruthCharge");
-        //in.auxdata<bool>("IsHadronicTau");
+            out.truthType = truthTau->auxdata<unsigned int>("classifierParticleType");
+            out.truthOrigin = truthTau->auxdata<unsigned int>("classifierParticleOrigin");
+
+        }//isTruthMatched
+        // TODO -- dantrim Feb 23 2016 -- what vars are needed from truth jet
+        //auto truthJetLink = in.auxdata< ElementLink< xAOD::JetContainer > >("truthJetLink");
+        //if(truthJetLink.isValid()) {
+        //    const xAOD::Jet* truthJet = *truthJetLink;
+        //    cout << "  > tau was matched to truth jet with (pt, eta, phi, m) = (" << truthJet->p4().Pt() << ", " << truthJet->p4().Eta() << ", " << truthJet->p4().Phi() << ", " << truthJet->p4().M() << endl;
+        //}
 
         // MJF: Scale factors are only valid for pre-selected taus
         if ( in.auxdata< char >("baseline") )
@@ -1216,30 +1204,11 @@ void SusyNtMaker::storeTau(const xAOD::TauJet &in)
             //out.mediumEffSF = in.auxdata<double>("TauScaleFactorJetIDHadTau");
             //out.tightEffSF  = in.auxdata<double>("TauScaleFactorEleOLRHadTau");
         }
-        // stat errors not supported
-        // systematics not included here
-        double EVetoSF = 0.0;
-        if (in.nTracks() == 1)
-        {
-            m_TauEffEleTool->getEfficiencyScaleFactor(in, EVetoSF); //?????
-        }
-       //AT:: Add errors - what is store does not make sense. Save same thing.
-        out.looseEVetoSF = EVetoSF;
-        out.mediumEVetoSF = EVetoSF;
-        out.tightEVetoSF = EVetoSF;
 
+        if(m_dbg>10) std::cout << "MCTruthClassifier: found Tau with (truthType, origin) = ("<< out.truthType << ", " << out.truthOrigin << ")" << std::endl;
 
- // may8 - comment out truthType accessor     out.truthType = classifyTau(tau);
-        if(m_dbg>10) std::cout << "TauClassifier: found Tau= "<< out.truthType << std::endl;
-    }
+    }// if isMC
 
-
-    //TO ADD
-    // tauOut->matched2TruthLepton   = m_isMC? m_recoTruthMatch.Matched2TruthLepton(*tauLV, true) : false;
-    // tauOut->detailedTruthType     = m_isMC? m_recoTruthMatch.TauDetailedFakeType(*tauLV) : -1;
-    // tauOut->truthType             = m_isMC? m_recoTruthMatch.TauFakeType(tauOut->detailedTruthType) : -1;
-    
-   
    if(m_dbg>5) cout << "SusyNtMaker Filling Tau pt " << out.pt 
                      << " eta " << out.eta << " phi " << out.phi << " q " << out.q << " " << int(in.charge()) << endl;
 
@@ -1263,18 +1232,6 @@ void SusyNtMaker::storeTau(const xAOD::TauJet &in)
     //   tauOut->errMediumEffSF      = sqrt(pow(tauSF->GetIDStatUnc(TAU_ARGS), 2) + pow(tauSF->GetIDSysUnc(TAU_ARGS), 2));
     //   tauOut->errTightEffSF       = sqrt(pow(tauSF->GetIDStatUnc(TAU_ARGS), 2) + pow(tauSF->GetIDSysUnc(TAU_ARGS), 2));
     //   #undef TAU_ARGS
-    
-    //   if(element->numTrack()==1){
-    //     float eta = element->leadTrack_eta();
-    //     tauOut->looseEVetoSF      = tauSF->GetEVetoSF(eta, TauCorrUncert::BDTLOOSE, TauCorrUncert::LOOSE, TauCorrUncert::MEDIUMPP);
-    //     tauOut->mediumEVetoSF     = tauSF->GetEVetoSF(eta, TauCorrUncert::BDTMEDIUM, TauCorrUncert::MEDIUM, TauCorrUncert::MEDIUMPP);
-    //     // Doesn't currently work. Not sure why. Maybe they don't provide SFs for this combo
-    //     //tauOut->tightEVetoSF      = tauSF->GetEVetoSF(eta, TauCorrUncert::BDTTIGHT, TauCorrUncert::TIGHT, TauCorrUncert::MEDIUMPP);
-    //     tauOut->errLooseEVetoSF   = tauSF->GetEVetoSFUnc(eta, TauCorrUncert::BDTLOOSE, TauCorrUncert::LOOSE, TauCorrUncert::MEDIUMPP, 1);
-    //     tauOut->errMediumEVetoSF  = tauSF->GetEVetoSFUnc(eta, TauCorrUncert::BDTMEDIUM, TauCorrUncert::MEDIUM, TauCorrUncert::MEDIUMPP, 1);
-    //     //tauOut->errTightEVetoSF   = tauSF->GetEVetoSFUnc(eta, TauCorrUncert::BDTTIGHT, TauCorrUncert::TIGHT, TauCorrUncert::MEDIUMPP, 1);
-    //   }
-    // }
     
     // Tau trigger bits needed   
  

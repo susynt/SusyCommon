@@ -103,14 +103,12 @@ XaodAnalysis::XaodAnalysis() :
     m_isoToolLooseTrackOnlyLoose(0),
     m_isoToolLoose(0),
     m_isoToolTight(0),
-	//m_tauTruthMatchingTool(0), // memory leak check
+	m_tauTruthMatchingTool(0),
 	m_tauTruthTrackMatchingTool(0),
-        //dantrim trig
-        m_evtTrigBits(m_nTriggerBits)
-    //    m_configTool(NULL),
-    //    m_trigTool(NULL),
-    //    m_trigMuonMatchTool(NULL)
-    //   // m_trigEgammaMatchTool(NULL)
+    m_tauSelToolLoose(0),
+    m_tauSelToolMedium(0),
+    m_tauSelToolTight(0),
+    m_evtTrigBits(m_nTriggerBits)
 {
     clearOutputObjects();
     clearContainerPointers();
@@ -265,9 +263,12 @@ void XaodAnalysis::Terminate()
     delete m_muonSelectionToolLoose;
     delete m_muonSelectionToolMedium;
     delete m_muonSelectionToolTight;
-    //delete m_tauTruthMatchingTool; // memory leak check
+    delete m_tauTruthMatchingTool;
     delete m_TauEffEleTool;
     delete m_tauTruthTrackMatchingTool;
+    delete m_tauSelToolLoose;
+    delete m_tauSelToolMedium;
+    delete m_tauSelToolTight;
 
     delete m_isoToolGradientLooseTight;
     delete m_isoToolGradientTightCalo;
@@ -581,6 +582,25 @@ void XaodAnalysis::initMuonTools()
 //----------------------------------------------------------
 void XaodAnalysis::initTauTools()
 {
+    // Let's select some taus
+    // > loose
+    m_tauSelToolLoose = new TauAnalysisTools::TauSelectionTool("SusyCommonTauSelectionTool_Loose");
+    CHECK( m_tauSelToolLoose->setProperty("ConfigPath", m_data_dir + "SUSYTools/tau_selection_loose.conf") );
+    CHECK( m_tauSelToolLoose->initialize() );
+    // > medium
+    m_tauSelToolMedium = new TauAnalysisTools::TauSelectionTool("SusyCommonTauSelectionTool_Medium");
+    CHECK( m_tauSelToolMedium->setProperty("ConfigPath", m_data_dir + "SUSYTools/tau_selection_medium.conf") );
+    CHECK( m_tauSelToolMedium->initialize() );
+    // > tight
+    m_tauSelToolTight = new TauAnalysisTools::TauSelectionTool("SusyCommonTauSelectionTool_Tight");
+    CHECK( m_tauSelToolTight->setProperty("ConfigPath", m_data_dir + "SUSYTools/tau_selection_tight.conf") );
+    CHECK( m_tauSelToolTight->initialize() );
+
+    // Truth Matching for all of the infos
+    m_tauTruthMatchingTool = new TauAnalysisTools::TauTruthMatchingTool("SusyCommonTauTruthMatchingTool");
+    CHECK( m_tauTruthMatchingTool->initialize() );
+    m_tauTruthMatchingTool->msg().setLevel( MSG::INFO );
+
     //m_tauTruthMatchingTool = new TauAnalysisTools::TauTruthMatchingTool("TauTruthMatchingTool");  // memory leak check
     //m_tauTruthMatchingTool->msg().setLevel(m_dbg ? MSG::DEBUG : MSG::ERROR);                      // memory leak check
     //CHECK(m_tauTruthMatchingTool->initialize());                                                  // memory leak check

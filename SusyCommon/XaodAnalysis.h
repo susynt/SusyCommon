@@ -31,6 +31,8 @@
 #include "xAODTruth/TruthParticleContainer.h"
 #include "xAODTruth/TruthEventContainer.h"
 #include "xAODTruth/xAODTruthHelpers.h"
+
+#include "TauAnalysisTools/TauSelectionTool.h"
 #include "TauAnalysisTools/TauEfficiencyCorrectionsTool.h"
 #include "TauAnalysisTools/TauTruthMatchingTool.h"
 #include "TauAnalysisTools/TauTruthTrackMatchingTool.h"
@@ -625,9 +627,13 @@ namespace Susy {
     CP::IsolationSelectionTool *m_isoToolTight;
 
     //Tau truth matchong tools
-    TauAnalysisTools::TauTruthMatchingTool       *m_tauTruthMatchingTool; // memory leak check
+    TauAnalysisTools::TauTruthMatchingTool       *m_tauTruthMatchingTool;
     TauAnalysisTools::TauTruthTrackMatchingTool  *m_tauTruthTrackMatchingTool;
     TauAnalysisTools::TauEfficiencyCorrectionsTool *m_TauEffEleTool;
+    // Tau Selection tool
+    TauAnalysisTools::TauSelectionTool  *m_tauSelToolLoose;
+    TauAnalysisTools::TauSelectionTool  *m_tauSelToolMedium;
+    TauAnalysisTools::TauSelectionTool  *m_tauSelToolTight;
 
     // dantrim trig
     TBits                       m_evtTrigBits;          ///< Bit flags for event trigger firing
