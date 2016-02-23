@@ -1134,8 +1134,14 @@ void SusyNtMaker::storePhoton(const xAOD::Photon &in)
         all_available = false;
     }
     out.OQ = in.isGoodOQ(xAOD::EgammaParameters::BADCLUSPHOTON);
-//    in.isolationValue(out.topoEtcone40,xAOD::Iso::topoetcone40);
     out.topoEtcone40 = in.isolationValue(xAOD::Iso::topoetcone40) * MeV2GeV;
+
+    // LAr and shower-shape cleaning
+    uint32_t ph_OQ = in.auxdata< uint32_t >("OQ");
+    float ph_reta = in.showerShapeValue(xAOD::EgammaParameters::Reta);
+    float ph_rphi = in.showerShapeValue(xAOD::EgammaParameters::Rphi);
+    out.passPhotonCleaning = ((ph_OQ & 134217728) != 0 && (ph_reta > 0.98 || ph_rphi > 1.0 || (ph_OQ & 67108864) != 0));
+    
 
     // isolation
     out.isoFixedCutTight         = m_isoToolGradientLooseTight->accept(in) ? true : false;
