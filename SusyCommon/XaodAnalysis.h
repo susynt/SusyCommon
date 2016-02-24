@@ -49,6 +49,7 @@
 //Tools
 #include "ElectronEfficiencyCorrection/AsgElectronEfficiencyCorrectionTool.h"
 #include "ElectronPhotonSelectorTools/AsgElectronLikelihoodTool.h"
+#include "ElectronPhotonSelectorTools/AsgPhotonIsEMSelector.h"
 #include "PileupReweighting/PileupReweightingTool.h"
 #include "AsgTools/ToolHandle.h"
 #include "MuonEfficiencyCorrections/MuonEfficiencyScaleFactors.h"
@@ -64,8 +65,6 @@
 #include "xAODTrigEgamma/TrigElectron.h"
 #include "xAODTrigEgamma/TrigElectronContainer.h"
 #include "TrigMuonMatching/TrigMuonMatching.h"
-//#include "TrigEgammaMatchingTool/TrigEgammaMatchingTool.h"
-//#include "TrigEgammaMatchingTool/ITrigEgammaMatchingTool.h"
 #include "SusyNtuple/TriggerTools.h"
 
 #include "SusyCommon/XaodAnalysis_types.h"
@@ -128,6 +127,7 @@ namespace Susy {
     void          initPileupTool();
     void          initJVTTool();
     void          initElectronTools(); 
+    void          initPhotonTools();
     void          initMuonTools(); 
     void          initTauTools(); 
     void          initIsoTools();
@@ -609,6 +609,10 @@ namespace Susy {
     AsgElectronLikelihoodTool *m_elecSelLikelihoodLoose_nod0;
     AsgElectronLikelihoodTool *m_elecSelLikelihoodMedium_nod0;
     AsgElectronLikelihoodTool *m_elecSelLikelihoodTight_nod0;
+
+    // Photon selection tools
+    AsgPhotonIsEMSelector *m_photonSelLoose;
+    AsgPhotonIsEMSelector *m_photonSelTight;
 
     CP::PileupReweightingTool           *m_pileupReweightingTool;
     ToolHandle<CP::IPileupReweightingTool> *m_pileup;

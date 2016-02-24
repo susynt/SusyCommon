@@ -93,6 +93,8 @@ XaodAnalysis::XaodAnalysis() :
     m_elecSelLikelihoodLoose_nod0(0),
     m_elecSelLikelihoodMedium_nod0(0),
     m_elecSelLikelihoodTight_nod0(0),
+    m_photonSelLoose(0),
+    m_photonSelTight(0),
 	m_pileupReweightingTool(0),
     m_muonSelectionToolVeryLoose(0),
     m_muonSelectionToolLoose(0),
@@ -257,6 +259,8 @@ void XaodAnalysis::Terminate()
     delete m_elecSelLikelihoodLoose_nod0;
     delete m_elecSelLikelihoodMedium_nod0;
     delete m_elecSelLikelihoodTight_nod0;
+    delete m_photonSelLoose;
+    delete m_photonSelTight;
 
     delete m_pileupReweightingTool;
     delete m_muonSelectionToolVeryLoose;
@@ -463,6 +467,7 @@ XaodAnalysis& XaodAnalysis::initLocalTools()
 
     initPileupTool(); // this is now done in SUSYTools (as of ST-00-06-15)
     initElectronTools();
+    initPhotonTools();
     initMuonTools();
     initTauTools();
     initIsoTools();
@@ -552,6 +557,27 @@ void XaodAnalysis::initElectronTools()
     CHECK( m_elecSelLikelihoodTight_nod0->setProperty("primaryVertexContainer","PrimaryVertices") );
     CHECK( m_elecSelLikelihoodTight_nod0->setProperty("ConfigFile",confDir+"ElectronLikelihoodTightNoD0OfflineConfig2015.conf") );
     CHECK( m_elecSelLikelihoodTight_nod0->initialize() );
+}
+//----------------------------------------------------------
+void XaodAnalysis::initPhotonTools()
+{
+    // Initialize photon selection tools
+    std::string config_location = "ElectronPhotonSelectorTools/offline/mc15_20150712/";
+    std::string config_loose = "PhotonIsEMLooseSelectorCutDefs.conf";
+    std::string config_tight = "PhotonIsEMTightSelectorCutDefs.conf";
+
+    //  > loose
+    m_photonSelLoose = new AsgPhotonIsEMSelector("SusyCommonPhoLoose");
+    CHECK( m_photonSelLoose->setProperty("ConfigFile", config_location + config_loose) );
+    CHECK( m_photonSelLoose->setProperty("isEMMask", static_cast<unsigned int> (egammaPID::PhotonLoose) ));
+    CHECK( m_photonSelLoose->initialize() );
+
+    //  > tight
+    m_photonSelTight = new AsgPhotonIsEMSelector("SusyCommonPhoTight");
+    CHECK( m_photonSelTight->setProperty("ConfigFile", config_location + config_tight) );
+    CHECK( m_photonSelTight->setProperty("isEMMask", static_cast<unsigned int> (egammaPID::PhotonTight) ));
+    CHECK( m_photonSelTight->initialize() );
+
 }
 //----------------------------------------------------------
 void XaodAnalysis::initMuonTools()
@@ -1277,12 +1303,12 @@ void XaodAnalysis::selectSignalObjects(SusyNtSys sys, ST::SystInfo sysInfo)
     int iPh=0;
     //xAOD::PhotonContainer* photons = xaodPhotons(sysInfo,sys);
     if(photons) {
-    for(const auto& ph : *photons){
-        //m_susyObj[m_eleIDDefault]->FillPhoton(ph);
-        if((bool)ph->auxdata< char >("baseline")==1)
-            m_sigPhotons.push_back(iPh);
-        iPh++;
-    }
+        for(const auto& ph : *photons){
+            if( (bool)ph->auxdata< char >("passCleaning") &&
+                (bool)ph->auxdata< char >("passAmbiguity") )
+                m_sigPhotons.push_back(iPh);
+            iPh++;
+        }
     }
     if(m_dbg && photons) cout<<"m_sigPhotons["<<m_sigPhotons.size()<<"]"<<endl;
 
