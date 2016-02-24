@@ -450,9 +450,6 @@ void SusyNtMaker::storeElectron(const xAOD::Electron &in)
     out.m   = m;
     out.q   = in.charge();
 
-    // is electron track overlapping with a muon track?
-    out.isMuon = in.auxdata < char >("elIsMuon"); // decorator defined in XaodAnalysis.cxx
-
     //////////////////////////////////////
     // SUSYTools flags (flags from default
     // SUSYTools object)
@@ -515,6 +512,25 @@ void SusyNtMaker::storeElectron(const xAOD::Electron &in)
     bool idSF=true;
     bool trigSF=false;
     bool isoSF=true;
+
+    //////////////////////////////////////
+    // Electron <--> Mu Shared Track
+    //////////////////////////////////////
+    out.sharedMuTrk.resize(m_preMuons.size(), 0);
+    out.sharedMuTrk.assign(m_preMuons.size(), 0);
+    const xAOD::TrackParticle* elTrk = xAOD::EgammaHelpers::getOriginalTrackParticle(&in);
+    if(elTrk) {
+        xAOD::MuonContainer* muons = XaodAnalysis::xaodMuons(systInfoList[0]);
+        for(int im = 0; im < (int)m_preMuons.size(); im++) {
+            const xAOD::TrackParticle* muTrk = muons->at(m_preMuons[im])->trackParticle(xAOD::Muon::InnerDetectorTrackParticle);
+            if(muTrk) {
+                if(elTrk == muTrk)
+                    out.sharedMuTrk.at(im) = 1;
+            } //muTrk
+            else { out.sharedMuTrk.at(im) = 0; }
+        } // im
+    } // elTrk
+    else { out.sharedMuTrk.assign(m_preMuons.size(), 0); }
 
     if(m_isMC){
         //////////////////////////////////////
@@ -941,6 +957,7 @@ void SusyNtMaker::storeMuon(const xAOD::Muon &in)
     // ASM-2014-11-02 :: Store to be true at the moment
     all_available =  false;
     if(m_dbg && !all_available) cout<<"missing some muon variables"<<endl;
+    out.idx = (m_susyNt.muo()->size()); // add index of this jet in the susyNt muon container
     m_susyNt.muo()->push_back(out);
 }
 /*--------------------------------------------------------------------------------*/
