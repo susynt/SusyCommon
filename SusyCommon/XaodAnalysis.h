@@ -606,10 +606,6 @@ namespace Susy {
     AsgElectronLikelihoodTool *m_elecSelLikelihoodMedium;
     AsgElectronLikelihoodTool *m_elecSelLikelihoodTight;
 
-    AsgElectronLikelihoodTool *m_elecSelLikelihoodLoose_nod0;
-    AsgElectronLikelihoodTool *m_elecSelLikelihoodMedium_nod0;
-    AsgElectronLikelihoodTool *m_elecSelLikelihoodTight_nod0;
-
     // Photon selection tools
     AsgPhotonIsEMSelector *m_photonSelLoose;
     AsgPhotonIsEMSelector *m_photonSelTight;
