@@ -28,6 +28,10 @@
 #include "xAODMuon/MuonContainer.h"
 #include "xAODMuon/MuonAuxContainer.h"
 
+// for jet JVT SF
+#include "xAODJet/JetContainer.h"
+#include "xAODJet/JetAuxContainer.h"
+
 // Amg include
 #include "EventPrimitives/EventPrimitivesHelpers.h"
 #include "AthContainers/AuxElement.h"
@@ -1029,7 +1033,6 @@ void SusyNtMaker::storeJet(const xAOD::Jet &in)
 
             double sf_out = out.effscalefact - in.auxdata< double >("effscalefact");
             out.setFTSys(ourSys, sf_out);
-
         } // sysInfo
         // reset systematics
         if(m_susyObj[m_eleIDDefault]->resetSystematics() != CP::SystematicCode::Ok){
@@ -1038,6 +1041,45 @@ void SusyNtMaker::storeJet(const xAOD::Jet &in)
         }
     } // isMC && sys
 
+    if(m_isMC) { 
+        if(out.Pt()>20. && out.Pt()<60. && fabs(out.Eta()) < 2.4 && fabs(out.Eta())>0.){ 
+
+            xAOD::JetContainer *jvt_jet = new xAOD::JetContainer;
+            xAOD::JetAuxContainer *jvt_jet_aux = new xAOD::JetAuxContainer;
+            jvt_jet->setStore(jvt_jet_aux);
+            xAOD::Jet* jvtJet = new xAOD::Jet;
+            jvtJet->makePrivateStore(in);
+            jvt_jet->push_back(jvtJet);
+
+            out.jvtEff = m_susyObj[m_eleIDDefault]->JVT_SF(jvt_jet);
+            if(m_sys) {
+                for(const auto& sysInfo : systInfoList) {
+                    if(!(sysInfo.affectsType == ST::SystObjType::Jet && sysInfo.affectsWeights)) continue;
+                    const CP::SystematicSet& sys = sysInfo.systset;
+                    if(m_susyObj[m_eleIDDefault]->applySystematicVariation(sys) != CP::SystematicCode::Ok) {
+                        cout << "SusyNtMaker::storeJet    cannot configure SUSYTools for systematic " << sys.name() << endl;
+                        continue;
+                    }
+                    SusyNtSys ourSys = CPsys2sys((sys.name()).c_str());
+                    if(!(ourSys==NtSys::JET_JVTEff_UP || ourSys==NtSys::JET_JVTEff_DN)) continue;
+
+                    if(ourSys==NtSys::JET_JVTEff_UP) {
+                        out.jvtEff_up = out.jvtEff - m_susyObj[m_eleIDDefault]->JVT_SFsys(jvt_jet, sys);
+                    }
+                    else if(ourSys==NtSys::JET_JVTEff_DN) {
+                        out.jvtEff_dn = out.jvtEff - m_susyObj[m_eleIDDefault]->JVT_SFsys(jvt_jet, sys);
+                    }
+                } // sysInfo
+                // reset systematics
+                if(m_susyObj[m_eleIDDefault]->resetSystematics() != CP::SystematicCode::Ok){
+                    cout << "SusyNtMaker::storeJet    cannot reset SUSYTools systematics. Aborting." << endl;
+                    abort();
+                }
+            } // if sys
+            delete jvt_jet;
+            delete jvt_jet_aux;
+        } // pt/eta range
+    }//mc
 
   //  vector<float> test_values;
   //  test_values.push_back(out.effscalefact);

@@ -149,6 +149,8 @@ SusyNtSys CPsys2sys(const std::string &s)
   else if( s== "JET_GroupedNP_2__1down" )                  r = JET_GroupedNP_2_DN;
   else if( s== "JET_GroupedNP_3__1up" )                    r = JET_GroupedNP_3_UP;
   else if( s== "JET_GroupedNP_3__1down" )                  r = JET_GroupedNP_3_DN;
+  else if( s== "JvtEfficiencyUp" )                         r = JET_JVTEff_UP;
+  else if( s== "JvtEfficiencyDown" )                       r = JET_JVTEff_DN;
 /*
   else if( s== "JET_BJES_Response__1up" )                  r = JET_BJES_Response_UP;
   else if( s== "JET_BJES_Response__1down" )                r = JET_BJES_Response_DN;
