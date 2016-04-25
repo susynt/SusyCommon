@@ -299,6 +299,12 @@ void SusyNtMaker::fillEventVars()
     evt->susyFinalState   = m_susyFinalState;
     evt->susySpartId1     = susy_pdg_1;
     evt->susySpartId2     = susy_pdg_2;
+    // Stop polarization weights - ASM-2016-04-25
+    if(m_susyFinalState == 61) {
+      evt->susy3BodyLeftPol   = m_polreweight->getReweightTopNeutralino(xaodTruthParticles(), 0., 0.7853981634); // Left
+      evt->susy3BodyRightPol  = m_polreweight->getReweightTopNeutralino(xaodTruthParticles(), 1.40639, 0.7853981634); // Right
+      evt->susy3BodyOnlyMass  = m_polreweight->getReweightTopNeutralino(xaodTruthParticles(), 0.7853981634, 0.7853981634); // Just mass ?
+    }
 
     float mZ = -1.0, mZtruthMax = 40.0;
     if(m_isMC){

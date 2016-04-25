@@ -105,6 +105,7 @@ XaodAnalysis::XaodAnalysis() :
     m_tauSelToolLoose(0),
     m_tauSelToolMedium(0),
     m_tauSelToolTight(0),
+    m_polreweight(nullptr),
     m_evtTrigBits(m_nTriggerBits)
 {
     clearOutputObjects();
@@ -271,6 +272,7 @@ void XaodAnalysis::Terminate()
     delete m_isoToolLooseTrackOnlyLoose;
     delete m_isoToolLoose;
     delete m_isoToolTight;
+    delete m_polreweight;
 
     // dantrim trig
   //  delete m_trigTool;
@@ -463,10 +465,32 @@ XaodAnalysis& XaodAnalysis::initLocalTools()
     initMuonTools();
     initTauTools();
     initIsoTools();
+    initStopPolReweightTool();
 
  //   initTrigger(); // now using SUSYTools for all our trigger needs
 
     return *this;
+}
+//----------------------------------------------------------
+void XaodAnalysis::initStopPolReweightTool()
+{
+  if(m_polreweight == nullptr) { 
+     m_polreweight = new StopPolarization::PolarizationReweight; 
+     m_polreweight->setUnitMeV(); // set MeV
+     m_polreweight->setMassW(80399.); 
+     m_polreweight->setWidthW(2085.);
+     m_polreweight->setMassZ(91187.6);
+     m_polreweight->setWidthZ(2495.2);
+     m_polreweight->setMassTop(172500.);
+     m_polreweight->setWidthTop(1333.13);
+     m_polreweight->setMassWThreshold(0.);
+     m_polreweight->setMassZThreshold(0.);
+     m_polreweight->setMassTopThreshold(54000.);
+     std::string generatorName = "MadGraphPythia8";
+     m_polreweight->setGeneratorName(generatorName);
+     m_polreweight->setDecayPythia(true);
+     m_polreweight->setPhaseSpaceOnly(true);
+  }
 }
 //----------------------------------------------------------
 void XaodAnalysis::initPileupTool()

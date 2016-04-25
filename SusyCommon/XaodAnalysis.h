@@ -55,6 +55,7 @@
 #include "MuonEfficiencyCorrections/MuonEfficiencyScaleFactors.h"
 #include "MuonSelectorTools/MuonSelectionTool.h"
 #include "IsolationSelection/IsolationSelectionTool.h"
+#include "StopPolarization/PolarizationReweight.h" // ASM-2016-04-25
 
 //Trigger
 #include "TBits.h"
@@ -132,6 +133,7 @@ namespace Susy {
     void          initTauTools(); 
     void          initIsoTools();
     void          initTrigger();
+    void          initStopPolReweightTool();
     
     // Systematic Methods
     void getSystematicList();
@@ -634,6 +636,9 @@ namespace Susy {
     TauAnalysisTools::TauSelectionTool  *m_tauSelToolLoose;
     TauAnalysisTools::TauSelectionTool  *m_tauSelToolMedium;
     TauAnalysisTools::TauSelectionTool  *m_tauSelToolTight;
+
+    // StopPolarization
+    StopPolarization::PolarizationReweight *m_polreweight;
 
     // dantrim trig
     TBits                       m_evtTrigBits;          ///< Bit flags for event trigger firing
