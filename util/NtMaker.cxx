@@ -48,6 +48,7 @@ void help()
       <<"  --nLepFilter     default 0 (require N  light leptons)"     <<endl
       <<"  --nLepTauFilter  default 2 (require N lepton+tau)"         <<endl
       <<"  --mc15b          toggle mc15b (default: false)"            <<endl
+      <<"  --mc15c          toggle mc15c (default: false)"            <<endl
       <<endl;
 }
 
@@ -72,6 +73,7 @@ int main(int argc, char** argv)
   uint nLepFilter = 0;
   uint nLepTauFilter = 2;
   bool mc15b      = false;
+  bool mc15c      = false;
   string inputContainer, outputContainer, ntTag;
   string outputFileName = "susyNt.root";
 
@@ -104,6 +106,7 @@ int main(int argc, char** argv)
       else if (sw=="--nLepFilter"   ) { nLepFilter = atoi(argv[++optind]); }
       else if (sw=="--nLepTauFilter") { nLepTauFilter = atoi(argv[++optind]); }
       else if (sw=="--mc15b"        ) { mc15b = true; }
+      else if (sw=="--mc15c"        ) { mc15c = true; }
       else {
           cout<<"Unknown switch '"<<sw<<"'"<<endl;
           help();
@@ -115,6 +118,7 @@ int main(int argc, char** argv)
   cout<<"flags:"<<endl;
   cout<<"  sample         "<<sample  <<endl;
   cout<<"  mc15b          "<<mc15b   <<endl;
+  cout<<"  mc15c          "<<mc15c   <<endl;
   cout<<"  nEvt           "<<nEvt    <<endl;
   cout<<"  nSkip          "<<nSkip   <<endl;
   cout<<"  dbg            "<<dbg     <<endl;
@@ -136,6 +140,11 @@ int main(int argc, char** argv)
   cout<<"  outputFileName "<<outputFileName <<endl;
   cout<<endl;
 
+  if(mc15b && mc15c) {
+     cout << "NtMaker    Inconsisent MC configuration (mc15b AND mc15c)! Exiting." << endl;
+     return 1;
+  }
+
 
   // Build the input chain
   TChain* chain = new TChain("CollectionTree");
@@ -150,6 +159,7 @@ int main(int argc, char** argv)
   susyAna->setDebug(dbg);
   //susyAna->setSample(sample);
   susyAna->setMC15b(mc15b);
+  susyAna->setMC15c(mc15c);
   susyAna->setLumi(lumi);
   susyAna->setSys(sysOn);
   susyAna->setSelectPhotons(savePh);

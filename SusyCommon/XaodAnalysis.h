@@ -65,7 +65,6 @@
 #include "TrigConfHLTData/HLTTriggerElement.h"
 #include "xAODTrigEgamma/TrigElectron.h"
 #include "xAODTrigEgamma/TrigElectronContainer.h"
-#include "TrigMuonMatching/TrigMuonMatching.h"
 #include "SusyNtuple/TriggerTools.h"
 
 #include "SusyCommon/XaodAnalysis_types.h"
@@ -119,6 +118,7 @@ namespace Susy {
     virtual void setChain(TChain* input_chain) { m_input_chain = input_chain; }
     void setTriggerSet(std::string set) { m_triggerSet = set; }
     virtual void setMC15b(bool isMC15b) { m_isMC15b = isMC15b; }
+    virtual void setMC15c(bool isMC15c) { m_isMC15c = isMC15c; }
     XaodAnalysis& initSusyTools(); ///< initialize SUSYObjDef_xAOD
     
     /**
@@ -361,7 +361,7 @@ namespace Susy {
     static bool isDataFromSamplename(const TString &s); ///< guess from sample name whether it's data sample
     static bool isSimuFromSamplename(const TString &s); ///< guess from sample name whether it's a simulated sample
     static bool isDerivationFromMetaData(TTree* tree, bool verbose); ///< From sample MetaData, determine if sample is a derivation
-    void getCutBookkeeperInfo(xAOD::TEvent& event);
+    bool getCutBookkeeperInfo(xAOD::TEvent& event);
     /**
        \brief Retrieve the file holding the tree; for a chain, get the files holding the first tree.
 
@@ -509,7 +509,8 @@ namespace Susy {
     Long64_t m_entry;           // Current entry in the current tree (not chain index!)
     int m_dbg;                  // debug level
     bool m_isMC;                // is MC flag
-    bool m_isMC15b;             // flag for whether this sample is mc15b (if false, then mc15a)
+    bool m_isMC15b;             // flag for whether this sample is mc15b
+    bool m_isMC15c;             // flag for whether this sample is mc15c
     bool m_flagsAreConsistent;  ///< whether the cmd-line flags are consistent with the event
     bool m_flagsHaveBeenChecked;///< whether the cmd-line have been checked
 
@@ -646,7 +647,6 @@ namespace Susy {
     TH1F*                       hLevelPassed;
     TrigConf::xAODConfigTool*   m_configTool;
     Trig::TrigDecisionTool*     m_trigTool;
-    Trig::TrigMuonMatching*     m_trigMuonMatchTool;    ///< TrigMuonMatching tool
 //    Trig::TrigEgammaMatchingTool* m_trigEgammaMatchTool;    ///< TrigEgammaMatching tool
 
   };

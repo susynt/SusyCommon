@@ -76,10 +76,11 @@ XaodAnalysis::XaodAnalysis() :
     m_dbg(0),
     m_isMC(false),
     m_isMC15b(false),
+    m_isMC15c(false),
     m_flagsAreConsistent(false),
     m_flagsHaveBeenChecked(false),
-    //m_event(xAOD::TEvent::kClassAccess),
-    m_event(xAOD::TEvent::kBranchAccess), ///> dantrim -- (in PAT threads, TDT is supposed to work with kBranchAccess option)
+    m_event(xAOD::TEvent::kClassAccess),
+    //m_event(xAOD::TEvent::kAthenaAccess), ///> dantrim April 28 2016 -- to get CutBookkeepers needs kAthenaAccess or kClassAcess
     m_store(),
     m_eleIDDefault(eleTightLLH),
 	m_electronEfficiencySFTool(0),
@@ -123,6 +124,9 @@ void XaodAnalysis::Init(TTree *tree)
     if(!m_isMC && m_isMC15b) { 
         m_isMC15b = false;
     }
+    if(!m_isMC && m_isMC15c) {
+        m_isMC15c = false;
+    }
 
     if(m_isMC){
         // get the inital (pre-skimmed) counters
@@ -134,7 +138,7 @@ void XaodAnalysis::Init(TTree *tree)
                 TFile* f = TFile::Open(chFile->GetTitle());
                 m_event.readFrom(f);
                 m_event.getEntry(0);
-                XaodAnalysis::getCutBookkeeperInfo(m_event);
+                if(!XaodAnalysis::getCutBookkeeperInfo(m_event)) exit(1);
                 f->Close();
                 f->Delete();
             } // while
@@ -174,7 +178,7 @@ void XaodAnalysis::Init(TTree *tree)
         }
     }
     // is this an MC15b sample?
-    cout << "XaodAnalysis::Init    Treating sample as " << (m_isMC ? (m_isMC15b ? "mc15b" : "mc15a") : "data") << endl;
+    cout << "XaodAnalysis::Init    Treating sample as " << (m_isMC ? ( ( m_isMC15c ? "mc15c" : (m_isMC15b ? "mc15b" : "mc15a") )) : "data") << endl;
 
     // initialize SUSYTools
     initSusyTools();
@@ -277,7 +281,6 @@ void XaodAnalysis::Terminate()
     // dantrim trig
   //  delete m_trigTool;
   //  delete m_configTool;
-  //  delete m_trigMuonMatchTool;
   //  //delete m_trigEgammaMatchTool;
     
   // for(int i=TightLH; i<=LooseLH; i++){
@@ -307,7 +310,9 @@ XaodAnalysis& XaodAnalysis::initSusyTools()
         m_susyObj[susyObjId]->msg().setLevel(m_dbg ? MSG::DEBUG : MSG::WARNING);
     
         // set "datasource" for determining run configuration in SUSYTools
-        ST::SettingDataSource datasource = !m_isMC ? ST::Data : (m_isAF2 ? ST::AtlfastII : ST::FullSim);
+        ST::ISUSYObjDef_xAODTool::DataSource datasource = !m_isMC ? ST::ISUSYObjDef_xAODTool::Data : ( m_isAF2 ? ST::ISUSYObjDef_xAODTool::AtlfastII : ST::ISUSYObjDef_xAODTool::FullSim);
+    
+        //ST::SettingDataSource datasource = !m_isMC ? ST::Data : (m_isAF2 ? ST::AtlfastII : ST::FullSim);
         CHECK( m_susyObj[susyObjId]->setProperty("DataSource",datasource) );
 
         ///////////////////////////////////////
@@ -316,10 +321,19 @@ XaodAnalysis& XaodAnalysis::initSusyTools()
         ///////////////////////////////////////
         // prw config files
         std::vector<std::string> prwFiles;
-        if(!m_isMC15b) {
+        if(!m_isMC15b && !m_isMC15c) {
             prwFiles.push_back("dev/SUSYTools/merged_prw.root"); //group 25ns
-        } else {
-            prwFiles.push_back("dev/SUSYTools/merged_prw_mc15b.root"); //group 25ns mc15b mu profile
+        }
+        else if(m_isMC15b && !m_isMC15c) {
+            prwFiles.push_back("dev/SUSYTools/merged_prw_mc15b.root");
+        }
+        else if(!m_isMC15b && m_isMC15c) {
+            prwFiles.push_back("dev/SUSYTools/merged_prw_mc15c.root");
+        }
+        else {
+            cout << "XaodAnalysis::initSusyTools    "
+                 << "Inconsisent MC options when selecting PRW config! Exitting." << endl;
+            exit(1);
         }
         m_susyObj[susyObjId]->setProperty("PRWConfigFiles", prwFiles);
         // data luminosity profile
@@ -502,10 +516,19 @@ void XaodAnalysis::initPileupTool()
     std::vector<std::string> prwFiles;
     std::vector<std::string> lumicalcFiles;
 
-    if(!m_isMC15b) {
+    if(!m_isMC15b && !m_isMC15c) {
         prwFiles.push_back("dev/SUSYTools/merged_prw.root"); //group 25ns
-    } else {
-        prwFiles.push_back("dev/SUSYTools/merged_prw_mc15b.root"); //group 25ns mc15b mu profile
+    }
+    else if(m_isMC15b && !m_isMC15c) {
+        prwFiles.push_back("dev/SUSYTools/merged_prw_mc15b.root");
+    }
+    else if(!m_isMC15b && m_isMC15c) {
+        prwFiles.push_back("dev/SUSYTools/merged_prw_mc15c.root");
+    }
+    else {
+        cout << "XaodAnalysis::initPileupTool    "
+             << "Inconsistent MC options when setting up PRW config! Exiting." << endl;
+        exit(1);
     }
     lumicalcFiles.push_back(m_data_dir+"SusyCommon/ilumicalc_histograms_None_276262-284484.root"); // updated with GRL v73 25ns
     CHECK(m_pileupReweightingTool->setProperty("ConfigFiles", prwFiles));
@@ -706,11 +729,6 @@ void XaodAnalysis::initTrigger()
  //   CHECK( m_trigTool->initialize() );
 
  // Trigger matching is now done via SUSYTools
- //   // Tool for muon matching
- //   m_trigMuonMatchTool = new Trig::TrigMuonMatching("TrigMuonMatchTool");
- //   ToolHandle<Trig::TrigDecisionTool> m_trigDec(m_trigTool);
- //   CHECK( m_trigMuonMatchTool->setProperty("TriggerTool", m_trigDec ));
- //   CHECK( m_trigMuonMatchTool->initialize() );
 
  //   // Tool for egamma matching
  //   m_trigEgammaMatchTool = new Trig::TrigEgammaMatchingTool("TrigEgammaMatchTool");
@@ -1487,18 +1505,21 @@ TBits XaodAnalysis::matchMuonTriggers(const xAOD::Muon &in)
     TBits muoTrigBits(m_nTriggerBits);
     muoTrigBits.ResetAllBits();
     std::vector<std::string> trigs = XaodAnalysis::xaodTriggers();
-    std::string L1_item = "L1_";
     for(unsigned int iTrig=0; iTrig<trigs.size(); iTrig++){
-        std::size_t find_L1 = trigs[iTrig].find(L1_item);
-        bool do_L1_match = false;
-        if(find_L1!=std::string::npos) do_L1_match = true;
-        if(!do_L1_match) {
+
+        std::size_t elfound = trigs[iTrig].find("el");
+        std::size_t mufound = trigs[iTrig].find("mu");
+        std::size_t mufound2 = trigs[iTrig].find("MU");
+        std::size_t metfound = trigs[iTrig].find("xe");
+
+        bool mu_chain = ((mufound != std::string::npos) || (mufound2 != std::string::npos));
+        bool el_chain = (elfound != std::string::npos);
+        bool met_chain = (metfound != std::string::npos); 
+        bool dilepton = mu_chain && el_chain;
+
+        if( (mu_chain || dilepton) && !met_chain)
             if(m_susyObj[m_eleIDDefault]->IsTrigMatched(&in, trigs[iTrig])) muoTrigBits.SetBitNumber(iTrig, true);
-        }
-        else if(do_L1_match) {
-            if(m_susyObj[m_eleIDDefault]->IsTrigMatchedL1(&in, trigs[iTrig])) muoTrigBits.SetBitNumber(iTrig, true);
-        }
-        //if(m_trigMuonMatchTool->match(&in, trigs[iTrig]))  muoTrigBits.SetBitNumber(iTrig, true);
+            //if(m_susyObj[m_eleIDDefault]->IsTrigMatched(&in, trigs[iTrig])) { cout << "     > muon match to : " << trigs[iTrig] << endl;  muoTrigBits.SetBitNumber(iTrig, true); }
     }
     return muoTrigBits;
 }
@@ -1516,37 +1537,27 @@ TBits XaodAnalysis::matchElectronTriggers(const xAOD::Electron &in)
     eleTrigBits.ResetAllBits();
     std::vector<std::string> trigs = XaodAnalysis::xaodTriggers();
     for(unsigned int iTrig = 0; iTrig < trigs.size(); iTrig++) {
-        std::string hlt_trigger = trigs[iTrig];
-        bool ismatch = m_susyObj[m_eleIDDefault]->IsTrigMatched(&in, hlt_trigger);
-        if(ismatch) eleTrigBits.SetBitNumber(iTrig, true);
+
+        std::size_t elfound = trigs[iTrig].find("HLT_e");
+        std::size_t elfound2 = trigs[iTrig].find("HLT_2e");
+        std::size_t mufound = trigs[iTrig].find("mu");
+        std::size_t mufound2 = trigs[iTrig].find("MU");
+        std::size_t metfound = trigs[iTrig].find("xe");
+
+        bool mu_chain = ((mufound != std::string::npos) || (mufound2 != std::string::npos));
+        bool el_chain = ((elfound != std::string::npos) || (elfound2 != std::string::npos));
+        bool met_chain = (metfound != std::string::npos); 
+        bool dilepton = mu_chain && el_chain;
+
+        bool ismatch = false;
+        if( (el_chain || dilepton) && !met_chain)
+            ismatch = m_susyObj[m_eleIDDefault]->IsTrigMatched(&in, trigs[iTrig]);
+        if(ismatch) {
+            //cout << "     > ele match to : " << trigs[iTrig] << endl;
+            eleTrigBits.SetBitNumber(iTrig,true);
+        }
     }
     return eleTrigBits;
-
-//    TBits eleTrigBits(m_nTriggerBits);
-//    eleTrigBits.ResetAllBits();
-//    std::vector<std::string> trigs = XaodAnalysis::xaodTriggers();
-//
-//    TLorentzVector inEle;
-//    inEle.SetPtEtaPhiM( in.pt(), in.eta(), in.phi(), 0);
-//    for(unsigned int iTrig = 0; iTrig < trigs.size(); iTrig++) {
-//        std::string trigger = trigs[iTrig];
-//        bool matched = false;
-//        auto cg = m_susyObj[m_eleIDDefault]->GetTrigChainGroup(trigger);
-//        auto fc = cg->features();
-//        auto eleFeatureContainers = fc.containerFeature<xAOD::TrigElectronContainer>();
-//        for(auto &econt : eleFeatureContainers) {
-//            for( auto trige : *econt.cptr() ) {
-//                TLorentzVector trig_tlv;
-//                trig_tlv.SetPtEtaPhiM(trige->pt(), trige->eta(), trige->phi(), 0);
-//                cout << "trig ele pt: " << trig_tlv.Pt() << endl;
-//                float dR = inEle.DeltaR(trig_tlv);
-//                if( dR < 0.15 ) matched = true;
-//            } // trige
-//        } // econt
-//        if(matched) eleTrigBits.SetBitNumber(iTrig, true);
-//    } // iTrig
-//
-//    return eleTrigBits;
 }
 /*--------------------------------------------------------------------------------*/
 // Electron trigger matching
@@ -2381,29 +2392,63 @@ bool XaodAnalysis::isDerivationFromMetaData(TTree* intree, bool verbose)
 */
 }
 //----------------------------------------------------------
-void XaodAnalysis::getCutBookkeeperInfo(xAOD::TEvent& event)
+bool XaodAnalysis::getCutBookkeeperInfo(xAOD::TEvent& event)
 {
+    bool ok = true;
+
     const xAOD::CutBookkeeperContainer* cutflows(0);
-    event.retrieveMetaInput(cutflows, "CutBookkeepers");
-    int minCycle = 10000;
-    for(const xAOD::CutBookkeeper* cutflow : *cutflows) {
-        if(!cutflow->name().empty() && minCycle > cutflow->cycle()) { minCycle = cutflow->cycle(); }
+    ok = event.retrieveMetaInput(cutflows, "CutBookkeepers");
+    if(!ok) {
+        cout << "XaodAnalysis::getCutBookkeeperInfo    "
+             << "Failed to retrieve Cutbookkeepers from MetaData!" << endl;
     }
-    uint64_t nevents = 0;
-    double sumw = 0;
-    double sumw2 = 0;
-    for(const xAOD::CutBookkeeper* cutflow : *cutflows) {
-        if(minCycle == cutflow->cycle() && cutflow->name() == "AllExecutedEvents") {
-            nevents = cutflow->nAcceptedEvents();
-            sumw = cutflow->sumOfEventWeights();
-            sumw2 = cutflow->sumOfEventWeightsSquared();
+    int minCycle = 10000;
+    for( auto cf : *cutflows ) {
+        if ( minCycle > cf->cycle() && !cf->name().empty() ) { minCycle = cf->cycle(); }
+    } // cf
+
+    const xAOD::CutBookkeeper* allEventsCBK = 0;
+    for ( auto cbk : *cutflows ) {
+        if ( minCycle == cbk->cycle() && cbk->name() == "AllExecutedEvents" ) {
+            allEventsCBK = cbk;
             break;
         }
+    } // cbk
+
+    uint64_t nevents_ = 0;
+    double sumw_ = 0;
+    double sumw2_ = 0;
+    if(allEventsCBK) {
+        nevents_    = allEventsCBK->nAcceptedEvents();
+        sumw_       = allEventsCBK->sumOfEventWeights();
+        sumw2_      = allEventsCBK->sumOfEventWeightsSquared();
+    } // found CBK
+    else {
+        cout << "XaodAnalysis::getCutBookkeeperInfo    "
+             << "CutBookkeeper object not found!" << endl;
     }
-    m_nEventsProcessed += nevents;
-    m_sumOfWeights += sumw;
-    m_sumOfWeightsSquared += sumw2;
-    cout << "nAcceptedEvents: " << nevents << "  sumOfEventWeights: " << sumw << "  sumOfEventWeightsSquared: " << sumw2 << endl;
+
+ //   for(const xAOD::CutBookkeeper* cutflow : *cutflows) {
+ //       if(!cutflow->name().empty() && minCycle > cutflow->cycle()) { minCycle = cutflow->cycle(); }
+ //   }
+ //   uint64_t nevents = 0;
+ //   double sumw = 0;
+ //   double sumw2 = 0;
+ //   for(const xAOD::CutBookkeeper* cutflow : *cutflows) {
+ //       if(minCycle == cutflow->cycle() && cutflow->name() == "AllExecutedEvents") {
+ //           nevents = cutflow->nAcceptedEvents();
+ //           sumw = cutflow->sumOfEventWeights();
+ //           sumw2 = cutflow->sumOfEventWeightsSquared();
+ //           break;
+ //       }
+ //   }
+
+    m_nEventsProcessed += nevents_;
+    m_sumOfWeights += sumw_;
+    m_sumOfWeightsSquared += sumw2_;
+    cout << "nAcceptedEvents: " << nevents_ << "  sumOfEventWeights: " << sumw_ << "  sumOfEventWeightsSquared: " << sumw2_ << endl;
+
+    return ok;
 }
 //----------------------------------------------------------
 TDirectory* XaodAnalysis::getDirectoryFromTreeOrChain(TTree* tree, bool verbose)

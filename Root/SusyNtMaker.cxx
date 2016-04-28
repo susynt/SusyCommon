@@ -680,7 +680,7 @@ void SusyNtMaker::storeElectron(const xAOD::Electron &in)
     out.trigBits = matchElectronTriggers(in);
 //    cout << "testing electron trigBits" << endl;
 //    int nbins = h_passTrigLevel->GetXaxis()->GetNbins();
-//    for(int iTrig=0; iTrig<26; iTrig++){
+//    for(int iTrig=0; iTrig<46; iTrig++){
 //        bool bit = out.trigBits.TestBitNumber(iTrig);
 //        string trigger = h_passTrigLevel->GetXaxis()->GetBinLabel(iTrig+1);
 //        cout << "\t passed trigger [" << iTrig << "] " << trigger << "? " << (bit ? "yes" : "no") << endl;
@@ -733,6 +733,7 @@ void SusyNtMaker::storeMuon(const xAOD::Muon &in)
     out.isBaseline = (bool)in.auxdata< char >("baseline");
     out.isSignal   = (bool)in.auxdata< char >("signal");
     out.isCaloTagged = (bool)in.muonType()==xAOD::Muon::CaloTagged;
+    out.isSiForward = (bool)in.muonType()==xAOD::Muon::SiliconAssociatedForwardMuon;
     out.isCombined = in.muonType()==xAOD::Muon::Combined;
     out.isCosmic   = (bool)in.auxdata< char >("cosmic");  // note: this depends on definition of baseline and OR!
     out.isBadMuon  = (bool)in.auxdata<char>("bad");       // note: independent of definition of baseline/OR
@@ -787,15 +788,23 @@ void SusyNtMaker::storeMuon(const xAOD::Muon &in)
     //////////////////////////////////////
     // Muon track particle
     //////////////////////////////////////
-    if(const xAOD::TrackParticle* t = in.primaryTrackParticle()){
+    const xAOD::TrackParticle* track;
+    if(in.muonType()==xAOD::Muon::SiliconAssociatedForwardMuon) {
+        track = in.trackParticle(xAOD::Muon::ExtrapolatedMuonSpectrometerTrackParticle);
+        if(!track) { track = nullptr; track = 0; }
+    } // SAF
+    else {
+        track = in.primaryTrackParticle();
+    }
+    if(track) {
         const xAOD::Vertex* PV = getPV();
         double  primvertex_z = (PV) ? PV->z() : 0.;
-        out.d0             = t->d0();
-        out.errD0          = Amg::error(t->definingParametersCovMatrix(),0); 
-        out.d0sigBSCorr = xAOD::TrackingHelpers::d0significance( t, eventinfo->beamPosSigmaX(),
+        out.d0             = track->d0();
+        out.errD0          = Amg::error(track->definingParametersCovMatrix(),0); 
+        out.d0sigBSCorr = xAOD::TrackingHelpers::d0significance( track, eventinfo->beamPosSigmaX(),
                                     eventinfo->beamPosSigmaY(), eventinfo->beamPosSigmaXY() );
-        out.z0             = t->z0() + t->vz() - primvertex_z;
-        out.errZ0          = Amg::error(t->definingParametersCovMatrix(),1); 
+        out.z0             = track->z0() + track->vz() - primvertex_z;
+        out.errZ0          = Amg::error(track->definingParametersCovMatrix(),1); 
     }
     //////////////////////////////////////
     // Muon ID track particle (if)
@@ -863,11 +872,11 @@ void SusyNtMaker::storeMuon(const xAOD::Muon &in)
     // Trigger matching
     //////////////////////////////////////
     out.trigBits   = matchMuonTriggers(in);
-//    cout << "testing electron trigBits" << endl;
+//    cout << "testing muon trigBits" << endl;
 //    int nbins = h_passTrigLevel->GetXaxis()->GetNbins();
-//    for(int iTrig=1; iTrig<26; iTrig++){
+//    for(int iTrig=0; iTrig<46; iTrig++){
 //        bool bit = out.trigBits.TestBitNumber(iTrig);
-//        string trigger = h_passTrigLevel->GetXaxis()->GetBinLabel(iTrig);
+//        string trigger = h_passTrigLevel->GetXaxis()->GetBinLabel(iTrig+1);
 //        cout << "\t passed trigger " << trigger << "? " << (bit ? "yes" : "no") << endl;
 //    }
 //    cout << endl;
