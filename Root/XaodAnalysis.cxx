@@ -2395,53 +2395,35 @@ bool XaodAnalysis::isDerivationFromMetaData(TTree* intree, bool verbose)
 bool XaodAnalysis::getCutBookkeeperInfo(xAOD::TEvent& event)
 {
     bool ok = true;
-
-    const xAOD::CutBookkeeperContainer* cutflows(0);
-    ok = event.retrieveMetaInput(cutflows, "CutBookkeepers");
+    const xAOD::CutBookkeeperContainer* completeCBC = 0;
+    ok = event.retrieveMetaInput(completeCBC, "CutBookkeepers");
     if(!ok) {
         cout << "XaodAnalysis::getCutBookkeeperInfo    "
-             << "Failed to retrieve Cutbookkeepers from MetaData!" << endl;
+             << "Failed to get CBK metadata! Exitting." << endl;
+        exit(1);
     }
-    int minCycle = 10000;
-    for( auto cf : *cutflows ) {
-        if ( minCycle > cf->cycle() && !cf->name().empty() ) { minCycle = cf->cycle(); }
-    } // cf
 
     const xAOD::CutBookkeeper* allEventsCBK = 0;
-    for ( auto cbk : *cutflows ) {
-        if ( minCycle == cbk->cycle() && cbk->name() == "AllExecutedEvents" ) {
+    int maxcycle = -1;
+    for(auto cbk : *completeCBC) {
+        if(cbk->name() == "AllExecutedEvents" && cbk->inputStream()=="StreamAOD" && cbk->cycle() > maxcycle) {
+            maxcycle = cbk->cycle();
             allEventsCBK = cbk;
-            break;
-        }
+        } // if
     } // cbk
-
-    uint64_t nevents_ = 0;
-    double sumw_ = 0;
-    double sumw2_ = 0;
+    uint64_t nevents_ = -1;
+    double sumw_ = -1.0;
+    double sumw2_ = -1.0;
     if(allEventsCBK) {
-        nevents_    = allEventsCBK->nAcceptedEvents();
-        sumw_       = allEventsCBK->sumOfEventWeights();
-        sumw2_      = allEventsCBK->sumOfEventWeightsSquared();
-    } // found CBK
+        nevents_ = allEventsCBK->nAcceptedEvents();
+        sumw_ = allEventsCBK->sumOfEventWeights();
+        sumw2_ = allEventsCBK->sumOfEventWeightsSquared();
+    } // all
     else {
         cout << "XaodAnalysis::getCutBookkeeperInfo    "
-             << "CutBookkeeper object not found!" << endl;
+             << "\"AllExecutedEvents\" branch not found in CBK metadata! Exitting." << endl;
+        exit(1);
     }
-
- //   for(const xAOD::CutBookkeeper* cutflow : *cutflows) {
- //       if(!cutflow->name().empty() && minCycle > cutflow->cycle()) { minCycle = cutflow->cycle(); }
- //   }
- //   uint64_t nevents = 0;
- //   double sumw = 0;
- //   double sumw2 = 0;
- //   for(const xAOD::CutBookkeeper* cutflow : *cutflows) {
- //       if(minCycle == cutflow->cycle() && cutflow->name() == "AllExecutedEvents") {
- //           nevents = cutflow->nAcceptedEvents();
- //           sumw = cutflow->sumOfEventWeights();
- //           sumw2 = cutflow->sumOfEventWeightsSquared();
- //           break;
- //       }
- //   }
 
     m_nEventsProcessed += nevents_;
     m_sumOfWeights += sumw_;
