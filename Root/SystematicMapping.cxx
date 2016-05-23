@@ -66,7 +66,10 @@ SusyNtSys CPsys2sys(const std::string &s)
   // else if( s== "EG_SCALE_ZEESTAT__1up" )                   r = EG_SCALE_ZEESTAT_UP;
   // else if( s== "EG_SCALE_ZEESYST__1down" )                 r = EG_SCALE_ZEESYST_DN;
   // else if( s== "EG_SCALE_ZEESYST__1up" )                   r = EG_SCALE_ZEESYST_UP;
-  
+
+  // dantrim May 23 2016 -- these guys have changed naming convention
+  //    now that all the components are available as separate NP 
+  /*
   else if( s== "EL_EFF_ID_TotalCorrUncertainty__1down" )   r = EL_EFF_ID_TotalCorrUncertainty_DN;
   else if( s== "EL_EFF_ID_TotalCorrUncertainty__1up" )     r = EL_EFF_ID_TotalCorrUncertainty_UP;
   else if( s== "EL_EFF_Iso_TotalCorrUncertainty__1down" )  r = EL_EFF_Iso_TotalCorrUncertainty_DN;
@@ -75,6 +78,16 @@ SusyNtSys CPsys2sys(const std::string &s)
   else if( s== "EL_EFF_Reco_TotalCorrUncertainty__1up" )   r = EL_EFF_Reco_TotalCorrUncertainty_UP;
   else if( s== "EL_EFF_Trigger_TotalCorrUncertainty__1down" ) r = EL_EFF_Trigger_TotalCorrUncertainty_DN;
   else if( s== "EL_EFF_Trigger_TotalCorrUncertainty__1up" )   r = EL_EFF_Trigger_TotalCorrUncertainty_UP;
+ */
+  else if( s== "EL_EFF_ID_TOTAL_UncorrUncertainty__1down" )     r = EL_EFF_ID_TOTAL_Uncorr_DN;
+  else if( s== "EL_EFF_ID_TOTAL_UncorrUncertainty__1up" )       r = EL_EFF_ID_TOTAL_Uncorr_UP;
+  else if( s== "EL_EFF_Iso_TOTAL_UncorrUncertainty__1down")     r = EL_EFF_Iso_TOTAL_Uncorr_DN;
+  else if( s== "EL_EFF_Iso_TOTAL_UncorrUncertainty__1up")       r = EL_EFF_Iso_TOTAL_Uncorr_UP;
+  else if( s== "EL_EFF_Reco_TOTAL_UncorrUncertainty__1down")    r = EL_EFF_Reco_TOTAL_Uncorr_DN;
+  else if( s== "EL_EFF_Reco_TOTAL_UncorrUncertainty__1up")      r = EL_EFF_Reco_TOTAL_Uncorr_UP;
+  else if( s== "EL_EFF_Trigger_TOTAL_UncorrUncertainty__1down") r = EL_EFF_Trigger_TOTAL_Uncorr_DN;
+  else if( s== "EL_EFF_Trigger_TOTAL_UncorrUncertainty__1up")   r = EL_EFF_Trigger_TOTAL_Uncorr_UP;
+
 
   // else if( s== "EL_SCALE_MOMENTUM__1down" )                r = EL_SCALE_MOMENTUM_DN;
   // else if( s== "EL_SCALE_MOMENTUM__1up" )                  r = EL_SCALE_MOMENTUM_UP;

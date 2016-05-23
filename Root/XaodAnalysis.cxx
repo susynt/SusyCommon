@@ -360,7 +360,7 @@ XaodAnalysis& XaodAnalysis::initSusyTools()
             cout << "XaodAnalysis::initSusyTools        > " << prwFiles[i] << endl;
         }
         cout << "XaodAnalysis::initSusyTools     + lumi calc files..." << endl;
-        for(int i = 0; i < (int)prwFiles.size(); i++) {
+        for(int i = 0; i < (int)lumicalcFiles.size(); i++) {
             cout << "XaodAnalysis::initSusyTools        > " << lumicalcFiles[i] << endl;
         }
 
@@ -477,7 +477,7 @@ void XaodAnalysis::initPileupTool()
         cout << "XaodAnalysis::initPileupTool        > " << prwFiles[i] << endl;
     }
     cout << "XaodAnalysis::initPileupTool     + lumi calc files..." << endl;
-    for(int i = 0; i < (int)prwFiles.size(); i++) {
+    for(int i = 0; i < (int)lumicalcFiles.size(); i++) {
         cout << "XaodAnalysis::initPileupTool        > " << lumicalcFiles[i] << endl;
     }
 

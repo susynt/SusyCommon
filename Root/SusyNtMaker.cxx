@@ -347,20 +347,6 @@ void SusyNtMaker::fillEventVars()
         }
     }
 
-    if(m_isMC){
-        xAOD::TruthEventContainer::const_iterator truthE_itr = xaodTruthEvent()->begin();
-/*
-  AT: test 05-08-15: still crashes
-        ( *truthE_itr )->pdfInfoParameter(evt->pdf_id1   , xAOD::TruthEvent::PDGID1); // not available for some samples
-        ( *truthE_itr )->pdfInfoParameter(evt->pdf_id2   , xAOD::TruthEvent::PDGID2);
-        ( *truthE_itr )->pdfInfoParameter(evt->pdf_x1    , xAOD::TruthEvent::X1);
-        ( *truthE_itr )->pdfInfoParameter(evt->pdf_x2    , xAOD::TruthEvent::X2);
-        ( *truthE_itr )->pdfInfoParameter(evt->pdf_scale , xAOD::TruthEvent::SCALE);
-*/
-        // DG what are these two?
-        //( *truthE_itr )->pdfInfoParameter(evt->pdf_x1   , xAOD::TruthEvent::x1);
-        //( *truthE_itr )->pdfInfoParameter(evt->pdf_x2   , xAOD::TruthEvent::x2);
-    }
     evt->pdfSF            = m_isMC? getPDFWeight8TeV() : 1;
     m_susyNt.evt()->cutFlags[NtSys::NOM] = m_cutFlags;
 }
@@ -604,14 +590,14 @@ void SusyNtMaker::storeElectron(const xAOD::Electron &in)
 
             #warning storeElectron check method at getting trigger sf
             for(int i=ElectronId::TightLLH; i<ElectronIdInvalid; i++){
-                if     (ourSys == NtSys::EL_EFF_ID_TotalCorrUncertainty_UP)      out.errEffSF_id_corr_up[i]   = sf[i] - out.eleEffSF[i];
-                else if(ourSys == NtSys::EL_EFF_ID_TotalCorrUncertainty_DN)      out.errEffSF_id_corr_dn[i]   = sf[i] - out.eleEffSF[i];
-                else if(ourSys == NtSys::EL_EFF_Reco_TotalCorrUncertainty_UP)    out.errEffSF_reco_corr_up[i] = sf[i] - out.eleEffSF[i];
-                else if(ourSys == NtSys::EL_EFF_Reco_TotalCorrUncertainty_DN)    out.errEffSF_reco_corr_dn[i] = sf[i] - out.eleEffSF[i];
-                else if(ourSys == NtSys::EL_EFF_Iso_TotalCorrUncertainty_UP)     out.errEffSF_iso_corr_up[i]  = sf[i] - out.eleEffSF[i];
-                else if(ourSys == NtSys::EL_EFF_Iso_TotalCorrUncertainty_DN)     out.errEffSF_iso_corr_dn[i]  = sf[i] - out.eleEffSF[i];
-                else if(ourSys == NtSys::EL_EFF_Trigger_TotalCorrUncertainty_UP) out.errEffSF_trig_corr_up[i] = sf_trig[i] - out.eleTrigSF[i];
-                else if(ourSys == NtSys::EL_EFF_Trigger_TotalCorrUncertainty_DN) out.errEffSF_trig_corr_dn[i] = sf_trig[i] - out.eleTrigSF[i];
+                if     (ourSys == NtSys::EL_EFF_ID_TOTAL_Uncorr_UP)      out.errEffSF_id_up[i]   = sf[i] - out.eleEffSF[i];
+                else if(ourSys == NtSys::EL_EFF_ID_TOTAL_Uncorr_DN)      out.errEffSF_id_dn[i]   = sf[i] - out.eleEffSF[i];
+                else if(ourSys == NtSys::EL_EFF_Reco_TOTAL_Uncorr_UP)    out.errEffSF_reco_up[i] = sf[i] - out.eleEffSF[i];
+                else if(ourSys == NtSys::EL_EFF_Reco_TOTAL_Uncorr_DN)    out.errEffSF_reco_dn[i] = sf[i] - out.eleEffSF[i];
+                else if(ourSys == NtSys::EL_EFF_Iso_TOTAL_Uncorr_UP)     out.errEffSF_iso_up[i]  = sf[i] - out.eleEffSF[i];
+                else if(ourSys == NtSys::EL_EFF_Iso_TOTAL_Uncorr_DN)     out.errEffSF_iso_dn[i]  = sf[i] - out.eleEffSF[i];
+                else if(ourSys == NtSys::EL_EFF_Trigger_TOTAL_Uncorr_UP) out.errEffSF_trig_up[i] = sf_trig[i] - out.eleTrigSF[i];
+                else if(ourSys == NtSys::EL_EFF_Trigger_TOTAL_Uncorr_DN) out.errEffSF_trig_dn[i] = sf_trig[i] - out.eleTrigSF[i];
 /*
                 if(i==0 || i==1 || i==2){
                 if(i==0)
@@ -621,10 +607,10 @@ void SusyNtMaker::storeElectron(const xAOD::Electron &in)
                 else if(i==2)
                     cout << "ElectronId : LooseLH " <<  endl;
         
-                cout << "   effId           : " << out.errEffSF_id_corr_up[i] << "  " << out.errEffSF_id_corr_dn[i] << endl;
-                cout << "   effReco         : " << out.errEffSF_reco_corr_up[i] << "  " << out.errEffSF_reco_corr_dn[i] << endl;
-                cout << "   effIso          : " << out.errEffSF_iso_corr_up[i] << "  " << out.errEffSF_iso_corr_dn[i] << endl;
-                cout << "   effTrig         : " << out.errEffSF_trig_corr_up[i] << "  " << out.errEffSF_trig_corr_dn[i] << endl;
+                cout << "   effId           : " << out.errEffSF_id_up[i] << "  " << out.errEffSF_id_dn[i] << endl;
+                cout << "   effReco         : " << out.errEffSF_reco_up[i] << "  " << out.errEffSF_reco_dn[i] << endl;
+                cout << "   effIso          : " << out.errEffSF_iso_up[i] << "  " << out.errEffSF_iso_dn[i] << endl;
+                cout << "   effTrig         : " << out.errEffSF_trig_up[i] << "  " << out.errEffSF_trig_dn[i] << endl;
                 }
 */                
             }
@@ -639,8 +625,8 @@ void SusyNtMaker::storeElectron(const xAOD::Electron &in)
     } // if isMC
     else {
         for(int i=ElectronId::TightLLH; i<ElectronIdInvalid; i++){
-            out.errEffSF_id_corr_up[i] = out.errEffSF_id_corr_dn[i] = 0;
-            out.errEffSF_reco_corr_up[i] = out.errEffSF_reco_corr_dn[i] = 0;
+            out.errEffSF_id_up[i] = out.errEffSF_id_dn[i] = 0;
+            out.errEffSF_reco_up[i] = out.errEffSF_reco_dn[i] = 0;
         }
     }
 
