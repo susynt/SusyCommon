@@ -1018,10 +1018,13 @@ void SusyNtMaker::storeJet(const xAOD::Jet &in)
     // jetOut->matchTruth    = m_isMC? matchTruthJet(jetIdx) : false;
 
     // B-tagging 
-    // dantrim July 3 2015 : mv1 is a goner
     double weight_mv2c20(0.);
     if(!in.btagging()->MVx_discriminant("MV2c20", weight_mv2c20)){ cout << "SusyNtMaker::storeJet ERROR    Failed to retrieve MV2c20 weight!" << endl; }
     out.mv2c20 = weight_mv2c20;
+
+    double weight_mv2c10(0.);
+    if(!in.btagging()->MVx_discriminant("MV2c10", weight_mv2c10)) { cout << "SusyNtMaker::storeJet ERROR    Failed to retrieve MV2c10 weight!" << endl; }
+    out.mv2c10 = weight_mv2c10;
 
     out.sv1plusip3d   = (in.btagging())->SV1plusIP3D_discriminant();           
     out.bjet = m_susyObj[m_eleIDDefault]->IsBJet(in) ? 1 : 0;
