@@ -272,8 +272,7 @@ namespace Susy {
     //
 
     // grl
-    XaodAnalysis& setGRLFile(std::string fileName);
-    static std::string defaultGrlFile();
+    std::string defaultGrlFile();
     bool initGrlTool();
     bool passGRL(const xAOD::EventInfo* eventinfo); ///< good run list
     bool passTTCVeto(const xAOD::EventInfo* eventinfo); ///< incomplete event 
@@ -357,10 +356,10 @@ namespace Susy {
     void dumpBaselineObjects();
     void dumpSignalObjects();
     // helpers
-    static DataStream streamFromSamplename(const TString &s, bool isMC); ///< guess data stream from sample name
-    static bool isDataFromSamplename(const TString &s); ///< guess from sample name whether it's data sample
-    static bool isSimuFromSamplename(const TString &s); ///< guess from sample name whether it's a simulated sample
-    static bool isDerivationFromMetaData(TTree* tree, bool verbose); ///< From sample MetaData, determine if sample is a derivation
+    DataStream streamFromSamplename(const TString &s, bool isMC); ///< guess data stream from sample name
+    bool isDataFromSamplename(const TString &s); ///< guess from sample name whether it's data sample
+    bool isSimuFromSamplename(const TString &s); ///< guess from sample name whether it's a simulated sample
+    bool isDerivationFromMetaData(TTree* tree, bool verbose); ///< From sample MetaData, determine if sample is a derivation
     bool getCutBookkeeperInfo(xAOD::TEvent& event);
     /**
        \brief Retrieve the file holding the tree; for a chain, get the files holding the first tree.
@@ -509,6 +508,8 @@ namespace Susy {
     Long64_t m_entry;           // Current entry in the current tree (not chain index!)
     int m_dbg;                  // debug level
     bool m_isMC;                // is MC flag
+    bool m_isData15;            // flag for if data15_13TeV
+    bool m_isData16;            // flag for if data16_13TeV
     bool m_isMC15b;             // flag for whether this sample is mc15b
     bool m_isMC15c;             // flag for whether this sample is mc15c
     bool m_flagsAreConsistent;  ///< whether the cmd-line flags are consistent with the event

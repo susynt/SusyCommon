@@ -37,7 +37,6 @@ void help()
       <<"  -l|--lumi        default: 5312/pb"                         <<endl /// \todo obsolete option?
       <<"  -m|--write-nt    default: 1 (true, write tuple)"           <<endl
       <<"  --outfile-name   default: 'susyNt.root'"                   <<endl
-      <<"  --grl            default: XaodAnalysis::defaultGrlFile()"  <<endl
       <<"  --sys            default: off"                             <<endl
       <<"  --savePh         save photons"                             <<endl
       <<"  --saveTau        save taus"                                <<endl
@@ -61,7 +60,6 @@ int main(int argc, char** argv)
   float lumi      = 5831;
   string sample   = "";
   string fileList = "fileList.txt";
-  string grl      = "";
   bool sysOn      = false;
   bool savePh     = false;
   bool saveTau    = false;
@@ -95,7 +93,6 @@ int main(int argc, char** argv)
       else if (sw=="-l" || sw=="--lumi"      ) { lumi = atof(argv[++optind]); }
       else if (sw=="-m" || sw=="--write-nt"  ) { writeNt = atoi(argv[++optind]); }
       else if (sw=="--outfile-name"          ) { outputFileName = argv[++optind]; } 
-      else if (sw=="--grl"          ) { grl = argv[++optind]; }
       else if (sw=="--sys"          ) { sysOn = true; }
       else if (sw=="--savePh"       ) { savePh = true; }
       else if (sw=="--saveTau"      ) { saveTau = true; }
@@ -123,7 +120,6 @@ int main(int argc, char** argv)
   cout<<"  nSkip          "<<nSkip   <<endl;
   cout<<"  dbg            "<<dbg     <<endl;
   cout<<"  fileList       "<<fileList<<endl;
-  cout<<"  grl            "<<grl     <<endl;
   cout<<"  sys            "<<sysOn   <<endl;
   cout<<"  savePh         "<<savePh  <<endl;
   cout<<"  saveTau        "<<saveTau <<endl;
@@ -177,7 +173,6 @@ int main(int argc, char** argv)
   susyAna->m_outputFileName = outputFileName;
   susyAna->m_productionCommand = Susy::utils::commandLineArguments(argc, argv);
   // GRL - default is set in SusyD3PDAna::Begin, but now we can override it here
-  susyAna->setGRLFile(grl);
 
   // Run the job
   if(nEvt<0) nEvt = nEntries;

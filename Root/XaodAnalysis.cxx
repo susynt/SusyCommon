@@ -75,6 +75,8 @@ XaodAnalysis::XaodAnalysis() :
     m_entry(0),
     m_dbg(0),
     m_isMC(false),
+    m_isData15(false),
+    m_isData16(false),
     m_isMC15b(false),
     m_isMC15c(false),
     m_flagsAreConsistent(false),
@@ -121,6 +123,14 @@ void XaodAnalysis::Init(TTree *tree)
     xAOD::Init("Susy::XaodAnalysis").ignore();
 
     m_isMC = XaodAnalysis::isSimuFromSamplename(m_inputContainerName);
+
+    if(!m_isMC && !(m_isData15 || m_isData16)) {
+        cout << "XaodAnalysis::Init    ERROR Inconsistent options! This sample ("
+             << m_inputContainerName << ") is flagged as NOT MC but neither the "
+             << "data15 nor data16 flags are true!" << endl;
+        exit(1);
+    }
+
     if(!m_isMC && m_isMC15b) { 
         m_isMC15b = false;
     }
@@ -167,7 +177,7 @@ void XaodAnalysis::Init(TTree *tree)
     } else {
         cout << " RootCore area not set up " << endl
              <<"Exiting... "<<endl << endl;
-        exit(-1);
+        exit(1);
     }
 
     // GRL tool (if data)
@@ -177,8 +187,10 @@ void XaodAnalysis::Init(TTree *tree)
             exit(1);
         }
     }
-    // is this an MC15b sample?
-    cout << "XaodAnalysis::Init    Treating sample as " << (m_isMC ? ( ( m_isMC15c ? "mc15c" : (m_isMC15b ? "mc15b" : "mc15a") )) : "data") << endl;
+
+    cout << "----------------------------------------------------------" << endl;
+    cout << "XaodAnalysis::Init    Treating sample as " << (m_isMC ? ( ( m_isMC15c ? "mc15c" : (m_isMC15b ? "mc15b" : "mc15a") )) : ( m_isData16 ? "data16_13TeV" : "data15_13TeV" ) ) << endl;
+    cout << "----------------------------------------------------------" << endl;
 
     // initialize SUSYTools
     initSusyTools();
@@ -322,7 +334,7 @@ XaodAnalysis& XaodAnalysis::initSusyTools()
         // prw config files
         std::vector<std::string> prwFiles;
         if(!m_isMC15b && !m_isMC15c) {
-            prwFiles.push_back("dev/SUSYTools/merged_prw.root"); //group 25ns
+            prwFiles.push_back("dev/SUSYTools/merged_prw.root");
         }
         else if(m_isMC15b && !m_isMC15c) {
             prwFiles.push_back("dev/SUSYTools/merged_prw_mc15b.root");
@@ -338,8 +350,20 @@ XaodAnalysis& XaodAnalysis::initSusyTools()
         m_susyObj[susyObjId]->setProperty("PRWConfigFiles", prwFiles);
         // data luminosity profile
         std::vector<std::string> lumicalcFiles;
-        lumicalcFiles.push_back(m_data_dir+"SusyCommon/ilumicalc_histograms_None_276262-284484.root"); // updated with GRL v73 25ns
+        lumicalcFiles.push_back(m_data_dir+"SusyCommon/ilumicalc_histograms_None_297730-299055.root"); // data16: updated with GRL v76
+        lumicalcFiles.push_back(m_data_dir+"SusyCommon/ilumicalc_histograms_None_276262-284484.root"); // data15: updated with GRL v75
         m_susyObj[susyObjId]->setProperty("PRWLumiCalcFiles", lumicalcFiles); 
+
+        cout << "XaodAnalysis::initSusyTools    Configuring SUSYTools' PRW tool: " << endl;
+        cout << "XaodAnalysis::initSusyTools     + prw config files..." << endl;
+        for(int i = 0; i < (int)prwFiles.size(); i++) {
+            cout << "XaodAnalysis::initSusyTools        > " << prwFiles[i] << endl;
+        }
+        cout << "XaodAnalysis::initSusyTools     + lumi calc files..." << endl;
+        for(int i = 0; i < (int)prwFiles.size(); i++) {
+            cout << "XaodAnalysis::initSusyTools        > " << lumicalcFiles[i] << endl;
+        }
+
 
         if(m_susyObj[susyObjId]->initialize() != StatusCode::SUCCESS){
             cout << "XaodAnalysis: Cannot intialize SUSYObjDef_xAOD...Aborting" << endl;
@@ -381,93 +405,6 @@ XaodAnalysis& XaodAnalysis::initSusyTools()
     return *this;
 }
 
-//----------------------------------------------------------
-//XaodAnalysis& XaodAnalysis::initSusyTools()
-//{
-//    for(int i=ElectronId::TightLH; i<=ElectronId::LooseLH; i++){
-//        string electronIdName = ElectronId2str(static_cast<ElectronId>(i));
-//        string name = "SUSYObjDef_xAOD_" + electronIdName;
-//        m_susyObj[i] = new ST::SUSYObjDef_xAOD(name);
-//        cout << "------------------------------------------------------------" << endl;
-//        cout << "XaodAnalysis::initSusyTools: " << name <<endl;
-//        cout << "------------------------------------------------------------" << endl;
-//
-//        // set the verbosity level of SUSYTools
-//        m_susyObj[i]->msg().setLevel(m_dbg ? MSG::DEBUG : MSG::WARNING);
-//    
-//        // set the electron Id used for this SUSYTools instance
-//        m_susyObj[i]->setProperty("EleId", electronIdName);
-//
-//        // set "datasource" for determining run configuration in SUSYTools
-//        ST::SettingDataSource datasource = !m_isMC ? ST::Data : (m_isAF2 ? ST::AtlfastII : ST::FullSim);
-//        CHECK( m_susyObj[i]->setProperty("DataSource",datasource) );
-//
-//        ///////////////////////////////////////
-//        // set up the pileup reweighting tool
-//        // inside of ST
-//        ///////////////////////////////////////
-//        // prw config files
-//        std::vector<std::string> prwFiles;
-//        prwFiles.push_back(m_data_dir+"SusyCommon/mc15_50ns.prw.root");
-//        m_susyObj[i]->setProperty("PRWConfigFiles", prwFiles);
-//        // data luminosity profile
-//        std::vector<std::string> lumicalcFiles;
-//        //lumicalcFiles.push_back(m_data_dir+"SusyCommon/ilumicalc_histograms_None_266904-267639.root");
-//        //lumicalcFiles.push_back(m_data_dir+"SusyCommon/ilumicalc_histograms_None_267073-267639.root"); // updated to latest GRL
-//        lumicalcFiles.push_back(m_data_dir+"SusyCommon/ilumicalc_histograms_None_267073-271744.root"); // updated to latest GRL (July 23 2015)
-//        m_susyObj[i]->setProperty("PRWLumiCalcFiles", lumicalcFiles); 
-//        // default channel to use (if we do not have a prw config for a specific sample, this is what gets used)
-//        m_susyObj[i]->setProperty("PRWDefaultChannel", 410000);
-//        # warning Setting data mu uncertainty to ten percent
-//        m_susyObj[i]->setProperty("PRWMuUncertainty", 0.1);
-//
-//        #warning Setting recommended reduced JES systematics set to set 1
-//        m_susyObj[i]->setProperty("JESNuisanceParameterSet", 1);
-//
-//        if(m_susyObj[i]->SUSYToolsInit().isFailure() ) {
-//            cout << "XaodAnalysis: Failed to initialise tools in SUSYToolsInit()... Aborting" << endl;
-//            abort();
-//        }       
-//        if(m_susyObj[i]->initialize() != StatusCode::SUCCESS){
-//            cout << "XaodAnalysis: Cannot intialize SUSYObjDef_xAOD...Aborting" << endl;
-//            abort();
-//        }
-//        
-//        std::cout << " INITIALIZED SUSYTOOLS with properties " << std::endl;
-//        for(auto& x:m_susyObj[i]->getPropertyMgr()->getProperties()){
-//            if(x.second->typeName()=="string"){
-//                string foo;
-//                m_susyObj[i]->getPropertyMgr()->getProperty(x.first, foo);
-//                cout << " Property << " << x.first << ": " << foo << endl;
-//            }
-//            else if(x.second->typeName()=="int"){
-//                int foo;
-//                m_susyObj[i]->getPropertyMgr()->getProperty(x.first, foo);
-//                cout << " Property << " << x.first << ": " << foo << endl;
-//            }
-//            else if(x.second->typeName()=="float"){
-//                float foo;
-//                m_susyObj[i]->getPropertyMgr()->getProperty(x.first, foo);
-//                cout << " Property << " << x.first << ": " << foo << endl;
-//            }
-//            else if(x.second->typeName()=="double"){
-//                double foo;
-//                m_susyObj[i]->getPropertyMgr()->getProperty(x.first, foo);
-//                cout << " Property << " << x.first << ": " << foo << endl;
-//            }
-//            else if(x.second->typeName()=="bool"){
-//                bool foo;
-//                m_susyObj[i]->getPropertyMgr()->getProperty(x.first, foo);
-//                string value = foo ? "True" : "False";
-//                cout << " Property << " << x.first << ": " << value << endl;
-//            }
-//        }
-//    //    CHECK( m_susyObj[i]->SUSYToolsInit() );
-//    }
-//
-//    return *this;
-//
-//}
 //----------------------------------------------------------
 XaodAnalysis& XaodAnalysis::initLocalTools()
 {
@@ -530,7 +467,20 @@ void XaodAnalysis::initPileupTool()
              << "Inconsistent MC options when setting up PRW config! Exiting." << endl;
         exit(1);
     }
-    lumicalcFiles.push_back(m_data_dir+"SusyCommon/ilumicalc_histograms_None_276262-284484.root"); // updated with GRL v73 25ns
+    lumicalcFiles.push_back(m_data_dir+"SusyCommon/ilumicalc_histograms_None_297730-299055.root"); // data16: updated with GRL v76
+    lumicalcFiles.push_back(m_data_dir+"SusyCommon/ilumicalc_histograms_None_276262-284484.root"); // data15: updated with GRL v75
+
+
+    cout << "XaodAnalysis::initPileupTool    Configuring SusyCommon PRW tool: " << endl;
+    cout << "XaodAnalysis::initPileupTool     + prw config files..." << endl;
+    for(int i = 0; i < (int)prwFiles.size(); i++) {
+        cout << "XaodAnalysis::initPileupTool        > " << prwFiles[i] << endl;
+    }
+    cout << "XaodAnalysis::initPileupTool     + lumi calc files..." << endl;
+    for(int i = 0; i < (int)prwFiles.size(); i++) {
+        cout << "XaodAnalysis::initPileupTool        > " << lumicalcFiles[i] << endl;
+    }
+
     CHECK(m_pileupReweightingTool->setProperty("ConfigFiles", prwFiles));
     CHECK(m_pileupReweightingTool->setProperty("LumiCalcFiles", lumicalcFiles));
     CHECK(m_pileupReweightingTool->setProperty("DefaultChannel", 410000));
@@ -1862,11 +1812,6 @@ int XaodAnalysis::classifyTau(const xAOD::TauJet &in)
 }
 
 //----------------------------------------------------------
-XaodAnalysis& XaodAnalysis::setGRLFile(std::string fileName)
-{
-    m_grlFileName = fileName; return *this;
-}
-//----------------------------------------------------------
 bool XaodAnalysis::passGRL(const xAOD::EventInfo* eventinfo)
 {
     return (m_isMC ||
@@ -2309,7 +2254,17 @@ bool XaodAnalysis::runningOptionsAreValid()
 //----------------------------------------------------------
 std::string XaodAnalysis::defaultGrlFile()
 {
-    std::string grl_file = "$ROOTCOREBIN/data/SusyCommon/data15_13TeV.periodAllYear_DetStatus-v73-pro19-08_DQDefects-00-01-02_PHYS_StandardGRL_All_Good_25ns.xml";
+    string grl_file = "";
+    if(m_isData15) {
+        grl_file = "$ROOTCOREBIN/data/SusyCommon/data15_13TeV.periodAllYear_DetStatus-v75-repro20-01_DQDefects-00-02-02_PHYS_StandardGRL_All_Good_25ns.xml";
+    }
+    else if(m_isData16) {
+        grl_file = "$ROOTCOREBIN/data/SusyCommon/data16_13TeV.periodAllYear_DetStatus-v76-pro20-01_DQDefects-00-02-02_PHYS_StandardGRL_All_Good_25ns.xml";
+    }
+    else {
+        cout << "XaodAnalysis::defaultGrlFile    ERROR Inconsistent data flags. Neither \"m_isData15\" nor \"m_isData15\" flags are set!" << endl;
+        exit(1);
+    }
     return grl_file;
 }
 //----------------------------------------------------------
@@ -2341,13 +2296,27 @@ DataStream XaodAnalysis::streamFromSamplename(const TString &sample, bool isMC)
 //----------------------------------------------------------
 bool XaodAnalysis::isDataFromSamplename(const TString &sample)
 {
-    return sample.Contains("data", TString::kIgnoreCase);
+    bool is_data = false;
+    bool is_data16 = false;
+    is_data = sample.Contains("data", TString::kIgnoreCase);
+    is_data16 = sample.Contains("data16", TString::kIgnoreCase);
+
+    if(is_data && !is_data16) m_isData15 = true;
+    else if(is_data && is_data16) m_isData16 = true;
+
+    return is_data;
 }
 //----------------------------------------------------------
 bool XaodAnalysis::isSimuFromSamplename(const TString &s)
 {
     bool isMCsample = !XaodAnalysis::isDataFromSamplename(s);
-    cout<<"Sample ("<<s<<") treated as simulation? " << (isMCsample ? "YES" : "NO") << endl;
+    stringstream sx;
+    sx << "XaodAnalysis::isSimuFromSamplename    "
+       << "Sample (" << s <<") treated as simulation? " << (isMCsample ? "YES" : "NO") << endl;
+    if(!isMCsample) {
+        sx << "XaodAnalysis::isSimuFromSamplename    "
+           << " > " << (m_isData16 ? " data16_13Tev " : " data15_13TeV ") << endl;
+    }
     return isMCsample;
 }
 //----------------------------------------------------------
