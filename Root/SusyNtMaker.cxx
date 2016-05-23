@@ -347,6 +347,23 @@ void SusyNtMaker::fillEventVars()
         }
     }
 
+ // this is wayyyyyy to noisy
+ // so comment this out
+ //   // sherpa 2.2 V+jets weight
+ //   float vjetweight = 1.0;
+ //   if(m_isMC) {
+ //       int mc_ = eventinfo->mcChannelNumber();
+ //       bool is_wjet = false;
+ //       bool is_zjet = false;
+ //       if(mc_ >= 363331 && mc_ <= 363483) is_wjet = true;
+ //       if(mc_ >= 363102 && mc_ <= 363435) is_zjet = true;
+ //       if(is_wjet || is_zjet) {
+ //           vjetweight = m_susyObj[m_eleIDDefault]->getSherpaVjetsNjetsWeight();
+ //       }
+ //   }
+ //   evt->sherpa22VjetsWeight = vjetweight;
+    evt->sherpa22VjetsWeight = 1;
+
     evt->pdfSF            = m_isMC? getPDFWeight8TeV() : 1;
     m_susyNt.evt()->cutFlags[NtSys::NOM] = m_cutFlags;
 }
