@@ -1386,7 +1386,6 @@ const xAOD::Vertex* XaodAnalysis::getPV()
 /*--------------------------------------------------------------------------------*/
 bool XaodAnalysis::matchTruthJet(int iJet)
 {
-#warning matchTruthJet not implemented
     // // Loop over truth jets looking for a match
     // const TLorentzVector &jetLV = m_susyObj[m_eleIDDefault]->GetJetTLV(iJet);
     // for(int i=0; i<m_event.AntiKt4Truth.n(); i++){
@@ -1951,7 +1950,6 @@ float XaodAnalysis::getEventWeight(float lumi)
 //----------------------------------------------------------
 float XaodAnalysis::getXsecWeight()
 {
-#warning getXsecWeight not implemented
     return 1.0;
     // // Use user cross section if it has been set
     // if(m_xsec > 0) return m_xsec;
@@ -1992,7 +1990,6 @@ float XaodAnalysis::getPileupWeightDown()
 //----------------------------------------------------------
 float XaodAnalysis::getPDFWeight8TeV()
 {
-#warning getPDFWeight8TeV not implemented
     return 1.0;
     // #ifdef USEPDFTOOL
     // float scale = m_event.mcevt.pdf_scale()->at(0);
@@ -2020,7 +2017,6 @@ float XaodAnalysis::getPDFWeight8TeV()
 //----------------------------------------------------------
 float XaodAnalysis::getLepSF(const vector<LeptonInfo>& leptons)
 {
-#warning lepton scale factor not implemented
     // TODO: incorporate systematics
     float lepSF = 1;
     if(m_isMC){
@@ -2056,7 +2052,6 @@ void XaodAnalysis::calcRandomRunLB()
 //----------------------------------------------------------
 int XaodAnalysis::getHFORDecision()
 {
-#warning getHFORDecision not implemented
     //AT-2014-10-30 Not yet implemented for DC14
     return 1;
     // return m_hforTool.getDecision(m_event.eventinfo.mc_channel_number(),

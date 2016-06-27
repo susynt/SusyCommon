@@ -277,6 +277,7 @@ void SusyNtMaker::fillEventVars()
     evt->eventNumber      = eventinfo->eventNumber();
     evt->lb               = eventinfo->lumiBlock();
     evt->stream           = m_stream;
+    evt->treatAsYear      = m_susyObj[m_eleIDDefault]->treatAsYear();
 
     evt->isMC             = m_isMC;
     evt->mcChannel        = m_isMC? eventinfo->mcChannelNumber() : 0;
@@ -351,22 +352,26 @@ void SusyNtMaker::fillEventVars()
         }
     }
 
- // this is wayyyyyy to noisy
- // so comment this out
- //   // sherpa 2.2 V+jets weight
- //   float vjetweight = 1.0;
- //   if(m_isMC) {
- //       int mc_ = eventinfo->mcChannelNumber();
- //       bool is_wjet = false;
- //       bool is_zjet = false;
- //       if(mc_ >= 363331 && mc_ <= 363483) is_wjet = true;
- //       if(mc_ >= 363102 && mc_ <= 363435) is_zjet = true;
- //       if(is_wjet || is_zjet) {
- //           vjetweight = m_susyObj[m_eleIDDefault]->getSherpaVjetsNjetsWeight();
- //       }
- //   }
- //   evt->sherpa22VjetsWeight = vjetweight;
-    evt->sherpa22VjetsWeight = 1;
+    // sherpa 2.2 V+jets weight
+    float vjetweight = 1.0;
+    if(m_isMC) {
+        int mc_ = eventinfo->mcChannelNumber();
+        bool is_wjet = false;
+        bool is_zjet = false;
+        if( (mc_ >= 363331 && mc_ <= 363354) ||
+            (mc_ >= 363436 && mc_ <= 363459) || 
+            (mc_ >= 363460 && mc_ <= 363483) ) is_wjet = true; 
+        #warning need to request Ztautau in Sherpa2.2
+        if( (mc_ >= 363102 && mc_ <= 363122) ||
+            (mc_ >= 363361 && mc_ <= 363363) ||
+            (mc_ >= 363388 && mc_ <= 363411) ||
+            (mc_ >= 363364 && mc_ <= 363387) ||
+            (mc_ >= 363412 && mc_ <= 363433) ) is_zjet = true; 
+        if(is_wjet || is_zjet) {
+            vjetweight = m_susyObj[m_eleIDDefault]->getSherpaVjetsNjetsWeight();
+        }
+    }
+    evt->sherpa22VjetsWeight = vjetweight;
 
     evt->pdfSF            = m_isMC? getPDFWeight8TeV() : 1;
     m_susyNt.evt()->cutFlags[NtSys::NOM] = m_cutFlags;
@@ -609,7 +614,6 @@ void SusyNtMaker::storeElectron(const xAOD::Electron &in)
             // there are no isolation SF's for electrion ID looseLH
             //sf[ElectronId::LooseLH]  = m_susyObj[SusyObjId::eleLooseLH] ->GetSignalElecSF(in, recoSF, idSF, trigSF);
 
-            #warning storeElectron check method at getting trigger sf
             for(int i=ElectronId::TightLLH; i<ElectronIdInvalid; i++){
                 if     (ourSys == NtSys::EL_EFF_ID_TOTAL_Uncorr_UP)      out.errEffSF_id_up[i]   = sf[i] - out.eleEffSF[i];
                 else if(ourSys == NtSys::EL_EFF_ID_TOTAL_Uncorr_DN)      out.errEffSF_id_dn[i]   = sf[i] - out.eleEffSF[i];
@@ -1017,7 +1021,8 @@ void SusyNtMaker::storeJet(const xAOD::Jet &in)
     out.jvt = acc_jvt(in);
 
     // Truth Label/Matching 
-    if (m_isMC) { in.getAttribute("ConeTruthLabelID", out.truthLabel); }
+    //if (m_isMC) { in.getAttribute("ConeTruthLabelID", out.truthLabel); }
+    if (m_isMC) { in.getAttribute("HadronConeExclTruthLabelID", out.truthLabel); } // dantrim June 27 2016 following SUSYTools ::IsTruthBJet
 //rel 20
     //int JetPartonID = (in.jet())->auxdata< int >("PartonTruthLabelID"); // ghost association
     //int JetConeID   = (in.jet())->auxdata< int >("ConeTruthLabelID"); // cone association
@@ -1466,7 +1471,7 @@ void SusyNtMaker::storeTruthParticle(const xAOD::TruthParticle &in)
     out.eta = eta;
     out.phi = phi;
     out.m   = m;
-    bool all_available=true;
+    //bool all_available=true;
     // out.charge = in.charge(); // DG 2014-08-29 discards const ??
     out.pdgId = in.pdgId();
     out.status = in.status();
@@ -1479,7 +1484,6 @@ void SusyNtMaker::storeTruthParticle(const xAOD::TruthParticle &in)
 /*--------------------------------------------------------------------------------*/
 void SusyNtMaker::fillTruthJetVars()
 {
-#warning fillTruthJetVars not implemented
     // if(m_dbg>=5) cout << "fillTruthJetVars" << endl;
 
     // for(uint iTruJet=0; iTruJet<m_truJets.size(); iTruJet++){
@@ -1509,7 +1513,6 @@ void SusyNtMaker::fillTruthJetVars()
 /*--------------------------------------------------------------------------------*/
 void SusyNtMaker::fillTruthMetVars()
 {
-#warning fillTruthMetVars not implemented
     // if(m_dbg>=5) cout << "fillTruthMetVars" << endl;
 
     // // Just fill the lv for now
@@ -2187,7 +2190,8 @@ bool SusyNtMaker::passEventlevelSelection()
     bool pass_lar(m_cutFlags & ECut_LarErr);
     bool pass_tile(m_cutFlags & ECut_TileErr);
     bool pass_TTC(m_cutFlags & ECut_TTC);
-    bool pass_errorFlags(pass_lar && pass_tile && pass_TTC);
+    bool pass_SCT(m_cutFlags & ECut_SCTErr);
+    bool pass_errorFlags(pass_lar && pass_tile && pass_TTC && pass_SCT);
 
     fillCutFlow(true, w); // initial bin (total read-in)
     fillCutFlow(pass_grl, w);
@@ -2236,13 +2240,13 @@ bool SusyNtMaker::passObjectlevelSelection()
     bool pass_cosmic(m_cutFlags & ECut_Cosmic);
     
     bool pass_ge1bl(1>=(m_baseElectrons.size()+m_baseMuons.size()));
-    bool pass_exactly1sig(1==(m_sigElectrons.size()+m_sigMuons.size()));
-    bool pass_exactly1base(1==(m_baseElectrons.size()+m_baseMuons.size()));
-    bool pass_exactly2base(2==(m_baseElectrons.size()+m_baseMuons.size()));
+//    bool pass_exactly1sig(1==(m_sigElectrons.size()+m_sigMuons.size()));
+//    bool pass_exactly1base(1==(m_baseElectrons.size()+m_baseMuons.size()));
+//    bool pass_exactly2base(2==(m_baseElectrons.size()+m_baseMuons.size()));
     bool pass_ge1sl(1>=(m_sigElectrons.size()+m_sigMuons.size()));
-    bool pass_e1j(1==(m_baseJets.size()));
-    bool pass_e1sj(1==(m_sigJets.size()));
-    bool pass_exactly2sig(2==(m_sigElectrons.size()+m_sigMuons.size()));
+//    bool pass_e1j(1==(m_baseJets.size()));
+//    bool pass_e1sj(1==(m_sigJets.size()));
+//    bool pass_exactly2sig(2==(m_sigElectrons.size()+m_sigMuons.size()));
 
     fillCutFlow(pass_goodpv, w);
     fillCutFlow(pass_bad_muon, w);
