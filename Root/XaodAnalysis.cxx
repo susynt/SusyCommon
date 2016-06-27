@@ -350,7 +350,7 @@ XaodAnalysis& XaodAnalysis::initSusyTools()
         m_susyObj[susyObjId]->setProperty("PRWConfigFiles", prwFiles);
         // data luminosity profile
         std::vector<std::string> lumicalcFiles;
-        lumicalcFiles.push_back(m_data_dir+"SusyCommon/ilumicalc_histograms_None_297730-299055.root"); // data16: updated with GRL v76
+        lumicalcFiles.push_back(m_data_dir+"SusyCommon/ilumicalc_histograms_None_297730-301973.root"); // data16: updated with GRL v79
         lumicalcFiles.push_back(m_data_dir+"SusyCommon/ilumicalc_histograms_None_276262-284484.root"); // data15: updated with GRL v75
         m_susyObj[susyObjId]->setProperty("PRWLumiCalcFiles", lumicalcFiles); 
 
@@ -467,8 +467,8 @@ void XaodAnalysis::initPileupTool()
              << "Inconsistent MC options when setting up PRW config! Exiting." << endl;
         exit(1);
     }
-    lumicalcFiles.push_back(m_data_dir+"SusyCommon/ilumicalc_histograms_None_297730-299055.root"); // data16: updated with GRL v76
-    lumicalcFiles.push_back(m_data_dir+"SusyCommon/ilumicalc_histograms_None_276262-284484.root"); // data15: updated with GRL v75
+    lumicalcFiles.push_back(m_data_dir+"SusyCommon/ilumicalc_histograms_None_297730-301973.root"); // data16: updated with GRL v79
+    lumicalcFiles.push_back(m_data_dir+"SusyCommon/ilumicalc_histograms_None_276262-284484.root"); // data15: updated with GRL v79
 
 
     cout << "XaodAnalysis::initPileupTool    Configuring SusyCommon PRW tool: " << endl;
@@ -497,41 +497,44 @@ void XaodAnalysis::initElectronTools()
     // Initialize the electron likelihood ID tools for each of the
     // working points
 
-    std::string confDir                 = "ElectronPhotonSelectorTools/offline/";
-    std::string tight_LLH_conf          = "mc15_20160113/ElectronLikelihoodTightOfflineConfig2015.conf";
-    std::string medium_LLH_conf         = "mc15_20150712/ElectronLikelihoodMediumOfflineConfig2015.conf";
-    std::string loose_LLHBLayer_conf    = "mc15_20150712/ElectronLikelihoodLooseOfflineConfig2015_CutBL.conf"; 
-    std::string loose_LLH_conf          = "mc15_20150712/ElectronLikelihoodLooseOfflineConfig2015.conf";
-    std::string very_loose_LLH_conf     = "mc15_20150712/ElectronLikelihoodVeryLooseOfflineConfig2015.conf";
+    // dantrim June 27 2016 -- the EG people decide to do this for us no, imagine that :)
+    //std::string confDir                 = "ElectronPhotonSelectorTools/offline/";
+    //std::string tight_LLH_conf          = "mc15_20160113/ElectronLikelihoodTightOfflineConfig2015.conf";
+    //std::string medium_LLH_conf         = "mc15_20150712/ElectronLikelihoodMediumOfflineConfig2015.conf";
+    //std::string loose_LLHBLayer_conf    = "mc15_20150712/ElectronLikelihoodLooseOfflineConfig2015_CutBL.conf"; 
+    //std::string loose_LLH_conf          = "mc15_20150712/ElectronLikelihoodLooseOfflineConfig2015.conf";
+    //std::string very_loose_LLH_conf     = "mc15_20150712/ElectronLikelihoodVeryLooseOfflineConfig2015.conf";
+
+
+    std::string wp_veryloose = "VeryLooseLHElectron";
+    std::string wp_loose = "LooseLHElectron";
+    std::string wp_loose_blayer = "LooseBLLHElectron";
+    std::string wp_medium = "MediumLHElectron";
+    std::string wp_tight = "TightLHElectron";
 
     // VeryLooseLLH
     m_elecSelLikelihoodVeryLoose = new AsgElectronLikelihoodTool("AsgElectronLikelihoodToolVeryLoose");
-    CHECK( m_elecSelLikelihoodVeryLoose->setProperty("primaryVertexContainer","PrimaryVertices") );
-    CHECK( m_elecSelLikelihoodVeryLoose->setProperty("ConfigFile",confDir+very_loose_LLH_conf));
+    CHECK( m_elecSelLikelihoodVeryLoose->setProperty("WorkingPoint", wp_veryloose) );
     CHECK( m_elecSelLikelihoodVeryLoose->initialize() );
 
     // LooseLLH
     m_elecSelLikelihoodLoose = new AsgElectronLikelihoodTool("AsgElectronLikelihoodToolLoose");
-    CHECK( m_elecSelLikelihoodLoose->setProperty("primaryVertexContainer","PrimaryVertices") );
-    CHECK( m_elecSelLikelihoodLoose->setProperty("ConfigFile",confDir+loose_LLH_conf));
+    CHECK( m_elecSelLikelihoodLoose->setProperty("WorkingPoint", wp_loose) );
     CHECK( m_elecSelLikelihoodLoose->initialize() );
 
     // LooseAndBLayerLLH
     m_elecSelLikelihoodLooseBLayer = new AsgElectronLikelihoodTool("AsgElectronLikelihoodToolLooseBLayer");
-    CHECK( m_elecSelLikelihoodLooseBLayer->setProperty("primaryVertexContainer", "PrimaryVertices") );
-    CHECK( m_elecSelLikelihoodLooseBLayer->setProperty("ConfigFile", confDir+loose_LLHBLayer_conf));
+    CHECK( m_elecSelLikelihoodLooseBLayer->setProperty("WorkingPoint", wp_loose_blayer) ); 
     CHECK( m_elecSelLikelihoodLooseBLayer->initialize() );
     
     // MediumLLH
     m_elecSelLikelihoodMedium = new AsgElectronLikelihoodTool("AsgElectronLikelihoodToolMedium");
-    CHECK( m_elecSelLikelihoodMedium->setProperty("primaryVertexContainer","PrimaryVertices") );
-    CHECK( m_elecSelLikelihoodMedium->setProperty("ConfigFile",confDir+medium_LLH_conf) );
+    CHECK( m_elecSelLikelihoodMedium->setProperty("WorkingPoint", wp_medium) );
     CHECK( m_elecSelLikelihoodMedium->initialize() );
 
     // TightLLH
     m_elecSelLikelihoodTight = new AsgElectronLikelihoodTool("AsgElectronLikelihoodToolTight");
-    CHECK( m_elecSelLikelihoodTight->setProperty("primaryVertexContainer","PrimaryVertices") );
-    CHECK( m_elecSelLikelihoodTight->setProperty("ConfigFile",confDir+tight_LLH_conf) );
+    CHECK( m_elecSelLikelihoodTight->setProperty("WorkingPoint", wp_tight) );
     CHECK( m_elecSelLikelihoodTight->initialize() );
 
 }
@@ -539,20 +542,18 @@ void XaodAnalysis::initElectronTools()
 void XaodAnalysis::initPhotonTools()
 {
     // Initialize photon selection tools
-    std::string config_location = "ElectronPhotonSelectorTools/offline/mc15_20150712/";
-    std::string config_loose = "PhotonIsEMLooseSelectorCutDefs.conf";
-    std::string config_tight = "PhotonIsEMTightSelectorCutDefs.conf";
+    //std::string config_location = "ElectronPhotonSelectorTools/offline/mc15_20150712/";
+    //std::string config_loose = "PhotonIsEMLooseSelectorCutDefs.conf";
+    //std::string config_tight = "PhotonIsEMTightSelectorCutDefs.conf";
 
     //  > loose
     m_photonSelLoose = new AsgPhotonIsEMSelector("SusyCommonPhoLoose");
-    CHECK( m_photonSelLoose->setProperty("ConfigFile", config_location + config_loose) );
-    CHECK( m_photonSelLoose->setProperty("isEMMask", static_cast<unsigned int> (egammaPID::PhotonLoose) ));
+    CHECK( m_photonSelLoose->setProperty("WorkingPoint", "LoosePhoton") );
     CHECK( m_photonSelLoose->initialize() );
 
     //  > tight
     m_photonSelTight = new AsgPhotonIsEMSelector("SusyCommonPhoTight");
-    CHECK( m_photonSelTight->setProperty("ConfigFile", config_location + config_tight) );
-    CHECK( m_photonSelTight->setProperty("isEMMask", static_cast<unsigned int> (egammaPID::PhotonTight) ));
+    CHECK( m_photonSelTight->setProperty("WorkingPoint", "TightPhoton") );
     CHECK( m_photonSelTight->initialize() );
 
 }
@@ -616,6 +617,9 @@ void XaodAnalysis::initTauTools()
     //m_tauTruthMatchingTool->setProperty("SampleType", (int)TauAnalysisTools::SHERPA);
     //m_tauTruthMatchingTool->setProperty("SampleType", (int)TauAnalysisTools::PYTHIA);//default
 
+
+    #warning TauEfficiencyTool should be initialized per TauSelTool WP
+    #warning Tau SF should not be used currently
     m_TauEffEleTool = new TauAnalysisTools::TauEfficiencyCorrectionsTool("TauEfficiencyTool");
     m_TauEffEleTool->msg().setLevel(MSG::ERROR); // don't need warnings about histogram binning
 
@@ -2251,10 +2255,10 @@ std::string XaodAnalysis::defaultGrlFile()
 {
     string grl_file = "";
     if(m_isData15) {
-        grl_file = "$ROOTCOREBIN/data/SusyCommon/data15_13TeV.periodAllYear_DetStatus-v75-repro20-01_DQDefects-00-02-02_PHYS_StandardGRL_All_Good_25ns.xml";
+        grl_file = "$ROOTCOREBIN/data/SusyCommon/data15_13TeV.periodAllYear_DetStatus-v79-repro20-02_DQDefects-00-02-02_PHYS_StandardGRL_All_Good_25ns.xml";
     }
     else if(m_isData16) {
-        grl_file = "$ROOTCOREBIN/data/SusyCommon/data16_13TeV.periodAllYear_DetStatus-v76-pro20-01_DQDefects-00-02-02_PHYS_StandardGRL_All_Good_25ns.xml";
+        grl_file = "$ROOTCOREBIN/data/SusyCommon/data16_13TeV.periodAllYear_DetStatus-v79-pro20-05_DQDefects-00-02-02_PHYS_StandardGRL_All_Good_25ns.xml";
     }
     else {
         cout << "XaodAnalysis::defaultGrlFile    ERROR Inconsistent data flags. Neither \"m_isData15\" nor \"m_isData15\" flags are set!" << endl;
