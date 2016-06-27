@@ -1835,6 +1835,11 @@ bool XaodAnalysis::passTileErr(const xAOD::EventInfo* eventinfo)
 //	bool eventPassesTileTrip = (m_isMC || true); // SUSYToolsTester: move to xAOD tool
     return eventPassesTileTrip;
 }
+bool XaodAnalysis::passSCTErr(const xAOD::EventInfo* eventinfo)
+{
+    bool passSCTerr = eventinfo->errorState(xAOD::EventInfo::SCT)==xAOD::EventInfo::Error ? false : true;
+    return passSCTerr;
+}
 //----------------------------------------------------------
 bool XaodAnalysis::passLarErr(const xAOD::EventInfo* eventinfo)
 {
@@ -1853,6 +1858,7 @@ void XaodAnalysis::assignEventCleaningFlags()
     if(passTTCVeto(eventinfo))        m_cutFlags |= ECut_TTC;
     if(passLarErr(eventinfo))         m_cutFlags |= ECut_LarErr; 
     if(passTileErr(eventinfo))        m_cutFlags |= ECut_TileErr;
+    if(passSCTErr(eventinfo))         m_cutFlags |= ECut_SCTErr;
     if(passGoodVtx())                 m_cutFlags |= ECut_GoodVtx;
     if(passTileTrip())                m_cutFlags |= ECut_TileTrip;
 }

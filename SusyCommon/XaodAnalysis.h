@@ -277,6 +277,7 @@ namespace Susy {
     bool passGRL(const xAOD::EventInfo* eventinfo); ///< good run list
     bool passTTCVeto(const xAOD::EventInfo* eventinfo); ///< incomplete event 
     bool passTileErr(const xAOD::EventInfo* eventinfo); ///< Tile error
+    bool passSCTErr(const xAOD::EventInfo* eventinfo); ///< SCT error
     bool passLarErr(const xAOD::EventInfo* eventinfo); ///< lar error
 
     bool passLarHoleVeto(); ///< lar hole veto
