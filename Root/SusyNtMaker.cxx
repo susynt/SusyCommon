@@ -248,6 +248,10 @@ bool SusyNtMaker::selectEvent()
 //----------------------------------------------------------
 void SusyNtMaker::fillNtVars()
 {
+
+    // "apply" the PRW tool since everything depends on it
+    m_susyObj[m_eleIDDefault]->ApplyPRWTool(); 
+
     fillEventVars();
     fillElectronVars();
     fillMuonVars();
