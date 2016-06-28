@@ -277,7 +277,12 @@ void SusyNtMaker::fillEventVars()
     evt->eventNumber      = eventinfo->eventNumber();
     evt->lb               = eventinfo->lumiBlock();
     evt->stream           = m_stream;
-    evt->treatAsYear      = m_susyObj[m_eleIDDefault]->treatAsYear();
+    if(m_isMC)
+        evt->treatAsYear      = m_susyObj[m_eleIDDefault]->treatAsYear();
+    else {
+        if(m_isData15) evt->treatAsYear = 2015;
+        else if(m_isData16) evt->treatAsYear = 2016;
+    }
 
     evt->isMC             = m_isMC;
     evt->mcChannel        = m_isMC? eventinfo->mcChannelNumber() : 0;
@@ -660,6 +665,8 @@ void SusyNtMaker::storeElectron(const xAOD::Electron &in)
     //////////////////////////////////////
     if(const xAOD::CaloCluster* c = in.caloCluster()) {
         out.clusE   = c->e()*MeV2GeV;
+        out.clusEtaBE = c->etaBE(2);
+        out.clusPhiBE = c->phiBE(2);
         out.clusEta = c->eta();
         out.clusPhi = c->phi();
     } else {
@@ -1218,7 +1225,10 @@ void SusyNtMaker::storePhoton(const xAOD::Photon &in)
 
     if(const xAOD::CaloCluster* c = in.caloCluster()) {
         out.clusE   = c->e()*MeV2GeV;
-        out.clusEta = c->etaBE(2);
+        // use coordinates from 2nd sampling
+        out.clusEtaBE = c->etaBE(2);
+        out.clusPhiBE = c->phiBE(2);
+        out.clusEta = c->eta();
         out.clusPhi = c->phi();
     } else {
         all_available = false;
