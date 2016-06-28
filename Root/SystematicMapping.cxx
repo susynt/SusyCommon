@@ -79,14 +79,23 @@ SusyNtSys CPsys2sys(const std::string &s)
   else if( s== "EL_EFF_Trigger_TotalCorrUncertainty__1down" ) r = EL_EFF_Trigger_TotalCorrUncertainty_DN;
   else if( s== "EL_EFF_Trigger_TotalCorrUncertainty__1up" )   r = EL_EFF_Trigger_TotalCorrUncertainty_UP;
  */
-  else if( s== "EL_EFF_ID_TOTAL_UncorrUncertainty__1down" )     r = EL_EFF_ID_TOTAL_Uncorr_DN;
-  else if( s== "EL_EFF_ID_TOTAL_UncorrUncertainty__1up" )       r = EL_EFF_ID_TOTAL_Uncorr_UP;
-  else if( s== "EL_EFF_Iso_TOTAL_UncorrUncertainty__1down")     r = EL_EFF_Iso_TOTAL_Uncorr_DN;
-  else if( s== "EL_EFF_Iso_TOTAL_UncorrUncertainty__1up")       r = EL_EFF_Iso_TOTAL_Uncorr_UP;
-  else if( s== "EL_EFF_Reco_TOTAL_UncorrUncertainty__1down")    r = EL_EFF_Reco_TOTAL_Uncorr_DN;
-  else if( s== "EL_EFF_Reco_TOTAL_UncorrUncertainty__1up")      r = EL_EFF_Reco_TOTAL_Uncorr_UP;
-  else if( s== "EL_EFF_Trigger_TOTAL_UncorrUncertainty__1down") r = EL_EFF_Trigger_TOTAL_Uncorr_DN;
-  else if( s== "EL_EFF_Trigger_TOTAL_UncorrUncertainty__1up")   r = EL_EFF_Trigger_TOTAL_Uncorr_UP;
+  else if( s== "EL_EFF_ID_TOTAL_1NPCOR_PLUS_UNCOR__1down" )         r = EL_EFF_ID_TOTAL_Uncorr_DN;
+  else if( s== "EL_EFF_ID_TOTAL_1NPCOR_PLUS_UNCOR__1up" )           r = EL_EFF_ID_TOTAL_Uncorr_UP; 
+  else if( s== "EL_EFF_Iso_TOTAL_1NPCOR_PLUS_UNCOR__1down" )        r = EL_EFF_Iso_TOTAL_Uncorr_DN; 
+  else if( s== "EL_EFF_Iso_TOTAL_1NPCOR_PLUS_UNCOR__1up" )          r = EL_EFF_Iso_TOTAL_Uncorr_UP; 
+  else if( s== "EL_EFF_Reco_TOTAL_1NPCOR_PLUS_UNCOR__1down" )       r = EL_EFF_Reco_TOTAL_Uncorr_DN; 
+  else if( s== "EL_EFF_Reco_TOTAL_1NPCOR_PLUS_UNCOR__1up" )         r = EL_EFF_Reco_TOTAL_Uncorr_UP; 
+  else if( s== "EL_EFF_TriggerEff_TOTAL_1NPCOR_PLUS_UNCOR__1down")  r = EL_EFF_Trigger_TOTAL_Uncorr_DN; 
+  else if( s== "EL_EFF_TriggerEff_TOTAL_1NPCOR_PLUS_UNCOR__1up")    r = EL_EFF_Trigger_TOTAL_Uncorr_UP; 
+
+ // else if( s== "EL_EFF_ID_TOTAL_UncorrUncertainty__1down" )     r = EL_EFF_ID_TOTAL_Uncorr_DN;
+ // else if( s== "EL_EFF_ID_TOTAL_UncorrUncertainty__1up" )       r = EL_EFF_ID_TOTAL_Uncorr_UP;
+ // else if( s== "EL_EFF_Iso_TOTAL_UncorrUncertainty__1down")     r = EL_EFF_Iso_TOTAL_Uncorr_DN;
+ // else if( s== "EL_EFF_Iso_TOTAL_UncorrUncertainty__1up")       r = EL_EFF_Iso_TOTAL_Uncorr_UP;
+ // else if( s== "EL_EFF_Reco_TOTAL_UncorrUncertainty__1down")    r = EL_EFF_Reco_TOTAL_Uncorr_DN;
+ // else if( s== "EL_EFF_Reco_TOTAL_UncorrUncertainty__1up")      r = EL_EFF_Reco_TOTAL_Uncorr_UP;
+ // else if( s== "EL_EFF_Trigger_TOTAL_UncorrUncertainty__1down") r = EL_EFF_Trigger_TOTAL_Uncorr_DN;
+ // else if( s== "EL_EFF_Trigger_TOTAL_UncorrUncertainty__1up")   r = EL_EFF_Trigger_TOTAL_Uncorr_UP;
 
 
   // else if( s== "EL_SCALE_MOMENTUM__1down" )                r = EL_SCALE_MOMENTUM_DN;
@@ -219,6 +228,10 @@ SusyNtSys CPsys2sys(const std::string &s)
   else if( s== "MUON_EFF_SYS__1up" )                       r = MUON_EFF_SYS_UP;
   else if( s== "MUON_EFF_SYS_LOWPT__1down" )               r = MUON_EFF_SYS_LOWPT_DN;
   else if( s== "MUON_EFF_SYS_LOWPT__1up" )                 r = MUON_EFF_SYS_LOWPT_UP;
+  else if( s== "MUON_EFF_TrigStatUncertainty__1down" )     r = MUON_EFF_TRIG_STAT_DN;
+  else if( s== "MUON_EFF_TrigStatUncertainty__1up" )       r = MUON_EFF_TRIG_STAT_UP;
+  else if( s== "MUON_EFF_TrigSystUncertainty__1down" )     r = MUON_EFF_TRIG_SYST_DN;
+  else if( s== "MUON_EFF_TrigSystUncertainty__1up" )       r = MUON_EFF_TRIG_SYST_UP;
   else if( s== "MUON_ISO_STAT__1down" )                    r = MUON_ISO_STAT_DN;
   else if( s== "MUON_ISO_STAT__1up" )                      r = MUON_ISO_STAT_UP;
   else if( s== "MUON_ISO_SYS__1down" )                     r = MUON_ISO_SYS_DN;
