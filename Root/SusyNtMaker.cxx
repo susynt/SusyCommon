@@ -366,7 +366,6 @@ void SusyNtMaker::fillEventVars()
         if( (mc_ >= 363331 && mc_ <= 363354) ||
             (mc_ >= 363436 && mc_ <= 363459) || 
             (mc_ >= 363460 && mc_ <= 363483) ) is_wjet = true; 
-        #warning need to request Ztautau in Sherpa2.2
         if( (mc_ >= 363102 && mc_ <= 363122) ||
             (mc_ >= 363361 && mc_ <= 363363) ||
             (mc_ >= 363388 && mc_ <= 363411) ||
@@ -919,8 +918,8 @@ void SusyNtMaker::storeMuon(const xAOD::Muon &in)
         xAOD::Muon* sfMu = new xAOD::Muon;
         sfMu->makePrivateStore(in);
         sf_muon->push_back(sfMu);
-        out.muoTrigSF[MuonId::Loose] = m_susyObj[SusyObjId::muoLoose]->GetTotalMuonSF(*sf_muon, false, false);
-        out.muoTrigSF[MuonId::Medium] = m_susyObj[SusyObjId::muoMedium]->GetTotalMuonSF(*sf_muon, false, false);
+        out.muoTrigSF[MuonId::Loose] = m_susyObj[SusyObjId::muoLoose]->GetTotalMuonSF(*sf_muon, false, false, "HLT_mu50");
+        out.muoTrigSF[MuonId::Medium] = m_susyObj[SusyObjId::muoMedium]->GetTotalMuonSF(*sf_muon, false, false, "HLT_mu50");
 
         delete sf_muon;
         delete sf_muon_aux;
@@ -941,7 +940,6 @@ void SusyNtMaker::storeMuon(const xAOD::Muon &in)
             }
             vector<float> sf;
             sf.assign(MuonId::MuonIdInvalid, 1);
-            #warning not handling trigger SF in muon systematic loop
             sf[MuonId::Medium] = m_susyObj[SusyObjId::muoMedium]->GetSignalMuonSF(in, recoSF, isoSF);
             sf[MuonId::Loose] = m_susyObj[SusyObjId::muoLoose]->GetSignalMuonSF(in, recoSF, isoSF);
             for(int i=MuonId::VeryLoose; i<MuonId::MuonIdInvalid; i++){
@@ -1013,8 +1011,8 @@ void SusyNtMaker::storeMuon(const xAOD::Muon &in)
             xAOD::Muon* sfMu = new xAOD::Muon;
             sfMu->makePrivateStore(in);
             sf_muon->push_back(sfMu);
-            sf_trig[MuonId::Medium] = m_susyObj[SusyObjId::muoMedium]->GetTotalMuonSF(*sf_muon, false, false);
-            sf_trig[MuonId::Loose] = m_susyObj[SusyObjId::muoLoose]->GetTotalMuonSF(*sf_muon, false, false); 
+            sf_trig[MuonId::Medium] = m_susyObj[SusyObjId::muoMedium]->GetTotalMuonSF(*sf_muon, false, false, "HLT_mu50");
+            sf_trig[MuonId::Loose] = m_susyObj[SusyObjId::muoLoose]->GetTotalMuonSF(*sf_muon, false, false, "HLT_mu50"); 
             delete sf_muon;
             delete sf_muon_aux;
 
