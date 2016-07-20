@@ -922,9 +922,12 @@ void SusyNtMaker::storeMuon(const xAOD::Muon &in)
         xAOD::Muon* sfMu = new xAOD::Muon;
         sfMu->makePrivateStore(in);
         sf_muon->push_back(sfMu);
-        out.muoTrigSF[MuonId::Loose] = m_susyObj[SusyObjId::muoLoose]->GetTotalMuonSF(*sf_muon, false, false, "HLT_mu50");
-        out.muoTrigSF[MuonId::Medium] = m_susyObj[SusyObjId::muoMedium]->GetTotalMuonSF(*sf_muon, false, false, "HLT_mu50");
 
+        TString trig_exp_med = "HLT_mu20_iloose_L1MU15_OR_HLT_mu50"; 
+        if(m_susyObj[SusyObjId::muoMedium]->treatAsYear()==2016)
+            trig_exp_med = "HLT_mu24_imedium";
+        out.muoTrigSF[MuonId::Medium] = m_susyObj[SusyObjId::muoMedium]->GetTotalMuonSF(*sf_muon, false, false, trig_exp_med.Data());
+        
         delete sf_muon;
         delete sf_muon_aux;
     }
@@ -1015,8 +1018,11 @@ void SusyNtMaker::storeMuon(const xAOD::Muon &in)
             xAOD::Muon* sfMu = new xAOD::Muon;
             sfMu->makePrivateStore(in);
             sf_muon->push_back(sfMu);
-            sf_trig[MuonId::Medium] = m_susyObj[SusyObjId::muoMedium]->GetTotalMuonSF(*sf_muon, false, false, "HLT_mu50");
-            sf_trig[MuonId::Loose] = m_susyObj[SusyObjId::muoLoose]->GetTotalMuonSF(*sf_muon, false, false, "HLT_mu50"); 
+
+            TString trig_exp_med = "HLT_mu20_iloose_L1MU15_OR_HLT_mu50";
+            if(m_susyObj[SusyObjId::muoMedium]->treatAsYear()==2016)
+                trig_exp_med = "HLT_mu24_imedium";
+            sf_trig[MuonId::Medium] = m_susyObj[SusyObjId::muoMedium]->GetTotalMuonSF(*sf_muon, false, false, trig_exp_med.Data());
             delete sf_muon;
             delete sf_muon_aux;
 
