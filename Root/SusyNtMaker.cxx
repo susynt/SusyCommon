@@ -1082,8 +1082,9 @@ void SusyNtMaker::storeJet(const xAOD::Jet &in)
     in.getAttribute(xAOD::JetAttribute::NumTrkPt500, nTrkVec);
     int jet_nTrk = (m_susyObj[m_eleIDDefault]->GetPrimVtx()==0 || nTrkVec.size()==0) ? 0 : nTrkVec[m_susyObj[m_eleIDDefault]->GetPrimVtx()->index()];
     out.nTracks = jet_nTrk;
-    out.sumTrkPt = (m_susyObj[m_eleIDDefault]->GetPrimVtx()==0 ? 0 :
+    float jet_sumTrkPt = (m_susyObj[m_eleIDDefault]->GetPrimVtx()==0 ? 0 :
                             in.getAttribute< std::vector<float> >(xAOD::JetAttribute::SumPtTrkPt500)[m_susyObj[m_eleIDDefault]->GetPrimVtx()->index()]);
+    out.sumTrkPt = jet_sumTrkPt * MeV2GeV;
 
     // JVF 
     // ASM-2014-11-04 :: Remember JVT is gonna replace JVF in Run-II but not yet available
