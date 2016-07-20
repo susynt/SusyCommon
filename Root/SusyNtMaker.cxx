@@ -175,6 +175,11 @@ Bool_t SusyNtMaker::Process(Long64_t entry)
     chainEntry++;
     m_event.getEntry(chainEntry); // DG 2014-09-19 TEvent wants the chain entry, not the tree entry (?)
 
+    // "apply" the PRW tool since everything depends on it
+    for(int susyObjId : Susy::leptonIds()) {
+        m_susyObj[susyObjId]->ApplyPRWTool();
+    } // susyObjId
+
     retrieveCollections();
     const xAOD::EventInfo* eventinfo = XaodAnalysis::xaodEventInfo();
     if(m_dbg || chainEntry%5000==0){
@@ -202,6 +207,7 @@ Bool_t SusyNtMaker::Process(Long64_t entry)
         m_susyObj[m_eleIDDefault]->FindSusyHP(xaodTruthParticles(), pdg_1, pdg_2);
     }
     if(pdg_1 != 0 && pdg_2 != 0) m_susyFinalState = SUSY::finalState(pdg_1, pdg_2); // c.f. SUSYTools/SUSYCrossSection.h
+
 
     if(selectEvent() && m_fillNt){
         if(m_isMC) {
@@ -249,8 +255,6 @@ bool SusyNtMaker::selectEvent()
 void SusyNtMaker::fillNtVars()
 {
 
-    // "apply" the PRW tool since everything depends on it
-    m_susyObj[m_eleIDDefault]->ApplyPRWTool(); 
 
     fillEventVars();
     fillElectronVars();
