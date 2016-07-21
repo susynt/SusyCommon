@@ -363,10 +363,10 @@ void SusyNtMaker::fillEventVars()
 
     // sherpa 2.2 V+jets weight
     float vjetweight = 1.0;
+    bool is_wjet = false;
+    bool is_zjet = false;
     if(m_isMC) {
         int mc_ = eventinfo->mcChannelNumber();
-        bool is_wjet = false;
-        bool is_zjet = false;
         if( (mc_ >= 363331 && mc_ <= 363354) ||
             (mc_ >= 363436 && mc_ <= 363459) || 
             (mc_ >= 363460 && mc_ <= 363483) ) is_wjet = true; 
@@ -379,6 +379,8 @@ void SusyNtMaker::fillEventVars()
             vjetweight = m_susyObj[m_eleIDDefault]->getSherpaVjetsNjetsWeight();
         }
     }
+    if(is_wjet || is_zjet) evt->isSherpaVjetsSample = true;
+    else { evt->isSherpaVjetsSample = false; }
     evt->sherpa22VjetsWeight = vjetweight;
 
     evt->pdfSF            = m_isMC? getPDFWeight8TeV() : 1;
@@ -1433,9 +1435,8 @@ void SusyNtMaker::fillMetVars(SusyNtSys sys)
     metOut->phi = (*met_it)->phi();
     metOut->sumet = (*met_it)->sumet()*MeV2GeV;
     metOut->sys = sys;
-    if(m_dbg>=5) cout << " AT:fillMetVars " << metOut->Et << " " 
-                      << metOut->phi << " " << metOut->lv().Pt() 
-                      << " " << NtSys::SusyNtSysNames[sys] << endl;
+    if(m_dbg>=5) cout << " MET fillMetVars[" << NtSys::SusyNtSysNames[sys] << "] Et: " << metOut->Et << " phi: " 
+                      << metOut->phi << "  Pt: " << metOut->lv().Pt() << endl; 
     
     // RefEle
     xAOD::MissingETContainer::const_iterator met_find = m_metContainer->find("RefEle");
