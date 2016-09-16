@@ -254,8 +254,6 @@ bool SusyNtMaker::selectEvent()
 //----------------------------------------------------------
 void SusyNtMaker::fillNtVars()
 {
-
-
     fillEventVars();
     fillElectronVars();
     fillMuonVars();
@@ -309,6 +307,7 @@ void SusyNtMaker::fillEventVars()
         m_susyObj[m_eleIDDefault]->FindSusyHP(xaodTruthParticles(), susy_pdg_1, susy_pdg_2);
     }
     //if(m_isMC) m_susyObj[m_eleIDDefault]->FindSusyHP(xaodTruthParticles(), susy_pdg_1, susy_pdg_2);
+    m_susyFinalState = 0;
     if(susy_pdg_1 != 0 && susy_pdg_2 != 0) m_susyFinalState = SUSY::finalState(susy_pdg_1, susy_pdg_2); // c.f. SUSYTools/SUSYCrossSection.h
     evt->susyFinalState   = m_susyFinalState;
     evt->susySpartId1     = susy_pdg_1;
@@ -363,23 +362,15 @@ void SusyNtMaker::fillEventVars()
 
     // sherpa 2.2 V+jets weight
     float vjetweight = 1.0;
-    bool is_wjet = false;
-    bool is_zjet = false;
+    bool is_sherpa22vjet = false;
     if(m_isMC) {
         int mc_ = eventinfo->mcChannelNumber();
-        if( (mc_ >= 363331 && mc_ <= 363354) ||
-            (mc_ >= 363436 && mc_ <= 363459) || 
-            (mc_ >= 363460 && mc_ <= 363483) ) is_wjet = true; 
-        if( (mc_ >= 363102 && mc_ <= 363122) ||
-            (mc_ >= 363361 && mc_ <= 363363) ||
-            (mc_ >= 363388 && mc_ <= 363411) ||
-            (mc_ >= 363364 && mc_ <= 363387) ||
-            (mc_ >= 363412 && mc_ <= 363433) ) is_zjet = true; 
-        if(is_wjet || is_zjet) {
+        if(SusyNtTools::isSherpa22Vjet(mc_)) {
             vjetweight = m_susyObj[m_eleIDDefault]->getSherpaVjetsNjetsWeight();
+            is_sherpa22vjet = true;
         }
     }
-    if(is_wjet || is_zjet) evt->isSherpaVjetsSample = true;
+    if(is_sherpa22vjet) evt->isSherpaVjetsSample = true;
     else { evt->isSherpaVjetsSample = false; }
     evt->sherpa22VjetsWeight = vjetweight;
 
@@ -474,7 +465,10 @@ void SusyNtMaker::storeElectron(const xAOD::Electron &in)
     //////////////////////////////////////
     // 4-vector
     //////////////////////////////////////
-    double pt(in.pt()*MeV2GeV), eta(in.eta()), phi(in.phi()), m(in.m()*MeV2GeV);
+    // keep only physical values
+    double pt = ( (in.pt()*MeV2GeV < 0) ? 0 : in.pt()*MeV2GeV);
+    double m = ( (in.m()*MeV2GeV < 0) ? 0 : in.m()*MeV2GeV);
+    double eta(in.eta()), phi(in.phi());
     out.SetPtEtaPhiM(pt, eta, phi, m);
     out.pt  = pt;
     out.eta = eta;
@@ -742,7 +736,10 @@ void SusyNtMaker::storeMuon(const xAOD::Muon &in)
     //////////////////////////////////////
     // 4-vector
     //////////////////////////////////////
-    double pt(in.pt()*MeV2GeV), eta(in.eta()), phi(in.phi()), m(in.m()*MeV2GeV);
+    // keep only physical values
+    double pt = ( (in.pt()*MeV2GeV < 0) ? 0 : in.pt()*MeV2GeV);
+    double m = ( (in.m()*MeV2GeV < 0) ? 0 : in.m()*MeV2GeV);
+    double eta(in.eta()), phi(in.phi());
     out.SetPtEtaPhiM(pt, eta, phi, m);
     out.pt  = pt;
     out.eta = eta;
@@ -928,6 +925,9 @@ void SusyNtMaker::storeMuon(const xAOD::Muon &in)
         TString trig_exp_med = "HLT_mu20_iloose_L1MU15_OR_HLT_mu50"; 
         if(m_susyObj[SusyObjId::muoMedium]->treatAsYear()==2016)
             trig_exp_med = "HLT_mu24_imedium";
+        // dantrim Sept 15 2016 -- don't get trigger SF for loose muons (MuonTriggerScaleFactors tool complains... not yet sure if it is a problem
+        // from our mangled setup or the tool's issue)
+        //out.muoTrigSF[MuonId::Loose]  = m_susyObj[SusyObjId::muoLoose]->GetTotalMuonSF(*sf_muon, false, false, trig_exp_med.Data());
         out.muoTrigSF[MuonId::Medium] = m_susyObj[SusyObjId::muoMedium]->GetTotalMuonSF(*sf_muon, false, false, trig_exp_med.Data());
         
         delete sf_muon;
@@ -1071,7 +1071,10 @@ void SusyNtMaker::storeJet(const xAOD::Jet &in)
     if(m_dbg>=15) cout<<"SusyNtMaker::storeJet pT "<< in.pt()*MeV2GeV <<endl;
 
     Susy::Jet out;
-    double pt(in.pt()*MeV2GeV), eta(in.eta()), phi(in.phi()), m(in.m()*MeV2GeV);
+    // keep only physical values
+    double pt = ( (in.pt()*MeV2GeV < 0) ? 0 : in.pt()*MeV2GeV);
+    double m = ( (in.m()*MeV2GeV < 0) ? 0 : in.m()*MeV2GeV);
+    double eta(in.eta()), phi(in.phi());
     out.SetPtEtaPhiM(pt, eta, phi, m);
     out.pt  = pt;
     out.eta = eta;

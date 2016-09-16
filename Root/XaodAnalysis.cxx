@@ -410,7 +410,7 @@ XaodAnalysis& XaodAnalysis::initLocalTools()
 {
 
 
-    initPileupTool(); // this is now done in SUSYTools (as of ST-00-06-15)
+    //initPileupTool(); // this is now done in SUSYTools (as of ST-00-06-15)
     initElectronTools();
     initPhotonTools();
     initMuonTools();
