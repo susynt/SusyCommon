@@ -1559,8 +1559,10 @@ void SusyNtMaker::storeTruthParticle(const xAOD::TruthParticle &in)
     out.m   = m;
     //bool all_available=true;
     // out.charge = in.charge(); // DG 2014-08-29 discards const ??
-    out.pdgId = in.pdgId();
+    out.pdgId  = in.pdgId();
     out.status = in.status();
+    out.type   = in.auxdata< unsigned int >( "classifierParticleType" );
+    out.origin = in.auxdata< unsigned int >( "classifierParticleOrigin" );
     //   tprOut->motherPdgId = smc::determineParentPdg(m_event.mc.pdgId(),
     //                                                 m_event.mc.parent_index(),
     //                                                 truParIdx);
@@ -1573,12 +1575,13 @@ void SusyNtMaker::storeTruthParticle(const xAOD::TruthParticle &in)
 	      for(unsigned int i=0; i<lepton->nParents();i++) {
 	        selfDecay=false;
 	        const xAOD::TruthParticle *parent = lepton->parent(i);
-	        if( fabs(parent->pdgId()) == idabs ){
+	        bool isBSMpar = isBSM(parent);
+		if( fabs(parent->pdgId()) == idabs ){
 	          lepton = parent;
 	          selfDecay = true;
 	          break;
 	        }
-	        else if ( parent->isW() || parent->isZ() ) {
+	        else if ( parent->isW() || parent->isZ() || parent->isHiggs() || isBSMpar) {
     		    Susy::TruthParticle outParent;
 		    double ptPar(parent->pt()*MeV2GeV), etaPar(parent->eta()), phiPar(parent->phi()), mPar(parent->m()*MeV2GeV);
 		    outParent.SetPtEtaPhiM(ptPar, etaPar, phiPar, mPar);
@@ -1588,6 +1591,8 @@ void SusyNtMaker::storeTruthParticle(const xAOD::TruthParticle &in)
 		    outParent.m   = mPar;
 		    outParent.pdgId = parent->pdgId();
 		    outParent.status = parent->status();
+		    outParent.type   = parent->auxdata< unsigned int >( "classifierParticleType" );
+		    outParent.origin = parent->auxdata< unsigned int >( "classifierParticleOrigin" );
 		    m_susyNt.tpr()->push_back(outParent);		    	          
 	        }
 	      }
@@ -2408,3 +2413,17 @@ bool SusyNtMaker::passObjectlevelSelection()
 
 }
 //----------------------------------------------------------
+bool SusyNtMaker::isBSM(const xAOD::TruthParticle *part){
+ 
+   int pdg = part->pdgId();
+   if ( (31<abs(pdg) && abs(pdg)<38) || // BSM Higgs / W' / Z' / etc
+        abs(pdg)==39 ||
+        abs(pdg)==41 ||
+        abs(pdg)==42 ||
+        (1000000<abs(pdg) && abs(pdg)<1000040) || // left-handed SUSY
+        (2000000<abs(pdg) && abs(pdg)<2000040) ) // right-handed SUSY
+     return true;
+ 
+   return false;
+}
+//
