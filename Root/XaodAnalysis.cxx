@@ -47,6 +47,7 @@ using Susy::XaodAnalysis;
 XaodAnalysis::XaodAnalysis() :
     m_input_chain(0),
     //m_sample(""),
+    m_derivation("Unknown"),
     m_triggerSet("run2"),
     m_stream(Stream_Unknown),
     m_isDerivation(false), // dantrim event shape
@@ -161,6 +162,8 @@ void XaodAnalysis::Init(TTree *tree)
     m_event.readFrom(tree);
     m_isDerivation = XaodAnalysis::isDerivationFromMetaData(tree, verbose);
     m_stream = XaodAnalysis::streamFromSamplename(m_inputContainerName, m_isMC);
+    m_event.getEntry(0);
+    m_derivation = XaodAnalysis::getDerivationTypeInfo(m_event); 
 
     // get the directory for the data/
     char *tmparea=getenv("ROOTCOREBIN");
@@ -2364,6 +2367,30 @@ bool XaodAnalysis::isDerivationFromMetaData(TTree* intree, bool verbose)
     }
     return is_derived;
 */
+}
+//----------------------------------------------------------
+TString XaodAnalysis::getDerivationTypeInfo(xAOD::TEvent& event) 
+{
+    TString derivation = "Unknown";
+
+    bool ok = true;
+    const xAOD::CutBookkeeperContainer* completeCBC = 0;
+    ok = event.retrieveMetaInput(completeCBC, "CutBookkeepers");
+    if(!ok) {
+        cout << "XaodAnalysis::getDerivationTypeInfo    "
+             << "Failed to get CBK metadata! Exitting." << endl;
+        exit(1);
+    }
+
+    for(auto cbk : *completeCBC) {
+        if ( cbk->name() == "AllExecutedEvents" && TString(cbk->inputStream()).Contains("StreamDAOD")){
+            derivation = TString(cbk->inputStream()).ReplaceAll("Stream","");
+            cout << "XaodAnalysis::getDerivationTypeInfo    "
+                 << " Derivation type = " << derivation << " (i.e. indentified DxAOD flavour)" << endl;
+        }
+    } // cbk
+
+    return derivation;
 }
 //----------------------------------------------------------
 bool XaodAnalysis::getCutBookkeeperInfo(xAOD::TEvent& event)

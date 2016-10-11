@@ -362,6 +362,7 @@ namespace Susy {
     bool isSimuFromSamplename(const TString &s); ///< guess from sample name whether it's a simulated sample
     bool isDerivationFromMetaData(TTree* tree, bool verbose); ///< From sample MetaData, determine if sample is a derivation
     bool getCutBookkeeperInfo(xAOD::TEvent& event);
+    TString getDerivationTypeInfo(xAOD::TEvent& event);
     /**
        \brief Retrieve the file holding the tree; for a chain, get the files holding the first tree.
 
@@ -390,6 +391,7 @@ namespace Susy {
 
     TChain*                     m_input_chain;  // input chain
     //TString                     m_sample;       // sample name
+    TString                     m_derivation;   // derivation type, i.e. SUSY2 
     std::string                 m_triggerSet;   // trigger set to store
     std::vector<std::string>    m_triggerNames; 
     DataStream                  m_stream;       // data stream enum, taken from sample name

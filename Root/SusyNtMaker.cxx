@@ -382,7 +382,7 @@ void SusyNtMaker::fillElectronVars()
 {
     if(m_dbg>=5) cout<<"fillElectronVars"<<endl;
     xAOD::ElectronContainer* electrons = XaodAnalysis::xaodElectrons(systInfoList[0]);
-    if(m_isMC) {
+    if(m_isMC && m_derivation.Contains("SUSY")) {
         int datasetid = xaodEventInfo()->mcChannelNumber();
         fillElectronChargeFlip(electrons, xaodTruthParticles(), datasetid);
     }
@@ -583,11 +583,13 @@ void SusyNtMaker::storeElectron(const xAOD::Electron &in)
         //if(eleIsOfType(in, eleID::LooseLH))
         // crash p1874 out.isChargeFlip  = m_isMC ? isChargeFlip(in.charge(),truthElectronCharge(in)) : false;
         out.truthCharge =  truthEle ? truthEle->charge() : 0;
-        out.ss3lChargeFlip = in.auxdataConst<int>("chargeFlip");
+        if(m_derivation.Contains("SUSY")) {
+            out.ss3lChargeFlip = in.auxdataConst<int>("chargeFlip");
 
-        // Electron bkg origins
-        out.mcBkgMotherPdgId = in.auxdata<int>("bkgMotherPdgId");
-        out.mcBkgTruthOrigin = in.auxdata<int>("bkgTruthOrigin");
+            // Electron bkg origins
+            out.mcBkgMotherPdgId = in.auxdata<int>("bkgMotherPdgId");
+            out.mcBkgTruthOrigin = in.auxdata<int>("bkgTruthOrigin");
+        }
     }
 
     //////////////////////////////////////
