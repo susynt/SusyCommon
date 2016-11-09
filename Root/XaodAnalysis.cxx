@@ -725,42 +725,6 @@ const xAOD::EventInfo* XaodAnalysis::xaodEventInfo()
     return m_xaodEventInfo;
 }
 //----------------------------------------------------------
-void XaodAnalysis::retrieveXaodTrackMet(ST::SystInfo sysInfo, SusyNtSys sys)
-{
-    if(m_dbg>=5) cout << "retrieveXaodTrackMet " << SusyNtSysNames[sys] << endl;
-    
-    m_trackMetContainer = new xAOD::MissingETContainer;
-    m_trackMetAuxContainer = new xAOD::MissingETAuxContainer;
-    //m_trackMetContainer->setStore( m_trackMetAuxContainer );
-    if(m_dbg>=5) cout << "Made trackMetContainer pointers " << m_trackMetContainer << " eleID " << m_eleIDDefault << endl;
-
-    xAOD::ElectronContainer* electrons = xaodElectrons(sysInfo, sys);
-    xAOD::MuonContainer*     muons     = xaodMuons(sysInfo, sys);
-    xAOD::JetContainer*      jets      = xaodJets(sysInfo, sys);
-
-    // GetTrackMET( met, jet, elec, muon)
-    m_susyObj[m_eleIDDefault]->GetTrackMET(*m_trackMetContainer,
-                                            jets,
-                                            electrons,
-                                            muons);
-
-    if(m_dbg>=5) cout << "Rebult TrackMet with "
-                      << " ele size " << electrons->size()
-                      << " muo size " << muons->size()
-                      << " jet size " << jets->size()
-                      << endl;
-}
-    
-
-//const xAOD::MissingETContainer* XaodAnalysis::xaodMET_Track()
-//{
-//    if (m_metTrackContainer == NULL){
-//        if(m_dbg>=5) std::cout << "Retrieving track MET " << std::endl;
-//        m_metTrackContainer = retrieveMET_Track(m_event, m_dbg);
-//    }
-//    return m_metTrackContainer;
-//}
-//----------------------------------------------------------
 xAOD::MuonContainer* XaodAnalysis::xaodMuons(ST::SystInfo sysInfo, SusyNtSys sys)
 {
     bool syst_affectsMuons     = ST::testAffectsObject(xAOD::Type::Muon, sysInfo.affectsType);
@@ -955,6 +919,44 @@ void XaodAnalysis::retrieveXaodMet( ST::SystInfo sysInfo, SusyNtSys sys)
                       << std::endl;
 
 }
+//----------------------------------------------------------
+void XaodAnalysis::retrieveXaodTrackMet(ST::SystInfo sysInfo, SusyNtSys sys)
+{
+    if(m_dbg>=5) cout << "retrieveXaodTrackMet " << SusyNtSysNames[sys] << endl;
+    
+    m_trackMetContainer = new xAOD::MissingETContainer;
+    m_trackMetAuxContainer = new xAOD::MissingETAuxContainer;
+    //m_trackMetContainer->setStore( m_trackMetAuxContainer );
+    m_trackMetContainer->setStore(m_trackMetAuxContainer);
+    m_trackMetContainer->reserve(10);
+    if(m_dbg>=5) cout << "Made trackMetContainer pointers " << m_trackMetContainer << " eleID " << m_eleIDDefault << endl;
+
+    xAOD::ElectronContainer* electrons = xaodElectrons(sysInfo, sys);
+    xAOD::MuonContainer*     muons     = xaodMuons(sysInfo, sys);
+    xAOD::JetContainer*      jets      = xaodJets(sysInfo, sys);
+
+    // GetTrackMET( met, jet, elec, muon)
+    m_susyObj[m_eleIDDefault]->GetTrackMET(*m_trackMetContainer,
+                                            jets,
+                                            electrons,
+                                            muons);
+
+    if(m_dbg>=5) cout << "Rebult TrackMet with "
+                      << " ele size " << electrons->size()
+                      << " muo size " << muons->size()
+                      << " jet size " << jets->size()
+                      << endl;
+}
+    
+
+//const xAOD::MissingETContainer* XaodAnalysis::xaodMET_Track()
+//{
+//    if (m_metTrackContainer == NULL){
+//        if(m_dbg>=5) std::cout << "Retrieving track MET " << std::endl;
+//        m_metTrackContainer = retrieveMET_Track(m_event, m_dbg);
+//    }
+//    return m_metTrackContainer;
+//}
 //----------------------------------------------------------
 const xAOD::VertexContainer* XaodAnalysis::retrieveVertices(xAOD::TEvent &e, bool dbg)
 {
@@ -2564,7 +2566,7 @@ XaodAnalysis& XaodAnalysis::retrieveCollections()
     xaodPhotons(systInfoList[0]);
     cout << "not picking up MET in retrieveCollections" << endl;
     retrieveXaodMet(systInfoList[0]);//nominal
-    //retrieveXaodTrackMet(systInfoList[0]);
+    retrieveXaodTrackMet(systInfoList[0]);
 
     xaodTruthEvent();
     xaodTruthParticles();
