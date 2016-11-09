@@ -119,6 +119,7 @@ namespace Susy {
     void setTriggerSet(std::string set) { m_triggerSet = set; }
     virtual void setMC15b(bool isMC15b) { m_isMC15b = isMC15b; }
     virtual void setMC15c(bool isMC15c) { m_isMC15c = isMC15c; }
+    virtual void setOneST(bool doOneST) { m_run_oneST = doOneST; }
     XaodAnalysis& initSusyTools(); ///< initialize SUSYObjDef_xAOD
     
     /**
@@ -515,6 +516,8 @@ namespace Susy {
     bool m_isMC15c;             // flag for whether this sample is mc15c
     bool m_flagsAreConsistent;  ///< whether the cmd-line flags are consistent with the event
     bool m_flagsHaveBeenChecked;///< whether the cmd-line have been checked
+    // check
+    bool m_run_oneST; ///< testing running with only one instance of SUSYTools
 
     xAOD::TEvent m_event;
     xAOD::TStore m_store;

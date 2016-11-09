@@ -178,6 +178,7 @@ Bool_t SusyNtMaker::Process(Long64_t entry)
     // "apply" the PRW tool since everything depends on it
     for(int susyObjId : Susy::leptonIds()) {
         m_susyObj[susyObjId]->ApplyPRWTool();
+        if(m_run_oneST) break;
     } // susyObjId
 
     retrieveCollections();
@@ -222,8 +223,9 @@ Bool_t SusyNtMaker::Process(Long64_t entry)
             abort();
         }
     }
-    clearOutputObjects();
+
     deleteShallowCopies(); // delete shallow copies here to clear all of the containers (including nominal) before next event
+    clearOutputObjects();
     return kTRUE;
 }
 //----------------------------------------------------------
@@ -260,7 +262,7 @@ void SusyNtMaker::fillNtVars()
     fillTauVars();
     fillJetVars();
     fillMetVars();
-    fillTrackMetVars();
+    //fillTrackMetVars();
     fillPhotonVars();
     if(m_isMC && getSelectTruthObjects() ) {
         fillTruthParticleVars();
@@ -382,12 +384,17 @@ void SusyNtMaker::fillElectronVars()
 {
     if(m_dbg>=5) cout<<"fillElectronVars"<<endl;
     xAOD::ElectronContainer* electrons = XaodAnalysis::xaodElectrons(systInfoList[0]);
-    if(m_isMC) {
-        int datasetid = xaodEventInfo()->mcChannelNumber();
-        fillElectronChargeFlip(electrons, xaodTruthParticles(), datasetid);
+    if(electrons) {
+        if(m_isMC) {
+            int datasetid = xaodEventInfo()->mcChannelNumber();
+            fillElectronChargeFlip(electrons, xaodTruthParticles(), datasetid);
+        }
+        for(auto &i : m_preElectrons){
+            storeElectron(*(electrons->at(i)));
+        }
     }
-    for(auto &i : m_preElectrons){
-        storeElectron(*(electrons->at(i)));
+    else {
+        cout << "SusyNtMaker::fillElectronVars    Electron container is null!" << endl;
     }
 }
 //----------------------------------------------------------
@@ -395,8 +402,13 @@ void SusyNtMaker::fillMuonVars()
 {
     if(m_dbg>=5) cout<<"fillMuonVars"<<endl;
     xAOD::MuonContainer* muons = XaodAnalysis::xaodMuons(systInfoList[0]);
-    for(auto &i : m_preMuons){
-        storeMuon(*(muons->at(i)));
+    if(muons) {
+        for(auto &i : m_preMuons){
+            storeMuon(*(muons->at(i)));
+        }
+    }
+    else {
+        cout << "SusyNtMaker::fillMuonVars    Muon container is null!" << endl;
     }
 }
 //----------------------------------------------------------
@@ -404,12 +416,17 @@ void SusyNtMaker::fillJetVars()
 {
     if(m_dbg>=5) cout<<"fillJetVars"<<endl;
     xAOD::JetContainer* jets = XaodAnalysis::xaodJets(systInfoList[0]);
-    /////////////////////
-    // Not super smart but tag along for the moment - ASM 25/5/2015
-    if(m_isMC) m_susyObj[m_eleIDDefault]->BtagSF(jets); // Decorate the jets w/ effscalefact
-    /////////////////////
-    for(auto &i : m_preJets){
-            storeJet(*(jets->at(i)));
+    if(jets) {
+        /////////////////////
+        // Not super smart but tag along for the moment - ASM 25/5/2015
+        if(m_isMC) m_susyObj[m_eleIDDefault]->BtagSF(jets); // Decorate the jets w/ effscalefact
+        /////////////////////
+        for(auto &i : m_preJets){
+                storeJet(*(jets->at(i)));
+        }
+    }
+    else {
+        cout << "SusyNtMaker::fillJetVars    Jet container is null!" << endl;
     }
 }
 //----------------------------------------------------------
@@ -419,9 +436,14 @@ void SusyNtMaker::fillTauVars()
     xAOD::TauJetContainer* taus =  XaodAnalysis::xaodTaus(systInfoList[0]);
     // vector<int>& saveTaus = m_saveContTaus? m_contTaus : m_preTaus; // container taus are meant to be used only for background estimates?
     //vector<int>& saveTaus = m_preTaus;
-    vector<int>& saveTaus = m_saveContTaus ? m_contTaus : m_preTaus;
-    for(auto &i : saveTaus){
-        storeTau(*(taus->at(i)));
+    if(taus) {
+        vector<int>& saveTaus = m_saveContTaus ? m_contTaus : m_preTaus;
+        for(auto &i : saveTaus){
+            storeTau(*(taus->at(i)));
+        }
+    }
+    else {
+        cout << "SusyNtMaker::fillTauVars    Tau container is null!" << endl;
     }
 }
 //----------------------------------------------------------
@@ -429,8 +451,13 @@ void SusyNtMaker::fillPhotonVars()
 {
     if(m_dbg>=5) cout<<"fillPhotonVars"<<endl;
     const xAOD::PhotonContainer* photons = XaodAnalysis::xaodPhotons(systInfoList[0]);
-    for(auto &i : m_sigPhotons){
-        storePhoton(*(photons->at(i)));
+    if(photons) {
+        for(auto &i : m_sigPhotons){
+            storePhoton(*(photons->at(i)));
+        }
+    }
+    else {
+        cout << "SusyNtMaker::fillPhotonVars    Photon container is null!" << endl;
     }
 }
 //----------------------------------------------------------
@@ -563,10 +590,16 @@ void SusyNtMaker::storeElectron(const xAOD::Electron &in)
         //////////////////////////////////////
         // signature: (input electron, bool doRecoSF, bool doIDSF, bool doTrigSF, bool doIsoSF, string trigExpr)
         // default trigExpr: "e24_lhmedium_L1EM20VH_OR_e60_lhmedium_OR_e120_lhloose"
-        out.eleEffSF[ElectronId::TightLLH] =  m_susyObj[SusyObjId::eleTightLLH]->GetSignalElecSF (in, recoSF, idSF, trigSF, isoSF);
-        out.eleTrigSF[ElectronId::TightLLH] = m_susyObj[SusyObjId::eleTightLLH]->GetSignalElecSF (in, false, false, true, false);
-        out.eleEffSF[ElectronId::MediumLLH] = m_susyObj[SusyObjId::eleMediumLLH]->GetSignalElecSF(in, recoSF, idSF, trigSF, isoSF);
-        out.eleTrigSF[ElectronId::MediumLLH] = m_susyObj[SusyObjId::eleMediumLLH]->GetSignalElecSF(in, false, false, true, false);
+        if(m_run_oneST) {
+            out.eleEffSF[ElectronId::TightLLH] =  m_susyObj[m_eleIDDefault]->GetSignalElecSF (in, recoSF, idSF, trigSF, isoSF);
+            out.eleTrigSF[ElectronId::TightLLH] = m_susyObj[m_eleIDDefault]->GetSignalElecSF (in, false, false, true, false);
+        }
+        else {
+            out.eleEffSF[ElectronId::TightLLH] =  m_susyObj[SusyObjId::eleTightLLH]->GetSignalElecSF (in, recoSF, idSF, trigSF, isoSF);
+            out.eleTrigSF[ElectronId::TightLLH] = m_susyObj[SusyObjId::eleTightLLH]->GetSignalElecSF (in, false, false, true, false);
+            out.eleEffSF[ElectronId::MediumLLH] = m_susyObj[SusyObjId::eleMediumLLH]->GetSignalElecSF(in, recoSF, idSF, trigSF, isoSF);
+            out.eleTrigSF[ElectronId::MediumLLH] = m_susyObj[SusyObjId::eleMediumLLH]->GetSignalElecSF(in, false, false, true, false);
+        }
         // there are no isolation SF's for electron ID looseLH
         //out.eleEffSF[ElectronId::LooseLH] = m_susyObj[SusyObjId::eleLooseLH]->GetSignalElecSF(in, recoSF, idSF, trigSF, isoSF);
 
@@ -593,7 +626,7 @@ void SusyNtMaker::storeElectron(const xAOD::Electron &in)
     //////////////////////////////////////
     // Systematic variation on electron SF
     //////////////////////////////////////
-    if(m_isMC && m_sys && (out.veryLooseLLH || out.looseLLH || out.mediumLLH || out.tightLLH)) {
+    if(m_isMC && m_sys && !m_run_oneST && (out.veryLooseLLH || out.looseLLH || out.mediumLLH || out.tightLLH)) {
         for(const auto& sysInfo : systInfoList) {
             if(!(sysInfo.affectsType == ST::SystObjType::Electron && sysInfo.affectsWeights)) continue;
 
@@ -682,6 +715,7 @@ void SusyNtMaker::storeElectron(const xAOD::Electron &in)
                                         eventinfo->beamPosSigmaY(), eventinfo->beamPosSigmaXY() );
 
         const xAOD::Vertex* PV = getPV();
+        cout << "PV address: " << PV << endl;
         double  primvertex_z = (PV) ? PV->z() : -999;
         out.z0 = t->z0() + t->vz() - primvertex_z;
 
@@ -909,8 +943,13 @@ void SusyNtMaker::storeMuon(const xAOD::Muon &in)
     bool recoSF = true;
     bool isoSF = true;
     if(m_isMC && fabs(out.eta)<2.5 && out.pt>20){ // SF's are not binned for pt < 20 GeV
-        out.muoEffSF[MuonId::Loose]  = m_susyObj[SusyObjId::muoLoose]->GetSignalMuonSF (in, recoSF, isoSF);
-        out.muoEffSF[MuonId::Medium] = m_susyObj[SusyObjId::muoMedium]->GetSignalMuonSF(in, recoSF, isoSF);
+        if(m_run_oneST) {
+            out.muoEffSF[MuonId::Loose] = m_susyObj[m_eleIDDefault]->GetSignalMuonSF(in, recoSF, isoSF);
+        }
+        else {
+            out.muoEffSF[MuonId::Loose]  = m_susyObj[SusyObjId::muoLoose]->GetSignalMuonSF (in, recoSF, isoSF);
+            out.muoEffSF[MuonId::Medium] = m_susyObj[SusyObjId::muoMedium]->GetSignalMuonSF(in, recoSF, isoSF);
+        }
 
         // dantrim Jan 5 2015 : trigger SF kludge -- this is not absolutely correct as the SF are meant for the final signal muons
         // going into your selection, which is not the case here as we are forcing the tool to provide us
@@ -922,13 +961,15 @@ void SusyNtMaker::storeMuon(const xAOD::Muon &in)
         sfMu->makePrivateStore(in);
         sf_muon->push_back(sfMu);
 
-        TString trig_exp_med = "HLT_mu20_iloose_L1MU15_OR_HLT_mu50"; 
-        if(m_susyObj[SusyObjId::muoMedium]->treatAsYear()==2016)
-            trig_exp_med = "HLT_mu24_imedium";
-        // dantrim Sept 15 2016 -- don't get trigger SF for loose muons (MuonTriggerScaleFactors tool complains... not yet sure if it is a problem
-        // from our mangled setup or the tool's issue)
-        //out.muoTrigSF[MuonId::Loose]  = m_susyObj[SusyObjId::muoLoose]->GetTotalMuonSF(*sf_muon, false, false, trig_exp_med.Data());
-        out.muoTrigSF[MuonId::Medium] = m_susyObj[SusyObjId::muoMedium]->GetTotalMuonSF(*sf_muon, false, false, trig_exp_med.Data());
+        if(!m_run_oneST) {
+            TString trig_exp_med = "HLT_mu20_iloose_L1MU15_OR_HLT_mu50"; 
+            if(m_susyObj[SusyObjId::muoMedium]->treatAsYear()==2016)
+                trig_exp_med = "HLT_mu24_imedium";
+            // dantrim Sept 15 2016 -- don't get trigger SF for loose muons (MuonTriggerScaleFactors tool complains... not yet sure if it is a problem
+            // from our mangled setup or the tool's issue)
+            //out.muoTrigSF[MuonId::Loose]  = m_susyObj[SusyObjId::muoLoose]->GetTotalMuonSF(*sf_muon, false, false, trig_exp_med.Data());
+            out.muoTrigSF[MuonId::Medium] = m_susyObj[SusyObjId::muoMedium]->GetTotalMuonSF(*sf_muon, false, false, trig_exp_med.Data());
+        }
         
         delete sf_muon;
         delete sf_muon_aux;
@@ -936,7 +977,7 @@ void SusyNtMaker::storeMuon(const xAOD::Muon &in)
     //////////////////////////////////////
     // Systematic variation on muon SF
     //////////////////////////////////////
-    if(m_isMC && m_sys && fabs(out.eta)<2.5 && out.pt>20){
+    if(m_isMC && m_sys && !m_run_oneST && fabs(out.eta)<2.5 && out.pt>20){
         for(const auto& sysInfo : systInfoList) {
             if(!(sysInfo.affectsType == ST::SystObjType::Muon && sysInfo.affectsWeights)) continue;
             const CP::SystematicSet& sys = sysInfo.systset;
@@ -1000,7 +1041,7 @@ void SusyNtMaker::storeMuon(const xAOD::Muon &in)
     }
     /// do trigger SF variations here
     #warning check muon trigger SF variations once we get these SFs
-    if(m_isMC && m_sys && fabs(out.eta)<2.5 && out.pt>20){
+    if(m_isMC && m_sys && !m_run_oneST && fabs(out.eta)<2.5 && out.pt>20){
         for(const auto& sysInfo : systInfoList) {
             if(!(sysInfo.affectsType == ST::SystObjType::Muon && sysInfo.affectsWeights)) continue;
             const CP::SystematicSet& sys = sysInfo.systset;

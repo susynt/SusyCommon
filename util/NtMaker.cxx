@@ -26,6 +26,7 @@ void help()
 {
   cout<<"Options:"                                                    <<endl
       <<"  -i|--input       name of the input container"              <<endl
+      <<"  --oneST          run with only one instance of SUSYTools"  <<endl
       <<"  -o|--output      name of the output container"             <<endl
       <<"  -t|--tag         SustNtuple production tag"                <<endl
       <<"  -n|--num-events  default: -1 (all events)"                 <<endl
@@ -74,6 +75,7 @@ int main(int argc, char** argv)
   bool mc15c      = false;
   string inputContainer, outputContainer, ntTag;
   string outputFileName = "susyNt.root";
+  bool one_susytools = false;
 
   cout<<"SusyNtMaker"<<endl;
   cout<<endl;
@@ -82,6 +84,7 @@ int main(int argc, char** argv)
   while(optind < argc) {
       std::string sw = argv[optind];
       if      (sw=="-i" || sw=="--input"     ) { inputContainer = argv[++optind]; }
+      else if (sw=="--oneST"                 ) { one_susytools = true; }
       else if (sw=="-o" || sw=="--output"    ) { outputContainer = argv[++optind]; }
       else if (sw=="-t" || sw=="--tag"       ) { ntTag = argv[++optind]; }
       else if (sw=="-n" || sw=="--num-events") { nEvt = atoi(argv[++optind]); }
@@ -114,6 +117,7 @@ int main(int argc, char** argv)
 
   cout<<"flags:"<<endl;
   cout<<"  sample         "<<sample  <<endl;
+  cout<<"  one SUSYTools  "<<one_susytools << endl;
   cout<<"  mc15b          "<<mc15b   <<endl;
   cout<<"  mc15c          "<<mc15c   <<endl;
   cout<<"  nEvt           "<<nEvt    <<endl;

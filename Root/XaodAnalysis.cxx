@@ -298,12 +298,16 @@ void XaodAnalysis::Terminate()
   // for(int i=TightLH; i<=LooseLH; i++){
     for(int i : Susy::leptonIds()){
         delete m_susyObj[i];
+        if(m_run_oneST) break;
     }
 }
 //----------------------------------------------------------
 XaodAnalysis& XaodAnalysis::initSusyTools()
 {
+    int run_once = 99;
+    if(m_run_oneST) run_once = 1;
     for(int susyObjId : Susy::leptonIds()){
+        if(susyObjId >= run_once) continue;
         string idName = SusyObjId2str(static_cast<SusyObjId>(susyObjId));
         bool isEle = isEleObj(static_cast<SusyObjId>(susyObjId)); 
         string name = "SUSYObjDef_xAOD_" + idName;
@@ -727,7 +731,7 @@ void XaodAnalysis::retrieveXaodTrackMet(ST::SystInfo sysInfo, SusyNtSys sys)
     
     m_trackMetContainer = new xAOD::MissingETContainer;
     m_trackMetAuxContainer = new xAOD::MissingETAuxContainer;
-    m_trackMetContainer->setStore( m_trackMetAuxContainer );
+    //m_trackMetContainer->setStore( m_trackMetAuxContainer );
     if(m_dbg>=5) cout << "Made trackMetContainer pointers " << m_trackMetContainer << " eleID " << m_eleIDDefault << endl;
 
     xAOD::ElectronContainer* electrons = xaodElectrons(sysInfo, sys);
@@ -762,14 +766,14 @@ xAOD::MuonContainer* XaodAnalysis::xaodMuons(ST::SystInfo sysInfo, SusyNtSys sys
     bool syst_affectsMuons     = ST::testAffectsObject(xAOD::Type::Muon, sysInfo.affectsType);
     if(sys!=NtSys::NOM && syst_affectsMuons){
         if(m_xaodMuons==NULL){
-            CHECK( m_susyObj[m_eleIDDefault]->GetMuons(m_xaodMuons, m_xaodMuonsAux) );
+            CHECK( m_susyObj[m_eleIDDefault]->GetMuons(m_xaodMuons, m_xaodMuonsAux, true) );
         }
         if(m_dbg>=5) cout << "xaodMuo "<< m_xaodMuons->size() << endl;
         return m_xaodMuons;
     }
     else{
         if(m_xaodMuons_nom==NULL){
-            CHECK( m_susyObj[m_eleIDDefault]->GetMuons(m_xaodMuons_nom, m_xaodMuonsAux_nom) );
+            CHECK( m_susyObj[m_eleIDDefault]->GetMuons(m_xaodMuons_nom, m_xaodMuonsAux_nom, true) );
             if(m_dbg>=5) cout << "xaodMuo_nom " << m_xaodMuons_nom->size() << endl;
         }
         return m_xaodMuons_nom;
@@ -782,14 +786,14 @@ xAOD::ElectronContainer* XaodAnalysis::xaodElectrons(ST::SystInfo sysInfo, SusyN
     bool syst_affectsElectrons = ST::testAffectsObject(xAOD::Type::Electron, sysInfo.affectsType);
     if(sys!=NtSys::NOM && syst_affectsElectrons){
         if(m_xaodElectrons==NULL){
-            CHECK( m_susyObj[m_eleIDDefault]->GetElectrons(m_xaodElectrons, m_xaodElectronsAux) );
+            CHECK( m_susyObj[m_eleIDDefault]->GetElectrons(m_xaodElectrons, m_xaodElectronsAux, true) );
         }
         if(m_dbg>=5) cout << "xaodEle " << m_xaodElectrons->size() << endl;
         return m_xaodElectrons;
     }
     else{
         if(m_xaodElectrons_nom==NULL){
-            CHECK( m_susyObj[m_eleIDDefault]->GetElectrons(m_xaodElectrons_nom, m_xaodElectronsAux_nom) );
+            CHECK( m_susyObj[m_eleIDDefault]->GetElectrons(m_xaodElectrons_nom, m_xaodElectronsAux_nom, true) );
             if(m_dbg>=5) cout << "xaodEle_nom " << m_xaodElectrons_nom->size() << endl;
         }
         return m_xaodElectrons_nom;
@@ -802,14 +806,14 @@ xAOD::TauJetContainer* XaodAnalysis::xaodTaus(ST::SystInfo sysInfo, SusyNtSys sy
     bool syst_affectsTaus      = ST::testAffectsObject(xAOD::Type::Tau, sysInfo.affectsType);
     if(sys!=NtSys::NOM && syst_affectsTaus){
         if(m_xaodTaus==NULL){
-            CHECK( m_susyObj[m_eleIDDefault]->GetTaus(m_xaodTaus, m_xaodTausAux) );
+            CHECK( m_susyObj[m_eleIDDefault]->GetTaus(m_xaodTaus, m_xaodTausAux, true) );
         }
         if(m_dbg>=5) cout << "xaodTaus " << m_xaodTaus->size() << endl;
         return m_xaodTaus;
     }
     else{
         if(m_xaodTaus_nom==NULL){
-            CHECK( m_susyObj[m_eleIDDefault]->GetTaus(m_xaodTaus_nom, m_xaodTausAux_nom) );
+            CHECK( m_susyObj[m_eleIDDefault]->GetTaus(m_xaodTaus_nom, m_xaodTausAux_nom, true) );
             if(m_dbg>=5) cout << "xaodTaus_nom " << m_xaodTaus_nom->size() << endl;
         }
         return m_xaodTaus_nom;
@@ -822,14 +826,14 @@ xAOD::JetContainer* XaodAnalysis::xaodJets(ST::SystInfo sysInfo, SusyNtSys sys)
     bool syst_affectsJets      = ST::testAffectsObject(xAOD::Type::Jet, sysInfo.affectsType);
     if(sys!=NtSys::NOM && syst_affectsJets){
         if(m_xaodJets==NULL){
-            CHECK( m_susyObj[m_eleIDDefault]->GetJets(m_xaodJets, m_xaodJetsAux) );
+            CHECK( m_susyObj[m_eleIDDefault]->GetJets(m_xaodJets, m_xaodJetsAux, true) );
         }
         if(m_dbg>=5) cout << "xaodJets " << m_xaodJets->size() << endl;
         return m_xaodJets;
     }
     else{
         if(m_xaodJets_nom==NULL){
-            CHECK( m_susyObj[m_eleIDDefault]->GetJets(m_xaodJets_nom, m_xaodJetsAux_nom) );
+            CHECK( m_susyObj[m_eleIDDefault]->GetJets(m_xaodJets_nom, m_xaodJetsAux_nom, true) );
             if(m_dbg>=5) cout << "xaodJets_nom " << m_xaodJets_nom->size() << endl;
         }
         return m_xaodJets_nom;
@@ -842,14 +846,14 @@ xAOD::PhotonContainer* XaodAnalysis::xaodPhotons(ST::SystInfo sysInfo, SusyNtSys
     bool syst_affectsPhotons   = ST::testAffectsObject(xAOD::Type::Photon, sysInfo.affectsType);
     if(sys!=NtSys::NOM && syst_affectsPhotons){
         if(m_xaodPhotons==NULL){
-            CHECK( m_susyObj[m_eleIDDefault]->GetPhotons(m_xaodPhotons, m_xaodPhotonsAux) );
+            CHECK( m_susyObj[m_eleIDDefault]->GetPhotons(m_xaodPhotons, m_xaodPhotonsAux, true) );
         }
         if(m_dbg>=5) cout << "xaodPho " << m_xaodPhotons->size()  << endl;
         return m_xaodPhotons;
     }
     else{
         if(m_xaodPhotons_nom==NULL){
-            CHECK( m_susyObj[m_eleIDDefault]->GetPhotons(m_xaodPhotons_nom, m_xaodPhotonsAux_nom) );
+            CHECK( m_susyObj[m_eleIDDefault]->GetPhotons(m_xaodPhotons_nom, m_xaodPhotonsAux_nom, true) );
             if(m_dbg>=5) cout << "xaodPho_nom " << m_xaodPhotons_nom->size() << endl;
         }
 
@@ -926,6 +930,7 @@ void XaodAnalysis::retrieveXaodMet( ST::SystInfo sysInfo, SusyNtSys sys)
     m_metContainer = new xAOD::MissingETContainer;
     m_metAuxContainer = new xAOD::MissingETAuxContainer;
     m_metContainer->setStore( m_metAuxContainer );
+    m_metContainer->reserve(10);
     if(m_dbg>=5) cout << "Made metContainer pointers " << m_metContainer << " eleID " << m_eleIDDefault << endl; 
 
     xAOD::ElectronContainer* electrons = xaodElectrons(sysInfo,sys);
@@ -938,8 +943,10 @@ void XaodAnalysis::retrieveXaodMet( ST::SystInfo sysInfo, SusyNtSys sys)
                                       jets,
                                       electrons,
                                       muons,
-                                      photons,
-                                      0);
+                                      // skip st photons,
+                                      0,
+                                      0,
+                                        true);
    
     if(m_dbg>=5) cout <<"Rebuilt MET with " 
                       << " ele size " << electrons->size()
@@ -1377,12 +1384,14 @@ uint XaodAnalysis::getNumGoodVtx()
 /*--------------------------------------------------------------------------------*/
 const xAOD::Vertex* XaodAnalysis::getPV()
 {
-    xAOD::Vertex* vtx = NULL;
-    const xAOD::VertexContainer* vertices = xaodVertices();
-    for(auto it=vertices->begin(), end=vertices->end(); it!=end; ++it){
-        if((**it).vertexType()==xAOD::VxType::PriVtx)  vtx = *it;
-    }
-    return vtx;
+    #warning USING SUSYTOOLS TO GET PRIMARY VERTEX
+    return m_susyObj[m_eleIDDefault]->GetPrimVtx();
+    //xAOD::Vertex* vtx = NULL;
+    //const xAOD::VertexContainer* vertices = xaodVertices();
+    //for(auto it=vertices->begin(), end=vertices->end(); it!=end; ++it){
+    //    if((**it).vertexType()==xAOD::VxType::PriVtx)  vtx = *it;
+    //}
+    //return vtx;
 }
 
 /*--------------------------------------------------------------------------------*/
@@ -1899,11 +1908,14 @@ bool XaodAnalysis::passBadJet(ST::SystInfo sysInfo, SusyNtSys sys)
 //----------------------------------------------------------
 bool XaodAnalysis::passGoodVtx()
 {
-    for(auto it=xaodVertices()->begin(), end=xaodVertices()->end(); it!=end; ++it){
-        const xAOD::Vertex *vtx = *it;
-        if(vtx->vertexType() == xAOD::VxType::PriVtx) return true;
-    }
-    return false;
+    if(m_susyObj[m_eleIDDefault]->GetPrimVtx()==nullptr) return false;
+    return true;
+    #warning CHANGING PASSGOODVTX AS IN SUSYTOOLSTESTER
+    //for(auto it=xaodVertices()->begin(), end=xaodVertices()->end(); it!=end; ++it){
+    //    const xAOD::Vertex *vtx = *it;
+    //    if(vtx->vertexType() == xAOD::VxType::PriVtx) return true;
+    //}
+    //return false;
 }
 //----------------------------------------------------------
 bool XaodAnalysis::passTileTrip()
@@ -2440,6 +2452,12 @@ XaodAnalysis& XaodAnalysis::deleteShallowCopies(bool deleteNominal)
 {
     if(m_dbg>5) cout << "deleteShallowCopies " << deleteNominal << endl;
 
+    cout << "XaodAnalysis::deleteShallowCopies    Ignoring deleting the containers!" << endl;
+
+    m_store.clear();
+    clearContainerPointers(deleteNominal);
+    return *this;
+
     if(m_xaodMuons        ) delete m_xaodMuons;
     if(m_xaodMuonsAux     ) delete m_xaodMuonsAux;
     if(m_xaodElectrons    ) delete m_xaodElectrons;
@@ -2463,7 +2481,7 @@ XaodAnalysis& XaodAnalysis::deleteShallowCopies(bool deleteNominal)
                      << " taus " << m_xaodTaus 
                      << " met "  << m_metContainer
                      << endl;
-    
+   
     if(deleteNominal){
         //m_store.print();
         m_store.clear(); // this clears m_trackMetContainer, m_xaodTruthEvent and m_xaodTruthParticles
@@ -2544,8 +2562,9 @@ XaodAnalysis& XaodAnalysis::retrieveCollections()
     xaodJets(systInfoList[0]);
     xaodTaus(systInfoList[0]);
     xaodPhotons(systInfoList[0]);
+    cout << "not picking up MET in retrieveCollections" << endl;
     retrieveXaodMet(systInfoList[0]);//nominal
-    retrieveXaodTrackMet(systInfoList[0]);
+    //retrieveXaodTrackMet(systInfoList[0]);
 
     xaodTruthEvent();
     xaodTruthParticles();
