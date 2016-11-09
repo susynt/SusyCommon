@@ -478,7 +478,9 @@ void SusyNtMaker::fillTruthParticleVars()
     //   m_truParticles.insert(m_truParticles.end(), ttbarPart.begin(), ttbarPart.end());
     // }
     const xAOD::TruthParticleContainer* particles = xaodTruthParticles();
-    for(auto &i : m_truParticles){
+    //cout << "DEBUGGING: Is Container Empty?" << endl;
+    //cout << "m_truParticles returns    		   " << m_truParticles << endl; 
+    for(int i = 0; i < (int)particles->size(); i++){
         storeTruthParticle(*(particles->at(i)));
     }
 }
@@ -1628,19 +1630,76 @@ void SusyNtMaker::storeTruthParticle(const xAOD::TruthParticle &in)
     out.m   = m;
     //bool all_available=true;
     // out.charge = in.charge(); // DG 2014-08-29 discards const ??
-    out.pdgId = in.pdgId();
+    out.pdgId  = in.pdgId();
     out.status = in.status();
+    out.type   = in.auxdata< unsigned int >( "classifierParticleType" );
+    out.origin = in.auxdata< unsigned int >( "classifierParticleOrigin" );
     //   tprOut->motherPdgId = smc::determineParentPdg(m_event.mc.pdgId(),
     //                                                 m_event.mc.parent_index(),
     //                                                 truParIdx);
+    int idabs = fabs(out.pdgId);
+    bool selfDecay = false;
+
+    if(in.isLepton() && in.nParents()>0){
+	    const xAOD::TruthParticle *lepton = &in;	
+	    do{
+	      for(unsigned int i=0; i<lepton->nParents();i++) {
+	        selfDecay=false;
+	        const xAOD::TruthParticle *parent = lepton->parent(i);
+	        bool isBSMpar = isBSM(parent);
+		if( fabs(parent->pdgId()) == idabs ){
+	          lepton = parent;
+	          selfDecay = true;
+	          break;
+	        }
+	        else if ( parent->isW() || parent->isZ() || parent->isHiggs() || isBSMpar) {
+    		    Susy::TruthParticle outParent;
+		    double ptPar(parent->pt()*MeV2GeV), etaPar(parent->eta()), phiPar(parent->phi()), mPar(parent->m()*MeV2GeV);
+		    outParent.SetPtEtaPhiM(ptPar, etaPar, phiPar, mPar);
+		    outParent.pt  = ptPar;
+		    outParent.eta = etaPar;
+		    outParent.phi = phiPar;
+		    outParent.m   = mPar;
+		    outParent.pdgId = parent->pdgId();
+		    outParent.status = parent->status();
+		    outParent.type   = parent->auxdata< unsigned int >( "classifierParticleType" );
+		    outParent.origin = parent->auxdata< unsigned int >( "classifierParticleOrigin" );
+		    m_susyNt.tpr()->push_back(outParent);		    	          
+	        }
+	      }
+	    } while(selfDecay);
+    }
+
+    //cout << "classifierParticleType=" << in.auxdata< unsigned int >("classifierParticleType") << endl;
+    //cout << "classifierParticleOrigin=" << in.auxdata< unsigned int >("classifierParticleOrigin") << endl; 
+    if(in.isLepton()){
+	m_susyNt.tpr()->push_back(out); 
+    }
 }
 /*--------------------------------------------------------------------------------*/
 // Fill Truth Jet variables
 /*--------------------------------------------------------------------------------*/
 void SusyNtMaker::fillTruthJetVars()
 {
-    // if(m_dbg>=5) cout << "fillTruthJetVars" << endl;
-
+	if(m_dbg>=5) cout << "fillTruthJetVars" << endl;
+	const xAOD::JetContainer* truthJets = 0;
+	m_event.retrieve( truthJets, "AntiKt4TruthJets");
+	for(const auto& truthJet : *truthJets){
+		m_susyNt.tjt()->push_back(Susy::TruthJet());
+		Susy::TruthJet* truJetOut = & m_susyNt.tjt()->back();
+		double pt(truthJet->pt()*MeV2GeV), eta(truthJet->eta()), phi(truthJet->phi()), m(truthJet->m()*MeV2GeV);
+		int jet_flavor = truthJet->auxdata<int>("PartonTruthLabelID");
+		//if(jet_flavor==5)  cout << "Jet is b-tagged"   << endl;
+		//if(jet_flavor==15) cout << "Jet is tau-tagged" << endl;
+		truJetOut->SetPtEtaPhiM(pt, eta, phi, m);
+		truJetOut->pt     = pt;
+		truJetOut->eta    = eta;
+		truJetOut->phi    = phi;
+		truJetOut->m      = m;
+		truJetOut->flavor  = jet_flavor;
+//		truJetOut.status = truthJet->status();
+	}	
+	
     // for(uint iTruJet=0; iTruJet<m_truJets.size(); iTruJet++){
     //   int truJetIdx = m_truJets[iTruJet];
 
@@ -1668,16 +1727,18 @@ void SusyNtMaker::fillTruthJetVars()
 /*--------------------------------------------------------------------------------*/
 void SusyNtMaker::fillTruthMetVars()
 {
-    // if(m_dbg>=5) cout << "fillTruthMetVars" << endl;
+    if(m_dbg>=5) cout << "fillTruthMetVars" << endl;
+    const xAOD::MissingETContainer* truthMET = 0;
+    m_event.retrieve( truthMET, "MET_Truth");
 
-    // // Just fill the lv for now
-    // double Et  = m_truMet.Et()/GeV;
-    // double phi = m_truMet.Phi();
+    // Just fill the lv for now
+    double Et  = (*truthMET)["NonInt"]->met()*MeV2GeV;
+    double phi = (*truthMET)["NonInt"]->phi();
 
-    // m_susyNt.tmt()->push_back( Susy::TruthMet() );
-    // Susy::TruthMet* truMetOut = & m_susyNt.tmt()->back();
-    // truMetOut->Et  = Et;
-    // truMetOut->phi = phi;
+    m_susyNt.tmt()->push_back( Susy::TruthMet() );
+    Susy::TruthMet* truMetOut = & m_susyNt.tmt()->back();
+    truMetOut->Et  = Et;
+    truMetOut->phi = phi;
 }
 
 
@@ -2423,3 +2484,17 @@ bool SusyNtMaker::passObjectlevelSelection()
 
 }
 //----------------------------------------------------------
+bool SusyNtMaker::isBSM(const xAOD::TruthParticle *part){
+ 
+   int pdg = part->pdgId();
+   if ( (31<abs(pdg) && abs(pdg)<38) || // BSM Higgs / W' / Z' / etc
+        abs(pdg)==39 ||
+        abs(pdg)==41 ||
+        abs(pdg)==42 ||
+        (1000000<abs(pdg) && abs(pdg)<1000040) || // left-handed SUSY
+        (2000000<abs(pdg) && abs(pdg)<2000040) ) // right-handed SUSY
+     return true;
+ 
+   return false;
+}
+//
