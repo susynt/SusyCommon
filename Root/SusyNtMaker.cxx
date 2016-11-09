@@ -989,7 +989,12 @@ void SusyNtMaker::storeMuon(const xAOD::Muon &in)
         // dantrim Sept 15 2016 -- don't get trigger SF for loose muons (MuonTriggerScaleFactors tool complains... not yet sure if it is a problem
         // from our mangled setup or the tool's issue)
         //out.muoTrigSF[MuonId::Loose]  = m_susyObj[SusyObjId::muoLoose]->GetTotalMuonSF(*sf_muon, false, false, trig_exp_med.Data());
-        out.muoTrigSF[MuonId::Medium] = m_susyObj[SusyObjId::muoMedium]->GetTotalMuonSF(*sf_muon, false, false, trig_exp_med.Data());
+        if(m_run_oneST) {
+            out.muoTrigSF[MuonId::Medium] = m_susyObj[m_eleIDDefault]->GetTotalMuonSF(*sf_muon, false, false, trig_exp_med.Data());
+        }
+        else {
+            out.muoTrigSF[MuonId::Medium] = m_susyObj[SusyObjId::muoMedium]->GetTotalMuonSF(*sf_muon, false, false, trig_exp_med.Data());
+        }
         
         delete sf_muon;
         delete sf_muon_aux;
