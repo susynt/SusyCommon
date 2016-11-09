@@ -481,7 +481,8 @@ void SusyNtMaker::fillTruthParticleVars()
     //cout << "DEBUGGING: Is Container Empty?" << endl;
     //cout << "m_truParticles returns    		   " << m_truParticles << endl; 
     for(int i = 0; i < (int)particles->size(); i++){
-        storeTruthParticle(*(particles->at(i)));
+        if(particles->at(i)->pt()!=0)
+            storeTruthParticle(*(particles->at(i)));
     }
 }
 
@@ -1673,7 +1674,7 @@ void SusyNtMaker::storeTruthParticle(const xAOD::TruthParticle &in)
     //cout << "classifierParticleType=" << in.auxdata< unsigned int >("classifierParticleType") << endl;
     //cout << "classifierParticleOrigin=" << in.auxdata< unsigned int >("classifierParticleOrigin") << endl; 
     if(in.isLepton()){
-	m_susyNt.tpr()->push_back(out); 
+	    m_susyNt.tpr()->push_back(out); 
     }
 }
 /*--------------------------------------------------------------------------------*/
@@ -1685,42 +1686,23 @@ void SusyNtMaker::fillTruthJetVars()
 	const xAOD::JetContainer* truthJets = 0;
 	m_event.retrieve( truthJets, "AntiKt4TruthJets");
 	for(const auto& truthJet : *truthJets){
-		m_susyNt.tjt()->push_back(Susy::TruthJet());
-		Susy::TruthJet* truJetOut = & m_susyNt.tjt()->back();
-		double pt(truthJet->pt()*MeV2GeV), eta(truthJet->eta()), phi(truthJet->phi()), m(truthJet->m()*MeV2GeV);
-		int jet_flavor = truthJet->auxdata<int>("PartonTruthLabelID");
-		//if(jet_flavor==5)  cout << "Jet is b-tagged"   << endl;
-		//if(jet_flavor==15) cout << "Jet is tau-tagged" << endl;
-		truJetOut->SetPtEtaPhiM(pt, eta, phi, m);
-		truJetOut->pt     = pt;
-		truJetOut->eta    = eta;
-		truJetOut->phi    = phi;
-		truJetOut->m      = m;
-		truJetOut->flavor  = jet_flavor;
-//		truJetOut.status = truthJet->status();
+        if(truthJet->pt()==0) continue;
+        Susy::TruthJet out;
+        double pt, eta, phi, m;
+        pt = truthJet->pt()*MeV2GeV;
+        eta = truthJet->eta();
+        phi = truthJet->phi();
+        m = truthJet->m()*MeV2GeV;
+        out.SetPtEtaPhiM(pt, eta, phi, m);
+        out.pt = pt;
+        out.eta = eta;
+        out.phi = phi;
+        out.m = m;
+        out.flavor = truthJet->auxdata<int>("PartonTruthLabelID");
+
+        m_susyNt.tjt()->push_back(out);
+
 	}	
-	
-    // for(uint iTruJet=0; iTruJet<m_truJets.size(); iTruJet++){
-    //   int truJetIdx = m_truJets[iTruJet];
-
-    //   m_susyNt.tjt()->push_back( Susy::TruthJet() );
-    //   Susy::TruthJet* truJetOut = & m_susyNt.tjt()->back();
-    //   const D3PDReader::JetD3PDObjectElement* element = & m_event.AntiKt4Truth[truJetIdx];
-
-    //   // Set TLV
-    //   float pt  = element->pt() / GeV;
-    //   float eta = element->eta();
-    //   float phi = element->phi();
-    //   float m   = element->m()  / GeV;
-
-    //   truJetOut->SetPtEtaPhiM(pt, eta, phi, m);
-    //   truJetOut->pt     = pt;
-    //   truJetOut->eta    = eta;
-    //   truJetOut->phi    = phi;
-    //   truJetOut->m      = m;
-
-    //   truJetOut->flavor = element->flavor_truth_label();
-    // }
 }
 /*--------------------------------------------------------------------------------*/
 // Fill Truth Met variables
@@ -1731,14 +1713,13 @@ void SusyNtMaker::fillTruthMetVars()
     const xAOD::MissingETContainer* truthMET = 0;
     m_event.retrieve( truthMET, "MET_Truth");
 
-    // Just fill the lv for now
-    double Et  = (*truthMET)["NonInt"]->met()*MeV2GeV;
-    double phi = (*truthMET)["NonInt"]->phi();
+    Susy::TruthMet out;
 
-    m_susyNt.tmt()->push_back( Susy::TruthMet() );
-    Susy::TruthMet* truMetOut = & m_susyNt.tmt()->back();
-    truMetOut->Et  = Et;
-    truMetOut->phi = phi;
+    // Just fill the lv for now
+    out.Et = (*truthMET)["NonInt"]->met()*MeV2GeV;
+    out.phi = (*truthMET)["NonInt"]->phi();
+
+    m_susyNt.tmt()->push_back(out);
 }
 
 
