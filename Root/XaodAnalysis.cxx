@@ -81,6 +81,7 @@ XaodAnalysis::XaodAnalysis() :
     m_isMC15c(false),
     m_flagsAreConsistent(false),
     m_flagsHaveBeenChecked(false),
+    m_run_oneST(false),
     m_event(xAOD::TEvent::kClassAccess),
     //m_event(xAOD::TEvent::kAthenaAccess), ///> dantrim April 28 2016 -- to get CutBookkeepers needs kAthenaAccess or kClassAcess
     m_store(),
@@ -304,10 +305,7 @@ void XaodAnalysis::Terminate()
 //----------------------------------------------------------
 XaodAnalysis& XaodAnalysis::initSusyTools()
 {
-    int run_once = 99;
-    if(m_run_oneST) run_once = 1;
     for(int susyObjId : Susy::leptonIds()){
-        if(susyObjId >= run_once) continue;
         string idName = SusyObjId2str(static_cast<SusyObjId>(susyObjId));
         bool isEle = isEleObj(static_cast<SusyObjId>(susyObjId)); 
         string name = "SUSYObjDef_xAOD_" + idName;
@@ -404,6 +402,7 @@ XaodAnalysis& XaodAnalysis::initSusyTools()
             }
         }
     //    CHECK( m_susyObj[i]->SUSYToolsInit() );
+    if(m_run_oneST) break; // if we only want one instance, break here
     }
 
     return *this;
@@ -907,10 +906,8 @@ void XaodAnalysis::retrieveXaodMet( ST::SystInfo sysInfo, SusyNtSys sys)
                                       jets,
                                       electrons,
                                       muons,
-                                      // skip st photons,
-                                      0,
-                                      0,
-                                        true);
+                                      photons,
+                                      0);
    
     if(m_dbg>=5) cout <<"Rebuilt MET with " 
                       << " ele size " << electrons->size()
@@ -1912,12 +1909,6 @@ bool XaodAnalysis::passGoodVtx()
 {
     if(m_susyObj[m_eleIDDefault]->GetPrimVtx()==nullptr) return false;
     return true;
-    #warning CHANGING PASSGOODVTX AS IN SUSYTOOLSTESTER
-    //for(auto it=xaodVertices()->begin(), end=xaodVertices()->end(); it!=end; ++it){
-    //    const xAOD::Vertex *vtx = *it;
-    //    if(vtx->vertexType() == xAOD::VxType::PriVtx) return true;
-    //}
-    //return false;
 }
 //----------------------------------------------------------
 bool XaodAnalysis::passTileTrip()
@@ -2454,12 +2445,13 @@ XaodAnalysis& XaodAnalysis::deleteShallowCopies(bool deleteNominal)
 {
     if(m_dbg>5) cout << "deleteShallowCopies " << deleteNominal << endl;
 
-    cout << "XaodAnalysis::deleteShallowCopies    Ignoring deleting the containers!" << endl;
-
-    m_store.clear();
+    if(deleteNominal)
+        m_store.clear();
     clearContainerPointers(deleteNominal);
     return *this;
 
+// dantrim Nov 8 2016 -- TStore/StoreGate don't need this anymore
+/*
     if(m_xaodMuons        ) delete m_xaodMuons;
     if(m_xaodMuonsAux     ) delete m_xaodMuonsAux;
     if(m_xaodElectrons    ) delete m_xaodElectrons;
@@ -2483,6 +2475,7 @@ XaodAnalysis& XaodAnalysis::deleteShallowCopies(bool deleteNominal)
                      << " taus " << m_xaodTaus 
                      << " met "  << m_metContainer
                      << endl;
+
    
     if(deleteNominal){
         //m_store.print();
@@ -2506,6 +2499,7 @@ XaodAnalysis& XaodAnalysis::deleteShallowCopies(bool deleteNominal)
     clearContainerPointers(deleteNominal);
 
     return *this;
+*/
 }
 //----------------------------------------------------------
 XaodAnalysis& XaodAnalysis::clearContainerPointers(bool deleteNominal)
@@ -2564,7 +2558,6 @@ XaodAnalysis& XaodAnalysis::retrieveCollections()
     xaodJets(systInfoList[0]);
     xaodTaus(systInfoList[0]);
     xaodPhotons(systInfoList[0]);
-    cout << "not picking up MET in retrieveCollections" << endl;
     retrieveXaodMet(systInfoList[0]);//nominal
     retrieveXaodTrackMet(systInfoList[0]);
 

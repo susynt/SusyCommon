@@ -182,6 +182,7 @@ Bool_t SusyNtMaker::Process(Long64_t entry)
     } // susyObjId
 
     retrieveCollections();
+
     const xAOD::EventInfo* eventinfo = XaodAnalysis::xaodEventInfo();
     if(m_dbg || chainEntry%5000==0){
         cout << "***********************************************************" << endl;
@@ -626,7 +627,7 @@ void SusyNtMaker::storeElectron(const xAOD::Electron &in)
     //////////////////////////////////////
     // Systematic variation on electron SF
     //////////////////////////////////////
-    if(m_isMC && m_sys && !m_run_oneST && (out.veryLooseLLH || out.looseLLH || out.mediumLLH || out.tightLLH)) {
+    if(m_isMC && m_sys && (out.veryLooseLLH || out.looseLLH || out.mediumLLH || out.tightLLH)) {
         for(const auto& sysInfo : systInfoList) {
             if(!(sysInfo.affectsType == ST::SystObjType::Electron && sysInfo.affectsWeights)) continue;
 
@@ -640,14 +641,27 @@ void SusyNtMaker::storeElectron(const xAOD::Electron &in)
             } // i 
             vector<float> sf;
             sf.assign(ElectronId::ElectronIdInvalid, 1);
-            sf[ElectronId::TightLLH]  = m_susyObj[SusyObjId::eleTightLLH] ->GetSignalElecSF(in, recoSF, idSF, trigSF, isoSF);
-            sf[ElectronId::MediumLLH] = m_susyObj[SusyObjId::eleMediumLLH]->GetSignalElecSF(in, recoSF, idSF, trigSF, isoSF);
+            if(m_run_oneST) {
+                sf[ElectronId::TightLLH]  = m_susyObj[m_eleIDDefault] ->GetSignalElecSF(in, recoSF, idSF, trigSF, isoSF);
+                sf[ElectronId::MediumLLH] = m_susyObj[m_eleIDDefault]->GetSignalElecSF(in, recoSF, idSF, trigSF, isoSF);
+
+            }
+            else {
+                sf[ElectronId::TightLLH]  = m_susyObj[SusyObjId::eleTightLLH] ->GetSignalElecSF(in, recoSF, idSF, trigSF, isoSF);
+                sf[ElectronId::MediumLLH] = m_susyObj[SusyObjId::eleMediumLLH]->GetSignalElecSF(in, recoSF, idSF, trigSF, isoSF);
+            }
 
             vector<float> sf_trig;
             sf_trig.assign(ElectronId::ElectronIdInvalid, 1);
-            sf_trig[ElectronId::TightLLH]  = m_susyObj[SusyObjId::eleTightLLH] ->GetSignalElecSF(in, false, false, true, false);
-            sf_trig[ElectronId::MediumLLH] = m_susyObj[SusyObjId::eleMediumLLH]->GetSignalElecSF(in, false, false, true, false);
-            
+            if(m_run_oneST) {
+                sf_trig[ElectronId::TightLLH]  = m_susyObj[m_eleIDDefault] ->GetSignalElecSF(in, false, false, true, false);
+                sf_trig[ElectronId::MediumLLH] = m_susyObj[m_eleIDDefault]->GetSignalElecSF(in, false, false, true, false);
+            }
+            else {
+                sf_trig[ElectronId::TightLLH]  = m_susyObj[SusyObjId::eleTightLLH] ->GetSignalElecSF(in, false, false, true, false);
+                sf_trig[ElectronId::MediumLLH] = m_susyObj[SusyObjId::eleMediumLLH]->GetSignalElecSF(in, false, false, true, false);
+            } 
+
             // there are no isolation SF's for electrion ID looseLH
             //sf[ElectronId::LooseLH]  = m_susyObj[SusyObjId::eleLooseLH] ->GetSignalElecSF(in, recoSF, idSF, trigSF);
 
@@ -715,7 +729,6 @@ void SusyNtMaker::storeElectron(const xAOD::Electron &in)
                                         eventinfo->beamPosSigmaY(), eventinfo->beamPosSigmaXY() );
 
         const xAOD::Vertex* PV = getPV();
-        cout << "PV address: " << PV << endl;
         double  primvertex_z = (PV) ? PV->z() : -999;
         out.z0 = t->z0() + t->vz() - primvertex_z;
 
@@ -961,15 +974,19 @@ void SusyNtMaker::storeMuon(const xAOD::Muon &in)
         sfMu->makePrivateStore(in);
         sf_muon->push_back(sfMu);
 
-        if(!m_run_oneST) {
-            TString trig_exp_med = "HLT_mu20_iloose_L1MU15_OR_HLT_mu50"; 
+        TString trig_exp_med = "HLT_mu20_iloose_L1MU15_OR_HLT_mu50"; 
+        if(m_run_oneST) {
+            if(m_susyObj[m_eleIDDefault]->treatAsYear()==2016)
+                trig_exp_med = "HLT_mu24_imedium";
+        }
+        else {
             if(m_susyObj[SusyObjId::muoMedium]->treatAsYear()==2016)
                 trig_exp_med = "HLT_mu24_imedium";
-            // dantrim Sept 15 2016 -- don't get trigger SF for loose muons (MuonTriggerScaleFactors tool complains... not yet sure if it is a problem
-            // from our mangled setup or the tool's issue)
-            //out.muoTrigSF[MuonId::Loose]  = m_susyObj[SusyObjId::muoLoose]->GetTotalMuonSF(*sf_muon, false, false, trig_exp_med.Data());
-            out.muoTrigSF[MuonId::Medium] = m_susyObj[SusyObjId::muoMedium]->GetTotalMuonSF(*sf_muon, false, false, trig_exp_med.Data());
         }
+        // dantrim Sept 15 2016 -- don't get trigger SF for loose muons (MuonTriggerScaleFactors tool complains... not yet sure if it is a problem
+        // from our mangled setup or the tool's issue)
+        //out.muoTrigSF[MuonId::Loose]  = m_susyObj[SusyObjId::muoLoose]->GetTotalMuonSF(*sf_muon, false, false, trig_exp_med.Data());
+        out.muoTrigSF[MuonId::Medium] = m_susyObj[SusyObjId::muoMedium]->GetTotalMuonSF(*sf_muon, false, false, trig_exp_med.Data());
         
         delete sf_muon;
         delete sf_muon_aux;
@@ -977,7 +994,7 @@ void SusyNtMaker::storeMuon(const xAOD::Muon &in)
     //////////////////////////////////////
     // Systematic variation on muon SF
     //////////////////////////////////////
-    if(m_isMC && m_sys && !m_run_oneST && fabs(out.eta)<2.5 && out.pt>20){
+    if(m_isMC && m_sys && fabs(out.eta)<2.5 && out.pt>20){
         for(const auto& sysInfo : systInfoList) {
             if(!(sysInfo.affectsType == ST::SystObjType::Muon && sysInfo.affectsWeights)) continue;
             const CP::SystematicSet& sys = sysInfo.systset;
@@ -990,8 +1007,15 @@ void SusyNtMaker::storeMuon(const xAOD::Muon &in)
             }
             vector<float> sf;
             sf.assign(MuonId::MuonIdInvalid, 1);
-            sf[MuonId::Medium] = m_susyObj[SusyObjId::muoMedium]->GetSignalMuonSF(in, recoSF, isoSF);
-            sf[MuonId::Loose] = m_susyObj[SusyObjId::muoLoose]->GetSignalMuonSF(in, recoSF, isoSF);
+            if(m_run_oneST) {
+                sf[MuonId::Medium] = m_susyObj[m_eleIDDefault]->GetSignalMuonSF(in, recoSF, isoSF);
+                sf[MuonId::Loose] =  m_susyObj[m_eleIDDefault]->GetSignalMuonSF(in, recoSF, isoSF);
+            }
+            else {
+                sf[MuonId::Medium] = m_susyObj[SusyObjId::muoMedium]->GetSignalMuonSF(in, recoSF, isoSF);
+                sf[MuonId::Loose] = m_susyObj[SusyObjId::muoLoose]->GetSignalMuonSF(in, recoSF, isoSF);
+            }
+
             for(int i=MuonId::VeryLoose; i<MuonId::MuonIdInvalid; i++){
                 if     (ourSys == NtSys::MUON_EFF_STAT_UP)        out.errEffSF_stat_up[i] = sf[i] - out.muoEffSF[i];
                 else if(ourSys == NtSys::MUON_EFF_STAT_DN)        out.errEffSF_stat_dn[i] = sf[i] - out.muoEffSF[i];
@@ -1041,7 +1065,7 @@ void SusyNtMaker::storeMuon(const xAOD::Muon &in)
     }
     /// do trigger SF variations here
     #warning check muon trigger SF variations once we get these SFs
-    if(m_isMC && m_sys && !m_run_oneST && fabs(out.eta)<2.5 && out.pt>20){
+    if(m_isMC && m_sys && fabs(out.eta)<2.5 && out.pt>20){
         for(const auto& sysInfo : systInfoList) {
             if(!(sysInfo.affectsType == ST::SystObjType::Muon && sysInfo.affectsWeights)) continue;
             const CP::SystematicSet& sys = sysInfo.systset;
@@ -1063,8 +1087,14 @@ void SusyNtMaker::storeMuon(const xAOD::Muon &in)
             sf_muon->push_back(sfMu);
 
             TString trig_exp_med = "HLT_mu20_iloose_L1MU15_OR_HLT_mu50";
-            if(m_susyObj[SusyObjId::muoMedium]->treatAsYear()==2016)
-                trig_exp_med = "HLT_mu24_imedium";
+            if(m_run_oneST) {
+                if(m_susyObj[m_eleIDDefault]->treatAsYear()==2016)
+                    trig_exp_med = "HLT_mu24_imedium";
+            }
+            else {
+                if(m_susyObj[SusyObjId::muoMedium]->treatAsYear()==2016)
+                    trig_exp_med = "HLT_mu24_imedium";
+            }
             sf_trig[MuonId::Medium] = m_susyObj[SusyObjId::muoMedium]->GetTotalMuonSF(*sf_muon, false, false, trig_exp_med.Data());
             delete sf_muon;
             delete sf_muon_aux;

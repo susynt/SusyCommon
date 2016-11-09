@@ -158,6 +158,7 @@ int main(int argc, char** argv)
   susyAna->setChain(chain);
   susyAna->setDebug(dbg);
   //susyAna->setSample(sample);
+  susyAna->setOneST(one_susytools);
   susyAna->setMC15b(mc15b);
   susyAna->setMC15c(mc15c);
   susyAna->setLumi(lumi);
