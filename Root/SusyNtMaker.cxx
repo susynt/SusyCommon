@@ -637,10 +637,12 @@ void SusyNtMaker::storeElectron(const xAOD::Electron &in)
             const CP::SystematicSet& sys = sysInfo.systset;
             SusyNtSys ourSys = CPsys2sys((sys.name()).c_str());
             for(int i : Susy::electronIds()){
-                if(m_susyObj[i]->applySystematicVariation(sys) != CP::SystematicCode::Ok) {
+                int index_to_check = (m_run_oneST==true ? (int)m_eleIDDefault : i);
+                if(m_susyObj[index_to_check]->applySystematicVariation(sys) != CP::SystematicCode::Ok) {
                     cout << "SusyNtMaker::storeElectron    cannot configure SUSYTools for systematic " << sys.name() << endl;
                     continue;
                 }
+                if(m_run_oneST) break;
             } // i 
             vector<float> sf;
             sf.assign(ElectronId::ElectronIdInvalid, 1);
@@ -696,10 +698,12 @@ void SusyNtMaker::storeElectron(const xAOD::Electron &in)
         } // sysInfo
 
         for(int i : Susy::electronIds()){
-            if(m_susyObj[i]->resetSystematics() != CP::SystematicCode::Ok){
+            int index_to_check = (m_run_oneST==true ? (int)m_eleIDDefault : i);
+            if(m_susyObj[index_to_check]->resetSystematics() != CP::SystematicCode::Ok){
                 cout << "SusyNtMaker::storeElectron    cannot reset SUSYTools systematics. Aborting." << endl;
                 abort();
             }
+            if(m_run_oneST) break;
         }
     } // if isMC
     else {
@@ -1008,10 +1012,12 @@ void SusyNtMaker::storeMuon(const xAOD::Muon &in)
             const CP::SystematicSet& sys = sysInfo.systset;
             SusyNtSys ourSys = CPsys2sys((sys.name()).c_str());
             for(int i : Susy::muonIds()){
-                if(m_susyObj[i]->applySystematicVariation(sys) != CP::SystematicCode::Ok) {
+                int index_to_check = (m_run_oneST==true ? (int)m_eleIDDefault : i);
+                if(m_susyObj[index_to_check]->applySystematicVariation(sys) != CP::SystematicCode::Ok) {
                     cout << "SusyNtMaker::storeMuon    cannot configure SUSYTools for systematic " << sys.name() << endl;
                     continue;
                 }
+                if(m_run_oneST) break;
             }
             vector<float> sf;
             sf.assign(MuonId::MuonIdInvalid, 1);
@@ -1055,10 +1061,12 @@ void SusyNtMaker::storeMuon(const xAOD::Muon &in)
             }
         } // sysInfo
         for(int i : Susy::muonIds()){
-            if(m_susyObj[i]->resetSystematics() != CP::SystematicCode::Ok){
+            int index_to_check = (m_run_oneST==true ? (int)m_eleIDDefault : i);
+            if(m_susyObj[index_to_check]->resetSystematics() != CP::SystematicCode::Ok){
                 cout << "SusyNtMaker::storeMuon    cannot reset SUSYTools systematics. Aborting." << endl;
                 abort();
             }
+            if(m_run_oneST) break;
         }
     } // ifMC && sys 
     else {
@@ -1079,10 +1087,12 @@ void SusyNtMaker::storeMuon(const xAOD::Muon &in)
             const CP::SystematicSet& sys = sysInfo.systset;
             SusyNtSys ourSys = CPsys2sys((sys.name()).c_str());
             for(int i : Susy::muonIds()){
-                if(m_susyObj[i]->applySystematicVariation(sys) != CP::SystematicCode::Ok) {
+                int index_to_check = (m_run_oneST==true ? (int)m_eleIDDefault : i);
+                if(m_susyObj[index_to_check]->applySystematicVariation(sys) != CP::SystematicCode::Ok) {
                     cout << "SusyNtMaker::storeMuon    cannot configure SUSYTools for systematic " << sys.name() << endl;
                     continue;
                 }
+                if(m_run_oneST) break;
             }
             vector<float> sf_trig;
             sf_trig.assign(MuonId::MuonIdInvalid, 1);
@@ -1103,7 +1113,12 @@ void SusyNtMaker::storeMuon(const xAOD::Muon &in)
                 if(m_susyObj[SusyObjId::muoMedium]->treatAsYear()==2016)
                     trig_exp_med = "HLT_mu24_imedium";
             }
-            sf_trig[MuonId::Medium] = m_susyObj[SusyObjId::muoMedium]->GetTotalMuonSF(*sf_muon, false, false, trig_exp_med.Data());
+            if(m_run_oneST) {
+                sf_trig[MuonId::Medium] = m_susyObj[m_eleIDDefault]->GetTotalMuonSF(*sf_muon, false, false, trig_exp_med.Data());
+            }
+            else {
+                sf_trig[MuonId::Medium] = m_susyObj[SusyObjId::muoMedium]->GetTotalMuonSF(*sf_muon, false, false, trig_exp_med.Data());
+            }
             delete sf_muon;
             delete sf_muon_aux;
 
@@ -1125,10 +1140,12 @@ void SusyNtMaker::storeMuon(const xAOD::Muon &in)
 
         } // sysInfo
         for(int i : Susy::muonIds()){
-            if(m_susyObj[i]->resetSystematics() != CP::SystematicCode::Ok){
+            int index_to_check = (m_run_oneST==true ? (int)m_eleIDDefault : i);
+            if(m_susyObj[index_to_check]->resetSystematics() != CP::SystematicCode::Ok){
                 cout << "SusyNtMaker::storeMuon    cannot reset SUSYTools systematics. Aborting." << endl;
                 abort();
             }
+            if(m_run_oneST) break;
         }
     } // ifMC && sys 
     else {
