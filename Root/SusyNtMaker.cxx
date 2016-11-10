@@ -595,15 +595,30 @@ void SusyNtMaker::storeElectron(const xAOD::Electron &in)
         //////////////////////////////////////
         // signature: (input electron, bool doRecoSF, bool doIDSF, bool doTrigSF, bool doIsoSF, string trigExpr)
         // default trigExpr: "e24_lhmedium_L1EM20VH_OR_e60_lhmedium_OR_e120_lhloose"
+        std::string ele_trig;
+        std::string ele_trig15 = "e24_lhmedium_L1EM20VH_OR_e60_lhmedium_OR_e120_lhloose";
+        ele_trig = ele_trig15;
+        std::string ele_trig16 = "e26_lhtight_nod0_ivarloose_OR_e60_lhmedium_nod0_OR_e140_lhloose_nod0";
+        ele_trig16 = ele_trig15;
         if(m_run_oneST) {
+            if(m_susyObj[m_eleIDDefault]->treatAsYear()==2016)
+                ele_trig = ele_trig16;
             out.eleEffSF[ElectronId::TightLLH] =  m_susyObj[m_eleIDDefault]->GetSignalElecSF (in, recoSF, idSF, trigSF, isoSF);
-            out.eleTrigSF[ElectronId::TightLLH] = m_susyObj[m_eleIDDefault]->GetSignalElecSF (in, false, false, true, false);
+            out.eleTrigSF[ElectronId::TightLLH] = m_susyObj[m_eleIDDefault]->GetSignalElecSF (in, false, false, true, false, ele_trig);
         }
         else {
+            if(m_susyObj[SusyObjId::eleTightLLH]->treatAsYear()==2016)
+                ele_trig = ele_trig16;
+            
             out.eleEffSF[ElectronId::TightLLH] =  m_susyObj[SusyObjId::eleTightLLH]->GetSignalElecSF (in, recoSF, idSF, trigSF, isoSF);
-            out.eleTrigSF[ElectronId::TightLLH] = m_susyObj[SusyObjId::eleTightLLH]->GetSignalElecSF (in, false, false, true, false);
+            out.eleTrigSF[ElectronId::TightLLH] = m_susyObj[SusyObjId::eleTightLLH]->GetSignalElecSF (in, false, false, true, false, ele_trig);
+            ele_trig = ele_trig15;
+
+        
+            if(m_susyObj[SusyObjId::eleMediumLLH]->treatAsYear()==2016)
+                ele_trig = ele_trig16;
             out.eleEffSF[ElectronId::MediumLLH] = m_susyObj[SusyObjId::eleMediumLLH]->GetSignalElecSF(in, recoSF, idSF, trigSF, isoSF);
-            out.eleTrigSF[ElectronId::MediumLLH] = m_susyObj[SusyObjId::eleMediumLLH]->GetSignalElecSF(in, false, false, true, false);
+            out.eleTrigSF[ElectronId::MediumLLH] = m_susyObj[SusyObjId::eleMediumLLH]->GetSignalElecSF(in, false, false, true, false, ele_trig);
         }
         // there are no isolation SF's for electron ID looseLH
         //out.eleEffSF[ElectronId::LooseLH] = m_susyObj[SusyObjId::eleLooseLH]->GetSignalElecSF(in, recoSF, idSF, trigSF, isoSF);
@@ -662,13 +677,14 @@ void SusyNtMaker::storeElectron(const xAOD::Electron &in)
 
             vector<float> sf_trig;
             sf_trig.assign(ElectronId::ElectronIdInvalid, 1);
+            std::string ele_trig = "e24_lhmedium_iloose_L1EM18VH";
             if(m_run_oneST) {
-                sf_trig[ElectronId::TightLLH]  = m_susyObj[m_eleIDDefault] ->GetSignalElecSF(in, false, false, true, false);
-                sf_trig[ElectronId::MediumLLH] = m_susyObj[m_eleIDDefault]->GetSignalElecSF(in, false, false, true, false);
+                sf_trig[ElectronId::TightLLH]  = m_susyObj[m_eleIDDefault] ->GetSignalElecSF(in, false, false, true, false, ele_trig);
+                sf_trig[ElectronId::MediumLLH] = m_susyObj[m_eleIDDefault]->GetSignalElecSF(in, false, false, true, false, ele_trig);
             }
             else {
-                sf_trig[ElectronId::TightLLH]  = m_susyObj[SusyObjId::eleTightLLH] ->GetSignalElecSF(in, false, false, true, false);
-                sf_trig[ElectronId::MediumLLH] = m_susyObj[SusyObjId::eleMediumLLH]->GetSignalElecSF(in, false, false, true, false);
+                sf_trig[ElectronId::TightLLH]  = m_susyObj[SusyObjId::eleTightLLH] ->GetSignalElecSF(in, false, false, true, false, ele_trig);
+                sf_trig[ElectronId::MediumLLH] = m_susyObj[SusyObjId::eleMediumLLH]->GetSignalElecSF(in, false, false, true, false, ele_trig);
             } 
 
             // there are no isolation SF's for electrion ID looseLH
@@ -998,10 +1014,12 @@ void SusyNtMaker::storeMuon(const xAOD::Muon &in)
         // from our mangled setup or the tool's issue)
         //out.muoTrigSF[MuonId::Loose]  = m_susyObj[SusyObjId::muoLoose]->GetTotalMuonSF(*sf_muon, false, false, trig_exp_med.Data());
         if(m_run_oneST) {
-            out.muoTrigSF[MuonId::Medium] = m_susyObj[m_eleIDDefault]->GetTotalMuonSF(*sf_muon, false, false, trig_exp_med.Data());
+            out.muoTrigSF[MuonId::Medium] = m_susyObj[m_eleIDDefault]->GetTotalMuonTriggerSF(*sf_muon, static_cast<string>(trig_exp_med.Data()));
+            //out.muoTrigSF[MuonId::Medium] = m_susyObj[m_eleIDDefault]->GetTotalMuonSF(*sf_muon, false, false, trig_exp_med.Data());
         }
         else {
-            out.muoTrigSF[MuonId::Medium] = m_susyObj[SusyObjId::muoMedium]->GetTotalMuonSF(*sf_muon, false, false, trig_exp_med.Data());
+            out.muoTrigSF[MuonId::Medium] = m_susyObj[SusyObjId::muoMedium]->GetTotalMuonTriggerSF(*sf_muon, static_cast<string>(trig_exp_med.Data()));
+            //out.muoTrigSF[MuonId::Medium] = m_susyObj[SusyObjId::muoMedium]->GetTotalMuonSF(*sf_muon, false, false, trig_exp_med.Data());
         }
         
         delete sf_muon;
@@ -1118,10 +1136,12 @@ void SusyNtMaker::storeMuon(const xAOD::Muon &in)
                     trig_exp_med = "HLT_mu24_imedium";
             }
             if(m_run_oneST) {
-                sf_trig[MuonId::Medium] = m_susyObj[m_eleIDDefault]->GetTotalMuonSF(*sf_muon, false, false, trig_exp_med.Data());
+                sf_trig[MuonId::Medium] = m_susyObj[m_eleIDDefault]->GetTotalMuonTriggerSF(*sf_muon, static_cast<string>(trig_exp_med.Data()));
+                //sf_trig[MuonId::Medium] = m_susyObj[m_eleIDDefault]->GetTotalMuonSF(*sf_muon, false, false, trig_exp_med.Data());
             }
             else {
-                sf_trig[MuonId::Medium] = m_susyObj[SusyObjId::muoMedium]->GetTotalMuonSF(*sf_muon, false, false, trig_exp_med.Data());
+                sf_trig[MuonId::Medium] = m_susyObj[SusyObjId::muoMedium]->GetTotalMuonTriggerSF(*sf_muon, static_cast<string>(trig_exp_med.Data()));
+                //sf_trig[MuonId::Medium] = m_susyObj[SusyObjId::muoMedium]->GetTotalMuonSF(*sf_muon, false, false, trig_exp_med.Data());
             }
             delete sf_muon;
             delete sf_muon_aux;
