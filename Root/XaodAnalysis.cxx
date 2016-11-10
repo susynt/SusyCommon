@@ -356,7 +356,7 @@ XaodAnalysis& XaodAnalysis::initSusyTools()
         m_susyObj[susyObjId]->setProperty("PRWConfigFiles", prwFiles);
         // data luminosity profile
         std::vector<std::string> lumicalcFiles;
-        lumicalcFiles.push_back(m_data_dir+"SusyCommon/ilumicalc_histograms_None_297730-306451_OflLumi-13TeV-005.root"); // data16: updated Sept 15 2016 with GRL v82-pro20-12 (18.857 fb-1)
+        lumicalcFiles.push_back(m_data_dir+"SusyCommon/ilumicalc_histograms_None_297730-311481_OflLumi-13TeV-005.root"); // data16: updated Nov 10 2016 with GRL v83-pro20-15 (33.3 fb-1)
         lumicalcFiles.push_back(m_data_dir+"SusyCommon/ilumicalc_histograms_None_276262-284484.root"); // data15: updated with GRL v75
         m_susyObj[susyObjId]->setProperty("PRWLumiCalcFiles", lumicalcFiles); 
 
@@ -475,7 +475,7 @@ void XaodAnalysis::initPileupTool()
              << "Inconsistent MC options when setting up PRW config! Exiting." << endl;
         exit(1);
     }
-    lumicalcFiles.push_back(m_data_dir+"SusyCommon/ilumicalc_histograms_None_297730-306451_OflLumi-13TeV-005.root"); // data16: updated Sept 15 2016 with GRL v82-pro20-12 (18.857 fb-1)
+    lumicalcFiles.push_back(m_data_dir+"SusyCommon/ilumicalc_histograms_None_297730-311481_OflLumi-13TeV-005.root"); // data16: updated Nov 10 2016 with GRL v82-pro20-12 (33.3 fb-1)
     lumicalcFiles.push_back(m_data_dir+"SusyCommon/ilumicalc_histograms_None_276262-284484.root"); // data15: updated with GRL v79
 
 
@@ -492,9 +492,9 @@ void XaodAnalysis::initPileupTool()
     CHECK(m_pileupReweightingTool->setProperty("ConfigFiles", prwFiles));
     CHECK(m_pileupReweightingTool->setProperty("LumiCalcFiles", lumicalcFiles));
     CHECK(m_pileupReweightingTool->setProperty("DefaultChannel", 410000));
-    CHECK(m_pileupReweightingTool->setProperty("DataScaleFactor",     1./ 1.16));
+    CHECK(m_pileupReweightingTool->setProperty("DataScaleFactor",     1./ 1.09));
     CHECK(m_pileupReweightingTool->setProperty("DataScaleFactorUP",   1.));
-    CHECK(m_pileupReweightingTool->setProperty("DataScaleFactorDOWN", 1./ 1.23));
+    CHECK(m_pileupReweightingTool->setProperty("DataScaleFactorDOWN", 1./ 1.18));
 
     CHECK( m_pileupReweightingTool->initialize() );
 
@@ -2288,7 +2288,7 @@ std::string XaodAnalysis::defaultGrlFile()
         grl_file = "$ROOTCOREBIN/data/SusyCommon/data15_13TeV.periodAllYear_DetStatus-v79-repro20-02_DQDefects-00-02-02_PHYS_StandardGRL_All_Good_25ns.xml";
     }
     else if(m_isData16) {
-        grl_file = "$ROOTCOREBIN/data/SusyCommon/data16_13TeV.periodAllYear_DetStatus-v82-pro20-12_DQDefects-00-02-04_PHYS_StandardGRL_All_Good_25ns.xml";
+        grl_file = "$ROOTCOREBIN/data/SusyCommon/data16_13TeV.periodAllYear_DetStatus-v83-pro20-15_DQDefects-00-02-04_PHYS_StandardGRL_All_Good_25ns.xml"; 
     }
     else {
         cout << "XaodAnalysis::defaultGrlFile    ERROR Inconsistent data flags. Neither \"m_isData15\" nor \"m_isData15\" flags are set!" << endl;
