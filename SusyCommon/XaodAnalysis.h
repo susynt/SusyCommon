@@ -50,6 +50,7 @@
 #include "ElectronEfficiencyCorrection/AsgElectronEfficiencyCorrectionTool.h"
 #include "ElectronPhotonSelectorTools/AsgElectronLikelihoodTool.h"
 #include "ElectronPhotonSelectorTools/AsgPhotonIsEMSelector.h"
+class AsgElectronChargeFlipTaggerTool;
 #include "PileupReweighting/PileupReweightingTool.h"
 #include "AsgTools/ToolHandle.h"
 #include "MuonEfficiencyCorrections/MuonEfficiencyScaleFactors.h"
@@ -129,6 +130,7 @@ namespace Susy {
     void          initPileupTool();
     void          initJVTTool();
     void          initElectronTools(); 
+    void          initChargeFlipTagger();
     void          initPhotonTools();
     void          initMuonTools(); 
     void          initTauTools(); 
@@ -613,6 +615,8 @@ namespace Susy {
     AsgElectronLikelihoodTool *m_elecSelLikelihoodLooseBLayer;
     AsgElectronLikelihoodTool *m_elecSelLikelihoodMedium;
     AsgElectronLikelihoodTool *m_elecSelLikelihoodTight;
+
+    AsgElectronChargeFlipTaggerTool* m_chargeFlipTagger;
 
     // Photon selection tools
     AsgPhotonIsEMSelector *m_photonSelLoose;

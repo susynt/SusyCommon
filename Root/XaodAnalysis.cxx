@@ -10,6 +10,8 @@
 
 #include "SusyNtuple/RecoTruthClassification.h"
 
+#include "ElectronPhotonSelectorTools/AsgElectronChargeFlipTaggerTool.h"
+
 #include "TChainElement.h"
 #include "TDirectory.h"
 #include "TFile.h"
@@ -92,6 +94,7 @@ XaodAnalysis::XaodAnalysis() :
     m_elecSelLikelihoodLooseBLayer(0),
     m_elecSelLikelihoodMedium(0),
     m_elecSelLikelihoodTight(0),
+    m_chargeFlipTagger(0),
     m_photonSelLoose(0),
     m_photonSelTight(0),
 	m_pileupReweightingTool(0),
@@ -269,6 +272,7 @@ void XaodAnalysis::Terminate()
     delete m_elecSelLikelihoodLooseBLayer;
     delete m_elecSelLikelihoodMedium;
     delete m_elecSelLikelihoodTight;
+    delete m_chargeFlipTagger;
     delete m_photonSelLoose;
     delete m_photonSelTight;
 
@@ -415,6 +419,7 @@ XaodAnalysis& XaodAnalysis::initLocalTools()
 
     //initPileupTool(); // this is now done in SUSYTools (as of ST-00-06-15)
     initElectronTools();
+    initChargeFlipTagger();
     initPhotonTools();
     initMuonTools();
     initTauTools();
@@ -539,6 +544,20 @@ void XaodAnalysis::initElectronTools()
     m_elecSelLikelihoodTight = new AsgElectronLikelihoodTool("AsgElectronLikelihoodToolTight");
     CHECK( m_elecSelLikelihoodTight->setProperty("WorkingPoint", wp_tight) );
     CHECK( m_elecSelLikelihoodTight->initialize() );
+
+}
+//----------------------------------------------------------
+void XaodAnalysis::initChargeFlipTagger()
+{
+    m_chargeFlipTagger = new AsgElectronChargeFlipTaggerTool("ChargeFlipTaggerTool");
+
+    m_chargeFlipTagger->msg().setLevel( MSG::FATAL );
+    std::string trainingfile = "$ROOTCOREBIN/data/SusyCommon/CFT_tight.root";
+
+    float BDT_OP = 0;
+    CHECK( m_chargeFlipTagger->setProperty("TrainingFile",trainingfile) );
+    CHECK( m_chargeFlipTagger->setProperty("CutOnBDT",BDT_OP) );
+    CHECK( m_chargeFlipTagger->initialize() );
 
 }
 //----------------------------------------------------------

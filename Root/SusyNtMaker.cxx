@@ -13,6 +13,7 @@
 #include "SusyNtuple/vec_utils.h"
 #include "SusyNtuple/RecoTruthClassification.h"
 #include "SusyCommon/ss3l_chargeflip.h"
+#include "ElectronPhotonSelectorTools/AsgElectronChargeFlipTaggerTool.h"
 
 // SUSYTools
 #include "SUSYTools/SUSYCrossSection.h"
@@ -621,6 +622,9 @@ void SusyNtMaker::storeElectron(const xAOD::Electron &in)
         // crash p1874 out.isChargeFlip  = m_isMC ? isChargeFlip(in.charge(),truthElectronCharge(in)) : false;
         out.truthCharge =  truthEle ? truthEle->charge() : 0;
         out.ss3lChargeFlip = in.auxdataConst<int>("chargeFlip");
+
+        out.passChargeFlipTagger = m_chargeFlipTagger->accept(in);
+        out.chargeFlipBDT = m_chargeFlipTagger->calculate(&in, -99); // mu = -99 means will grab mu from EventInfo
 
         // Electron bkg origins
         out.mcBkgMotherPdgId = in.auxdata<int>("bkgMotherPdgId");
