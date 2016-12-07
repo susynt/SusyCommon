@@ -1065,6 +1065,10 @@ void SusyNtMaker::storeMuon(const xAOD::Muon &in)
                 else if(ourSys == NtSys::MUON_ISO_STAT_DN)        out.errIso_stat_dn[i] = sf[i] - out.muoEffSF[i];
                 else if(ourSys == NtSys::MUON_ISO_SYS_UP)         out.errIso_syst_up[i] = sf[i] - out.muoEffSF[i];
                 else if(ourSys == NtSys::MUON_ISO_SYS_DN)         out.errIso_syst_dn[i] = sf[i] - out.muoEffSF[i];
+                else if(ourSys == NtSys::MUON_TTVA_STAT_UP)       out.errTTVA_stat_up[i] = sf[i] - out.muoEffSF[i];
+                else if(ourSys == NtSys::MUON_TTVA_STAT_DN)       out.errTTVA_stat_dn[i] = sf[i] - out.muoEffSF[i];
+                else if(ourSys == NtSys::MUON_TTVA_SYS_UP)        out.errTTVA_syst_up[i] = sf[i] - out.muoEffSF[i];
+                else if(ourSys == NtSys::MUON_TTVA_SYS_DN)        out.errTTVA_syst_dn[i] = sf[i] - out.muoEffSF[i];
 
 /*
                 if(i==1 || i==2) {
@@ -1078,6 +1082,8 @@ void SusyNtMaker::storeMuon(const xAOD::Muon &in)
                 cout << "    eff_syst_lowpt : " << out.errEffSF_syst_lowpt_up[i] << "  " << out.errEffSF_syst_lowpt_dn[i] << endl;
                 cout << "    eff_iso_stat   : " << out.errIso_stat_up[i] << "  " << out.errIso_stat_dn[i] << endl;
                 cout << "    eff_iso_syst   : " << out.errIso_syst_up[i] << "  " << out.errIso_syst_dn[i] << endl;
+                cout << "    eff_ttva_stat  : " << out.errTTVA_stat_up[i]<< "  " << out.errTTVA_stat_dn[i] << endl;
+                cout << "    eff_ttva_syst  : " << out.errTTVA_syst_up[i]<< "  " << out.errTTVA_syst_dn[i] << endl;
                 }
 */
             }
@@ -1099,6 +1105,8 @@ void SusyNtMaker::storeMuon(const xAOD::Muon &in)
             out.errEffSF_syst_lowpt_up[i] = out.errEffSF_syst_lowpt_dn[i] = 0;
             out.errIso_stat_up[i] = out.errIso_stat_dn[i] = 0;
             out.errIso_syst_up[i] = out.errIso_syst_dn[i] = 0;
+            out.errTTVA_stat_up[i] = out.errTTVA_stat_dn[i] = 0;
+            out.errTTVA_syst_up[i] = out.errTTVA_syst_dn[i] = 0;
         }
     }
     /// do trigger SF variations here

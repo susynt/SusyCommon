@@ -108,8 +108,8 @@ SusyNtSys CPsys2sys(const std::string &s)
   else if( s== "FT_EFF_Light_systematics__1up" )           r = FT_EFF_Light_systematics_UP;
   else if( s== "FT_EFF_extrapolation__1down" )             r = FT_EFF_extrapolation_DN;
   else if( s== "FT_EFF_extrapolation__1up" )               r = FT_EFF_extrapolation_UP;
-  else if( s== "FT_EFF_extrapolation from charm__1down" )  r = FT_EFF_extrapolation_charm_DN;
-  else if( s== "FT_EFF_extrapolation from charm__1up" )    r = FT_EFF_extrapolation_charm_UP;
+  else if( s== "FT_EFF_extrapolation_from_charm__1down" )  r = FT_EFF_extrapolation_charm_DN;
+  else if( s== "FT_EFF_extrapolation_from_charm__1up" )    r = FT_EFF_extrapolation_charm_UP;
 /*
   else if( s== "FT_Eigen_B_0__1down" )                     r = FT_Eigen_B_0_DN;
   else if( s== "FT_Eigen_B_0__1up" )                       r = FT_Eigen_B_0_UP;
@@ -171,8 +171,8 @@ SusyNtSys CPsys2sys(const std::string &s)
   else if( s== "JET_GroupedNP_2__1down" )                  r = JET_GroupedNP_2_DN;
   else if( s== "JET_GroupedNP_3__1up" )                    r = JET_GroupedNP_3_UP;
   else if( s== "JET_GroupedNP_3__1down" )                  r = JET_GroupedNP_3_DN;
-  else if( s== "JvtEfficiencyUp" )                         r = JET_JVTEff_UP;
-  else if( s== "JvtEfficiencyDown" )                       r = JET_JVTEff_DN;
+  else if( s== "JET_JvtEfficiency__1up" )                  r = JET_JVTEff_UP;
+  else if( s== "JET_JvtEfficiency__1down" )                r = JET_JVTEff_DN;
 /*
   else if( s== "JET_BJES_Response__1up" )                  r = JET_BJES_Response_UP;
   else if( s== "JET_BJES_Response__1down" )                r = JET_BJES_Response_DN;
@@ -242,6 +242,10 @@ SusyNtSys CPsys2sys(const std::string &s)
   else if( s== "MUONS_MS__1up" )                           r = MUONS_MS_UP;
   else if( s== "MUONS_SCALE__1down" )                      r = MUONS_SCALE_DN;
   else if( s== "MUONS_SCALE__1up" )                        r = MUONS_SCALE_UP;
+  else if( s== "MUON_TTVA_STAT__1down" )                   r = MUON_TTVA_STAT_DN;
+  else if( s== "MUON_TTVA_STAT__1up" )                     r = MUON_TTVA_STAT_UP;
+  else if( s== "MUON_TTVA_SYS__1down" )                    r = MUON_TTVA_SYS_DN;
+  else if( s== "MUON_TTVA_SYS__1up" )                      r = MUON_TTVA_SYS_UP; 
 /*
   else if( s== "PH_SCALE_CONVEFFICIENCY__1down" )          r = PH_SCALE_CONVEFFICIENCY_DN;
   else if( s== "PH_SCALE_CONVEFFICIENCY__1up" )            r = PH_SCALE_CONVEFFICIENCY_UP;
