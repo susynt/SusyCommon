@@ -50,7 +50,7 @@
 #include "ElectronEfficiencyCorrection/AsgElectronEfficiencyCorrectionTool.h"
 #include "ElectronPhotonSelectorTools/AsgElectronLikelihoodTool.h"
 #include "ElectronPhotonSelectorTools/AsgPhotonIsEMSelector.h"
-class AsgElectronChargeFlipTaggerTool;
+class AsgElectronChargeIDSelectorTool;
 #include "PileupReweighting/PileupReweightingTool.h"
 #include "AsgTools/ToolHandle.h"
 #include "MuonEfficiencyCorrections/MuonEfficiencyScaleFactors.h"
@@ -254,6 +254,8 @@ namespace Susy {
     TBits matchMuonTriggers(const xAOD::Muon& in); 
     TBits matchElectronTriggers(const xAOD::Electron& in);
     bool matchMuonTrigger(const TLorentzVector &lv, std::vector<int>* trigBools);
+    std::map<std::string, std::vector<unsigned int>> getDiMuTrigMap(const xAOD::Muon &in, const xAOD::MuonContainer &muons);
+
     void matchTauTriggers();
     bool matchTauTrigger(const TLorentzVector &lv, std::vector<int>* trigBools);
 
@@ -616,7 +618,7 @@ namespace Susy {
     AsgElectronLikelihoodTool *m_elecSelLikelihoodMedium;
     AsgElectronLikelihoodTool *m_elecSelLikelihoodTight;
 
-    AsgElectronChargeFlipTaggerTool* m_chargeFlipTagger;
+    AsgElectronChargeIDSelectorTool* m_chargeFlipTagger;
 
     // Photon selection tools
     AsgPhotonIsEMSelector *m_photonSelLoose;

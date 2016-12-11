@@ -10,7 +10,7 @@
 
 #include "SusyNtuple/RecoTruthClassification.h"
 
-#include "ElectronPhotonSelectorTools/AsgElectronChargeFlipTaggerTool.h"
+#include "ElectronPhotonSelectorTools/AsgElectronChargeIDSelectorTool.h"
 
 #include "TChainElement.h"
 #include "TDirectory.h"
@@ -549,15 +549,16 @@ void XaodAnalysis::initElectronTools()
 //----------------------------------------------------------
 void XaodAnalysis::initChargeFlipTagger()
 {
-    m_chargeFlipTagger = new AsgElectronChargeFlipTaggerTool("ChargeFlipTaggerTool");
+    m_chargeFlipTagger = new AsgElectronChargeIDSelectorTool("AsgElectronChargeIDSelectorTool");
 
-    m_chargeFlipTagger->msg().setLevel( MSG::FATAL );
-    std::string trainingfile = "$ROOTCOREBIN/data/SusyCommon/CFT_tight.root";
+    //m_chargeFlipTagger->msg().setLevel( MSG::ERROR );
+    ////std::string trainingfile = "$ROOTCOREBIN/data/SusyCommon/CFT_tight.root";
+    //std::string trainingfile = "$ROOTCOREBIN/../ElectronPhotonSelectorTools/data/ECIDS_20161125for2017Moriond.root";
 
-    float BDT_OP = 0;
-    CHECK( m_chargeFlipTagger->setProperty("TrainingFile",trainingfile) );
-    CHECK( m_chargeFlipTagger->setProperty("CutOnBDT",BDT_OP) );
-    CHECK( m_chargeFlipTagger->initialize() );
+    //float BDT_OP = 0;
+    //CHECK( m_chargeFlipTagger->setProperty("TrainingFile",trainingfile) );
+    //CHECK( m_chargeFlipTagger->setProperty("CutOnBDT",BDT_OP) );
+    //CHECK( m_chargeFlipTagger->initialize() );
 
 }
 //----------------------------------------------------------
@@ -1502,6 +1503,42 @@ TBits XaodAnalysis::matchMuonTriggers(const xAOD::Muon &in)
             //if(m_susyObj[m_eleIDDefault]->IsTrigMatched(&in, trigs[iTrig])) { cout << "     > muon match to : " << trigs[iTrig] << endl;  muoTrigBits.SetBitNumber(iTrig, true); }
     }
     return muoTrigBits;
+}
+/*--------------------------------------------------------------------------------*/
+// Dimuon trigger matching
+/*--------------------------------------------------------------------------------*/
+std::map<std::string, std::vector<unsigned int>> XaodAnalysis::getDiMuTrigMap(const xAOD::Muon &in, const xAOD::MuonContainer &muons)
+{
+    if (m_dbg >= 10) cout << "XaodAnalysis::getDiMuTrigMap\n";
+
+    std::map<std::string, std::vector<unsigned int>> diMuTrigMap;
+
+    std::vector<std::string> trigs = XaodAnalysis::xaodTriggers();
+    for(unsigned int iTrig=0; iTrig<trigs.size(); ++iTrig){
+        string trig = trigs[iTrig];
+
+        // make lowercase to simplify searching
+        string t = trig;
+        std::transform(t.begin(), t.end(), t.begin(), ::tolower);
+
+        // get dimuon triggers (two instances of 'mu')
+        int count = 0;
+        string token = "mu";
+        for (size_t offset = t.find(token); offset != std::string::npos; offset = t.find(token, offset + token.length())) {
+            ++count;
+        }
+
+        if (count >= 2) {
+            diMuTrigMap[trig] = {};
+            for (unsigned int i = 0; i < muons.size(); ++i) {
+                if (m_susyObj[m_eleIDDefault]->IsTrigMatched(&in, muons[i], trig)) {
+                    diMuTrigMap[trig].push_back(i);
+                }
+            }
+        }
+    }
+
+    return diMuTrigMap;
 }
 /*--------------------------------------------------------------------------------*/
 // Electron trigger matching
