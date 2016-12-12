@@ -1517,14 +1517,11 @@ std::map<std::string, std::vector<unsigned int>> XaodAnalysis::getDiMuTrigMap(co
     for(unsigned int iTrig=0; iTrig<trigs.size(); ++iTrig){
         string trig = trigs[iTrig];
 
-        // make lowercase to simplify searching
-        string t = trig;
-        std::transform(t.begin(), t.end(), t.begin(), ::tolower);
-
-        // get dimuon triggers (two instances of 'mu')
+        // currently: dimuon trigger iff two instances of *lowercase* 'mu'
+        // HLT_mu20_iloose_L1MU15 (e.g.) is a *single-muon* trigger
         int count = 0;
         string token = "mu";
-        for (size_t offset = t.find(token); offset != std::string::npos; offset = t.find(token, offset + token.length())) {
+        for (size_t offset = trig.find(token); offset != std::string::npos; offset = trig.find(token, offset + token.length())) {
             ++count;
         }
 
