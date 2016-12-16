@@ -10,7 +10,7 @@
 
 #include "SusyNtuple/RecoTruthClassification.h"
 
-#include "ElectronPhotonSelectorTools/AsgElectronChargeFlipTaggerTool.h"
+#include "ElectronPhotonSelectorTools/AsgElectronChargeIDSelectorTool.h"
 
 #include "TChainElement.h"
 #include "TDirectory.h"
@@ -94,7 +94,7 @@ XaodAnalysis::XaodAnalysis() :
     m_elecSelLikelihoodLooseBLayer(0),
     m_elecSelLikelihoodMedium(0),
     m_elecSelLikelihoodTight(0),
-    m_chargeFlipTagger(0),
+    m_electronChargeIDTool(0),
     m_photonSelLoose(0),
     m_photonSelTight(0),
 	m_pileupReweightingTool(0),
@@ -272,7 +272,7 @@ void XaodAnalysis::Terminate()
     delete m_elecSelLikelihoodLooseBLayer;
     delete m_elecSelLikelihoodMedium;
     delete m_elecSelLikelihoodTight;
-    delete m_chargeFlipTagger;
+    delete m_electronChargeIDTool;
     delete m_photonSelLoose;
     delete m_photonSelTight;
 
@@ -549,16 +549,23 @@ void XaodAnalysis::initElectronTools()
 //----------------------------------------------------------
 void XaodAnalysis::initChargeFlipTagger()
 {
-    m_chargeFlipTagger = new AsgElectronChargeFlipTaggerTool("ChargeFlipTaggerTool");
 
-    m_chargeFlipTagger->msg().setLevel( MSG::FATAL );
-    std::string trainingfile = "$ROOTCOREBIN/data/SusyCommon/CFT_tight.root";
+    // dantri -- poor tool development that parses the tool name!
+    std::string toolName = "ElectronChargeIDTool_loose"; // CAUTIOn: The name should contain one of these following strings: recon, loose, medium tight
+    m_electronChargeIDTool = new AsgElectronChargeIDSelectorTool(toolName);
+    std::string trainingfile = "ElectronPhotonSelectorTools/ChargeID/ECIDS_20161125for2017Moriond.root";
 
-    float BDT_OP = 0;
-    CHECK( m_chargeFlipTagger->setProperty("TrainingFile",trainingfile) );
-    CHECK( m_chargeFlipTagger->setProperty("CutOnBDT",BDT_OP) );
-    CHECK( m_chargeFlipTagger->initialize() );
+    float BDT_OP=0; //Set your operating point with the table above.
+    bool init = true;
+    init = init && m_electronChargeIDTool->setProperty("TrainingFile",trainingfile);
+    init = init && m_electronChargeIDTool->setProperty("CutOnBDT",BDT_OP);
+    init = init && m_electronChargeIDTool->initialize();
 
+    if(!init) {
+        delete m_electronChargeIDTool;
+        m_electronChargeIDTool = 0;
+        cout << "XaodAnalysis::initChargeFlipTagger    WARNING Failed to initialize electron charge ID tool!" << endl;
+    }
 }
 //----------------------------------------------------------
 void XaodAnalysis::initPhotonTools()
