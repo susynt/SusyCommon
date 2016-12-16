@@ -346,7 +346,7 @@ XaodAnalysis& XaodAnalysis::initSusyTools()
             prwFiles.push_back("dev/SUSYTools/merged_prw_mc15b.root");
         }
         else if(!m_isMC15b && m_isMC15c) {
-            prwFiles.push_back("dev/SUSYTools/merged_prw_mc15c_July27_afterFix.root");
+            prwFiles.push_back("dev/SUSYTools/merged_prw_mc15c_latest.root");
         }
         else {
             cout << "XaodAnalysis::initSusyTools    "
@@ -468,7 +468,7 @@ void XaodAnalysis::initPileupTool()
         prwFiles.push_back("dev/SUSYTools/merged_prw_mc15b.root");
     }
     else if(!m_isMC15b && m_isMC15c) {
-        prwFiles.push_back("dev/SUSYTools/merged_prw_mc15c_July27_afterFix.root");
+        prwFiles.push_back("dev/SUSYTools/merged_prw_mc15c_latest.root");
     }
     else {
         cout << "XaodAnalysis::initPileupTool    "
