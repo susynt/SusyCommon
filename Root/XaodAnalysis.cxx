@@ -550,7 +550,7 @@ void XaodAnalysis::initElectronTools()
 void XaodAnalysis::initChargeFlipTagger()
 {
 
-    // dantri -- poor tool development that parses the tool name!
+    // dantrim -- poor tool development that parses the tool name!
     std::string toolName = "ElectronChargeIDTool_loose"; // CAUTIOn: The name should contain one of these following strings: recon, loose, medium tight
     m_electronChargeIDTool = new AsgElectronChargeIDSelectorTool(toolName);
     std::string trainingfile = "ElectronPhotonSelectorTools/ChargeID/ECIDS_20161125for2017Moriond.root";
