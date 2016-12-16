@@ -236,12 +236,12 @@ SusyNtSys CPsys2sys(const std::string &s)
   else if( s== "MUON_ISO_STAT__1up" )                      r = MUON_ISO_STAT_UP;
   else if( s== "MUON_ISO_SYS__1down" )                     r = MUON_ISO_SYS_DN;
   else if( s== "MUON_ISO_SYS__1up" )                       r = MUON_ISO_SYS_UP;
-  else if( s== "MUONS_ID__1down" )                         r = MUONS_ID_DN;
-  else if( s== "MUONS_ID__1up" )                           r = MUONS_ID_UP;
-  else if( s== "MUONS_MS__1down" )                         r = MUONS_MS_DN;
-  else if( s== "MUONS_MS__1up" )                           r = MUONS_MS_UP;
-  else if( s== "MUONS_SCALE__1down" )                      r = MUONS_SCALE_DN;
-  else if( s== "MUONS_SCALE__1up" )                        r = MUONS_SCALE_UP;
+  else if( s== "MUON_ID__1down" )                          r = MUON_ID_DN;
+  else if( s== "MUON_ID__1up" )                            r = MUON_ID_UP;
+  else if( s== "MUON_MS__1down" )                          r = MUON_MS_DN;
+  else if( s== "MUON_MS__1up" )                            r = MUON_MS_UP;
+  else if( s== "MUON_SCALE__1down" )                       r = MUON_SCALE_DN;
+  else if( s== "MUON_SCALE__1up" )                         r = MUON_SCALE_UP;
   else if( s== "MUON_TTVA_STAT__1down" )                   r = MUON_TTVA_STAT_DN;
   else if( s== "MUON_TTVA_STAT__1up" )                     r = MUON_TTVA_STAT_UP;
   else if( s== "MUON_TTVA_SYS__1down" )                    r = MUON_TTVA_SYS_DN;

@@ -668,6 +668,7 @@ void SusyNtMaker::storeElectron(const xAOD::Electron &in)
             } // i 
             vector<float> sf;
             sf.assign(ElectronId::ElectronIdInvalid, 1);
+
             if(m_run_oneST) {
                 sf[ElectronId::TightLLH]  = m_susyObj[m_eleIDDefault] ->GetSignalElecSF(in, recoSF, idSF, trigSF, isoSF);
                 sf[ElectronId::MediumLLH] = m_susyObj[m_eleIDDefault]->GetSignalElecSF(in, recoSF, idSF, trigSF, isoSF);
@@ -678,14 +679,23 @@ void SusyNtMaker::storeElectron(const xAOD::Electron &in)
                 sf[ElectronId::MediumLLH] = m_susyObj[SusyObjId::eleMediumLLH]->GetSignalElecSF(in, recoSF, idSF, trigSF, isoSF);
             }
 
+            std::string ele_trig;
+            std::string ele_trig15 = "e24_lhmedium_L1EM20VH_OR_e60_lhmedium_OR_e120_lhloose";
+            ele_trig = ele_trig15;
+            std::string ele_trig16 = "e26_lhtight_nod0_ivarloose_OR_e60_lhmedium_nod0_OR_e140_lhloose_nod0";
+            ele_trig16 = ele_trig15;
+
             vector<float> sf_trig;
             sf_trig.assign(ElectronId::ElectronIdInvalid, 1);
-            std::string ele_trig = "e24_lhmedium_iloose_L1EM18VH";
             if(m_run_oneST) {
+                if(m_susyObj[m_eleIDDefault]->treatAsYear()==2016)
+                    ele_trig = ele_trig16;
                 sf_trig[ElectronId::TightLLH]  = m_susyObj[m_eleIDDefault] ->GetSignalElecSF(in, false, false, true, false, ele_trig);
                 sf_trig[ElectronId::MediumLLH] = m_susyObj[m_eleIDDefault]->GetSignalElecSF(in, false, false, true, false, ele_trig);
             }
             else {
+                if(m_susyObj[m_eleIDDefault]->treatAsYear()==2016)
+                    ele_trig = ele_trig16;
                 sf_trig[ElectronId::TightLLH]  = m_susyObj[SusyObjId::eleTightLLH] ->GetSignalElecSF(in, false, false, true, false, ele_trig);
                 sf_trig[ElectronId::MediumLLH] = m_susyObj[SusyObjId::eleMediumLLH]->GetSignalElecSF(in, false, false, true, false, ele_trig);
             } 
@@ -2019,12 +2029,12 @@ void SusyNtMaker::storeMuonKinSys(ST::SystInfo sysInfo, SusyNtSys sys)
         //Calculate systematic SF: shift/nom
         float sf = mu->e() / mu_nom->e();
         if(m_dbg>=5) cout << "Muo SF " << sf << endl;
-        if(sys == NtSys::MUONS_MS_UP)      mu_susyNt->ms_up = sf;
-        else if(sys == NtSys::MUONS_MS_DN) mu_susyNt->ms_dn = sf;
-        else if(sys == NtSys::MUONS_ID_UP) mu_susyNt->id_up = sf;
-        else if(sys == NtSys::MUONS_ID_DN) mu_susyNt->id_dn = sf;
-        else if(sys == NtSys::MUONS_SCALE_UP) mu_susyNt->scale_up = sf;
-        else if(sys == NtSys::MUONS_SCALE_DN) mu_susyNt->scale_dn = sf;
+        if(sys == NtSys::MUON_MS_UP)      mu_susyNt->ms_up = sf;
+        else if(sys == NtSys::MUON_MS_DN) mu_susyNt->ms_dn = sf;
+        else if(sys == NtSys::MUON_ID_UP) mu_susyNt->id_up = sf;
+        else if(sys == NtSys::MUON_ID_DN) mu_susyNt->id_dn = sf;
+        else if(sys == NtSys::MUON_SCALE_UP) mu_susyNt->scale_up = sf;
+        else if(sys == NtSys::MUON_SCALE_DN) mu_susyNt->scale_dn = sf;
     }
 }
 
