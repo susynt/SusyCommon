@@ -406,7 +406,7 @@ void SusyNtMaker::fillMuonVars()
     xAOD::MuonContainer* muons = XaodAnalysis::xaodMuons(systInfoList[0]);
     if(muons) {
         for(auto &i : m_preMuons){
-            storeMuon(*(muons->at(i)));
+            storeMuon(*(muons->at(i)), *muons);
         }
     }
     else {
@@ -814,7 +814,7 @@ void SusyNtMaker::storeElectron(const xAOD::Electron &in)
 //     return result;
 // }
 //----------------------------------------------------------
-void SusyNtMaker::storeMuon(const xAOD::Muon &in)
+void SusyNtMaker::storeMuon(const xAOD::Muon &in, const xAOD::MuonContainer &muons)
 {
     if(m_dbg>=15) cout<<"SusyNtMaker::storeMuon pT "<< in.pt()*MeV2GeV <<endl;
     const xAOD::EventInfo* eventinfo = XaodAnalysis::xaodEventInfo();
@@ -987,6 +987,7 @@ void SusyNtMaker::storeMuon(const xAOD::Muon &in)
 //        cout << "\t passed trigger " << trigger << "? " << (bit ? "yes" : "no") << endl;
 //    }
 //    cout << endl;
+    out.diMuTrigMap = getDiMuTrigMap(in, muons);
 
     //////////////////////////////////////
     // Lepton SF
@@ -1824,6 +1825,7 @@ void SusyNtMaker::doSystematic()
     }
     cout << endl;
 */
+
     for(const auto& sysInfo : systInfoList){
         const CP::SystematicSet& sys = sysInfo.systset;
         if(m_dbg>=5) std::cout << ">>>> Working on variation: \"" <<(sys.name()).c_str() << "\" <<<<<<" << std::endl;
@@ -2021,7 +2023,7 @@ void SusyNtMaker::storeMuonKinSys(ST::SystInfo sysInfo, SusyNtSys sys)
         if(mu_susyNt == NULL){
             if(m_dbg>=5) cout << " Muon not found - adding to susyNt" << endl;
             mu_nom = muons_nom->at(iMu);//assume order is preserved
-            storeMuon(*mu_nom);//this add the mu at the end... 
+            storeMuon(*mu_nom, *muons);//this add the mu at the end... 
             m_preMuons_nom.push_back(iMu);
             mu_susyNt = & m_susyNt.muo()->back(); //get the newly inserted mument
         }

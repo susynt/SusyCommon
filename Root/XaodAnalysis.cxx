@@ -1511,6 +1511,48 @@ TBits XaodAnalysis::matchMuonTriggers(const xAOD::Muon &in)
     return muoTrigBits;
 }
 /*--------------------------------------------------------------------------------*/
+// Dimuon trigger matching
+/*--------------------------------------------------------------------------------*/
+std::map<std::string, std::vector<unsigned int>> XaodAnalysis::getDiMuTrigMap(const xAOD::Muon &in, const xAOD::MuonContainer &muons)
+{
+    if (m_dbg >= 10) cout << "XaodAnalysis::getDiMuTrigMap\n";
+
+    std::map<std::string, std::vector<unsigned int>> diMuTrigMap;
+
+    std::vector<std::string> trigs = XaodAnalysis::xaodTriggers();
+    for(unsigned int iTrig=0; iTrig<trigs.size(); ++iTrig){
+        string trig = trigs[iTrig];
+
+        // currently: dimuon trigger iff two instances of *lowercase* 'mu'
+        // HLT_mu20_iloose_L1MU15 (e.g.) is a *single-muon* trigger
+        int count = 0;
+        string token = "mu";
+        for (size_t offset = trig.find(token); offset != std::string::npos; offset = trig.find(token, offset + token.length())) {
+            ++count;
+        }
+
+        if (count >= 2) {
+            diMuTrigMap[trig] = {};
+            //for (unsigned int i = 0; i < muons.size(); ++i) {
+            //    if (m_susyObj[m_eleIDDefault]->IsTrigMatched(&in, muons[i], trig)) {
+            //        diMuTrigMap[trig].push_back(i);
+            //    }
+            //} // i
+
+            // dantrim -- loop over indices of pre muons container, since pre-muons are the ones
+            //              that will get stored in the output susyNt file and whose indices
+            //              we store
+            for(auto &i : m_preMuons) {
+                if (m_susyObj[m_eleIDDefault]->IsTrigMatched(&in, muons.at(i), trig)) {
+                    diMuTrigMap[trig].push_back(i);
+                }
+            } // i
+        } // >=2
+    } // iTrig
+
+    return diMuTrigMap;
+}
+/*--------------------------------------------------------------------------------*/
 // Electron trigger matching
 /*--------------------------------------------------------------------------------*/
 TBits XaodAnalysis::matchElectronTriggers(const xAOD::Electron &in)

@@ -254,6 +254,8 @@ namespace Susy {
     TBits matchMuonTriggers(const xAOD::Muon& in); 
     TBits matchElectronTriggers(const xAOD::Electron& in);
     bool matchMuonTrigger(const TLorentzVector &lv, std::vector<int>* trigBools);
+    std::map<std::string, std::vector<unsigned int>> getDiMuTrigMap(const xAOD::Muon &in, const xAOD::MuonContainer &muons);
+
     void matchTauTriggers();
     bool matchTauTrigger(const TLorentzVector &lv, std::vector<int>* trigBools);
 
