@@ -347,6 +347,8 @@ XaodAnalysis& XaodAnalysis::initSusyTools()
         }
         else if(!m_isMC15b && m_isMC15c) {
             prwFiles.push_back("dev/SUSYTools/merged_prw_mc15c_latest.root");
+            // add our signal samples
+            prwFiles.push_back(m_data_dir+"SusyCommon/signal_prw.root");
         }
         else {
             cout << "XaodAnalysis::initSusyTools    "
@@ -469,6 +471,8 @@ void XaodAnalysis::initPileupTool()
     }
     else if(!m_isMC15b && m_isMC15c) {
         prwFiles.push_back("dev/SUSYTools/merged_prw_mc15c_latest.root");
+        // add our signal samples
+        prwFiles.push_back("dev/SusyCommon/signal_prw.root");
     }
     else {
         cout << "XaodAnalysis::initPileupTool    "
