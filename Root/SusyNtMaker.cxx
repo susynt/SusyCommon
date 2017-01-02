@@ -338,7 +338,8 @@ void SusyNtMaker::fillEventVars()
 
     evt->wPileup          = m_isMC ? m_susyObj[m_eleIDDefault]->GetPileupWeight() : 1;
 
-    evt->avgMu            = m_susyObj[m_eleIDDefault]->GetCorrectedAverageInteractionsPerCrossing();
+    evt->avgMu            = m_susyObj[m_eleIDDefault]->GetCorrectedAverageInteractionsPerCrossing(false);
+    evt->avgMuDataSF      = m_susyObj[m_eleIDDefault]->GetCorrectedAverageInteractionsPerCrossing(true);
     //evt->avgMu            = m_isMC ? eventinfo->averageInteractionsPerCrossing() : m_pileupReweightingTool->getLumiBlockMu(*eventinfo);
 
     // Pileup systematic variations, varying data mu up/down and getting the resulting pupw
