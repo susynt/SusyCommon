@@ -44,12 +44,16 @@ using Susy::XaodAnalysis;
         }                                                           \
     } while( false )
 
+#define SET_DUAL_TOOL( TOOLHANDLE, TOOLTYPE, TOOLNAME )             \
+    ASG_SET_ANA_TOOL_TYPE(TOOLHANDLE, TOOLTYPE);                    \
+    TOOLHANDLE.setName(TOOLNAME);                                   \
+
 
 //----------------------------------------------------------
 XaodAnalysis::XaodAnalysis() :
     m_input_chain(0),
     //m_sample(""),
-    m_derivation("Unknown"),
+    //m_derivation("Unknown"),
     m_triggerSet("run2"),
     m_stream(Stream_Unknown),
     m_isDerivation(false), // dantrim event shape
@@ -89,30 +93,33 @@ XaodAnalysis::XaodAnalysis() :
     //m_event(xAOD::TEvent::kAthenaAccess), ///> dantrim April 28 2016 -- to get CutBookkeepers needs kAthenaAccess or kClassAcess
     m_store(),
     m_eleIDDefault(eleTightLLH),
-	m_electronEfficiencySFTool(0),
-    m_elecSelLikelihoodVeryLoose(0),
-    m_elecSelLikelihoodLoose(0),
-    m_elecSelLikelihoodLooseBLayer(0),
-    m_elecSelLikelihoodMedium(0),
-    m_elecSelLikelihoodTight(0),
-    m_electronChargeIDTool(0),
-    m_photonSelLoose(0),
-    m_photonSelTight(0),
+    //handle
+    m_elecSelLikelihoodVeryLoose(""),
+    m_elecSelLikelihoodLoose(""),
+    m_elecSelLikelihoodLooseBLayer(""),
+    m_elecSelLikelihoodMedium(""),
+    m_elecSelLikelihoodTight(""),
+    //m_electronChargeIDTool(0),
+    //handle
+    m_photonSelLoose(""),
+    m_photonSelTight(""),
 	m_pileupReweightingTool(0),
-    m_muonSelectionToolVeryLoose(0),
-    m_muonSelectionToolLoose(0),
-    m_muonSelectionToolMedium(0),
-    m_muonSelectionToolTight(0),
-    m_isoToolGradientLooseTight(0),
-    m_isoToolGradientTightCalo(0),
-    m_isoToolLooseTrackOnlyLoose(0),
-    m_isoToolLoose(0),
-    m_isoToolTight(0),
+    //handle
+    m_muonSelectionToolVeryLoose(""),
+    m_muonSelectionToolLoose(""),
+    m_muonSelectionToolMedium(""),
+    m_muonSelectionToolTight(""),
+    //handle
+    m_isoToolGradientLooseTight(""),
+    m_isoToolGradientTightCalo(""),
+    m_isoToolLooseTrackOnlyLoose(""),
+    m_isoToolLoose(""),
+    m_isoToolTight(""),
 	m_tauTruthMatchingTool(0),
 	m_tauTruthTrackMatchingTool(0),
-    m_tauSelToolLoose(0),
-    m_tauSelToolMedium(0),
-    m_tauSelToolTight(0),
+    m_tauSelToolLoose(""),
+    m_tauSelToolMedium(""),
+    m_tauSelToolTight(""),
     m_polreweight(nullptr),
     m_evtTrigBits(m_nTriggerBits)
 {
@@ -166,8 +173,8 @@ void XaodAnalysis::Init(TTree *tree)
     m_event.readFrom(tree);
     m_isDerivation = XaodAnalysis::isDerivationFromMetaData(tree, verbose);
     m_stream = XaodAnalysis::streamFromSamplename(m_inputContainerName, m_isMC);
-    m_event.getEntry(0);
-    m_derivation = XaodAnalysis::getDerivationTypeInfo(m_event); 
+    //m_event.getEntry(0);
+    //m_derivation = XaodAnalysis::getDerivationTypeInfo(m_event); 
 
     // get the directory for the data/
     char *tmparea=getenv("ROOTCOREBIN");
@@ -269,33 +276,35 @@ void XaodAnalysis::Terminate()
         // delete m_pileup_dn;
     }
 
-    delete m_electronEfficiencySFTool;
-    delete m_elecSelLikelihoodVeryLoose;
-    delete m_elecSelLikelihoodLoose;
-    delete m_elecSelLikelihoodLooseBLayer;
-    delete m_elecSelLikelihoodMedium;
-    delete m_elecSelLikelihoodTight;
-    delete m_electronChargeIDTool;
-    delete m_photonSelLoose;
-    delete m_photonSelTight;
+    //handle
+    //delete m_elecSelLikelihoodVeryLoose;
+    //delete m_elecSelLikelihoodLoose;
+    //delete m_elecSelLikelihoodLooseBLayer;
+    //delete m_elecSelLikelihoodMedium;
+    //delete m_elecSelLikelihoodTight;
+    //delete m_electronChargeIDTool;
+    //delete m_photonSelLoose;
+    //delete m_photonSelTight;
 
     delete m_pileupReweightingTool;
-    delete m_muonSelectionToolVeryLoose;
-    delete m_muonSelectionToolLoose;
-    delete m_muonSelectionToolMedium;
-    delete m_muonSelectionToolTight;
+    //delete m_muonSelectionToolVeryLoose;
+    //delete m_muonSelectionToolLoose;
+    //delete m_muonSelectionToolMedium;
+    //delete m_muonSelectionToolTight;
     delete m_tauTruthMatchingTool;
-    delete m_TauEffEleTool;
+    //delete m_TauEffEleTool;
     delete m_tauTruthTrackMatchingTool;
-    delete m_tauSelToolLoose;
-    delete m_tauSelToolMedium;
-    delete m_tauSelToolTight;
+    //handle
+    //delete m_tauSelToolLoose;
+    //delete m_tauSelToolMedium;
+    //delete m_tauSelToolTight;
 
-    delete m_isoToolGradientLooseTight;
-    delete m_isoToolGradientTightCalo;
-    delete m_isoToolLooseTrackOnlyLoose;
-    delete m_isoToolLoose;
-    delete m_isoToolTight;
+    //handle
+    //delete m_isoToolGradientLooseTight;
+    //delete m_isoToolGradientTightCalo;
+    //delete m_isoToolLooseTrackOnlyLoose;
+    //delete m_isoToolLoose;
+    //delete m_isoToolTight;
     delete m_polreweight;
 
     // dantrim trig
@@ -424,7 +433,7 @@ XaodAnalysis& XaodAnalysis::initLocalTools()
 
     //initPileupTool(); // this is now done in SUSYTools (as of ST-00-06-15)
     initElectronTools();
-    initChargeFlipTagger();
+    //initChargeFlipTagger();
     initPhotonTools();
     initMuonTools();
     initTauTools();
@@ -512,45 +521,80 @@ void XaodAnalysis::initElectronTools()
     // Initialize the electron likelihood ID tools for each of the
     // working points
 
-    // dantrim June 27 2016 -- the EG people decide to do this for us no, imagine that :)
-    //std::string confDir                 = "ElectronPhotonSelectorTools/offline/";
-    //std::string tight_LLH_conf          = "mc15_20160113/ElectronLikelihoodTightOfflineConfig2015.conf";
-    //std::string medium_LLH_conf         = "mc15_20150712/ElectronLikelihoodMediumOfflineConfig2015.conf";
-    //std::string loose_LLHBLayer_conf    = "mc15_20150712/ElectronLikelihoodLooseOfflineConfig2015_CutBL.conf"; 
-    //std::string loose_LLH_conf          = "mc15_20150712/ElectronLikelihoodLooseOfflineConfig2015.conf";
-    //std::string very_loose_LLH_conf     = "mc15_20150712/ElectronLikelihoodVeryLooseOfflineConfig2015.conf";
-
-
     std::string wp_veryloose = "VeryLooseLHElectron";
     std::string wp_loose = "LooseLHElectron";
     std::string wp_loose_blayer = "LooseBLLHElectron";
     std::string wp_medium = "MediumLHElectron";
     std::string wp_tight = "TightLHElectron";
 
-    // VeryLooseLLH
-    m_elecSelLikelihoodVeryLoose = new AsgElectronLikelihoodTool("AsgElectronLikelihoodToolVeryLoose");
-    CHECK( m_elecSelLikelihoodVeryLoose->setProperty("WorkingPoint", wp_veryloose) );
-    CHECK( m_elecSelLikelihoodVeryLoose->initialize() );
+    //handle
+    string tool_name = "";
 
-    // LooseLLH
-    m_elecSelLikelihoodLoose = new AsgElectronLikelihoodTool("AsgElectronLikelihoodToolLoose");
-    CHECK( m_elecSelLikelihoodLoose->setProperty("WorkingPoint", wp_loose) );
-    CHECK( m_elecSelLikelihoodLoose->initialize() );
+    // veryloose
+    if(!m_elecSelLikelihoodVeryLoose.isUserConfigured()) {
+        tool_name = "SUSY_EleLH_" + wp_veryloose;
+        SET_DUAL_TOOL(m_elecSelLikelihoodVeryLoose, AsgElectronLikelihoodTool, tool_name);
+        CHECK( m_elecSelLikelihoodVeryLoose.setProperty("WorkingPoint", wp_veryloose) );
+        CHECK( m_elecSelLikelihoodVeryLoose.retrieve() );
+    } // configured
 
-    // LooseAndBLayerLLH
-    m_elecSelLikelihoodLooseBLayer = new AsgElectronLikelihoodTool("AsgElectronLikelihoodToolLooseBLayer");
-    CHECK( m_elecSelLikelihoodLooseBLayer->setProperty("WorkingPoint", wp_loose_blayer) ); 
-    CHECK( m_elecSelLikelihoodLooseBLayer->initialize() );
-    
-    // MediumLLH
-    m_elecSelLikelihoodMedium = new AsgElectronLikelihoodTool("AsgElectronLikelihoodToolMedium");
-    CHECK( m_elecSelLikelihoodMedium->setProperty("WorkingPoint", wp_medium) );
-    CHECK( m_elecSelLikelihoodMedium->initialize() );
+    // loose
+    if(!m_elecSelLikelihoodLoose.isUserConfigured()) {
+        tool_name = "SUSY_EleLH_" + wp_loose;
+        SET_DUAL_TOOL(m_elecSelLikelihoodLoose, AsgElectronLikelihoodTool, tool_name);
+        CHECK( m_elecSelLikelihoodLoose.setProperty("WorkingPoint", wp_loose) );
+        CHECK( m_elecSelLikelihoodLoose.retrieve() );
+    } // configured
 
-    // TightLLH
-    m_elecSelLikelihoodTight = new AsgElectronLikelihoodTool("AsgElectronLikelihoodToolTight");
-    CHECK( m_elecSelLikelihoodTight->setProperty("WorkingPoint", wp_tight) );
-    CHECK( m_elecSelLikelihoodTight->initialize() );
+    // loose + b-layer
+    if(!m_elecSelLikelihoodLooseBLayer.isUserConfigured()) {
+        tool_name = "SUSY_EleLH_" + wp_loose_blayer;
+        SET_DUAL_TOOL(m_elecSelLikelihoodLooseBLayer, AsgElectronLikelihoodTool, tool_name);
+        CHECK( m_elecSelLikelihoodLooseBLayer.setProperty("WorkingPoint", wp_loose_blayer) );
+        CHECK( m_elecSelLikelihoodLooseBLayer.retrieve() );
+    } // configured 
+
+    // medium
+    if(!m_elecSelLikelihoodMedium.isUserConfigured()) {
+        tool_name = "SUSY_EleLH_" + wp_medium;
+        SET_DUAL_TOOL(m_elecSelLikelihoodMedium, AsgElectronLikelihoodTool, tool_name);
+        CHECK( m_elecSelLikelihoodMedium.setProperty("WorkingPoint", wp_medium) );
+        CHECK( m_elecSelLikelihoodMedium.retrieve() );
+    } // configured 
+
+    // tight
+    if(!m_elecSelLikelihoodTight.isUserConfigured()) {
+        tool_name = "SUSY_EleLH_" + wp_tight;
+        SET_DUAL_TOOL(m_elecSelLikelihoodTight, AsgElectronLikelihoodTool, tool_name);
+
+        CHECK( m_elecSelLikelihoodTight.setProperty("WorkingPoint", wp_tight) ); 
+        CHECK( m_elecSelLikelihoodTight.retrieve() );
+    } // configured
+
+//    // VeryLooseLLH
+//    m_elecSelLikelihoodVeryLoose = new AsgElectronLikelihoodTool("AsgElectronLikelihoodToolVeryLoose");
+//    CHECK( m_elecSelLikelihoodVeryLoose->setProperty("WorkingPoint", wp_veryloose) );
+//    CHECK( m_elecSelLikelihoodVeryLoose->initialize() );
+//
+//    // LooseLLH
+//    m_elecSelLikelihoodLoose = new AsgElectronLikelihoodTool("AsgElectronLikelihoodToolLoose");
+//    CHECK( m_elecSelLikelihoodLoose->setProperty("WorkingPoint", wp_loose) );
+//    CHECK( m_elecSelLikelihoodLoose->initialize() );
+//
+//    // LooseAndBLayerLLH
+//    m_elecSelLikelihoodLooseBLayer = new AsgElectronLikelihoodTool("AsgElectronLikelihoodToolLooseBLayer");
+//    CHECK( m_elecSelLikelihoodLooseBLayer->setProperty("WorkingPoint", wp_loose_blayer) ); 
+//    CHECK( m_elecSelLikelihoodLooseBLayer->initialize() );
+//    
+//    // MediumLLH
+//    m_elecSelLikelihoodMedium = new AsgElectronLikelihoodTool("AsgElectronLikelihoodToolMedium");
+//    CHECK( m_elecSelLikelihoodMedium->setProperty("WorkingPoint", wp_medium) );
+//    CHECK( m_elecSelLikelihoodMedium->initialize() );
+//
+//    // TightLLH
+//    m_elecSelLikelihoodTight = new AsgElectronLikelihoodTool("AsgElectronLikelihoodToolTight");
+//    CHECK( m_elecSelLikelihoodTight->setProperty("WorkingPoint", wp_tight) );
+//    CHECK( m_elecSelLikelihoodTight->initialize() );
 
 }
 //----------------------------------------------------------
@@ -582,15 +626,33 @@ void XaodAnalysis::initPhotonTools()
     //std::string config_loose = "PhotonIsEMLooseSelectorCutDefs.conf";
     //std::string config_tight = "PhotonIsEMTightSelectorCutDefs.conf";
 
-    //  > loose
-    m_photonSelLoose = new AsgPhotonIsEMSelector("SusyCommonPhoLoose");
-    CHECK( m_photonSelLoose->setProperty("WorkingPoint", "LoosePhoton") );
-    CHECK( m_photonSelLoose->initialize() );
+    string tool_name = "";
 
-    //  > tight
-    m_photonSelTight = new AsgPhotonIsEMSelector("SusyCommonPhoTight");
-    CHECK( m_photonSelTight->setProperty("WorkingPoint", "TightPhoton") );
-    CHECK( m_photonSelTight->initialize() );
+    // loose
+    if(!m_photonSelLoose.isUserConfigured()) {
+        tool_name = "SUSY_PhoSel_Loose";
+        SET_DUAL_TOOL(m_photonSelLoose, AsgPhotonIsEMSelector, tool_name);
+        CHECK( m_photonSelLoose.setProperty("WorkingPoint", "LoosePhoton") );
+        CHECK( m_photonSelLoose.retrieve() );
+    } // configured 
+
+    // tight
+    if(!m_photonSelTight.isUserConfigured()) {
+        tool_name = "SUSY_PhoSel_Tight";
+        SET_DUAL_TOOL(m_photonSelTight, AsgPhotonIsEMSelector, tool_name);
+        CHECK( m_photonSelTight.setProperty("WorkingPoint", "TightPhoton") );
+        CHECK( m_photonSelTight.retrieve() );
+    } // configured 
+
+//    //  > loose
+//    m_photonSelLoose = new AsgPhotonIsEMSelector("SusyCommonPhoLoose");
+//    CHECK( m_photonSelLoose->setProperty("WorkingPoint", "LoosePhoton") );
+//    CHECK( m_photonSelLoose->initialize() );
+//
+//    //  > tight
+//    m_photonSelTight = new AsgPhotonIsEMSelector("SusyCommonPhoTight");
+//    CHECK( m_photonSelTight->setProperty("WorkingPoint", "TightPhoton") );
+//    CHECK( m_photonSelTight->initialize() );
 
 }
 //----------------------------------------------------------
@@ -599,6 +661,45 @@ void XaodAnalysis::initMuonTools()
 
     // Initialize muon selection tools
 
+    string tool_name = "";
+
+    // very loose
+    if(!m_muonSelectionToolVeryLoose.isUserConfigured()) {
+        tool_name = "SUSY_MuonSelTool_VeryLoose"; 
+        SET_DUAL_TOOL(m_muonSelectionToolVeryLoose, CP::MuonSelectionTool, tool_name);
+        CHECK( m_muonSelectionToolVeryLoose.setProperty("MaxEta", 2.7) );
+        CHECK( m_muonSelectionToolVeryLoose.setProperty("MuQuality", int(xAOD::Muon::VeryLoose)) );
+        CHECK( m_muonSelectionToolVeryLoose.retrieve() );
+    } // configured
+
+    // loose
+    if(!m_muonSelectionToolLoose.isUserConfigured()) {
+        tool_name = "SUSY_MuonSelTool_Loose";
+        SET_DUAL_TOOL(m_muonSelectionToolLoose, CP::MuonSelectionTool, tool_name);
+        CHECK( m_muonSelectionToolLoose.setProperty("MaxEta", 2.7) );
+        CHECK( m_muonSelectionToolLoose.setProperty("MuQuality", int(xAOD::Muon::Loose)) );
+        CHECK( m_muonSelectionToolLoose.retrieve() );
+    } // configured
+
+    // medium
+    if(!m_muonSelectionToolMedium.isUserConfigured()) {
+        tool_name = "SUSY_MuonSelTool_Medium";
+        SET_DUAL_TOOL(m_muonSelectionToolMedium, CP::MuonSelectionTool, tool_name);
+        CHECK( m_muonSelectionToolMedium.setProperty("MaxEta", 2.7) );
+        CHECK( m_muonSelectionToolMedium.setProperty("MuQuality", int(xAOD::Muon::Medium)) );
+        CHECK( m_muonSelectionToolMedium.retrieve() );
+    } // configured
+
+    // tight
+    if(!m_muonSelectionToolTight.isUserConfigured()) {
+        tool_name = "SUSY_MuonSelTool_Tight";
+        SET_DUAL_TOOL(m_muonSelectionToolTight, CP::MuonSelectionTool, tool_name);
+        CHECK( m_muonSelectionToolTight.setProperty("MaxEta", 2.7) );
+        CHECK( m_muonSelectionToolTight.setProperty("MuQuality", int(xAOD::Muon::Tight)) );
+        CHECK( m_muonSelectionToolTight.retrieve() );
+    } // configured
+
+/*
     m_muonSelectionToolVeryLoose = new CP::MuonSelectionTool("MuonSelectionTool_VeryLoose");
     CHECK( m_muonSelectionToolVeryLoose->setProperty( "MaxEta", 2.7 ) );
     CHECK( m_muonSelectionToolVeryLoose->setProperty( "MuQuality", int(xAOD::Muon::VeryLoose) ));// Warning: includes bad muons!
@@ -618,11 +719,44 @@ void XaodAnalysis::initMuonTools()
     CHECK( m_muonSelectionToolTight->setProperty( "MaxEta", 2.7 ) );
     CHECK( m_muonSelectionToolTight->setProperty( "MuQuality", int(xAOD::Muon::Tight) ));
     CHECK( m_muonSelectionToolTight->initialize() );
+*/
 }
 //----------------------------------------------------------
 void XaodAnalysis::initTauTools()
 {
     // Let's select some taus
+
+    string tool_name = "";
+    string input_file = "";
+
+    // loose
+    if(!m_tauSelToolLoose.isUserConfigured()) {
+        tool_name = "SUSY_TauSel_Loose";
+        input_file = "SUSYTools/tau_selection_loose.conf";
+        SET_DUAL_TOOL(m_tauSelToolLoose, TauAnalysisTools::TauSelectionTool, tool_name);
+        CHECK( m_tauSelToolLoose.setProperty("ConfigPath", input_file) );
+        CHECK( m_tauSelToolLoose.retrieve() );
+    } // configured
+
+    // medium
+    if(!m_tauSelToolMedium.isUserConfigured()) {
+        tool_name = "SUSY_TauSel_Medium";
+        input_file = "SUSYTools/tau_selection_medium.conf"; 
+        SET_DUAL_TOOL(m_tauSelToolMedium, TauAnalysisTools::TauSelectionTool, tool_name);
+        CHECK( m_tauSelToolMedium.setProperty("ConfigPath", input_file) );
+        CHECK( m_tauSelToolMedium.retrieve() ); 
+    } // configured 
+
+    // tight
+    if(!m_tauSelToolTight.isUserConfigured()) {
+        tool_name = "SUSY_TauSel_Tight";
+        input_file = "SUSYTools/tau_selection_tight.conf";
+        SET_DUAL_TOOL(m_tauSelToolTight, TauAnalysisTools::TauSelectionTool, tool_name);
+        CHECK( m_tauSelToolTight.setProperty("ConfigPath", input_file) );
+        CHECK( m_tauSelToolTight.retrieve() );
+    } // configured
+
+/*
     // > loose
     m_tauSelToolLoose = new TauAnalysisTools::TauSelectionTool("SusyCommonTauSelectionTool_Loose");
     CHECK( m_tauSelToolLoose->setProperty("ConfigPath", m_data_dir + "SUSYTools/tau_selection_loose.conf") );
@@ -636,6 +770,7 @@ void XaodAnalysis::initTauTools()
     CHECK( m_tauSelToolTight->setProperty("ConfigPath", m_data_dir + "SUSYTools/tau_selection_tight.conf") );
     CHECK( m_tauSelToolTight->initialize() );
 
+*/
     // Truth Matching for all of the infos
     m_tauTruthMatchingTool = new TauAnalysisTools::TauTruthMatchingTool("SusyCommonTauTruthMatchingTool");
     CHECK( m_tauTruthMatchingTool->initialize() );
@@ -654,19 +789,73 @@ void XaodAnalysis::initTauTools()
     //m_tauTruthMatchingTool->setProperty("SampleType", (int)TauAnalysisTools::PYTHIA);//default
 
 
-    #warning TauEfficiencyTool should be initialized per TauSelTool WP
-    #warning Tau SF should not be used currently
-    m_TauEffEleTool = new TauAnalysisTools::TauEfficiencyCorrectionsTool("TauEfficiencyTool");
-    m_TauEffEleTool->msg().setLevel(MSG::ERROR); // don't need warnings about histogram binning
+    //#warning TauEfficiencyTool should be initialized per TauSelTool WP
+    //#warning Tau SF should not be used currently
+    //m_TauEffEleTool = new TauAnalysisTools::TauEfficiencyCorrectionsTool("TauEfficiencyTool");
+    //m_TauEffEleTool->msg().setLevel(MSG::ERROR); // don't need warnings about histogram binning
 
     //CHECK(m_TauEffEleTool->setProperty("EfficiencyCorrectionType", (int) TauAnalysisTools::SFContJetID)); // this is mc12 rec, use default mc15
-    CHECK(m_TauEffEleTool->initialize());
+    //CHECK(m_TauEffEleTool->initialize());
 }
 //----------------------------------------------------------
 void XaodAnalysis::initIsoTools()
 {
     // see: https://twiki.cern.ch/twiki/bin/view/AtlasProtected/IsolationSelectionTool
 
+    string tool_name = "";
+
+    // Gradient Loose WP for leptons, FixedCutTight WP for photons
+    if(!m_isoToolGradientLooseTight.isUserConfigured()) {
+        tool_name = "SUSY_IsoTool_GLTight";
+        SET_DUAL_TOOL(m_isoToolGradientLooseTight, CP::IsolationSelectionTool, tool_name);
+        CHECK( m_isoToolGradientLooseTight.setProperty("ElectronWP", "GradientLoose") );
+        CHECK( m_isoToolGradientLooseTight.setProperty("MuonWP",     "GradientLoose") );
+        CHECK( m_isoToolGradientLooseTight.setProperty("PhotonWP",   "FixedCutTight") );
+        CHECK( m_isoToolGradientLooseTight.retrieve() );
+    } // configured
+
+    // Gradient WP for leptons, FixedCutTightCaloOnly WP for photons
+    if(!m_isoToolGradientTightCalo.isUserConfigured()) {
+        tool_name = "SUSY_IsoTool_GCalo";
+        SET_DUAL_TOOL(m_isoToolGradientTightCalo, CP::IsolationSelectionTool, tool_name);
+        CHECK( m_isoToolGradientTightCalo.setProperty("ElectronWP", "Gradient") );
+        CHECK( m_isoToolGradientTightCalo.setProperty("MuonWP",     "Gradient") );
+        CHECK( m_isoToolGradientTightCalo.setProperty("PhotonWP",   "FixedCutTightCaloOnly") );
+        CHECK( m_isoToolGradientTightCalo.retrieve() );
+    } // configured 
+
+    // LooseTrackOnly WP, Loose WP for photons
+    if(!m_isoToolLooseTrackOnlyLoose.isUserConfigured()) {
+        tool_name = "SUSY_IsoTool_LooseTrackLoose";
+        SET_DUAL_TOOL(m_isoToolLooseTrackOnlyLoose, CP::IsolationSelectionTool, tool_name);
+        CHECK( m_isoToolLooseTrackOnlyLoose.setProperty("ElectronWP", "LooseTrackOnly") );
+        CHECK( m_isoToolLooseTrackOnlyLoose.setProperty("MuonWP",     "LooseTrackOnly") );
+        CHECK( m_isoToolLooseTrackOnlyLoose.setProperty("PhotonWP",   "FixedCutLoose") );
+        CHECK( m_isoToolLooseTrackOnlyLoose.retrieve() );
+    } // configured
+
+    // Loose WP for leptons, FixedCutTight WP for photons
+    if(!m_isoToolLoose.isUserConfigured()) {
+        tool_name = "SUSY_IsoTool_Loose";
+        SET_DUAL_TOOL(m_isoToolLoose, CP::IsolationSelectionTool, tool_name);
+        CHECK( m_isoToolLoose.setProperty("ElectronWP", "Loose") );
+        CHECK( m_isoToolLoose.setProperty("MuonWP",     "Loose") );
+        CHECK( m_isoToolLoose.setProperty("PhotonWP",   "FixedCutTight") );
+        CHECK( m_isoToolLoose.retrieve() );
+    }  // configured
+
+    // Tight WP for leptons, FixedCutTight WP for photons
+    if(!m_isoToolTight.isUserConfigured()) {
+        tool_name = "SUSY_IsoTool_Tight";
+        SET_DUAL_TOOL(m_isoToolTight, CP::IsolationSelectionTool, tool_name);
+        CHECK( m_isoToolTight.setProperty("ElectronWP", "Tight") );
+        CHECK( m_isoToolTight.setProperty("MuonWP",     "Tight") );
+        CHECK( m_isoToolTight.setProperty("PhotonWP",   "FixedCutTight") );
+        CHECK( m_isoToolTight.retrieve() );
+    } // configured 
+
+
+/*
     // Gradient Loose WP for leptons, FixedCutTight WP for photons
     m_isoToolGradientLooseTight = new CP::IsolationSelectionTool( "IsolationSelectionTool_GradientLoose" );
     CHECK( m_isoToolGradientLooseTight->setProperty( "ElectronWP",   "GradientLoose") );
@@ -701,6 +890,7 @@ void XaodAnalysis::initIsoTools()
     CHECK( m_isoToolTight->setProperty( "MuonWP",       "Tight") );
     CHECK( m_isoToolTight->setProperty( "PhotonWP",     "FixedCutTight") );
     CHECK( m_isoToolTight->initialize() );
+*/
 
 }
 //----------------------------------------------------------
@@ -740,7 +930,7 @@ void XaodAnalysis::getSystematicList()
 //----------------------------------------------------------
 const xAOD::EventInfo* XaodAnalysis::retrieveEventInfo(xAOD::TEvent &e, bool dbg)
 {
-    const xAOD::EventInfo* evt = NULL;
+    const xAOD::EventInfo* evt = 0;
     e.retrieve(evt, "EventInfo");
     if(dbg){
         if(evt) cout<<"XaodAnalysis::retrieveEventInfo: retrieved"<<endl;
@@ -751,7 +941,7 @@ const xAOD::EventInfo* XaodAnalysis::retrieveEventInfo(xAOD::TEvent &e, bool dbg
 //----------------------------------------------------------
 const xAOD::EventInfo* XaodAnalysis::xaodEventInfo()
 {
-    if(m_xaodEventInfo==NULL){
+    if(!m_xaodEventInfo){
         m_xaodEventInfo = retrieveEventInfo(m_event, m_dbg);
     }
     return m_xaodEventInfo;
@@ -768,7 +958,8 @@ xAOD::MuonContainer* XaodAnalysis::xaodMuons(ST::SystInfo sysInfo, SusyNtSys sys
         return m_xaodMuons;
     }
     else{
-        if(m_xaodMuons_nom==NULL){
+        if(!m_xaodMuons_nom){
+        //if(m_xaodMuons_nom==NULL){
             CHECK( m_susyObj[m_eleIDDefault]->GetMuons(m_xaodMuons_nom, m_xaodMuonsAux_nom, true) );
             if(m_dbg>=5) cout << "xaodMuo_nom " << m_xaodMuons_nom->size() << endl;
         }
@@ -788,7 +979,8 @@ xAOD::ElectronContainer* XaodAnalysis::xaodElectrons(ST::SystInfo sysInfo, SusyN
         return m_xaodElectrons;
     }
     else{
-        if(m_xaodElectrons_nom==NULL){
+        if(!m_xaodElectrons_nom){
+        //if(m_xaodElectrons_nom==NULL){
             CHECK( m_susyObj[m_eleIDDefault]->GetElectrons(m_xaodElectrons_nom, m_xaodElectronsAux_nom, true) );
             if(m_dbg>=5) cout << "xaodEle_nom " << m_xaodElectrons_nom->size() << endl;
         }
@@ -808,7 +1000,8 @@ xAOD::TauJetContainer* XaodAnalysis::xaodTaus(ST::SystInfo sysInfo, SusyNtSys sy
         return m_xaodTaus;
     }
     else{
-        if(m_xaodTaus_nom==NULL){
+        if(!m_xaodTaus_nom){
+        //if(m_xaodTaus_nom==NULL){
             CHECK( m_susyObj[m_eleIDDefault]->GetTaus(m_xaodTaus_nom, m_xaodTausAux_nom, true) );
             if(m_dbg>=5) cout << "xaodTaus_nom " << m_xaodTaus_nom->size() << endl;
         }
@@ -828,7 +1021,8 @@ xAOD::JetContainer* XaodAnalysis::xaodJets(ST::SystInfo sysInfo, SusyNtSys sys)
         return m_xaodJets;
     }
     else{
-        if(m_xaodJets_nom==NULL){
+        if(!m_xaodJets_nom){
+        //if(m_xaodJets_nom==NULL){
             CHECK( m_susyObj[m_eleIDDefault]->GetJets(m_xaodJets_nom, m_xaodJetsAux_nom, true) );
             if(m_dbg>=5) cout << "xaodJets_nom " << m_xaodJets_nom->size() << endl;
         }
@@ -848,7 +1042,8 @@ xAOD::PhotonContainer* XaodAnalysis::xaodPhotons(ST::SystInfo sysInfo, SusyNtSys
         return m_xaodPhotons;
     }
     else{
-        if(m_xaodPhotons_nom==NULL){
+        if(!m_xaodPhotons_nom){
+        //if(m_xaodPhotons_nom==NULL){
             CHECK( m_susyObj[m_eleIDDefault]->GetPhotons(m_xaodPhotons_nom, m_xaodPhotonsAux_nom, true) );
             if(m_dbg>=5) cout << "xaodPho_nom " << m_xaodPhotons_nom->size() << endl;
         }
@@ -1520,6 +1715,7 @@ TBits XaodAnalysis::matchMuonTriggers(const xAOD::Muon &in)
 /*--------------------------------------------------------------------------------*/
 // Dimuon trigger matching
 /*--------------------------------------------------------------------------------*/
+/*
 std::map<std::string, std::vector<unsigned int>> XaodAnalysis::getDiMuTrigMap(const xAOD::Muon &in, const xAOD::MuonContainer &muons)
 {
     if (m_dbg >= 10) cout << "XaodAnalysis::getDiMuTrigMap\n";
@@ -1559,6 +1755,7 @@ std::map<std::string, std::vector<unsigned int>> XaodAnalysis::getDiMuTrigMap(co
 
     return diMuTrigMap;
 }
+*/
 /*--------------------------------------------------------------------------------*/
 // Electron trigger matching
 /*--------------------------------------------------------------------------------*/
@@ -2446,29 +2643,29 @@ bool XaodAnalysis::isDerivationFromMetaData(TTree* intree, bool verbose)
 */
 }
 //----------------------------------------------------------
-TString XaodAnalysis::getDerivationTypeInfo(xAOD::TEvent& event) 
-{
-    TString derivation = "Unknown";
-
-    bool ok = true;
-    const xAOD::CutBookkeeperContainer* completeCBC = 0;
-    ok = event.retrieveMetaInput(completeCBC, "CutBookkeepers");
-    if(!ok) {
-        cout << "XaodAnalysis::getDerivationTypeInfo    "
-             << "Failed to get CBK metadata! Exitting." << endl;
-        exit(1);
-    }
-
-    for(auto cbk : *completeCBC) {
-        if ( cbk->name() == "AllExecutedEvents" && TString(cbk->inputStream()).Contains("StreamDAOD")){
-            derivation = TString(cbk->inputStream()).ReplaceAll("Stream","");
-            cout << "XaodAnalysis::getDerivationTypeInfo    "
-                 << " Derivation type = " << derivation << " (i.e. indentified DxAOD flavour)" << endl;
-        }
-    } // cbk
-
-    return derivation;
-}
+//TString XaodAnalysis::getDerivationTypeInfo(xAOD::TEvent& event) 
+//{
+//    TString derivation = "Unknown";
+//
+//    bool ok = true;
+//    const xAOD::CutBookkeeperContainer* completeCBC = 0;
+//    ok = event.retrieveMetaInput(completeCBC, "CutBookkeepers");
+//    if(!ok) {
+//        cout << "XaodAnalysis::getDerivationTypeInfo    "
+//             << "Failed to get CBK metadata! Exitting." << endl;
+//        exit(1);
+//    }
+//
+//    for(auto cbk : *completeCBC) {
+//        if ( cbk->name() == "AllExecutedEvents" && TString(cbk->inputStream()).Contains("StreamDAOD")){
+//            derivation = TString(cbk->inputStream()).ReplaceAll("Stream","");
+//            cout << "XaodAnalysis::getDerivationTypeInfo    "
+//                 << " Derivation type = " << derivation << " (i.e. indentified DxAOD flavour)" << endl;
+//        }
+//    } // cbk
+//
+//    return derivation;
+//}
 //----------------------------------------------------------
 bool XaodAnalysis::getCutBookkeeperInfo(xAOD::TEvent& event)
 {
@@ -2544,7 +2741,7 @@ XaodAnalysis& XaodAnalysis::deleteShallowCopies(bool deleteNominal)
 {
     if(m_dbg>5) cout << "deleteShallowCopies " << deleteNominal << endl;
 
-    if(deleteNominal)
+    //if(deleteNominal)
         m_store.clear();
     clearContainerPointers(deleteNominal);
     return *this;
@@ -2604,39 +2801,39 @@ XaodAnalysis& XaodAnalysis::deleteShallowCopies(bool deleteNominal)
 XaodAnalysis& XaodAnalysis::clearContainerPointers(bool deleteNominal)
 {
     //Clear the pointer of the container that are effected by systematics
-    m_xaodMuons          = NULL;
-    m_xaodMuonsAux       = NULL;
-    m_xaodElectrons      = NULL;
-    m_xaodElectronsAux   = NULL;
-    m_xaodTaus           = NULL;
-    m_xaodTausAux        = NULL;
-    m_xaodJets           = NULL;
-    m_xaodJetsAux        = NULL;
-    m_xaodPhotons        = NULL;
-    m_xaodPhotonsAux     = NULL;
+    m_xaodMuons          = 0;
+    m_xaodMuonsAux       = 0;
+    m_xaodElectrons      = 0;
+    m_xaodElectronsAux   = 0;
+    m_xaodTaus           = 0;
+    m_xaodTausAux        = 0;
+    m_xaodJets           = 0;
+    m_xaodJetsAux        = 0;
+    m_xaodPhotons        = 0;
+    m_xaodPhotonsAux     = 0;
 
-    m_metContainer           = NULL;
-    m_metAuxContainer        = NULL;
-    m_trackMetContainer      = NULL;
-    m_trackMetAuxContainer   = NULL;
+    m_metContainer           = 0;
+    m_metAuxContainer        = 0;
+    m_trackMetContainer      = 0;
+    m_trackMetAuxContainer   = 0;
 
     if(deleteNominal){
-        m_xaodMuons_nom          = NULL;
-        m_xaodMuonsAux_nom       = NULL;
-        m_xaodElectrons_nom      = NULL;
-        m_xaodElectronsAux_nom   = NULL;
-        m_xaodTaus_nom           = NULL;
-        m_xaodTausAux_nom        = NULL;
-        m_xaodJets_nom           = NULL;
-        m_xaodJetsAux_nom        = NULL;
-        m_xaodPhotons_nom        = NULL;
-        m_xaodPhotonsAux_nom     = NULL;
+        m_xaodMuons_nom          = 0;
+        m_xaodMuonsAux_nom       = 0;
+        m_xaodElectrons_nom      = 0;
+        m_xaodElectronsAux_nom   = 0;
+        m_xaodTaus_nom           = 0;
+        m_xaodTausAux_nom        = 0;
+        m_xaodJets_nom           = 0;
+        m_xaodJetsAux_nom        = 0;
+        m_xaodPhotons_nom        = 0;
+        m_xaodPhotonsAux_nom     = 0;
 
         m_xaodTruthEvent         = NULL;
         m_xaodTruthParticles     = NULL;
         m_xaodTruthParticlesAux  = NULL; 
 
-        m_xaodEventInfo          = NULL; 
+        m_xaodEventInfo          = 0; 
         m_xaodVertices           = NULL; 
     }
 
@@ -2658,10 +2855,10 @@ XaodAnalysis& XaodAnalysis::retrieveCollections()
     xaodTaus(systInfoList[0]);
     xaodPhotons(systInfoList[0]);
     retrieveXaodMet(systInfoList[0]);//nominal
-    retrieveXaodTrackMet(systInfoList[0]);
+    //retrieveXaodTrackMet(systInfoList[0]);
 
-    xaodTruthEvent();
-    xaodTruthParticles();
+    //xaodTruthEvent();
+    //xaodTruthParticles();
 
     return *this;
 }
