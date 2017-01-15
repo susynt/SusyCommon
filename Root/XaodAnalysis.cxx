@@ -53,7 +53,7 @@ using Susy::XaodAnalysis;
 XaodAnalysis::XaodAnalysis() :
     m_input_chain(0),
     //m_sample(""),
-    //m_derivation("Unknown"),
+    m_derivation("Unknown"),
     m_triggerSet("run2"),
     m_stream(Stream_Unknown),
     m_isDerivation(false), // dantrim event shape
@@ -99,7 +99,7 @@ XaodAnalysis::XaodAnalysis() :
     m_elecSelLikelihoodLooseBLayer(""),
     m_elecSelLikelihoodMedium(""),
     m_elecSelLikelihoodTight(""),
-    //m_electronChargeIDTool(0),
+    m_electronChargeIDTool(0),
     //handle
     m_photonSelLoose(""),
     m_photonSelTight(""),
@@ -173,8 +173,10 @@ void XaodAnalysis::Init(TTree *tree)
     m_event.readFrom(tree);
     m_isDerivation = XaodAnalysis::isDerivationFromMetaData(tree, verbose);
     m_stream = XaodAnalysis::streamFromSamplename(m_inputContainerName, m_isMC);
-    //m_event.getEntry(0);
-    //m_derivation = XaodAnalysis::getDerivationTypeInfo(m_event); 
+
+    // need to load the first entry to get the MetaData
+    m_event.getEntry(0);
+    m_derivation = XaodAnalysis::getDerivationTypeInfo(m_event); 
 
     // get the directory for the data/
     char *tmparea=getenv("ROOTCOREBIN");
@@ -282,7 +284,7 @@ void XaodAnalysis::Terminate()
     //delete m_elecSelLikelihoodLooseBLayer;
     //delete m_elecSelLikelihoodMedium;
     //delete m_elecSelLikelihoodTight;
-    //delete m_electronChargeIDTool;
+    delete m_electronChargeIDTool;
     //delete m_photonSelLoose;
     //delete m_photonSelTight;
 
@@ -433,7 +435,7 @@ XaodAnalysis& XaodAnalysis::initLocalTools()
 
     //initPileupTool(); // this is now done in SUSYTools (as of ST-00-06-15)
     initElectronTools();
-    //initChargeFlipTagger();
+    initChargeFlipTagger();
     initPhotonTools();
     initMuonTools();
     initTauTools();
@@ -1715,7 +1717,6 @@ TBits XaodAnalysis::matchMuonTriggers(const xAOD::Muon &in)
 /*--------------------------------------------------------------------------------*/
 // Dimuon trigger matching
 /*--------------------------------------------------------------------------------*/
-/*
 std::map<std::string, std::vector<unsigned int>> XaodAnalysis::getDiMuTrigMap(const xAOD::Muon &in, const xAOD::MuonContainer &muons)
 {
     if (m_dbg >= 10) cout << "XaodAnalysis::getDiMuTrigMap\n";
@@ -1755,7 +1756,6 @@ std::map<std::string, std::vector<unsigned int>> XaodAnalysis::getDiMuTrigMap(co
 
     return diMuTrigMap;
 }
-*/
 /*--------------------------------------------------------------------------------*/
 // Electron trigger matching
 /*--------------------------------------------------------------------------------*/
@@ -2643,29 +2643,29 @@ bool XaodAnalysis::isDerivationFromMetaData(TTree* intree, bool verbose)
 */
 }
 //----------------------------------------------------------
-//TString XaodAnalysis::getDerivationTypeInfo(xAOD::TEvent& event) 
-//{
-//    TString derivation = "Unknown";
-//
-//    bool ok = true;
-//    const xAOD::CutBookkeeperContainer* completeCBC = 0;
-//    ok = event.retrieveMetaInput(completeCBC, "CutBookkeepers");
-//    if(!ok) {
-//        cout << "XaodAnalysis::getDerivationTypeInfo    "
-//             << "Failed to get CBK metadata! Exitting." << endl;
-//        exit(1);
-//    }
-//
-//    for(auto cbk : *completeCBC) {
-//        if ( cbk->name() == "AllExecutedEvents" && TString(cbk->inputStream()).Contains("StreamDAOD")){
-//            derivation = TString(cbk->inputStream()).ReplaceAll("Stream","");
-//            cout << "XaodAnalysis::getDerivationTypeInfo    "
-//                 << " Derivation type = " << derivation << " (i.e. indentified DxAOD flavour)" << endl;
-//        }
-//    } // cbk
-//
-//    return derivation;
-//}
+TString XaodAnalysis::getDerivationTypeInfo(xAOD::TEvent& event) 
+{
+    TString derivation = "Unknown";
+
+    bool ok = true;
+    const xAOD::CutBookkeeperContainer* completeCBC = 0;
+    ok = event.retrieveMetaInput(completeCBC, "CutBookkeepers");
+    if(!ok) {
+        cout << "XaodAnalysis::getDerivationTypeInfo    "
+             << "Failed to get CBK metadata! Exitting." << endl;
+        exit(1);
+    }
+
+    for(auto cbk : *completeCBC) {
+        if ( cbk->name() == "AllExecutedEvents" && TString(cbk->inputStream()).Contains("StreamDAOD")){
+            derivation = TString(cbk->inputStream()).ReplaceAll("Stream","");
+            cout << "XaodAnalysis::getDerivationTypeInfo    "
+                 << " Derivation type = " << derivation << " (i.e. indentified DxAOD flavour)" << endl;
+        }
+    } // cbk
+
+    return derivation;
+}
 //----------------------------------------------------------
 bool XaodAnalysis::getCutBookkeeperInfo(xAOD::TEvent& event)
 {
@@ -2741,12 +2741,14 @@ XaodAnalysis& XaodAnalysis::deleteShallowCopies(bool deleteNominal)
 {
     if(m_dbg>5) cout << "deleteShallowCopies " << deleteNominal << endl;
 
-    //if(deleteNominal)
-    delete m_metContainer;
-    delete m_metAuxContainer;
-    delete m_trackMetContainer;
-    delete m_trackMetAuxContainer;
+    if(m_metContainer)          delete m_metContainer;
+    if(m_metAuxContainer)       delete m_metAuxContainer;
+    if(m_trackMetContainer)     delete m_trackMetContainer;
+    if(m_trackMetAuxContainer)  delete m_trackMetAuxContainer;
+
+    if(deleteNominal) {
         m_store.clear();
+    }
     clearContainerPointers(deleteNominal);
     return *this;
 
@@ -2833,9 +2835,9 @@ XaodAnalysis& XaodAnalysis::clearContainerPointers(bool deleteNominal)
         m_xaodPhotons_nom        = 0;
         m_xaodPhotonsAux_nom     = 0;
 
-        m_xaodTruthEvent         = NULL;
-        m_xaodTruthParticles     = NULL;
-        m_xaodTruthParticlesAux  = NULL; 
+        m_xaodTruthEvent         = 0;
+        m_xaodTruthParticles     = 0;
+        m_xaodTruthParticlesAux  = 0; 
 
         m_xaodEventInfo          = 0; 
         m_xaodVertices           = NULL; 
@@ -2859,10 +2861,10 @@ XaodAnalysis& XaodAnalysis::retrieveCollections()
     xaodTaus(systInfoList[0]);
     xaodPhotons(systInfoList[0]);
     retrieveXaodMet(systInfoList[0]);//nominal
-    //retrieveXaodTrackMet(systInfoList[0]);
+    retrieveXaodTrackMet(systInfoList[0]);
 
-    //xaodTruthEvent();
-    //xaodTruthParticles();
+    xaodTruthEvent();
+    xaodTruthParticles();
 
     return *this;
 }

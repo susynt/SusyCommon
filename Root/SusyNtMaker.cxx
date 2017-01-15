@@ -265,13 +265,13 @@ void SusyNtMaker::fillNtVars()
     fillTauVars();
     fillJetVars();
     fillMetVars();
-    //fillTrackMetVars();
+    fillTrackMetVars();
     fillPhotonVars();
-   // if(m_isMC && getSelectTruthObjects() ) {
-   //     fillTruthParticleVars();
-   //     fillTruthJetVars();
-   //     fillTruthMetVars();
-   // }
+    if(m_isMC && getSelectTruthObjects() ) {
+        fillTruthParticleVars();
+        fillTruthJetVars();
+        fillTruthMetVars();
+    }
 }
 //----------------------------------------------------------
 void SusyNtMaker::fillEventVars()
@@ -389,10 +389,10 @@ void SusyNtMaker::fillElectronVars()
     if(m_dbg>=5) cout<<"fillElectronVars"<<endl;
     xAOD::ElectronContainer* electrons = XaodAnalysis::xaodElectrons(systInfoList[0]);
     if(electrons) {
-        //if(m_isMC && m_derivation.Contains("SUSY")) {
-        //    int datasetid = xaodEventInfo()->mcChannelNumber();
-        //    fillElectronChargeFlip(electrons, xaodTruthParticles(), datasetid);
-        //}
+        if(m_isMC && m_derivation.Contains("SUSY")) {
+            int datasetid = xaodEventInfo()->mcChannelNumber();
+            fillElectronChargeFlip(electrons, xaodTruthParticles(), datasetid);
+        }
         for(auto &i : m_preElectrons){
             storeElectron(*(electrons->at(i)));
         }
@@ -408,8 +408,8 @@ void SusyNtMaker::fillMuonVars()
     xAOD::MuonContainer* muons = XaodAnalysis::xaodMuons(systInfoList[0]);
     if(muons) {
         for(auto &i : m_preMuons){
-            //storeMuon(*(muons->at(i)), *muons);
-            storeMuon(*(muons->at(i)));
+            storeMuon(*(muons->at(i)), *muons);
+            //storeMuon(*(muons->at(i)));
         }
     }
     else {
@@ -639,19 +639,19 @@ void SusyNtMaker::storeElectron(const xAOD::Electron &in)
         //if(eleIsOfType(in, eleID::LooseLH))
         // crash p1874 out.isChargeFlip  = m_isMC ? isChargeFlip(in.charge(),truthElectronCharge(in)) : false;
         out.truthCharge =  truthEle ? truthEle->charge() : 0;
-        //if(m_derivation.Contains("SUSY")) {
-            //out.ss3lChargeFlip = in.auxdataConst<int>("chargeFlip");
+        if(m_derivation.Contains("SUSY")) {
+            out.ss3lChargeFlip = in.auxdataConst<int>("chargeFlip");
 
-            //bool pass_charge_id = false;
-            //if(m_electronChargeIDTool)
-            //    pass_charge_id = m_electronChargeIDTool->accept(in);
-            //out.passChargeFlipTagger = pass_charge_id;
-            //out.chargeFlipBDT = m_electronChargeIDTool->calculate(&in, -99); // mu = -99 means will grab mu from EventInfo
+            bool pass_charge_id = false;
+            if(m_electronChargeIDTool)
+                pass_charge_id = m_electronChargeIDTool->accept(in);
+            out.passChargeFlipTagger = pass_charge_id;
+            out.chargeFlipBDT = m_electronChargeIDTool->calculate(&in, -99); // mu = -99 means will grab mu from EventInfo
 
             // Electron bkg origins
             out.mcBkgMotherPdgId = in.auxdata<int>("bkgMotherPdgId");
             out.mcBkgTruthOrigin = in.auxdata<int>("bkgTruthOrigin");
-        //}
+        }
     }
 
     //////////////////////////////////////
@@ -819,8 +819,8 @@ void SusyNtMaker::storeElectron(const xAOD::Electron &in)
 //     return result;
 // }
 //----------------------------------------------------------
-//void SusyNtMaker::storeMuon(const xAOD::Muon &in, const xAOD::MuonContainer &muons)
-void SusyNtMaker::storeMuon(const xAOD::Muon &in)
+void SusyNtMaker::storeMuon(const xAOD::Muon &in, const xAOD::MuonContainer &muons)
+//void SusyNtMaker::storeMuon(const xAOD::Muon &in)
 {
     if(m_dbg>=15) cout<<"SusyNtMaker::storeMuon pT "<< in.pt()*MeV2GeV <<endl;
     const xAOD::EventInfo* eventinfo = XaodAnalysis::xaodEventInfo();
@@ -993,7 +993,7 @@ void SusyNtMaker::storeMuon(const xAOD::Muon &in)
 //        cout << "\t passed trigger " << trigger << "? " << (bit ? "yes" : "no") << endl;
 //    }
 //    cout << endl;
-//    out.diMuTrigMap = getDiMuTrigMap(in, muons);
+    out.diMuTrigMap = getDiMuTrigMap(in, muons);
 
     //////////////////////////////////////
     // Lepton SF
@@ -1858,7 +1858,7 @@ void SusyNtMaker::doSystematic()
         deleteShallowCopies(false);//Don't clear the nominal containers -- only want to refresh the systematic varied objects
         selectObjects(ourSys, sysInfo);
         retrieveXaodMet(sysInfo,ourSys);
-        //retrieveXaodTrackMet(sysInfo,ourSys);
+        retrieveXaodTrackMet(sysInfo,ourSys);
         assignEventCleaningFlags(); //AT really needed for each systematic ? CHECK
         assignObjectCleaningFlags(sysInfo, ourSys);//AT really needed for each systematic ? CHECK
 
@@ -2029,8 +2029,8 @@ void SusyNtMaker::storeMuonKinSys(ST::SystInfo sysInfo, SusyNtSys sys)
         if(mu_susyNt == NULL){
             if(m_dbg>=5) cout << " Muon not found - adding to susyNt" << endl;
             mu_nom = muons_nom->at(iMu);//assume order is preserved
-            //storeMuon(*mu_nom, *muons);//this add the mu at the end... 
-            storeMuon(*mu_nom);
+            storeMuon(*mu_nom, *muons);//this add the mu at the end... 
+            //storeMuon(*mu_nom);
             m_preMuons_nom.push_back(iMu);
             mu_susyNt = & m_susyNt.muo()->back(); //get the newly inserted mument
         }
