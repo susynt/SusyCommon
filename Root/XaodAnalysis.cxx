@@ -2742,6 +2742,10 @@ XaodAnalysis& XaodAnalysis::deleteShallowCopies(bool deleteNominal)
     if(m_dbg>5) cout << "deleteShallowCopies " << deleteNominal << endl;
 
     //if(deleteNominal)
+    delete m_metContainer;
+    delete m_metAuxContainer;
+    delete m_trackMetContainer;
+    delete m_trackMetAuxContainer;
         m_store.clear();
     clearContainerPointers(deleteNominal);
     return *this;
