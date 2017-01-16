@@ -511,6 +511,11 @@ void SusyNtMaker::storeElectron(const xAOD::Electron &in)
     out.m   = m;
     out.q   = in.charge();
 
+    // author information
+    out.author = static_cast<int>(in.author());
+    out.authorElectron = in.author() & xAOD::EgammaParameters::AuthorElectron;
+    out.authorAmbiguous = in.author() & xAOD::EgammaParameters::AuthorAmbiguous;
+
     //////////////////////////////////////
     // SUSYTools flags (flags from default
     // SUSYTools object)
