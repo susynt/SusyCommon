@@ -44,6 +44,7 @@ using Susy::XaodAnalysis;
         }                                                           \
     } while( false )
 
+// useful macro to initialize asg::AnaToolHandles
 #define SET_DUAL_TOOL( TOOLHANDLE, TOOLTYPE, TOOLNAME )             \
     ASG_SET_ANA_TOOL_TYPE(TOOLHANDLE, TOOLTYPE);                    \
     TOOLHANDLE.setName(TOOLNAME);                                   \
@@ -93,23 +94,19 @@ XaodAnalysis::XaodAnalysis() :
     //m_event(xAOD::TEvent::kAthenaAccess), ///> dantrim April 28 2016 -- to get CutBookkeepers needs kAthenaAccess or kClassAcess
     m_store(),
     m_eleIDDefault(eleTightLLH),
-    //handle
     m_elecSelLikelihoodVeryLoose(""),
     m_elecSelLikelihoodLoose(""),
     m_elecSelLikelihoodLooseBLayer(""),
     m_elecSelLikelihoodMedium(""),
     m_elecSelLikelihoodTight(""),
     m_electronChargeIDTool(0),
-    //handle
     m_photonSelLoose(""),
     m_photonSelTight(""),
 	m_pileupReweightingTool(0),
-    //handle
     m_muonSelectionToolVeryLoose(""),
     m_muonSelectionToolLoose(""),
     m_muonSelectionToolMedium(""),
     m_muonSelectionToolTight(""),
-    //handle
     m_isoToolGradientLooseTight(""),
     m_isoToolGradientTightCalo(""),
     m_isoToolLooseTrackOnlyLoose(""),
@@ -431,8 +428,6 @@ XaodAnalysis& XaodAnalysis::initSusyTools()
 //----------------------------------------------------------
 XaodAnalysis& XaodAnalysis::initLocalTools()
 {
-
-
     //initPileupTool(); // this is now done in SUSYTools (as of ST-00-06-15)
     initElectronTools();
     initChargeFlipTagger();
@@ -442,8 +437,7 @@ XaodAnalysis& XaodAnalysis::initLocalTools()
     initIsoTools();
     initStopPolReweightTool();
 
- //   initTrigger(); // now using SUSYTools for all our trigger needs
-
+    //initTrigger(); // now using SUSYTools for all our trigger needs
     return *this;
 }
 //----------------------------------------------------------
@@ -573,31 +567,6 @@ void XaodAnalysis::initElectronTools()
         CHECK( m_elecSelLikelihoodTight.retrieve() );
     } // configured
 
-//    // VeryLooseLLH
-//    m_elecSelLikelihoodVeryLoose = new AsgElectronLikelihoodTool("AsgElectronLikelihoodToolVeryLoose");
-//    CHECK( m_elecSelLikelihoodVeryLoose->setProperty("WorkingPoint", wp_veryloose) );
-//    CHECK( m_elecSelLikelihoodVeryLoose->initialize() );
-//
-//    // LooseLLH
-//    m_elecSelLikelihoodLoose = new AsgElectronLikelihoodTool("AsgElectronLikelihoodToolLoose");
-//    CHECK( m_elecSelLikelihoodLoose->setProperty("WorkingPoint", wp_loose) );
-//    CHECK( m_elecSelLikelihoodLoose->initialize() );
-//
-//    // LooseAndBLayerLLH
-//    m_elecSelLikelihoodLooseBLayer = new AsgElectronLikelihoodTool("AsgElectronLikelihoodToolLooseBLayer");
-//    CHECK( m_elecSelLikelihoodLooseBLayer->setProperty("WorkingPoint", wp_loose_blayer) ); 
-//    CHECK( m_elecSelLikelihoodLooseBLayer->initialize() );
-//    
-//    // MediumLLH
-//    m_elecSelLikelihoodMedium = new AsgElectronLikelihoodTool("AsgElectronLikelihoodToolMedium");
-//    CHECK( m_elecSelLikelihoodMedium->setProperty("WorkingPoint", wp_medium) );
-//    CHECK( m_elecSelLikelihoodMedium->initialize() );
-//
-//    // TightLLH
-//    m_elecSelLikelihoodTight = new AsgElectronLikelihoodTool("AsgElectronLikelihoodToolTight");
-//    CHECK( m_elecSelLikelihoodTight->setProperty("WorkingPoint", wp_tight) );
-//    CHECK( m_elecSelLikelihoodTight->initialize() );
-
 }
 //----------------------------------------------------------
 void XaodAnalysis::initChargeFlipTagger()
@@ -624,10 +593,6 @@ void XaodAnalysis::initChargeFlipTagger()
 void XaodAnalysis::initPhotonTools()
 {
     // Initialize photon selection tools
-    //std::string config_location = "ElectronPhotonSelectorTools/offline/mc15_20150712/";
-    //std::string config_loose = "PhotonIsEMLooseSelectorCutDefs.conf";
-    //std::string config_tight = "PhotonIsEMTightSelectorCutDefs.conf";
-
     string tool_name = "";
 
     // loose
@@ -645,24 +610,12 @@ void XaodAnalysis::initPhotonTools()
         CHECK( m_photonSelTight.setProperty("WorkingPoint", "TightPhoton") );
         CHECK( m_photonSelTight.retrieve() );
     } // configured 
-
-//    //  > loose
-//    m_photonSelLoose = new AsgPhotonIsEMSelector("SusyCommonPhoLoose");
-//    CHECK( m_photonSelLoose->setProperty("WorkingPoint", "LoosePhoton") );
-//    CHECK( m_photonSelLoose->initialize() );
-//
-//    //  > tight
-//    m_photonSelTight = new AsgPhotonIsEMSelector("SusyCommonPhoTight");
-//    CHECK( m_photonSelTight->setProperty("WorkingPoint", "TightPhoton") );
-//    CHECK( m_photonSelTight->initialize() );
-
 }
 //----------------------------------------------------------
 void XaodAnalysis::initMuonTools()
 {
 
     // Initialize muon selection tools
-
     string tool_name = "";
 
     // very loose
@@ -700,34 +653,11 @@ void XaodAnalysis::initMuonTools()
         CHECK( m_muonSelectionToolTight.setProperty("MuQuality", int(xAOD::Muon::Tight)) );
         CHECK( m_muonSelectionToolTight.retrieve() );
     } // configured
-
-/*
-    m_muonSelectionToolVeryLoose = new CP::MuonSelectionTool("MuonSelectionTool_VeryLoose");
-    CHECK( m_muonSelectionToolVeryLoose->setProperty( "MaxEta", 2.7 ) );
-    CHECK( m_muonSelectionToolVeryLoose->setProperty( "MuQuality", int(xAOD::Muon::VeryLoose) ));// Warning: includes bad muons!
-    CHECK( m_muonSelectionToolVeryLoose->initialize() );
-
-    m_muonSelectionToolLoose = new CP::MuonSelectionTool("MuonSelectionTool_Loose");
-    CHECK( m_muonSelectionToolLoose->setProperty( "MaxEta", 2.7 ) );
-    CHECK( m_muonSelectionToolLoose->setProperty( "MuQuality", int(xAOD::Muon::Loose) ));
-    CHECK( m_muonSelectionToolLoose->initialize() );
-    
-    m_muonSelectionToolMedium = new CP::MuonSelectionTool("MuonSelectionTool_Medium");
-    CHECK( m_muonSelectionToolMedium->setProperty( "MaxEta", 2.7 ) );
-    CHECK( m_muonSelectionToolMedium->setProperty( "MuQuality", int(xAOD::Muon::Medium) ));
-    CHECK( m_muonSelectionToolMedium->initialize() );
-
-    m_muonSelectionToolTight = new CP::MuonSelectionTool("MuonSelectionTool_Tight");
-    CHECK( m_muonSelectionToolTight->setProperty( "MaxEta", 2.7 ) );
-    CHECK( m_muonSelectionToolTight->setProperty( "MuQuality", int(xAOD::Muon::Tight) ));
-    CHECK( m_muonSelectionToolTight->initialize() );
-*/
 }
 //----------------------------------------------------------
 void XaodAnalysis::initTauTools()
 {
     // Let's select some taus
-
     string tool_name = "";
     string input_file = "";
 
@@ -758,52 +688,15 @@ void XaodAnalysis::initTauTools()
         CHECK( m_tauSelToolTight.retrieve() );
     } // configured
 
-/*
-    // > loose
-    m_tauSelToolLoose = new TauAnalysisTools::TauSelectionTool("SusyCommonTauSelectionTool_Loose");
-    CHECK( m_tauSelToolLoose->setProperty("ConfigPath", m_data_dir + "SUSYTools/tau_selection_loose.conf") );
-    CHECK( m_tauSelToolLoose->initialize() );
-    // > medium
-    m_tauSelToolMedium = new TauAnalysisTools::TauSelectionTool("SusyCommonTauSelectionTool_Medium");
-    CHECK( m_tauSelToolMedium->setProperty("ConfigPath", m_data_dir + "SUSYTools/tau_selection_medium.conf") );
-    CHECK( m_tauSelToolMedium->initialize() );
-    // > tight
-    m_tauSelToolTight = new TauAnalysisTools::TauSelectionTool("SusyCommonTauSelectionTool_Tight");
-    CHECK( m_tauSelToolTight->setProperty("ConfigPath", m_data_dir + "SUSYTools/tau_selection_tight.conf") );
-    CHECK( m_tauSelToolTight->initialize() );
-
-*/
     // Truth Matching for all of the infos
     m_tauTruthMatchingTool = new TauAnalysisTools::TauTruthMatchingTool("SusyCommonTauTruthMatchingTool");
     CHECK( m_tauTruthMatchingTool->initialize() );
     m_tauTruthMatchingTool->msg().setLevel( MSG::INFO );
-
-    //m_tauTruthMatchingTool = new TauAnalysisTools::TauTruthMatchingTool("TauTruthMatchingTool");  // memory leak check
-    //m_tauTruthMatchingTool->msg().setLevel(m_dbg ? MSG::DEBUG : MSG::ERROR);                      // memory leak check
-    //CHECK(m_tauTruthMatchingTool->initialize());                                                  // memory leak check
-   // // dantrim Jul 2 :: following TauTruthTool setup found in SUSYTools
-   // m_tauTruthMatchingTool = new TauAnalysisTools::TauTruthMatchingTool("TauTruthMatchingTool");
-   // m_tauTruthMatchingTool->msg().setLevel(MSG::INFO);
-   // CHECK( m_tauTruthMatchingTool->initialize() );   
- 
-    //AT: 05-07-15: consider adding ?
-    //m_tauTruthMatchingTool->setProperty("SampleType", (int)TauAnalysisTools::SHERPA);
-    //m_tauTruthMatchingTool->setProperty("SampleType", (int)TauAnalysisTools::PYTHIA);//default
-
-
-    //#warning TauEfficiencyTool should be initialized per TauSelTool WP
-    //#warning Tau SF should not be used currently
-    //m_TauEffEleTool = new TauAnalysisTools::TauEfficiencyCorrectionsTool("TauEfficiencyTool");
-    //m_TauEffEleTool->msg().setLevel(MSG::ERROR); // don't need warnings about histogram binning
-
-    //CHECK(m_TauEffEleTool->setProperty("EfficiencyCorrectionType", (int) TauAnalysisTools::SFContJetID)); // this is mc12 rec, use default mc15
-    //CHECK(m_TauEffEleTool->initialize());
 }
 //----------------------------------------------------------
 void XaodAnalysis::initIsoTools()
 {
     // see: https://twiki.cern.ch/twiki/bin/view/AtlasProtected/IsolationSelectionTool
-
     string tool_name = "";
 
     // Gradient Loose WP for leptons, FixedCutTight WP for photons
@@ -855,45 +748,6 @@ void XaodAnalysis::initIsoTools()
         CHECK( m_isoToolTight.setProperty("PhotonWP",   "FixedCutTight") );
         CHECK( m_isoToolTight.retrieve() );
     } // configured 
-
-
-/*
-    // Gradient Loose WP for leptons, FixedCutTight WP for photons
-    m_isoToolGradientLooseTight = new CP::IsolationSelectionTool( "IsolationSelectionTool_GradientLoose" );
-    CHECK( m_isoToolGradientLooseTight->setProperty( "ElectronWP",   "GradientLoose") );
-    CHECK( m_isoToolGradientLooseTight->setProperty( "MuonWP",       "GradientLoose") );
-    CHECK( m_isoToolGradientLooseTight->setProperty( "PhotonWP",     "FixedCutTight") );
-    CHECK( m_isoToolGradientLooseTight->initialize() );
-    
-    // Gradient WP for leptons, FixedCutTightCaloOnly WP for photons
-    m_isoToolGradientTightCalo = new CP::IsolationSelectionTool( "IsolationSelectionTool_Gradient" );
-    CHECK( m_isoToolGradientTightCalo->setProperty( "ElectronWP",   "Gradient") );
-    CHECK( m_isoToolGradientTightCalo->setProperty( "MuonWP",       "Gradient") );
-    CHECK( m_isoToolGradientTightCalo->setProperty( "PhotonWP",     "FixedCutTightCaloOnly") );
-    CHECK( m_isoToolGradientTightCalo->initialize() );
-
-    // LooseTrackOnly WP, Loose WP for photons
-    m_isoToolLooseTrackOnlyLoose = new CP::IsolationSelectionTool( "IsolationSelectionTool_LooseTrackOnly" );
-    CHECK( m_isoToolLooseTrackOnlyLoose->setProperty( "ElectronWP",   "LooseTrackOnly") );
-    CHECK( m_isoToolLooseTrackOnlyLoose->setProperty( "MuonWP",       "LooseTrackOnly") );
-    CHECK( m_isoToolLooseTrackOnlyLoose->setProperty( "PhotonWP",     "FixedCutLoose") );
-    CHECK( m_isoToolLooseTrackOnlyLoose->initialize() );
-    
-    // Loose WP for leptons, FixedCutTight WP for photons
-    m_isoToolLoose = new CP::IsolationSelectionTool( "IsolationSelectionTool_Loose" );
-    CHECK( m_isoToolLoose->setProperty( "ElectronWP",   "Loose") );
-    CHECK( m_isoToolLoose->setProperty( "MuonWP",       "Loose") );
-    CHECK( m_isoToolLoose->setProperty( "PhotonWP",     "FixedCutTight") );
-    CHECK( m_isoToolLoose->initialize() );
-    
-    // Tight WP for leptons, FixedCutTight WP for photons
-    m_isoToolTight = new CP::IsolationSelectionTool( "IsolationSelectionTool_Tight" );
-    CHECK( m_isoToolTight->setProperty( "ElectronWP",   "Tight") );
-    CHECK( m_isoToolTight->setProperty( "MuonWP",       "Tight") );
-    CHECK( m_isoToolTight->setProperty( "PhotonWP",     "FixedCutTight") );
-    CHECK( m_isoToolTight->initialize() );
-*/
-
 }
 //----------------------------------------------------------
 void XaodAnalysis::initTrigger()
@@ -961,7 +815,6 @@ xAOD::MuonContainer* XaodAnalysis::xaodMuons(ST::SystInfo sysInfo, SusyNtSys sys
     }
     else{
         if(!m_xaodMuons_nom){
-        //if(m_xaodMuons_nom==NULL){
             CHECK( m_susyObj[m_eleIDDefault]->GetMuons(m_xaodMuons_nom, m_xaodMuonsAux_nom, true) );
             if(m_dbg>=5) cout << "xaodMuo_nom " << m_xaodMuons_nom->size() << endl;
         }
@@ -982,7 +835,6 @@ xAOD::ElectronContainer* XaodAnalysis::xaodElectrons(ST::SystInfo sysInfo, SusyN
     }
     else{
         if(!m_xaodElectrons_nom){
-        //if(m_xaodElectrons_nom==NULL){
             CHECK( m_susyObj[m_eleIDDefault]->GetElectrons(m_xaodElectrons_nom, m_xaodElectronsAux_nom, true) );
             if(m_dbg>=5) cout << "xaodEle_nom " << m_xaodElectrons_nom->size() << endl;
         }
@@ -1003,7 +855,6 @@ xAOD::TauJetContainer* XaodAnalysis::xaodTaus(ST::SystInfo sysInfo, SusyNtSys sy
     }
     else{
         if(!m_xaodTaus_nom){
-        //if(m_xaodTaus_nom==NULL){
             CHECK( m_susyObj[m_eleIDDefault]->GetTaus(m_xaodTaus_nom, m_xaodTausAux_nom, true) );
             if(m_dbg>=5) cout << "xaodTaus_nom " << m_xaodTaus_nom->size() << endl;
         }
@@ -1024,7 +875,6 @@ xAOD::JetContainer* XaodAnalysis::xaodJets(ST::SystInfo sysInfo, SusyNtSys sys)
     }
     else{
         if(!m_xaodJets_nom){
-        //if(m_xaodJets_nom==NULL){
             CHECK( m_susyObj[m_eleIDDefault]->GetJets(m_xaodJets_nom, m_xaodJetsAux_nom, true) );
             if(m_dbg>=5) cout << "xaodJets_nom " << m_xaodJets_nom->size() << endl;
         }
@@ -1045,7 +895,6 @@ xAOD::PhotonContainer* XaodAnalysis::xaodPhotons(ST::SystInfo sysInfo, SusyNtSys
     }
     else{
         if(!m_xaodPhotons_nom){
-        //if(m_xaodPhotons_nom==NULL){
             CHECK( m_susyObj[m_eleIDDefault]->GetPhotons(m_xaodPhotons_nom, m_xaodPhotonsAux_nom, true) );
             if(m_dbg>=5) cout << "xaodPho_nom " << m_xaodPhotons_nom->size() << endl;
         }
@@ -2840,7 +2689,7 @@ XaodAnalysis& XaodAnalysis::clearContainerPointers(bool deleteNominal)
         m_xaodTruthParticlesAux  = 0; 
 
         m_xaodEventInfo          = 0; 
-        m_xaodVertices           = NULL; 
+        m_xaodVertices           = 0; 
     }
 
 

@@ -1044,6 +1044,7 @@ void SusyNtMaker::storeMuon(const xAOD::Muon &in, const xAOD::MuonContainer &muo
         
         delete sf_muon;
         delete sf_muon_aux;
+        //delete sfMu;
     }
     //////////////////////////////////////
     // Systematic variation on muon SF
@@ -1173,6 +1174,7 @@ void SusyNtMaker::storeMuon(const xAOD::Muon &in, const xAOD::MuonContainer &muo
             }
             delete sf_muon;
             delete sf_muon_aux;
+            //delete sfMu;
 
             for(int i=MuonId::VeryLoose; i < MuonId::MuonIdInvalid; i++) {
                 if      (ourSys == NtSys::MUON_EFF_TRIG_STAT_UP)    out.errTrigSF_stat_up[i] = sf_trig[i] - out.muoTrigSF[i];
@@ -1338,6 +1340,7 @@ void SusyNtMaker::storeJet(const xAOD::Jet &in)
             } // if sys
             delete jvt_jet;
             delete jvt_jet_aux;
+            //delete jvtJet;
         } // pt/eta range
     }//mc
 
@@ -2030,7 +2033,6 @@ void SusyNtMaker::storeMuonKinSys(ST::SystInfo sysInfo, SusyNtSys sys)
             if(m_dbg>=5) cout << " Muon not found - adding to susyNt" << endl;
             mu_nom = muons_nom->at(iMu);//assume order is preserved
             storeMuon(*mu_nom, *muons);//this add the mu at the end... 
-            //storeMuon(*mu_nom);
             m_preMuons_nom.push_back(iMu);
             mu_susyNt = & m_susyNt.muo()->back(); //get the newly inserted mument
         }

@@ -616,68 +616,41 @@ namespace Susy {
     // Performance tools
     std::string m_data_dir;
 
-    //handle
     asg::AnaToolHandle<IAsgElectronLikelihoodTool> m_elecSelLikelihoodVeryLoose;
     asg::AnaToolHandle<IAsgElectronLikelihoodTool> m_elecSelLikelihoodLoose;
     asg::AnaToolHandle<IAsgElectronLikelihoodTool> m_elecSelLikelihoodLooseBLayer;
     asg::AnaToolHandle<IAsgElectronLikelihoodTool> m_elecSelLikelihoodMedium;
     asg::AnaToolHandle<IAsgElectronLikelihoodTool> m_elecSelLikelihoodTight;
 
-    //AsgElectronLikelihoodTool *m_elecSelLikelihoodVeryLoose;
-    //AsgElectronLikelihoodTool *m_elecSelLikelihoodLoose;
-    //AsgElectronLikelihoodTool *m_elecSelLikelihoodLooseBLayer;
-    //AsgElectronLikelihoodTool *m_elecSelLikelihoodMedium;
-    //AsgElectronLikelihoodTool *m_elecSelLikelihoodTight;
-
     AsgElectronChargeIDSelectorTool* m_electronChargeIDTool;
 
     // Photon selection tools
-    //handle
     asg::AnaToolHandle<IAsgPhotonIsEMSelector> m_photonSelLoose;
     asg::AnaToolHandle<IAsgPhotonIsEMSelector> m_photonSelTight;
-    //AsgPhotonIsEMSelector *m_photonSelLoose;
-    //AsgPhotonIsEMSelector *m_photonSelTight;
 
     CP::PileupReweightingTool           *m_pileupReweightingTool;
     ToolHandle<CP::IPileupReweightingTool> *m_pileup;
     
-    //handle
     asg::AnaToolHandle<CP::IMuonSelectionTool> m_muonSelectionToolVeryLoose;
     asg::AnaToolHandle<CP::IMuonSelectionTool> m_muonSelectionToolLoose;
     asg::AnaToolHandle<CP::IMuonSelectionTool> m_muonSelectionToolMedium;
     asg::AnaToolHandle<CP::IMuonSelectionTool> m_muonSelectionToolTight;
 
-    
-    //CP::MuonSelectionTool               *m_muonSelectionToolVeryLoose;
-    //CP::MuonSelectionTool               *m_muonSelectionToolLoose;
-    //CP::MuonSelectionTool               *m_muonSelectionToolMedium;
-    //CP::MuonSelectionTool               *m_muonSelectionToolTight;
-
     // Lepton isolation tools
-    //handle
     asg::AnaToolHandle<CP::IIsolationSelectionTool> m_isoToolGradientLooseTight;
     asg::AnaToolHandle<CP::IIsolationSelectionTool> m_isoToolGradientTightCalo;
     asg::AnaToolHandle<CP::IIsolationSelectionTool> m_isoToolLooseTrackOnlyLoose;
     asg::AnaToolHandle<CP::IIsolationSelectionTool> m_isoToolLoose;
     asg::AnaToolHandle<CP::IIsolationSelectionTool> m_isoToolTight;
-    //CP::IsolationSelectionTool *m_isoToolGradientLooseTight;
-    //CP::IsolationSelectionTool *m_isoToolGradientTightCalo;
-    //CP::IsolationSelectionTool *m_isoToolLooseTrackOnlyLoose;
-    //CP::IsolationSelectionTool *m_isoToolLoose;
-    //CP::IsolationSelectionTool *m_isoToolTight;
 
     //Tau truth matchong tools
     TauAnalysisTools::TauTruthMatchingTool       *m_tauTruthMatchingTool;
     TauAnalysisTools::TauTruthTrackMatchingTool  *m_tauTruthTrackMatchingTool;
     TauAnalysisTools::TauEfficiencyCorrectionsTool *m_TauEffEleTool;
     // Tau Selection tool
-    //handle
     asg::AnaToolHandle<TauAnalysisTools::ITauSelectionTool> m_tauSelToolLoose;
     asg::AnaToolHandle<TauAnalysisTools::ITauSelectionTool> m_tauSelToolMedium;
     asg::AnaToolHandle<TauAnalysisTools::ITauSelectionTool> m_tauSelToolTight;
-    //TauAnalysisTools::TauSelectionTool  *m_tauSelToolLoose;
-    //TauAnalysisTools::TauSelectionTool  *m_tauSelToolMedium;
-    //TauAnalysisTools::TauSelectionTool  *m_tauSelToolTight;
 
     // StopPolarization
     StopPolarization::PolarizationReweight *m_polreweight;
