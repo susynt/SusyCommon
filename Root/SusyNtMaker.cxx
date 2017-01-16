@@ -919,8 +919,15 @@ void SusyNtMaker::storeMuon(const xAOD::Muon &in, const xAOD::MuonContainer &muo
         double  primvertex_z = (PV) ? PV->z() : 0.;
         out.d0             = track->d0();
         out.errD0          = Amg::error(track->definingParametersCovMatrix(),0); 
-        out.d0sigBSCorr = xAOD::TrackingHelpers::d0significance( track, eventinfo->beamPosSigmaX(),
-                                    eventinfo->beamPosSigmaY(), eventinfo->beamPosSigmaXY() );
+        // add protection against missing muon track covariance matrix
+        try {
+            out.d0sigBSCorr = xAOD::TrackingHelpers::d0significance( track, eventinfo->beamPosSigmaX(),
+                                        eventinfo->beamPosSigmaY(), eventinfo->beamPosSigmaXY() );
+        }
+        catch (...) {
+            out.d0sigBSCorr = -99.;
+            std::cout << "SusyNtMaker::storeMuon    WARNING: Exception caught from d0significance calculation. Setting muon d0sigBSCorr to -99." << std::endl;
+        }
         out.z0             = track->z0() + track->vz() - primvertex_z;
         out.errZ0          = Amg::error(track->definingParametersCovMatrix(),1); 
     }
