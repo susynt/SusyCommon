@@ -541,11 +541,11 @@ void SusyNtMaker::storeElectron(const xAOD::Electron &in)
     //////////////////////////////////////
     // Isolation flags (IsolationSelectionTool)
     //////////////////////////////////////
-    out.isoGradientLoose  = m_isoToolGradientLooseTight->accept(in) ? true : false;
-    out.isoGradient       = m_isoToolGradientTightCalo->accept(in) ? true : false;
-    out.isoLooseTrackOnly = m_isoToolLooseTrackOnlyLoose->accept(in) ? true : false;
-    out.isoLoose          = m_isoToolLoose->accept(in) ? true : false;
-    out.isoTight          = m_isoToolTight->accept(in) ? true : false;
+    out.isoGradientLoose          = m_isoToolGradientLooseTight->accept(in) ? true : false;
+    out.isoGradient               = m_isoToolGradientTightCalo->accept(in) ? true : false;
+    out.isoLooseTrackOnly         = m_isoToolLooseTrackOnlyLoose->accept(in) ? true : false;
+    out.isoLoose                  = m_isoToolLoose->accept(in) ? true : false;
+    out.isoFixedCutTightTrackOnly = m_isoToolTight->accept(in) ? true : false;
 
     //////////////////////////////////////
     // Isolation variables
@@ -871,11 +871,11 @@ void SusyNtMaker::storeMuon(const xAOD::Muon &in, const xAOD::MuonContainer &muo
     //////////////////////////////////////
     // Isolation flags (IsolationSelectionTool)
     //////////////////////////////////////
-    out.isoGradientLoose    = m_isoToolGradientLooseTight->accept(in) ? true : false;
-    out.isoGradient         = m_isoToolGradientTightCalo->accept(in) ? true : false;
-    out.isoLooseTrackOnly   = m_isoToolLooseTrackOnlyLoose->accept(in) ? true : false;
-    out.isoLoose            = m_isoToolLoose->accept(in) ? true : false;
-    out.isoTight            = m_isoToolTight->accept(in) ? true : false;
+    out.isoGradientLoose          = m_isoToolGradientLooseTight->accept(in) ? true : false;
+    out.isoGradient               = m_isoToolGradientTightCalo->accept(in) ? true : false;
+    out.isoLooseTrackOnly         = m_isoToolLooseTrackOnlyLoose->accept(in) ? true : false;
+    out.isoLoose                  = m_isoToolLoose->accept(in) ? true : false;
+    out.isoFixedCutTightTrackOnly = m_isoToolTight->accept(in) ? true : false;
 
     bool all_available=true;
 

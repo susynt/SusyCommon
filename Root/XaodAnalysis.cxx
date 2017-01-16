@@ -739,12 +739,12 @@ void XaodAnalysis::initIsoTools()
         CHECK( m_isoToolLoose.retrieve() );
     }  // configured
 
-    // Tight WP for leptons, FixedCutTight WP for photons
+    // FixedCutTightTrackOnly WP for leptons, FixedCutTight WP for photons
     if(!m_isoToolTight.isUserConfigured()) {
         tool_name = "SUSY_IsoTool_Tight";
         SET_DUAL_TOOL(m_isoToolTight, CP::IsolationSelectionTool, tool_name);
-        CHECK( m_isoToolTight.setProperty("ElectronWP", "Tight") );
-        CHECK( m_isoToolTight.setProperty("MuonWP",     "Tight") );
+        CHECK( m_isoToolTight.setProperty("ElectronWP", "FixedCutTightTrackOnly") );
+        CHECK( m_isoToolTight.setProperty("MuonWP",     "FixedCutTightTrackOnly") );
         CHECK( m_isoToolTight.setProperty("PhotonWP",   "FixedCutTight") );
         CHECK( m_isoToolTight.retrieve() );
     } // configured 
