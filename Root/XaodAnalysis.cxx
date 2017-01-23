@@ -444,6 +444,18 @@ void XaodAnalysis::initStopPolReweightTool()
   }
 }
 //----------------------------------------------------------
+std::vector<float> XaodAnalysis::getMcWeights(const xAOD::EventInfo *eventInfo)
+{
+    std::cout << "WEIGHTS_DBG  begin getMcWeightMap\n";
+    std::vector<float> mcWeights;
+    for (const float weight : eventInfo->mcEventWeights()) {
+        mcWeights.push_back(weight);
+        std::cout << "WEIGHTS_DBG    added weight: " << weight << "\n";
+    }
+    std::cout << "WEIGHTS_DBG  end getMcWeightMap\n";
+    return mcWeights;
+}
+//----------------------------------------------------------
 void XaodAnalysis::initPileupTool()
 {
     // This function is obsolete now that SUSYTools implements its own tool
