@@ -316,6 +316,9 @@ namespace Susy {
     float getLepSF(const std::vector<LeptonInfo>& leptons); ///< Lepton efficiency SF
     float getBTagSF(const std::vector<int>& jets); ///< BTag efficiency SF
 
+    // MC weights
+    std::vector<float> getMcWeights(const xAOD::EventInfo *eventInfo);
+
     // Utility methods
     void calcRandomRunLB(); ///< calculate random run/lb numbers for MC
     int getHFORDecision(); ///< HF overlap removal decision (DG obsolete?)

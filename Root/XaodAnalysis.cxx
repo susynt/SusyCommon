@@ -2717,3 +2717,22 @@ XaodAnalysis& XaodAnalysis::retrieveCollections()
 
     return *this;
 }
+//----------------------------------------------------------
+std::vector<float> XaodAnalysis::getMcWeights(const xAOD::EventInfo *eventInfo)
+{
+    std::vector<float> mcWeights;
+    for (const float weight : eventInfo->mcEventWeights()) {
+        mcWeights.push_back(weight);
+    }
+
+    // alternative method:
+    //const xAOD::TruthEventContainer *truthE;
+    //CHECK( m_event.retrieve( truthE, "TruthEvents" ) );
+    //const xAOD::TruthEvent *truthEvent = (*truthE)[0];
+    //for (const float weight : truthEvent->weights()) {
+    //    truthWeights.push_back(weight);
+    //}
+
+    return mcWeights;
+}
+
