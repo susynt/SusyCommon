@@ -641,6 +641,7 @@ void XaodAnalysis::initMuonTools()
         SET_DUAL_TOOL(m_muonSelectionToolVeryLoose, CP::MuonSelectionTool, tool_name);
         CHECK( m_muonSelectionToolVeryLoose.setProperty("MaxEta", 2.7) );
         CHECK( m_muonSelectionToolVeryLoose.setProperty("MuQuality", int(xAOD::Muon::VeryLoose)) );
+        CHECK( m_muonSelectionToolVeryLoose.setProperty("TrtCutOff", false) ); // SUSYTools default
         CHECK( m_muonSelectionToolVeryLoose.retrieve() );
     } // configured
 
@@ -650,6 +651,7 @@ void XaodAnalysis::initMuonTools()
         SET_DUAL_TOOL(m_muonSelectionToolLoose, CP::MuonSelectionTool, tool_name);
         CHECK( m_muonSelectionToolLoose.setProperty("MaxEta", 2.7) );
         CHECK( m_muonSelectionToolLoose.setProperty("MuQuality", int(xAOD::Muon::Loose)) );
+        CHECK( m_muonSelectionToolLoose.setProperty("TrtCutOff", false) ); // SUSYTools default
         CHECK( m_muonSelectionToolLoose.retrieve() );
     } // configured
 
@@ -659,6 +661,7 @@ void XaodAnalysis::initMuonTools()
         SET_DUAL_TOOL(m_muonSelectionToolMedium, CP::MuonSelectionTool, tool_name);
         CHECK( m_muonSelectionToolMedium.setProperty("MaxEta", 2.7) );
         CHECK( m_muonSelectionToolMedium.setProperty("MuQuality", int(xAOD::Muon::Medium)) );
+        CHECK( m_muonSelectionToolMedium.setProperty("TrtCutOff", false) ); // SUSYTools default
         CHECK( m_muonSelectionToolMedium.retrieve() );
     } // configured
 
@@ -668,6 +671,7 @@ void XaodAnalysis::initMuonTools()
         SET_DUAL_TOOL(m_muonSelectionToolTight, CP::MuonSelectionTool, tool_name);
         CHECK( m_muonSelectionToolTight.setProperty("MaxEta", 2.7) );
         CHECK( m_muonSelectionToolTight.setProperty("MuQuality", int(xAOD::Muon::Tight)) );
+        CHECK( m_muonSelectionToolTight.setProperty("TrtCutOff", false) ); // SUSYTools default
         CHECK( m_muonSelectionToolTight.retrieve() );
     } // configured
 }
