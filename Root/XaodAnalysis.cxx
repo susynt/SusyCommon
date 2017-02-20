@@ -1133,7 +1133,7 @@ void XaodAnalysis::selectBaselineObjects(SusyNtSys sys, ST::SystInfo sysInfo)
         //dantrim May 5 2015 - thresholds a la ElectronEfficiencyCorrection
         const xAOD::CaloCluster* cluster = el->caloCluster();
         double et = cluster->e()/cosh(cluster->eta());
-        if( et * MeV2GeV > 7 )
+        if( et * MeV2GeV > 5 )
             m_preElectrons.push_back(iEl);
     }
     if(m_dbg) cout<<"preElectrons["<<m_preElectrons.size()<<"]"<<endl;
