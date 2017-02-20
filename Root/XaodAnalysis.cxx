@@ -682,12 +682,23 @@ void XaodAnalysis::initTauTools()
     string tool_name = "";
     string input_file = "";
 
+    // dantrim (Feb 20 2017) : Recalculate tau-lep OR -- current samples (MC p-tag p2879, 20.7.8.2) are not AODFixed
+    // and doing this gets rid of errors, etc... and recaulculates internal variables
+    // see: https://its.cern.ch/jira/browse/ATLASG-1087
+    bool tauRecalcOLR = true; 
+
     // loose
     if(!m_tauSelToolLoose.isUserConfigured()) {
         tool_name = "SUSY_TauSel_Loose";
         input_file = "SUSYTools/tau_selection_loose.conf";
         SET_DUAL_TOOL(m_tauSelToolLoose, TauAnalysisTools::TauSelectionTool, tool_name);
         CHECK( m_tauSelToolLoose.setProperty("ConfigPath", input_file) );
+
+        if(tauRecalcOLR) {
+            CHECK( m_tauSelToolLoose.setProperty("IgnoreAODFixCheck", true) );
+            CHECK( m_tauSelToolLoose.setProperty("RecalcEleOLR", true) );
+        }
+
         CHECK( m_tauSelToolLoose.retrieve() );
     } // configured
 
@@ -697,6 +708,12 @@ void XaodAnalysis::initTauTools()
         input_file = "SUSYTools/tau_selection_medium.conf"; 
         SET_DUAL_TOOL(m_tauSelToolMedium, TauAnalysisTools::TauSelectionTool, tool_name);
         CHECK( m_tauSelToolMedium.setProperty("ConfigPath", input_file) );
+
+        if(tauRecalcOLR) {
+            CHECK( m_tauSelToolMedium.setProperty("IgnoreAODFixCheck", true) );
+            CHECK( m_tauSelToolMedium.setProperty("RecalcEleOLR", true) );
+        }
+
         CHECK( m_tauSelToolMedium.retrieve() ); 
     } // configured 
 
@@ -706,6 +723,12 @@ void XaodAnalysis::initTauTools()
         input_file = "SUSYTools/tau_selection_tight.conf";
         SET_DUAL_TOOL(m_tauSelToolTight, TauAnalysisTools::TauSelectionTool, tool_name);
         CHECK( m_tauSelToolTight.setProperty("ConfigPath", input_file) );
+
+        if(tauRecalcOLR) {
+            CHECK( m_tauSelToolTight.setProperty("IgnoreAODFixCheck", true) );
+            CHECK( m_tauSelToolTight.setProperty("RecalcEleOLR", true) );
+        }
+
         CHECK( m_tauSelToolTight.retrieve() );
     } // configured
 
