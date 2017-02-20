@@ -359,6 +359,8 @@ XaodAnalysis& XaodAnalysis::initSusyTools()
             prwFiles.push_back("dev/SUSYTools/merged_prw_mc15c_latest.root");
             // add our signal samples
             prwFiles.push_back(m_data_dir+"SusyCommon/signal_prw.root");
+            // additional mc backgrounds
+            prwFiles.push_back(m_data_dir+"SusyCommon/additional_mc_prw.root");
         }
         else {
             cout << "XaodAnalysis::initSusyTools    "
@@ -368,7 +370,7 @@ XaodAnalysis& XaodAnalysis::initSusyTools()
         m_susyObj[susyObjId]->setProperty("PRWConfigFiles", prwFiles);
         // data luminosity profile
         std::vector<std::string> lumicalcFiles;
-        lumicalcFiles.push_back(m_data_dir+"SusyCommon/ilumicalc_histograms_None_297730-311481_OflLumi-13TeV-005.root"); // data16: updated Nov 10 2016 with GRL v83-pro20-15 (33.3 fb-1)
+        lumicalcFiles.push_back(m_data_dir+"SusyCommon/ilumicalc_histograms_None_297730-311481_OflLumi-13TeV-008.root"); // data16: updated Feb 20 2017 with GRL v88-pro20-21_DQDefects-00-02-04 (32.86/fb)
         lumicalcFiles.push_back(m_data_dir+"SusyCommon/ilumicalc_histograms_None_276262-284484.root"); // data15: updated with GRL v75
         m_susyObj[susyObjId]->setProperty("PRWLumiCalcFiles", lumicalcFiles); 
 
@@ -480,13 +482,15 @@ void XaodAnalysis::initPileupTool()
         prwFiles.push_back("dev/SUSYTools/merged_prw_mc15c_latest.root");
         // add our signal samples
         prwFiles.push_back("dev/SusyCommon/signal_prw.root");
+        // addition mc background
+        prwFiles.push_back(m_data_dir+"SusyCommon/additional_mc_prw.root");
     }
     else {
         cout << "XaodAnalysis::initPileupTool    "
              << "Inconsistent MC options when setting up PRW config! Exiting." << endl;
         exit(1);
     }
-    lumicalcFiles.push_back(m_data_dir+"SusyCommon/ilumicalc_histograms_None_297730-311481_OflLumi-13TeV-005.root"); // data16: updated Nov 10 2016 with GRL v82-pro20-12 (33.3 fb-1)
+    lumicalcFiles.push_back(m_data_dir+"SusyCommon/ilumicalc_histograms_None_297730-311481_OflLumi-13TeV-008.root"); // data16: updated Feb 20 2017 with GRL v88-pro20-21_DQDefects-00-02-04 (32.86/fb)
     lumicalcFiles.push_back(m_data_dir+"SusyCommon/ilumicalc_histograms_None_276262-284484.root"); // data15: updated with GRL v79
 
 
@@ -2329,7 +2333,7 @@ std::string XaodAnalysis::defaultGrlFile()
         grl_file = "$ROOTCOREBIN/data/SusyCommon/data15_13TeV.periodAllYear_DetStatus-v79-repro20-02_DQDefects-00-02-02_PHYS_StandardGRL_All_Good_25ns.xml";
     }
     else if(m_isData16) {
-        grl_file = "$ROOTCOREBIN/data/SusyCommon/data16_13TeV.periodAllYear_DetStatus-v83-pro20-15_DQDefects-00-02-04_PHYS_StandardGRL_All_Good_25ns.xml"; 
+        grl_file = "$ROOTCOREBIN/data/SusyCommon/data16_13TeV.periodAllYear_DetStatus-v88-pro20-21_DQDefects-00-02-04_PHYS_StandardGRL_All_Good_25ns.xml"; 
     }
     else {
         cout << "XaodAnalysis::defaultGrlFile    ERROR Inconsistent data flags. Neither \"m_isData15\" nor \"m_isData15\" flags are set!" << endl;
