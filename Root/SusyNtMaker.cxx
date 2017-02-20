@@ -394,7 +394,7 @@ void SusyNtMaker::fillElectronVars()
             fillElectronChargeFlip(electrons, xaodTruthParticles(), datasetid);
         }
         for(auto &i : m_preElectrons){
-            storeElectron(*(electrons->at(i)));
+            storeElectron(*(electrons->at(i)), i);
         }
     }
     else {
@@ -491,7 +491,7 @@ void SusyNtMaker::fillTruthParticleVars()
 }
 
 //----------------------------------------------------------
-void SusyNtMaker::storeElectron(const xAOD::Electron &in)
+void SusyNtMaker::storeElectron(const xAOD::Electron &in, int input_idx)
 {
     if(m_dbg>=15) cout<<"SusyNtMaker::storeElectron pT "<< in.pt()*MeV2GeV <<endl;
     const xAOD::EventInfo* eventinfo = XaodAnalysis::xaodEventInfo();
@@ -577,6 +577,27 @@ void SusyNtMaker::storeElectron(const xAOD::Electron &in)
     bool isoSF=true;
 
     //////////////////////////////////////
+    // Electron <--> Ele Shared Track
+    //////////////////////////////////////
+    int max_idx = 10;
+    for(const auto iel : m_preElectrons) {
+        if(iel >= max_idx) max_idx = iel+1;
+    }
+    out.sharedEleEleTrk.resize(max_idx, 0);
+    out.sharedEleEleTrk.assign(max_idx, 0);
+    
+    for(const auto iel : m_preElectrons) {
+        if(iel == input_idx) continue;
+        xAOD::ElectronContainer* ele = XaodAnalysis::xaodElectrons(systInfoList[0]);
+        if(in.trackParticleLink() == ele->at(iel)->trackParticleLink()) {
+            out.sharedEleEleTrk.at(iel) = 1;
+        }
+        else {
+            out.sharedEleEleTrk.at(iel) = 0;
+        }
+    } // iel
+
+    //////////////////////////////////////
     // Electron <--> Mu Shared Track
     //////////////////////////////////////
     out.sharedMuTrk.resize(m_preMuons.size(), 0);
@@ -613,6 +634,7 @@ void SusyNtMaker::storeElectron(const xAOD::Electron &in)
                 ele_trig = ele_trig16;
             out.eleEffSF[ElectronId::TightLLH] =  m_susyObj[m_eleIDDefault]->GetSignalElecSF (in, recoSF, idSF, trigSF, isoSF);
             out.eleTrigSF[ElectronId::TightLLH] = m_susyObj[m_eleIDDefault]->GetSignalElecSF (in, false, false, true, false, ele_trig);
+            out.eleCHFSF[ElectronId::TightLLH] = m_susyObj[m_eleIDDefault]->GetSignalElecSF (in, false, false, false, false, ele_trig, true);
         }
         else {
             if(m_susyObj[SusyObjId::eleTightLLH]->treatAsYear()==2016)
@@ -620,6 +642,7 @@ void SusyNtMaker::storeElectron(const xAOD::Electron &in)
             
             out.eleEffSF[ElectronId::TightLLH] =  m_susyObj[SusyObjId::eleTightLLH]->GetSignalElecSF (in, recoSF, idSF, trigSF, isoSF);
             out.eleTrigSF[ElectronId::TightLLH] = m_susyObj[SusyObjId::eleTightLLH]->GetSignalElecSF (in, false, false, true, false, ele_trig);
+            out.eleCHFSF[ElectronId::TightLLH] = m_susyObj[SusyObjId::eleTightLLH]->GetSignalElecSF (in, false, false, false, false, ele_trig, true);
             ele_trig = ele_trig15;
 
         
@@ -627,6 +650,7 @@ void SusyNtMaker::storeElectron(const xAOD::Electron &in)
                 ele_trig = ele_trig16;
             out.eleEffSF[ElectronId::MediumLLH] = m_susyObj[SusyObjId::eleMediumLLH]->GetSignalElecSF(in, recoSF, idSF, trigSF, isoSF);
             out.eleTrigSF[ElectronId::MediumLLH] = m_susyObj[SusyObjId::eleMediumLLH]->GetSignalElecSF(in, false, false, true, false, ele_trig);
+            out.eleCHFSF[ElectronId::MediumLLH] = m_susyObj[SusyObjId::eleMediumLLH]->GetSignalElecSF(in, false, false, false, false, ele_trig, true);
         }
         // there are no isolation SF's for electron ID looseLH
         //out.eleEffSF[ElectronId::LooseLH] = m_susyObj[SusyObjId::eleLooseLH]->GetSignalElecSF(in, recoSF, idSF, trigSF, isoSF);
@@ -647,9 +671,7 @@ void SusyNtMaker::storeElectron(const xAOD::Electron &in)
         if(m_derivation.Contains("SUSY")) {
             out.ss3lChargeFlip = in.auxdataConst<int>("chargeFlip");
 
-            bool pass_charge_id = false;
-            if(m_electronChargeIDTool)
-                pass_charge_id = m_electronChargeIDTool->accept(in);
+            bool pass_charge_id = m_electronChargeIDTool->accept(in);
             out.passChargeFlipTagger = pass_charge_id;
             out.chargeFlipBDT = m_electronChargeIDTool->calculate(&in, -99); // mu = -99 means will grab mu from EventInfo
 
@@ -678,15 +700,21 @@ void SusyNtMaker::storeElectron(const xAOD::Electron &in)
             } // i 
             vector<float> sf;
             sf.assign(ElectronId::ElectronIdInvalid, 1);
+            vector<float> sf_chf;
+            sf_chf.assign(ElectronId::ElectronIdInvalid, 1);
+
+            std::string nan_trig = "";
 
             if(m_run_oneST) {
                 sf[ElectronId::TightLLH]  = m_susyObj[m_eleIDDefault] ->GetSignalElecSF(in, recoSF, idSF, trigSF, isoSF);
-                sf[ElectronId::MediumLLH] = m_susyObj[m_eleIDDefault]->GetSignalElecSF(in, recoSF, idSF, trigSF, isoSF);
-
+                sf_chf[ElectronId::TightLLH] = m_susyObj[m_eleIDDefault] ->GetSignalElecSF(in, false, false, false, false, nan_trig, true);
             }
             else {
                 sf[ElectronId::TightLLH]  = m_susyObj[SusyObjId::eleTightLLH] ->GetSignalElecSF(in, recoSF, idSF, trigSF, isoSF);
                 sf[ElectronId::MediumLLH] = m_susyObj[SusyObjId::eleMediumLLH]->GetSignalElecSF(in, recoSF, idSF, trigSF, isoSF);
+
+                sf_chf[ElectronId::TightLLH] = m_susyObj[m_eleIDDefault] ->GetSignalElecSF(in, false, false, false, false,  nan_trig, true);
+                sf_chf[ElectronId::MediumLLH] = m_susyObj[m_eleIDDefault] ->GetSignalElecSF(in, false, false, false, false, nan_trig, true);
             }
 
             std::string ele_trig;
@@ -1044,14 +1072,11 @@ void SusyNtMaker::storeMuon(const xAOD::Muon &in, const xAOD::MuonContainer &muo
         }
         // dantrim Sept 15 2016 -- don't get trigger SF for loose muons (MuonTriggerScaleFactors tool complains... not yet sure if it is a problem
         // from our mangled setup or the tool's issue)
-        //out.muoTrigSF[MuonId::Loose]  = m_susyObj[SusyObjId::muoLoose]->GetTotalMuonSF(*sf_muon, false, false, trig_exp_med.Data());
         if(m_run_oneST) {
             out.muoTrigSF[MuonId::Medium] = m_susyObj[m_eleIDDefault]->GetTotalMuonTriggerSF(*sf_muon, static_cast<string>(trig_exp_med.Data()));
-            //out.muoTrigSF[MuonId::Medium] = m_susyObj[m_eleIDDefault]->GetTotalMuonSF(*sf_muon, false, false, trig_exp_med.Data());
         }
         else {
             out.muoTrigSF[MuonId::Medium] = m_susyObj[SusyObjId::muoMedium]->GetTotalMuonTriggerSF(*sf_muon, static_cast<string>(trig_exp_med.Data()));
-            //out.muoTrigSF[MuonId::Medium] = m_susyObj[SusyObjId::muoMedium]->GetTotalMuonSF(*sf_muon, false, false, trig_exp_med.Data());
         }
         
         delete sf_muon;
@@ -1178,11 +1203,9 @@ void SusyNtMaker::storeMuon(const xAOD::Muon &in, const xAOD::MuonContainer &muo
             }
             if(m_run_oneST) {
                 sf_trig[MuonId::Medium] = m_susyObj[m_eleIDDefault]->GetTotalMuonTriggerSF(*sf_muon, static_cast<string>(trig_exp_med.Data()));
-                //sf_trig[MuonId::Medium] = m_susyObj[m_eleIDDefault]->GetTotalMuonSF(*sf_muon, false, false, trig_exp_med.Data());
             }
             else {
                 sf_trig[MuonId::Medium] = m_susyObj[SusyObjId::muoMedium]->GetTotalMuonTriggerSF(*sf_muon, static_cast<string>(trig_exp_med.Data()));
-                //sf_trig[MuonId::Medium] = m_susyObj[SusyObjId::muoMedium]->GetTotalMuonSF(*sf_muon, false, false, trig_exp_med.Data());
             }
             delete sf_muon;
             delete sf_muon_aux;
@@ -1937,7 +1960,7 @@ void SusyNtMaker::storeElectronKinSys(ST::SystInfo sysInfo, SusyNtSys sys)
         if(ele_susyNt == NULL){
             if(m_dbg>=5) cout << " Electron not found - adding to susyNt" << endl;
             ele_nom = electrons_nom->at(iEl);//assume order is preserved
-            storeElectron(*ele_nom);//this add the electron at the end... 
+            storeElectron(*ele_nom, iEl);//this add the electron at the end... 
             m_preElectrons_nom.push_back(iEl);
             ele_susyNt = & m_susyNt.ele()->back(); //get the newly inserted element
         }
