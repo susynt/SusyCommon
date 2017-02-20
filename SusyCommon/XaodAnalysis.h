@@ -219,7 +219,6 @@ namespace Susy {
     void selectObjects(SusyNtSys sys, ST::SystInfo sysInfo);
     void selectBaselineObjects(SusyNtSys sys, ST::SystInfo sysInfo);
     void selectSignalObjects(SusyNtSys sys, ST::SystInfo sysInfo);
-    void performOverlapRemoval();
     void selectSignalPhotons();
     void selectTruthObjects();
 
