@@ -99,7 +99,7 @@ XaodAnalysis::XaodAnalysis() :
     m_elecSelLikelihoodLooseBLayer(""),
     m_elecSelLikelihoodMedium(""),
     m_elecSelLikelihoodTight(""),
-    m_electronChargeIDTool(0),
+    m_electronChargeIDTool(""),
     m_photonSelLoose(""),
     m_photonSelTight(""),
 	m_pileupReweightingTool(0),
@@ -281,7 +281,6 @@ void XaodAnalysis::Terminate()
     //delete m_elecSelLikelihoodLooseBLayer;
     //delete m_elecSelLikelihoodMedium;
     //delete m_elecSelLikelihoodTight;
-    delete m_electronChargeIDTool;
     //delete m_photonSelLoose;
     //delete m_photonSelTight;
 
@@ -572,6 +571,19 @@ void XaodAnalysis::initElectronTools()
 void XaodAnalysis::initChargeFlipTagger()
 {
 
+    if(!m_electronChargeIDTool.isUserConfigured()) {
+        std::string tool_name = "ElectronChargeIDTool_medium";
+        SET_DUAL_TOOL(m_electronChargeIDTool, AsgElectronChargeIDSelectorTool, tool_name); 
+
+        //default cut value for https://twiki.cern.ch/twiki/bin/view/AtlasProtected/ElectronChargeFlipTaggerTool
+        float BDTcut = -0.28087; // medium 97%
+        CHECK( m_electronChargeIDTool.setProperty("TrainingFile", "ElectronPhotonSelectorTools/ChargeID/ECIDS_20161125for2017Moriond.root")); 
+        CHECK( m_electronChargeIDTool.setProperty("CutOnBDT", BDTcut));
+        CHECK( m_electronChargeIDTool.retrieve() );
+
+    } 
+    
+    /*
     // dantrim -- poor tool development that parses the tool name!
     std::string toolName = "ElectronChargeIDTool_loose"; // CAUTIOn: The name should contain one of these following strings: recon, loose, medium tight
     m_electronChargeIDTool = new AsgElectronChargeIDSelectorTool(toolName);
@@ -588,6 +600,7 @@ void XaodAnalysis::initChargeFlipTagger()
         m_electronChargeIDTool = 0;
         cout << "XaodAnalysis::initChargeFlipTagger    WARNING Failed to initialize electron charge ID tool!" << endl;
     }
+    */
 }
 //----------------------------------------------------------
 void XaodAnalysis::initPhotonTools()

@@ -621,7 +621,7 @@ namespace Susy {
     asg::AnaToolHandle<IAsgElectronLikelihoodTool> m_elecSelLikelihoodMedium;
     asg::AnaToolHandle<IAsgElectronLikelihoodTool> m_elecSelLikelihoodTight;
 
-    AsgElectronChargeIDSelectorTool* m_electronChargeIDTool;
+    asg::AnaToolHandle<IAsgElectronLikelihoodTool> m_electronChargeIDTool;
 
     // Photon selection tools
     asg::AnaToolHandle<IAsgPhotonIsEMSelector> m_photonSelLoose;
