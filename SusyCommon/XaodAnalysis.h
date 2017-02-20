@@ -71,7 +71,6 @@ class AsgElectronChargeIDSelectorTool;
 #include "xAODTrigEgamma/TrigElectronContainer.h"
 #include "SusyNtuple/TriggerTools.h"
 
-#include "SusyCommon/XaodAnalysis_types.h"
 #include "SusyCommon/SusyObjId.h"
 
 
