@@ -122,23 +122,6 @@ const std::vector< std::string > SusyNtMaker::cutflowLabels()
     labels.push_back("jet cleaning"   );
     labels.push_back("base lepton >= 1"   );
     labels.push_back("sig. lepton >= 1"   );
-  //  labels.push_back("1 == base jet"  );
-  //  labels.push_back("1 == sig. jet"  );
-  //  labels.push_back("SusyProp Veto"  );
-  //  labels.push_back("GRL"            );
-  //  labels.push_back("LAr Error"      );
-  //  labels.push_back("Tile Error"     );
-  //  labels.push_back("TTC Veto"       );
-  //  labels.push_back("Good Vertex"    );
-  //  labels.push_back("Buggy WWSherpa" );
-  //  labels.push_back("Hot Spot"       );
-  //  labels.push_back("Bad Jet"        );
-  //  labels.push_back("Bad Muon"       );
-  //  labels.push_back("Cosmic"         );
-  //  labels.push_back(">=1 lep"        );
-  //  labels.push_back(">=2 base lep"   );
-  //  labels.push_back(">=2 lep"        );
-  //  labels.push_back("==3 lep"        );
     return labels;
 }
 //----------------------------------------------------------
@@ -300,10 +283,7 @@ void SusyNtMaker::fillEventVars()
     evt->sumOfEventWeights        = m_sumOfWeights;
     evt->sumOfEventWeightsSquared = m_sumOfWeightsSquared;
 
-
     evt->nVtx             = getNumGoodVtx();
-
-    evt->hfor             = m_isMC? getHFORDecision() : -1;
 
     // SUSY final state
     int susy_pdg_1 = 0;
@@ -324,14 +304,6 @@ void SusyNtMaker::fillEventVars()
       evt->susy3BodyOnlyMass  = m_polreweight->getReweightTopNeutralino(xaodTruthParticles(), 0.7853981634, 0.7853981634); // Just mass ?
     }
 
-    float mZ = -1.0, mZtruthMax = 40.0;
-    if(m_isMC){
-        // int dsid = xaodEventInfo()->mcChannelNumber();
-        // if(IsAlpgenLowMass(dsid) || IsAlpgenPythiaZll(dsid)) mZ = MllForAlpgen(&m_event.mc);
-        // else if(IsSherpaZll(dsid)) mZ = MllForSherpa(&m_event.mc);
-    }
-    evt->mllMcTruth       = mZ;
-    evt->passMllForAlpgen = m_isMC ? (mZ < mZtruthMax) : true;
     evt->hDecay           = m_hDecay;
     evt->eventWithSusyProp= m_hasSusyProp;
     
@@ -380,7 +352,6 @@ void SusyNtMaker::fillEventVars()
     else { evt->isSherpaVjetsSample = false; }
     evt->sherpa22VjetsWeight = vjetweight;
 
-    evt->pdfSF = m_isMC? getPDFWeight8TeV() : 1;
     evt->mcWeights = getMcWeights(eventinfo);
 
     m_susyNt.evt()->cutFlags[NtSys::NOM] = m_cutFlags;
@@ -473,19 +444,7 @@ bool isMcAtNloTtbar(const int &channel) { return channel==105200; }
 void SusyNtMaker::fillTruthParticleVars()
 {
     if(m_dbg>=5) cout<<"fillTruthParticleVars"<<endl;
-    // DG-2014-08-29 todo
-    // // Retrieve indicies -- should go elsewhere
-    // m_truParticles        = m_recoTruthMatch.LepFromHS_McIdx();
-    // vector<int> truthTaus = m_recoTruthMatch.TauFromHS_McIdx();
-    // m_truParticles.insert( m_truParticles.end(), truthTaus.begin(), truthTaus.end() );
-    // if(m_isMC && isMcAtNloTtbar(m_event.eventinfo.mc_channel_number())){
-    //   vector<int> ttbarPart(WhTruthExtractor::ttbarMcAtNloParticles(m_event.mc.pdgId(),
-    //                                                                 m_event.mc.child_index()));
-    //   m_truParticles.insert(m_truParticles.end(), ttbarPart.begin(), ttbarPart.end());
-    // }
     const xAOD::TruthParticleContainer* particles = xaodTruthParticles();
-    //cout << "DEBUGGING: Is Container Empty?" << endl;
-    //cout << "m_truParticles returns    		   " << m_truParticles << endl; 
     for(int i = 0; i < (int)particles->size(); i++){
         if(particles->at(i)->pt()!=0)
             storeTruthParticle(*(particles->at(i)));
@@ -666,9 +625,6 @@ void SusyNtMaker::storeElectron(const xAOD::Electron &in, int input_idx)
         out.matched2TruthLepton   = truthEle ? true : false;
         int matchedPdgId = truthEle ? truthEle->pdgId() : -999;
         out.truthType  = isFakeLepton(out.mcOrigin, out.mcType, matchedPdgId); 
-        //AT: 05-02-15: Issue accessing Aux of trackParticle in truthElectronCharge. Info not in derived AOD ?
-        //if(eleIsOfType(in, eleID::LooseLH))
-        // crash p1874 out.isChargeFlip  = m_isMC ? isChargeFlip(in.charge(),truthElectronCharge(in)) : false;
         out.truthCharge =  truthEle ? truthEle->charge() : 0;
         if(m_derivation.Contains("SUSY")) {
             out.ss3lChargeFlip = in.auxdataConst<int>("chargeFlip");
@@ -833,26 +789,9 @@ void SusyNtMaker::storeElectron(const xAOD::Electron &in, int input_idx)
 
  
     if(m_dbg && !all_available) cout<<"missing some electron variables"<<endl;
+    out.idx = (m_susyNt.ele()->size()); // add index of this electron in the susyNt electron container;
     m_susyNt.ele()->push_back(out);
 }
-//----------------------------------------------------------
-// // match muon to muon truth, returns element object if success, else NULL
-// D3PDReader::TruthMuonD3PDObjectElement* getMuonTruth(D3PDReader::MuonD3PDObject* muons, int muIdx, D3PDReader::TruthMuonD3PDObject* truthMuons)
-// {
-//     D3PDReader::TruthMuonD3PDObjectElement* result = NULL;
-//     int bc = muons->truth_barcode()->at(muIdx);
-//     if(bc==0){ // if barcode is zero then matching has already failed
-//         return result;
-//     }
-//     // loop over truth muons, comparing barcode
-//     for(int matchIdx=0; matchIdx < truthMuons->n(); matchIdx++){
-//         if(bc == truthMuons->barcode()->at(matchIdx)){
-//             result = & (*truthMuons)[matchIdx];
-//             break;
-//         }
-//     }
-//     return result;
-// }
 //----------------------------------------------------------
 void SusyNtMaker::storeMuon(const xAOD::Muon &in, const xAOD::MuonContainer &muons)
 //void SusyNtMaker::storeMuon(const xAOD::Muon &in)
@@ -912,19 +851,6 @@ void SusyNtMaker::storeMuon(const xAOD::Muon &in, const xAOD::MuonContainer &muo
     //////////////////////////////////////
     // Isolation variables
     //////////////////////////////////////
-    //For Rel 20
-    /*
-    out.ptcone20 = in.isolation(xAOD::Iso::ptcone20) * MeV2GeV;
-    out.ptcone30 = in.isolation(xAOD::Iso::ptcone30) * MeV2GeV;
-    out.ptvarcone20 = in.auxdataConst<float>("ptvarcone20") * MeV2GeV;
-    out.ptvarcone30 = in.auxdataConst<float>("ptvarcone30") * MeV2GeV;
-    */
-    //Update for Rel 20
-    //out.ptvarcone20 = in.isolationValue(xAOD::Iso::ptvarcone20) * MeV2GeV;
-    //out.ptvarcone30 = in.isolationValue(xAOD::Iso::ptvarcone30) * MeV2GeV;
-
-    //all_available &= in.isolation(out.etconetopo20, xAOD::Iso::topoetcone20); out.etconetopo20 *= MeV2GeV;
-    //all_available &= in.isolation(out.etconetopo30, xAOD::Iso::topoetcone30); out.etconetopo30 *= MeV2GeV;
     all_available &= in.isolation(out.ptcone20, xAOD::Iso::ptcone20); out.ptcone20 *= MeV2GeV;
     all_available &= in.isolation(out.ptcone30, xAOD::Iso::ptcone30); out.ptcone30 *= MeV2GeV;
     out.ptvarcone20 = in.auxdataConst<float>("ptvarcone20") * MeV2GeV;
@@ -1381,42 +1307,6 @@ void SusyNtMaker::storeJet(const xAOD::Jet &in)
         } // pt/eta range
     }//mc
 
-  //  vector<float> test_values;
-  //  test_values.push_back(out.effscalefact);
-
-    // B-tagging systematics
-    //AT 06-29-15: Coomented out btag decoration in SusyTools 
-/*
-    if(m_isMC && m_sys) {
-      for(const auto& sysInfo : systInfoList){
-        if(!(sysInfo.affectsType == ST::SystObjType::BTag && sysInfo.affectsWeights)) continue;
-        // Read information
-        const CP::SystematicSet& sys = sysInfo.systset;
-        SusyNtSys ourSys = CPsys2sys((sys.name()).c_str());
-        if(m_dbg>=15) std::cout<< "\t Jet btag sys " << NtSys::SusyNtSysNames[ourSys] << endl;
-        // Configure the tools
-        if ( m_susyObj[m_eleIDDefault]->applySystematicVariation(sys) != CP::SystematicCode::Ok){
-          cout << "SusyNtMaker::storeJet - cannot configure SUSYTools for " << sys.name() << endl;
-          continue;
-        }
-        // Get and store the information
-        m_susyObj[m_eleIDDefault]->BtagSF(XaodAnalysis::xaodJets(systInfoList[0])); // re-decorate the jets w/ appropriate effscalefact
-                                                                                    // not the most efficient way but works 
-        float scaleFactor = in.auxdata< float >("effscalefact");
-        out.setFTSys(ourSys,scaleFactor);
-        test_values.push_back(scaleFactor);
-      }
-      m_susyObj[m_eleIDDefault]->resetSystematics();
-    }
-*/
-
-/*
-    cout << "SERHAN :: " << endl;
-    for(auto scale : test_values) {
-        cout << scale << endl;
-    }
-*/
-
     // Misc
     out.detEta = (in.jetP4(xAOD::JetConstitScaleMomentum)).eta();
     in.getAttribute(xAOD::JetAttribute::EMFrac,out.emfrac);
@@ -1424,37 +1314,12 @@ void SusyNtMaker::storeJet(const xAOD::Jet &in)
     in.getAttribute(xAOD::JetAttribute::BchCorrCell,out.bch_corr_cell);
 
     // isBadJet 
-    //out.isBadVeryLoose = false; // DG tmp-2014-11-02 in.isAvailable("bad") ? in.auxdata<char>("bad") : false;
     out.isBadVeryLoose = (bool)in.auxdata<char>("bad") ? 1 : 0;
 
     // Hot Tile
     float fracSamplingMax, samplingMax;
     in.getAttribute(xAOD::JetAttribute::SamplingMax, samplingMax);
     in.getAttribute(xAOD::JetAttribute::FracSamplingMax, fracSamplingMax);
-    //AT Removed in SUSYTools-00-005-00-29
-    /*
-    out.isHotTile = m_susyObj[m_eleIDDefault]->isHotTile(eventinfo->runNumber(),
-                                                         fracSamplingMax,
-                                                         samplingMax,
-                                                         eta, phi); 
-    */
-    // // BCH cleaning flags - ASM-2014-11-04 :: Obsolete???
-    // uint bchRun = m_isMC? m_mcRun : m_event.eventinfo.RunNumber();
-    // uint bchLB = m_isMC? m_mcLB : m_event.eventinfo.lbn();
-    // #define BCH_ARGS bchRun, bchLB, jetOut->detEta, jetOut->phi, jetOut->bch_corr_cell, jetOut->emfrac, jetOut->pt*1000.
-    // jetOut->isBadMediumBCH = !m_susyObj[m_eleIDDefault]->passBCHCleaningMedium(BCH_ARGS, 0);
-    // jetOut->isBadMediumBCH_up = !m_susyObj[m_eleIDDefault]->passBCHCleaningMedium(BCH_ARGS, 1);
-    // jetOut->isBadMediumBCH_dn = !m_susyObj[m_eleIDDefault]->passBCHCleaningMedium(BCH_ARGS, -1);
-    // jetOut->isBadTightBCH = !m_susyObj[m_eleIDDefault]->passBCHCleaningTight(BCH_ARGS);
-    // #undef BCH_ARGS
-
-    // // Save the met weights for the jets
-    // // by checking status word similar to
-    // // what is done in met utility
-    // const D3PDReader::MissingETCompositionD3PDObjectElement &jetMetEgamma10NoTau = m_event.jet_AntiKt4LCTopo_MET_Egamma10NoTau[jetIdx];
-    // // 0th element is what we care about
-    // int sWord = jetMetEgamma10NoTau.statusWord().at(0);
-    // bool passSWord = (MissingETTags::DEFAULT == sWord);       // Note assuming default met..
 
     if(m_dbg && !all_available) cout<<"missing some jet variables"<<endl;
     out.idx = (m_susyNt.jet()->size()); // add index of this jet in the susyNt jet container
@@ -1574,29 +1439,6 @@ void SusyNtMaker::storeTau(const xAOD::TauJet &in)
    if(m_dbg>5) cout << "SusyNtMaker Filling Tau pt " << out.pt 
                      << " eta " << out.eta << " phi " << out.phi << " q " << out.q << " " << int(in.charge()) << endl;
 
-
-
-// // ID efficiency scale factors
-    // if(m_isMC){
-    //   #define TAU_ARGS TauCorrUncert::BDTLOOSE, tauLV->Eta(), element->numTrack()
-    //   //TauCorrections* tauSF       = m_susyObj[m_eleIDDefault]->GetTauCorrectionsProvider();
-    //   TauCorrUncert::TauSF* tauSF = m_susyObj[m_eleIDDefault]->GetSFTool();
-    //   //tauOut->looseEffSF        = tauSF->GetIDSF(TauCorrUncert::BDTLOOSE, tauLV->Eta(), element->numTrack());
-    //   //tauOut->mediumEffSF       = tauSF->GetIDSF(TauCorrUncert::BDTMEDIUM, tauLV->Eta(), element->numTrack());
-    //   //tauOut->tightEffSF        = tauSF->GetIDSF(TauCorrUncert::BDTTIGHT, tauLV->Eta(), element->numTrack());
-    //   //tauOut->errLooseEffSF     = tauSF->GetIDSFUnc(TauCorrUncert::BDTLOOSE, tauLV->Eta(), element->numTrack());
-    //   //tauOut->errMediumEffSF    = tauSF->GetIDSFUnc(TauCorrUncert::BDTMEDIUM, tauLV->Eta(), element->numTrack());
-    //   //tauOut->errTightEffSF     = tauSF->GetIDSFUnc(TauCorrUncert::BDTTIGHT, tauLV->Eta(), element->numTrack());
-    //   tauOut->looseEffSF          = tauSF->GetIDSF(TAU_ARGS);
-    //   tauOut->mediumEffSF         = tauSF->GetIDSF(TAU_ARGS);
-    //   tauOut->tightEffSF          = tauSF->GetIDSF(TAU_ARGS);
-    //   tauOut->errLooseEffSF       = sqrt(pow(tauSF->GetIDStatUnc(TAU_ARGS), 2) + pow(tauSF->GetIDSysUnc(TAU_ARGS), 2));
-    //   tauOut->errMediumEffSF      = sqrt(pow(tauSF->GetIDStatUnc(TAU_ARGS), 2) + pow(tauSF->GetIDSysUnc(TAU_ARGS), 2));
-    //   tauOut->errTightEffSF       = sqrt(pow(tauSF->GetIDStatUnc(TAU_ARGS), 2) + pow(tauSF->GetIDSysUnc(TAU_ARGS), 2));
-    //   #undef TAU_ARGS
-    
-    // Tau trigger bits needed   
- 
    m_susyNt.tau()->push_back(out);
 }
 
@@ -1972,63 +1814,8 @@ void SusyNtMaker::storeElectronKinSys(ST::SystInfo sysInfo, SusyNtSys sys)
         if(m_dbg>=5) cout << "Ele SF " << sf << endl;
         if     ( sys == NtSys::EG_RESOLUTION_ALL_DN ) ele_susyNt->res_all_dn = sf;
         else if( sys == NtSys::EG_RESOLUTION_ALL_UP ) ele_susyNt->res_all_up = sf;
-/*
-        else if( sys == NtSys::EG_RESOLUTION_MATERIALCALO_DN ) ele_susyNt->res_matCalo_dn = sf;
-        else if( sys == NtSys::EG_RESOLUTION_MATERIALCALO_UP ) ele_susyNt->res_matCalo_up = sf;
-        else if( sys == NtSys::EG_RESOLUTION_MATERIALCRYO_DN ) ele_susyNt->res_matCryo_dn = sf;
-        else if( sys == NtSys::EG_RESOLUTION_MATERIALCRYO_UP ) ele_susyNt->res_matCryo_up = sf;
-        else if( sys == NtSys::EG_RESOLUTION_MATERIALGAP_DN ) ele_susyNt->res_matGap_dn = sf;
-        else if( sys == NtSys::EG_RESOLUTION_MATERIALGAP_UP) ele_susyNt->res_matGap_up = sf;
-        else if( sys == NtSys::EG_RESOLUTION_MATERIALID_DN ) ele_susyNt->res_matId_dn = sf;
-        else if( sys == NtSys::EG_RESOLUTION_MATERIALID_UP ) ele_susyNt->res_matId_up = sf;
-        else if( sys == NtSys::EG_RESOLUTION_NOMINAL ) ele_susyNt->res_nom = sf;
-        else if( sys == NtSys::EG_RESOLUTION_NONE ) ele_susyNt->res_none = sf;
-        else if( sys == NtSys::EG_RESOLUTION_PILEUP_DN ) ele_susyNt->res_pileup_dn = sf;
-        else if( sys == NtSys::EG_RESOLUTION_PILEUP_UP ) ele_susyNt->res_pileup_up = sf;
-        else if( sys == NtSys::EG_RESOLUTION_SAMPLINGTERM_DN ) ele_susyNt->res_sampTerm_dn = sf;
-        else if( sys == NtSys::EG_RESOLUTION_SAMPLINGTERM_UP ) ele_susyNt->res_sampTerm_up = sf;
-        else if( sys == NtSys::EG_RESOLUTION_ZSMEARING_DN ) ele_susyNt->res_z_dn = sf;
-        else if( sys == NtSys::EG_RESOLUTION_ZSMEARING_UP ) ele_susyNt->res_z_up = sf;
-*/
         else if( sys == NtSys::EG_SCALE_ALL_DN ) ele_susyNt->scale_all_dn = sf;
         else if( sys == NtSys::EG_SCALE_ALL_UP ) ele_susyNt->scale_all_up = sf;
-/*
-        else if( sys == NtSys::EG_SCALE_G4_DN ) ele_susyNt->scale_G4_dn = sf;
-        else if( sys == NtSys::EG_SCALE_G4_UP ) ele_susyNt->scale_G4_up = sf;
-        else if( sys == NtSys::EG_SCALE_L1GAIN_DN ) ele_susyNt->scale_L1_dn = sf;
-        else if( sys == NtSys::EG_SCALE_L1GAIN_UP ) ele_susyNt->scale_L1_up = sf;
-        else if( sys == NtSys::EG_SCALE_L2GAIN_DN ) ele_susyNt->scale_L2_dn = sf;
-        else if( sys == NtSys::EG_SCALE_L2GAIN_UP ) ele_susyNt->scale_L2_up = sf;
-        else if( sys == NtSys::EG_SCALE_LARCALIB_DN ) ele_susyNt->scale_LArCalib_dn = sf;
-        else if( sys == NtSys::EG_SCALE_LARCALIB_UP ) ele_susyNt->scale_LArCalib_up = sf;
-        else if( sys == NtSys::EG_SCALE_LARELECCALIB_DN ) ele_susyNt->scale_LArECalib_dn = sf;
-        else if( sys == NtSys::EG_SCALE_LARELECCALIB_UP ) ele_susyNt->scale_LArECalib_up = sf;
-        else if( sys == NtSys::EG_SCALE_LARELECUNCONV_DN ) ele_susyNt->scale_LArEunconv_dn = sf;
-        else if( sys == NtSys::EG_SCALE_LARELECUNCONV_UP ) ele_susyNt->scale_LArEunconv_up = sf;
-        else if( sys == NtSys::EG_SCALE_LARUNCONVCALIB_DN ) ele_susyNt->scale_LArUnconv_dn = sf;
-        else if( sys == NtSys::EG_SCALE_LARUNCONVCALIB_UP ) ele_susyNt->scale_LArUnconv_up = sf;
-        else if( sys == NtSys::EG_SCALE_LASTSCALEVARIATION ) ele_susyNt->scale_last = sf;
-        else if( sys == NtSys::EG_SCALE_MATCALO_DN ) ele_susyNt->scale_matCalo_dn = sf;
-        else if( sys == NtSys::EG_SCALE_MATCALO_UP ) ele_susyNt->scale_matCalo_up = sf;
-        else if( sys == NtSys::EG_SCALE_MATCRYO_DN ) ele_susyNt->scale_matCryo_dn = sf;
-        else if( sys == NtSys::EG_SCALE_MATCRYO_UP ) ele_susyNt->scale_matCryo_up = sf;
-        else if( sys == NtSys::EG_SCALE_MATID_DN ) ele_susyNt->scale_matId_dn = sf;
-        else if( sys == NtSys::EG_SCALE_MATID_UP ) ele_susyNt->scale_matId_up = sf;
-        else if( sys == NtSys::EG_SCALE_NOMINAL ) ele_susyNt->scale_nom = sf;
-        else if( sys == NtSys::EG_SCALE_NONE ) ele_susyNt->scale_none = sf;
-        else if( sys == NtSys::EG_SCALE_PEDESTAL_DN ) ele_susyNt->scale_ped_dn = sf;
-        else if( sys == NtSys::EG_SCALE_PEDESTAL_UP ) ele_susyNt->scale_ped_up = sf;
-        else if( sys == NtSys::EG_SCALE_PS_DN ) ele_susyNt->scale_ps_dn = sf;
-        else if( sys == NtSys::EG_SCALE_PS_UP ) ele_susyNt->scale_ps_up = sf;
-        else if( sys == NtSys::EG_SCALE_S12_DN ) ele_susyNt->scale_s12_dn = sf;
-        else if( sys == NtSys::EG_SCALE_S12_UP ) ele_susyNt->scale_s12_up = sf;
-        else if( sys == NtSys::EG_SCALE_ZEESTAT_DN ) ele_susyNt->scale_ZeeStat_dn = sf;
-        else if( sys == NtSys::EG_SCALE_ZEESTAT_UP ) ele_susyNt->scale_ZeeStat_up = sf;
-        else if( sys == NtSys::EG_SCALE_ZEESYST_DN ) ele_susyNt->scale_ZeeSys_dn = sf;
-        else if( sys == NtSys::EG_SCALE_ZEESYST_UP ) ele_susyNt->scale_ZeeSys_up = sf;
-        else if( sys == NtSys::EL_SCALE_MOMENTUM_DN ) ele_susyNt->scale_mom_dn = sf;
-        else if( sys == NtSys::EL_SCALE_MOMENTUM_UP ) ele_susyNt->scale_mom_up = sf;
-*/
     }
 }
 
@@ -2140,46 +1927,6 @@ void SusyNtMaker::storeJetKinSys(ST::SystInfo sysInfo, SusyNtSys sys)
         else if( sys == NtSys::JET_GroupedNP_2_DN) jet_susyNt->groupedNP[3] = sf;
         else if( sys == NtSys::JET_GroupedNP_3_UP) jet_susyNt->groupedNP[4] = sf;
         else if( sys == NtSys::JET_GroupedNP_3_DN) jet_susyNt->groupedNP[5] = sf;
-
-        /*
-        else if( sys == NtSys::JET_BJES_Response_DN) jet_susyNt->bjes[0] = sf;
-        else if( sys == NtSys::JET_BJES_Response_UP) jet_susyNt->bjes[1] = sf;
-        else if( sys == NtSys::JET_EffectiveNP_1_DN) jet_susyNt->effNp[0] = sf;
-        else if( sys == NtSys::JET_EffectiveNP_1_UP) jet_susyNt->effNp[1] = sf;
-        else if( sys == NtSys::JET_EffectiveNP_2_DN) jet_susyNt->effNp[2] = sf;
-        else if( sys == NtSys::JET_EffectiveNP_2_UP) jet_susyNt->effNp[3] = sf;
-        else if( sys == NtSys::JET_EffectiveNP_3_DN) jet_susyNt->effNp[4] = sf;
-        else if( sys == NtSys::JET_EffectiveNP_3_UP) jet_susyNt->effNp[5] = sf;
-        else if( sys == NtSys::JET_EffectiveNP_4_DN) jet_susyNt->effNp[6] = sf;
-        else if( sys == NtSys::JET_EffectiveNP_4_UP) jet_susyNt->effNp[7] = sf;
-        else if( sys == NtSys::JET_EffectiveNP_5_DN) jet_susyNt->effNp[8] = sf;
-        else if( sys == NtSys::JET_EffectiveNP_5_UP) jet_susyNt->effNp[9] = sf;
-        else if( sys == NtSys::JET_EffectiveNP_6restTerm_DN) jet_susyNt->effNp[10] = sf;
-        else if( sys == NtSys::JET_EffectiveNP_6restTerm_UP) jet_susyNt-> effNp[11] = sf;
-        else if( sys == NtSys::JET_EtaIntercalibration_Modelling_DN) jet_susyNt->etaInter[0] = sf;
-        else if( sys == NtSys::JET_EtaIntercalibration_Modelling_UP) jet_susyNt->etaInter[1]= sf;
-        else if( sys == NtSys::JET_EtaIntercalibration_TotalStat_DN) jet_susyNt->etaInter[2] = sf;
-        else if( sys == NtSys::JET_EtaIntercalibration_TotalStat_UP) jet_susyNt->etaInter[3] = sf;
-        else if( sys == NtSys::JET_Flavor_Composition_DN) jet_susyNt->flavor[0] = sf;
-        else if( sys == NtSys::JET_Flavor_Composition_UP) jet_susyNt->flavor[1] = sf;
-        else if( sys == NtSys::JET_Flavor_Response_DN) jet_susyNt->flavor[2] = sf;
-        else if( sys == NtSys::JET_Flavor_Response_UP) jet_susyNt->flavor[3] = sf;
-        else if( sys == NtSys::JET_Pileup_OffsetMu_DN) jet_susyNt->pileup[0] = sf;
-        else if( sys == NtSys::JET_Pileup_OffsetMu_UP) jet_susyNt-> pileup[1] = sf;
-        else if( sys == NtSys::JET_Pileup_OffsetNPV_DN) jet_susyNt->pileup[2]= sf;
-        else if( sys == NtSys::JET_Pileup_OffsetNPV_UP) jet_susyNt->pileup[3] = sf;
-        else if( sys == NtSys::JET_Pileup_PtTerm_DN) jet_susyNt-> pileup[4] = sf;
-        else if( sys == NtSys::JET_Pileup_PtTerm_UP) jet_susyNt-> pileup[5] = sf;
-        else if( sys == NtSys::JET_Pileup_RhoTopology_DN) jet_susyNt-> pileup[6] = sf;
-        else if( sys == NtSys::JET_Pileup_RhoTopology_UP) jet_susyNt-> pileup[7] = sf;
-        else if( sys == NtSys::JET_PunchThrough_MC12_DN) jet_susyNt->punchThrough[0] = sf;
-        else if( sys == NtSys::JET_PunchThrough_MC12_UP) jet_susyNt->punchThrough[1] = sf;
-        else if( sys == NtSys::JET_SingleParticle_HighPt_DN) jet_susyNt->singlePart[0] = sf;
-        else if( sys == NtSys::JET_SingleParticle_HighPt_UP) jet_susyNt->singlePart[1] = sf;
-        //else if( sys == NtSys::JET_RelativeNonClosure_MC12_DN) jet_susyNt->relativeNC[0] = sf;
-        //else if( sys == NtSys::JET_RelativeNonClosure_MC12_UP) jet_susyNt->relativeNC[1] = sf;
-        */
-
     }
 }
 
@@ -2237,92 +1984,6 @@ void SusyNtMaker::storeTauKinSys(ST::SystInfo sysInfo, SusyNtSys sys)
 }
 
 /*--------------------------------------------------------------------------------*/
-void SusyNtMaker::addMissingElectron(const LeptonInfo* lep, SusyNtSys sys)
-{
-    // // This electron did not pass nominal cuts, and therefore
-    // // needs to be added, but with the correct TLV
-
-    // // Reset the Nominal TLV
-    // // NOTE: this overwrites the TLV in SUSYObjDef with the nominal variables,
-    // // regardless of our current systematic.
-    // const D3PDReader::ElectronD3PDObjectElement* element = lep->getElectronElement();
-    // m_susyObj[m_eleIDDefault]->SetElecTLV(lep->idx(), element->eta(), element->phi(), element->cl_eta(), element->cl_phi(), element->cl_E(),
-    //                      element->tracketa(), element->trackphi(), element->nPixHits(), element->nSCTHits(), SystErr::NONE);
-    // // Now push it back onto to susyNt
-    // fillElectronVars(lep);
-}
-
-/*--------------------------------------------------------------------------------*/
-void SusyNtMaker::addMissingMuon(const LeptonInfo* lep, SusyNtSys sys)
-{
-    // // This muon did not pass nominal cuts, and therefore
-    // // needs to be added, but with the correct TLV
-    // // Reset the Nominal TLV
-    // // NOTE: this overwrites the TLV in SUSYObjDef with the nominal variables,
-    // // regardless of our current systematic.
-    // const D3PDReader::MuonD3PDObjectElement* element = lep->getMuonElement();
-    // m_susyObj[m_eleIDDefault]->SetMuonTLV(lep->idx(), element->pt(), element->eta(), element->phi(),
-    //                      element->me_qoverp_exPV(), element->id_qoverp_exPV(), element->me_theta_exPV(),
-    //                      element->id_theta_exPV(), element->charge(), element->isCombinedMuon(),
-    //                      element->isSegmentTaggedMuon(), SystErr::NONE);
-    // fillMuonVars(lep);
-}
-
-/*--------------------------------------------------------------------------------*/
-void SusyNtMaker::addMissingJet(int index, SusyNtSys sys)
-{
-    // // Get the systematic shifted E, used to calculate a shift factor
-    // //TLorentzVector tlv_sys = m_susyObj[m_eleIDDefault]->GetJetTLV(index);
-    // //float E_sys = m_susyObj[m_eleIDDefault]->GetJetTLV(index).E();
-
-    // // Reset the Nominal TLV
-    // // NOTE: this overwrites the TLV in SUSYObjDef with the nominal variables,
-    // // regardless of our current systematic.
-    // const D3PDReader::JetD3PDObjectElement* jet = &m_event.jet_AntiKt4LCTopo[index];
-    // m_susyObj[m_eleIDDefault]->FillJet(index, jet->pt(), jet->eta(), jet->phi(), jet->E(),
-    //                   jet->constscale_eta(), jet->constscale_phi(), jet->constscale_E(), jet->constscale_m(),
-    //                   jet->ActiveAreaPx(), jet->ActiveAreaPy(), jet->ActiveAreaPz(), jet->ActiveAreaE(),
-    //                   m_event.Eventshape.rhoKt4LC(),
-    //                   m_event.eventinfo.averageIntPerXing(),
-    //                   m_event.vxp.nTracks());
-    // fillJetVar(index);
-    // // Set SF This should only be done in storeJetKinSys
-}
-
-/*--------------------------------------------------------------------------------*/
-void SusyNtMaker::addMissingTau(int index, SusyNtSys sys)
-{
-    // // This tau did not pass nominal cuts, and therefore
-    // // needs to be added, but with the correct TLV.
-    // // Get the systematic shifted E, used to calculate a shift factor
-    // //TLorentzVector tlv_sys = m_susyObj[m_eleIDDefault]->GetTauTLV(index);
-    // //float E_sys = m_susyObj[m_eleIDDefault]->GetTauTLV(index).E();
-    // // Grab the d3pd variables
-    // const D3PDReader::TauD3PDObjectElement* element = & m_event.tau[index];
-    // // Reset the Nominal TLV
-    // // NOTE: this overwrites the TLV in SUSYObjDef with the nominal variables,
-    // // regardless of our current systematic.
-    // m_susyObj[m_eleIDDefault]->SetTauTLV(index, element->pt(), element->eta(), element->phi(), element->Et(), element->numTrack(),
-    //                     element->leadTrack_eta(), SUSYTau::TauMedium, SystErr::NONE, true);
-    // // Fill the tau vars for this guy
-    // fillTauVar(index);
-}
-/*--------------------------------------------------------------------------------*/
-//bool SusyNtMaker::isBuggyWwSherpaSample(const int &dsid)
-//{
-//  return (dsid==126892 || dsid==157817 || dsid==157818 || dsid==157819);
-//}
-/*--------------------------------------------------------------------------------*/
-//bool SusyNtMaker::hasRadiativeBquark(const vint_t *pdg, const vint_t *status)
-//{
-//  if(!pdg || !status || pdg->size()!=status->size()) return false;
-//  const vint_t &p = *pdg;
-//  const vint_t &s = *status;
-//  const int pdgB(5), statRad(3);
-//  for(size_t i=0; i<p.size(); ++i) if(abs(p[i])==pdgB && s[i]==statRad) return true;
-//  return false;
-//}
-//----------------------------------------------------------
 SusyNtMaker& SusyNtMaker::initializeOuputTree()
 {
     //TString name = m_sample + ".susyNt.root";
@@ -2482,7 +2143,6 @@ void SusyNtMaker::fillTriggerHisto()
     std::vector<std::string> trigs = XaodAnalysis::xaodTriggers();
     for ( unsigned int iTrig = 0; iTrig < trigs.size(); iTrig++ ) {
         if(m_susyObj[m_eleIDDefault]->IsTrigPassed(trigs[iTrig])) h_passTrigLevel->Fill(iTrig+0.5);
-        //if(m_trigTool->isPassed(trigs[iTrig]))         h_passTrigLevel->Fill(iTrig+0.5);
     }
 }
 //----------------------------------------------------------
@@ -2552,13 +2212,7 @@ bool SusyNtMaker::passObjectlevelSelection()
     bool pass_cosmic(m_cutFlags & ECut_Cosmic);
     
     bool pass_ge1bl(1>=(m_baseElectrons.size()+m_baseMuons.size()));
-//    bool pass_exactly1sig(1==(m_sigElectrons.size()+m_sigMuons.size()));
-//    bool pass_exactly1base(1==(m_baseElectrons.size()+m_baseMuons.size()));
-//    bool pass_exactly2base(2==(m_baseElectrons.size()+m_baseMuons.size()));
     bool pass_ge1sl(1>=(m_sigElectrons.size()+m_sigMuons.size()));
-//    bool pass_e1j(1==(m_baseJets.size()));
-//    bool pass_e1sj(1==(m_sigJets.size()));
-//    bool pass_exactly2sig(2==(m_sigElectrons.size()+m_sigMuons.size()));
 
     fillCutFlow(pass_goodpv, w);
     fillCutFlow(pass_bad_muon, w);

@@ -225,54 +225,27 @@ namespace Susy {
     // Clear object selection
     void clearOutputObjects(bool deleteNominal=true);
 
-
     //
     // Trigger - check matching for all baseline leptons
     //
     void resetTriggers(){
     // TBits
       m_evtTrigBits.ResetAllBits();
-      //m_muoTrigBits.ResetAllBits();
-      //m_muoTrigBits.clear();
-    // old
-      m_evtTrigFlags = 0;
-      m_eleTrigFlags.clear();
-      m_muoTrigFlags.clear();
-      m_tauTrigFlags.clear();
     }
     void matchTriggers(){
       fillEventTriggers();
-//      matchElectronTriggers();
-//      matchMuonTriggers();
-//      matchTauTriggers();
     }
     
     void fillEventTriggers();
- //   void matchElectronTriggers();
     bool matchElectronTrigger(const TLorentzVector* lv, std::string chain);
- //   bool matchElectronTrigger(const TLorentzVector &lv, std::vector<int>* trigBools);
- //   void matchMuonTriggers();
     TBits matchMuonTriggers(const xAOD::Muon& in); 
     TBits matchElectronTriggers(const xAOD::Electron& in);
-    bool matchMuonTrigger(const TLorentzVector &lv, std::vector<int>* trigBools);
     std::map<std::string, std::vector<unsigned int>> getDiMuTrigMap(const xAOD::Muon &in, const xAOD::MuonContainer &muons);
-
-    void matchTauTriggers();
-    bool matchTauTrigger(const TLorentzVector &lv, std::vector<int>* trigBools);
 
     //
     //ID if electron is a charge-flip
     //
     int truthElectronCharge(const xAOD::Electron &in);
-    bool isChargeFlip(int recoCharge, int truthCharge);
-
-    //
-    //ID Tau origin
-    //
-    int classifyTau(const xAOD::TauJet &in);
-    
-
-
     //
     // Event cleaning
     //
@@ -286,13 +259,11 @@ namespace Susy {
     bool passSCTErr(const xAOD::EventInfo* eventinfo); ///< SCT error
     bool passLarErr(const xAOD::EventInfo* eventinfo); ///< lar error
 
-    bool passLarHoleVeto(); ///< lar hole veto
-    bool passTileHotSpot(); ///< tile hot spot
+    //bool passLarHoleVeto(); ///< lar hole veto
     bool passBadJet(ST::SystInfo sysInfo, SusyNtSys sys = NtSys::NOM); ///< bad jet
     bool passGoodVtx(); ///< good vertex
-    bool passTileTrip(); ///< tile trip
-    bool passBadMuon(ST::SystInfo sysInfo, SusyNtSys sys = NtSys::NOM); ///< bad muon veto
-    bool passCosmic(ST::SystInfo sysInfo, SusyNtSys sys = NtSys::NOM); ///< cosmic veto
+    //bool passBadMuon(ST::SystInfo sysInfo, SusyNtSys sys = NtSys::NOM); ///< bad muon veto
+    //bool passCosmic(ST::SystInfo sysInfo, SusyNtSys sys = NtSys::NOM); ///< cosmic veto
 
     void assignEventCleaningFlags(); ///< Event level cleaning cuts
     void assignObjectCleaningFlags(ST::SystInfo sysInfo, SusyNtSys sys = NtSys::NOM);// Object level cleaning cuts;  t/<hese depend on sys
@@ -304,28 +275,18 @@ namespace Susy {
         You can supply a different integrated luminosity,
         but the the pileup weights will still correspond to A-E.
     */
-    float getEventWeight(float lumi = LUMI_A_A4);
-    float getXsecWeight(); ///< event weight (xsec*kfac)
     void setLumi(float lumi) { m_lumi = lumi; } ///< luminosity to normalize to (in 1/pb)
     double getPileupWeight(const xAOD::EventInfo* eventinfo); ///< pileup weight for full dataset: currently A-L
-    float getPileupWeightUp();
-    float getPileupWeightDown();
-    float getPDFWeight8TeV(); ///< PDF reweighting of 7TeV -> 8TeV
-    float getLepSF(const std::vector<LeptonInfo>& leptons); ///< Lepton efficiency SF
-    float getBTagSF(const std::vector<int>& jets); ///< BTag efficiency SF
 
     // MC weights
     std::vector<float> getMcWeights(const xAOD::EventInfo *eventInfo);
 
     // Utility methods
-    void calcRandomRunLB(); ///< calculate random run/lb numbers for MC
-    int getHFORDecision(); ///< HF overlap removal decision (DG obsolete?)
     uint getNumGoodVtx(); ///< Count number of good vertices
     bool matchTruthJet(int iJet); ///< Match a reco jet to a truth jet
 
     bool eleIsOfType(const xAOD::Electron &in, ElectronId id);
     bool muIsOfType(const xAOD::Muon &in, MuonId id);
-
 
     // Running conditions
     //TString sample() { return m_sample; } ///< Sample name - used to set isMC flag
@@ -476,13 +437,6 @@ namespace Susy {
 
     long long                   m_evtTrigFlags; // Event trigger flags
 
-
-    // Trigger object matching maps
-    // Key: d3pd index, Val: trig bit word
-    std::map<int, long long>    m_eleTrigFlags; // electron trigger matching flags
-    std::map<int, long long>    m_muoTrigFlags; // muon trigger matching flags
-    std::map<int, long long>    m_tauTrigFlags; // tau trigger matching flags
-
     //
     // Event quantities
     //
@@ -504,17 +458,6 @@ namespace Susy {
 
     std::string                  m_grlFileName;  // grl file name
     GoodRunsListSelectionTool*   m_grl;         // good runs list
-
-    /* Root::TPileupReweighting*   m_pileup;       // pileup reweighting */
-    /* Root::TPileupReweighting*   m_pileup_up;    // pileup reweighting */
-    /* Root::TPileupReweighting*   m_pileup_dn;    // pileup reweighting */
-
-    // The SUSY CrossSectionDB has its own map for retrieving xsec info, but
-    // it has a lot of entries so lookup is slow.  Save our own xsec map
-    /* SUSY::CrossSectionDB*                       m_susyXsec;     // SUSY cross section database */
-    /* std::map<int,SUSY::CrossSectionDB::Process> m_xsecMap;      // our own xsec map for faster lookup times */
-
-    //RecoTauMatch                m_recoTruthMatch;       // Lepton truth matching tool // dantrim Aug 18 -- Obsolete package LeptonTruthTools
 
     TTree* m_tree;              // Current tree
     Long64_t m_entry;           // Current entry in the current tree (not chain index!)
@@ -656,13 +599,11 @@ namespace Susy {
     // StopPolarization
     StopPolarization::PolarizationReweight *m_polreweight;
 
-    // dantrim trig
     TBits                       m_evtTrigBits;          ///< Bit flags for event trigger firing
     static const size_t         m_nTriggerBits=64;
     TH1F*                       hLevelPassed;
     TrigConf::xAODConfigTool*   m_configTool;
     Trig::TrigDecisionTool*     m_trigTool;
-//    Trig::TrigEgammaMatchingTool* m_trigEgammaMatchTool;    ///< TrigEgammaMatching tool
 
   };
 

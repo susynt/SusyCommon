@@ -1503,7 +1503,6 @@ void XaodAnalysis::fillEventTriggers()
     std::vector<std::string> trigs = XaodAnalysis::xaodTriggers();
     for (unsigned int iTrig = 0; iTrig < trigs.size(); iTrig++) {
         if(m_susyObj[m_eleIDDefault]->IsTrigPassed(trigs[iTrig])) m_evtTrigBits.SetBitNumber(iTrig, true);
-        //if(m_trigTool->isPassed(trigs[iTrig]))  m_evtTrigBits.SetBitNumber(iTrig, true);
     }
 }
 /*--------------------------------------------------------------------------------*/
@@ -1529,7 +1528,6 @@ TBits XaodAnalysis::matchMuonTriggers(const xAOD::Muon &in)
 
         if( (mu_chain || dilepton) && !met_chain)
             if(m_susyObj[m_eleIDDefault]->IsTrigMatched(&in, trigs[iTrig])) muoTrigBits.SetBitNumber(iTrig, true);
-            //if(m_susyObj[m_eleIDDefault]->IsTrigMatched(&in, trigs[iTrig])) { cout << "     > muon match to : " << trigs[iTrig] << endl;  muoTrigBits.SetBitNumber(iTrig, true); }
     }
     return muoTrigBits;
 }
@@ -1612,216 +1610,6 @@ TBits XaodAnalysis::matchElectronTriggers(const xAOD::Electron &in)
     return eleTrigBits;
 }
 /*--------------------------------------------------------------------------------*/
-// Electron trigger matching
-/*--------------------------------------------------------------------------------*/
-//void XaodAnalysis::matchElectronTriggers()
-//{
-//    if(m_dbg>=5) cout << "matchElectronTriggers" << endl;
-//    for ( uint i=0; i < m_preElectrons.size(); i++ ) {
-//        int iEl = m_preElectrons[i];
-//        xAOD::ElectronContainer* nom_electrons = xaodElectrons(systInfoList[0]);
-//        const xAOD::Electron* electron = nom_electrons->at(iEl);
-//        long long flags = 0;
-//        TLorentzVector* ele_tlv;
-//        ele_tlv->SetPtEtaPhiM(electron->pt(), electron->eta(), electron->phi(), 0);
-//        if(matchElectronTrigger(ele_tlv, "EF_e7_medium1"))     flags |= TRIG_e7_medium1;
-//        if(matchElectronTrigger(ele_tlv, "EF_e12Tvh_loose1"))  flags |= TRIG_e12Tvh_loose1;
-//        if(matchElectronTrigger(ele_tlv, "EF_e12Tvh_medium1")) flags |= TRIG_e12Tvh_medium1;
-//
-//        m_eleTrigFlags[iEl] = flags;
-//    }
-//}
-
-/*--------------------------------------------------------------------------------*/
-//bool XaodAnalysis::matchElectronTrigger(const TLorentzVector* lv, string chain)
-//{
-//    // TODO : figure out why they have software releases that do not have correctly updated aligned dependencies....
-//
-//    // get chain group representing the requesting trigger 
-//    bool ele_ismatch = false;
-//    auto cg = m_trigTool->getChainGroup(chain);
-//    auto fc = cg->features();
-//    auto eleFeatureContainers = fc.containerFeature<xAOD::TrigElectronContainer>();
-//    for(auto &econt : eleFeatureContainers) {
-//        for ( auto trige : *econt.cptr() ) {
-//            TLorentzVector* trig_tlv;
-//            trig_tlv->SetPtEtaPhiM( trige->pt(), trige->eta(), trige->phi(), 0);
-//            float dR = lv->DeltaR(*trig_tlv); 
-//            if ( dR < 0.15 ) ele_ismatch = true;
-//        } // trige
-//    } // econt
-//    return ele_ismatch;
-//}
-        
-        
-
-
-
-
-//-DG--  for(uint i=0; i<m_preElectrons.size(); i++){
-//-DG--    int iEl = m_preElectrons[i];
-//-DG--    const TLorentzVector &lv = m_susyObj[m_eleIDDefault]->GetElecTLV(iEl);
-//-DG--    // trigger flags
-//-DG--    long long flags = 0;
-//-DG--    // 2012 triggers only
-//-DG--    if(matchElectronTrigger(lv, m_event.trig_EF_el.EF_e7T_medium1()))               { flags |= TRIG_e7_medium1; }
-//-DG--    if(matchElectronTrigger(lv, m_event.trig_EF_el.EF_e12Tvh_loose1()))             { flags |= TRIG_e12Tvh_loose1; }
-//-DG--    if(matchElectronTrigger(lv, m_event.trig_EF_el.EF_e12Tvh_medium1()))            { flags |= TRIG_e12Tvh_medium1; }
-//-DG--    if(matchElectronTrigger(lv, m_event.trig_EF_el.EF_e24vh_medium1()))             { flags |= TRIG_e24vh_medium1; }
-//-DG--    if(matchElectronTrigger(lv, m_event.trig_EF_el.EF_e24vhi_medium1()))            { flags |= TRIG_e24vhi_medium1; }
-//-DG--    if(matchElectronTrigger(lv, m_event.trig_EF_el.EF_2e12Tvh_loose1()))            { flags |= TRIG_2e12Tvh_loose1; }
-//-DG--    if(matchElectronTrigger(lv, m_event.trig_EF_el.EF_e24vh_medium1_e7_medium1()))  { flags |= TRIG_e24vh_medium1_e7_medium1; }
-//-DG--    if(matchElectronTrigger(lv, m_event.trig_EF_el.EF_e12Tvh_medium1_mu8()))        { flags |= TRIG_e12Tvh_medium1_mu8; }
-//-DG--    if(matchElectronTrigger(lv, m_event.trig_EF_el.EF_e18vh_medium1()))             { flags |= TRIG_e18vh_medium1; }
-//-DG--    if(matchElectronTrigger(lv, m_event.trig_EF_el.EF_e18vh_medium1_2e7T_medium1())){ flags |= TRIG_e18vh_medium1_2e7T_medium1; }
-//-DG--    if(matchElectronTrigger(lv, m_event.trig_EF_el.EF_2e7T_medium1_mu6()))          { flags |= TRIG_2e7T_medium1_mu6; }
-//-DG--    if(matchElectronTrigger(lv, m_event.trig_EF_el.EF_e7T_medium1_2mu6()))          { flags |= TRIG_e7T_medium1_2mu6; }
-//-DG--    if(matchElectronTrigger(lv, m_event.trig_EF_el.EF_e24vh_medium1_EFxe35_tclcw())){ flags |= TRIG_e24vh_medium1_EFxe35_tclcw; }
-//-DG--    m_eleTrigFlags[iEl] = flags;
-//-DG--  }
-//}
-/*--------------------------------------------------------------------------------*/
-//bool XaodAnalysis::matchElectronTrigger(const TLorentzVector &lv, vector<int>* trigBools)
-//{
-//    // matched trigger index - not used
-//    //static int indexEF = -1;
-//    // Use function defined in egammaAnalysisUtils/egammaTriggerMatching.h
-//    // return PassedTriggerEF(lv.Eta(), lv.Phi(), trigBools, indexEF, m_event.trig_EF_el.n(),
-//    //                        m_event.trig_EF_el.eta(), m_event.trig_EF_el.phi());
-//    return false;
-//}
-
-/*--------------------------------------------------------------------------------*/
-// Muon trigger matching
-/*--------------------------------------------------------------------------------*/
-//void XaodAnalysis::matchMuonTriggers()
-//{
-//-DG--  if(m_dbg>=5) cout << "matchMuonTriggers" << endl;
-//-DG--  for(uint i=0; i<m_preMuons.size(); i++){
-//-DG--    int iMu = m_preMuons[i];
-//-DG--    const TLorentzVector &lv = m_susyObj[m_eleIDDefault]->GetMuonTLV(iMu);
-//-DG--    long long flags = 0;
-//-DG--    // 2012 triggers only
-//-DG--    if( matchMuonTrigger(lv, m_event.trig_EF_trigmuonef.EF_mu8()) )         { flags |= TRIG_mu8; }
-//-DG--    if( matchMuonTrigger(lv, m_event.trig_EF_trigmuonef.EF_mu13()) )        { flags |= TRIG_mu13; }
-//-DG--    if( matchMuonTrigger(lv, m_event.trig_EF_trigmuonef.EF_mu18_tight()) )  { flags |= TRIG_mu18_tight; }
-//-DG--    if( matchMuonTrigger(lv, m_event.trig_EF_trigmuonef.EF_mu24i_tight()) ) { flags |= TRIG_mu24i_tight; }
-//-DG--    if( matchMuonTrigger(lv, m_event.trig_EF_trigmuonef.EF_2mu13()) )       { flags |= TRIG_2mu13; }
-//-DG--    if( matchMuonTrigger(lv, m_event.trig_EF_trigmuonef.EF_mu18_tight_mu8_EFFS()) )   { flags |= TRIG_mu18_tight_mu8_EFFS; }
-//-DG--    if( matchMuonTrigger(lv, m_event.trig_EF_trigmuonef.EF_mu18_tight_e7_medium1()) ) { flags |= TRIG_mu18_tight_e7_medium1; }
-//-DG--    if( matchMuonTrigger(lv, m_event.trig_EF_trigmuonef.EF_mu15()) )                  { flags |= TRIG_mu15; }
-//-DG--    if(!m_isMC && m_event.eventinfo.RunNumber()>=206248 &&
-//-DG--       matchMuonTrigger(lv, m_event.trig_EF_trigmuonef.EF_2mu8_EFxe40wMu_tclcw()))   { flags |= TRIG_2mu8_EFxe40wMu_tclcw; }
-//-DG--    if( matchMuonTrigger(lv, m_event.trig_EF_trigmuonef.EF_mu6()) )                  { flags |= TRIG_mu6; }
-//-DG--    if( matchMuonTrigger(lv, m_event.trig_EF_trigmuonef.EF_2mu6()) )                 { flags |= TRIG_2mu6; }
-//-DG--    if( matchMuonTrigger(lv, m_event.trig_EF_trigmuonef.EF_mu18_tight_2mu4_EFFS()) ) { flags |= TRIG_mu18_tight_2mu4_EFFS; }
-//-DG--    if( matchMuonTrigger(lv, m_event.trig_EF_trigmuonef.EF_mu4T()) )                 { flags |= TRIG_mu4T; }
-//-DG--    if( matchMuonTrigger(lv, m_event.trig_EF_trigmuonef.EF_mu24()) )                 { flags |= TRIG_mu24; }
-//-DG--    if( matchMuonTrigger(lv, m_event.trig_EF_trigmuonef.EF_mu4T_j65_a4tchad_xe70_tclcw_veryloose()) ) { flags |= TRIG_mu4T_j65_a4tchad_xe70_tclcw_veryloose; }
-//-DG--    if( matchMuonTrigger(lv, m_event.trig_EF_trigmuonef.EF_2mu4T_xe60_tclcw()) ) { flags |= TRIG_2mu4T_xe60_tclcw; }
-//-DG--    if(m_event.trig_EF_trigmuonef.EF_2mu8_EFxe40_tclcw.IsAvailable() &&
-//-DG--       matchMuonTrigger(lv, m_event.trig_EF_trigmuonef.EF_2mu8_EFxe40_tclcw()) ) { flags |= TRIG_2mu8_EFxe40_tclcw; }
-//-DG--    if( matchMuonTrigger(lv, m_event.trig_EF_trigmuonef.EF_mu24_j65_a4tchad_EFxe40_tclcw()) ) { flags |= TRIG_mu24_j65_a4tchad_EFxe40_tclcw; }
-//-DG--    if(m_event.trig_EF_trigmuonef.EF_mu24_j65_a4tchad_EFxe40wMu_tclcw.IsAvailable() &&
-//-DG--       matchMuonTrigger(lv, m_event.trig_EF_trigmuonef.EF_mu24_j65_a4tchad_EFxe40wMu_tclcw()) ) { flags |= TRIG_mu24_j65_a4tchad_EFxe40wMu_tclcw; }
-//-DG--    m_muoTrigFlags[iMu] = flags;
-//-DG--  }
-//}
-/*--------------------------------------------------------------------------------*/
-bool XaodAnalysis::matchMuonTrigger(const TLorentzVector &lv, vector<int>* passTrig)
-{
-//-DG--  // loop over muon trigger features
-//-DG--  for(int iTrig=0; iTrig < m_event.trig_EF_trigmuonef.n(); iTrig++){
-//-DG--
-//-DG--    // Check to see if this feature passed chain we want
-//-DG--    if(passTrig->at(iTrig)){
-//-DG--
-//-DG--      // Loop over muon EF tracks
-//-DG--      TLorentzVector lvTrig;
-//-DG--      for(int iTrk=0; iTrk < m_event.trig_EF_trigmuonef.track_n()->at(iTrig); iTrk++){
-//-DG--
-//-DG--        lvTrig.SetPtEtaPhiM( m_event.trig_EF_trigmuonef.track_CB_pt()->at(iTrig).at(iTrk),
-//-DG--                             m_event.trig_EF_trigmuonef.track_CB_eta()->at(iTrig).at(iTrk),
-//-DG--                             m_event.trig_EF_trigmuonef.track_CB_phi()->at(iTrig).at(iTrk),
-//-DG--                             0 );       // only eta and phi used to compute dR anyway
-//-DG--        // Require combined offline track...?
-//-DG--        if(!m_event.trig_EF_trigmuonef.track_CB_hasCB()->at(iTrig).at(iTrk)) continue;
-//-DG--        float dR = lv.DeltaR(lvTrig);
-//-DG--        if(dR < 0.15){
-//-DG--          return true;
-//-DG--        }
-//-DG--
-//-DG--      } // loop over EF tracks
-//-DG--    } // trigger object passes chain?
-//-DG--  } // loop over trigger objects
-//-DG--
-//-DG--  // matching failed
-    return false;
-}
-
-/*--------------------------------------------------------------------------------*/
-// Tau trigger matching
-/*--------------------------------------------------------------------------------*/
-void XaodAnalysis::matchTauTriggers()
-{
-//-DG--  if(m_dbg>=5) cout << "matchTauTriggers" << endl;
-//-DG--  for(uint i=0; i<m_preTaus.size(); i++){
-//-DG--
-//-DG--    int iTau = m_preTaus[i];
-//-DG--    const TLorentzVector &lv = m_susyObj[m_eleIDDefault]->GetTauTLV(iTau);
-//-DG--
-//-DG--    // trigger flags
-//-DG--    long long flags = 0;
-//-DG--
-//-DG--    // tau20_medium1
-//-DG--    if( matchTauTrigger(lv, m_event.trig_EF_tau.EF_tau20_medium1()) ){
-//-DG--      flags |= TRIG_tau20_medium1;
-//-DG--    }
-//-DG--    // tau20Ti_medium1
-//-DG--    if( matchTauTrigger(lv, m_event.trig_EF_tau.EF_tau20Ti_medium1()) ){
-//-DG--      flags |= TRIG_tau20Ti_medium1;
-//-DG--    }
-//-DG--    // tau29Ti_medium1
-//-DG--    if( matchTauTrigger(lv, m_event.trig_EF_tau.EF_tau29Ti_medium1()) ){
-//-DG--      flags |= TRIG_tau29Ti_medium1;
-//-DG--    }
-//-DG--    // tau29Ti_medium1_tau20Ti_medium1
-//-DG--    if( matchTauTrigger(lv, m_event.trig_EF_tau.EF_tau29Ti_medium1_tau20Ti_medium1()) ){
-//-DG--      flags |= TRIG_tau29Ti_medium1_tau20Ti_medium1;
-//-DG--    }
-//-DG--    // tau20Ti_medium1_e18vh_medium1
-//-DG--    if( matchTauTrigger(lv, m_event.trig_EF_tau.EF_tau20Ti_medium1_e18vh_medium1()) ){
-//-DG--      flags |= TRIG_tau20Ti_medium1_e18vh_medium1;
-//-DG--    }
-//-DG--    // tau20_medium1_mu15
-//-DG--    if( matchTauTrigger(lv, m_event.trig_EF_tau.EF_tau20_medium1_mu15()) ){
-//-DG--      flags |= TRIG_tau20_medium1_mu15;
-//-DG--    }
-//-DG--
-//-DG--    // assign the trigger flags for this tau
-//-DG--    m_tauTrigFlags[iTau] = flags;
-//-DG--  }
-}
-/*--------------------------------------------------------------------------------*/
-bool XaodAnalysis::matchTauTrigger(const TLorentzVector &lv, vector<int>* passTrig)
-{
-//-DG--  // loop over tau trigger features
-//-DG--  for(int iTrig=0; iTrig < m_event.trig_EF_tau.n(); iTrig++){
-//-DG--    // Check to see if this feature passed chain we want
-//-DG--    if(passTrig->at(iTrig)){
-//-DG--      // Now, try to match offline tau to this online tau
-//-DG--      static TLorentzVector trigLV;
-//-DG--      trigLV.SetPtEtaPhiM(m_event.trig_EF_tau.pt()->at(iTrig), m_event.trig_EF_tau.eta()->at(iTrig),
-//-DG--                          m_event.trig_EF_tau.phi()->at(iTrig), m_event.trig_EF_tau.m()->at(iTrig));
-//-DG--      float dR = lv.DeltaR(trigLV);
-//-DG--      if(dR < 0.15) return true;
-//-DG--    }
-//-DG--  }
-//-DG--  // matching failed
-    return false;
-}
-
-//----------------------------------------------------------
 int XaodAnalysis::truthElectronCharge(const xAOD::Electron &in)
 {
     int type   = xAOD::TruthHelpers::getParticleTruthType(in);
@@ -1869,51 +1657,6 @@ int XaodAnalysis::truthElectronCharge(const xAOD::Electron &in)
 }
 
 //----------------------------------------------------------
-bool XaodAnalysis::isChargeFlip(int recoCharge, int truthCharge)
-{
-    return ( (recoCharge*truthCharge) > 0);
-}
-//----------------------------------------------------------
-int XaodAnalysis::classifyTau(const xAOD::TauJet &in)
-{
-    int type=-1; 
-    int origin=-1;
-    
-    for(uint itrk=0; itrk< in.nTracks(); itrk++){
-            const xAOD::TrackParticle* trackParticle = in.track( itrk );
-            static SG::AuxElement::Accessor<int> acc_truthType("truthType");
-            static SG::AuxElement::Accessor<int> acc_truthOrigin("truthOrigin");
-            if(acc_truthType.isAvailable(*trackParticle))   
-                type   = acc_truthType(*trackParticle);
-            if(acc_truthOrigin.isAvailable(*trackParticle)) 
-                origin = acc_truthOrigin(*trackParticle);
-            if(m_dbg>15) std::cout<<"Tau object. itrk= "<<itrk<<" trackParticle= "<<trackParticle
-                                  <<" Type= "<<type<<" Origin= "<<origin<<std::endl; 
-            // electron faking a tau // (do we need muon faking tau? never saw that)
-            if (isPromptElectron(type,origin)) return ELEC; 
-            // electron conversion faking a tau // maybe just origin==5 ?
-            else if (type==4&&(origin==5||origin==6||origin==7)) return CONV; 
-    }
-            
-// REL20
-/*
-   int JetPartonID = (in.jet())->auxdata< int >("PartonTruthLabelID"); // ghost association
-   int JetConeID   = (in.jet())->auxdata< int >("ConeTruthLabelID"); // cone association
-    
-   if (JetConeID ==15) return PROMPT; // 
-   if (JetConeID ==4 || JetConeID ==5 ) return HF;
-   if (JetPartonID ==1 || JetPartonID ==2 ||  JetPartonID ==3) return QJET; // Light Quark jet
-   if (JetPartonID ==21) return GJET; // Gluon Jet
-   return UK;
-*/        
-//REL19 -> can not separate Q and G, put everything in UK
-   int JetConeID = (in.jet())->auxdata< int >("TruthLabelID");
-   if (JetConeID ==15) return PROMPT; 
-   if (JetConeID ==4 || JetConeID ==5 ) return HF;
-   return UK;
-}
-
-//----------------------------------------------------------
 bool XaodAnalysis::passGRL(const xAOD::EventInfo* eventinfo)
 {
     return (m_isMC ||
@@ -1924,14 +1667,12 @@ bool XaodAnalysis::passTTCVeto(const xAOD::EventInfo* eventinfo)
 {
     bool eventPassesTTC = eventinfo->isEventFlagBitSet(xAOD::EventInfo::Core, 18) ? false : true;
     return eventPassesTTC;
-    //   return (m_event.eventinfo.coreFlags() & 0x40000) == 0;
 }
 //----------------------------------------------------------
 bool XaodAnalysis::passTileErr(const xAOD::EventInfo* eventinfo)
 {
     // dantrim - add check of MC? >> seems to catch this, MC set to true
     bool eventPassesTileTrip = eventinfo->errorState(xAOD::EventInfo::Tile)==xAOD::EventInfo::Error ? false : true;
-//	bool eventPassesTileTrip = (m_isMC || true); // SUSYToolsTester: move to xAOD tool
     return eventPassesTileTrip;
 }
 bool XaodAnalysis::passSCTErr(const xAOD::EventInfo* eventinfo)
@@ -1945,7 +1686,6 @@ bool XaodAnalysis::passLarErr(const xAOD::EventInfo* eventinfo)
     // dantrim - add check of MC? >> seems to catch this, MC set to true
     bool eventPassesLarErr = eventinfo->errorState(xAOD::EventInfo::LAr)==xAOD::EventInfo::Error ? false : true;
     return eventPassesLarErr;
-//    return m_isMC || (m_event.eventinfo.larError()!=2);
 }
 /*--------------------------------------------------------------------------------*/
 // Check event level cleaning cuts like GRL, LarError, etc.
@@ -1959,30 +1699,17 @@ void XaodAnalysis::assignEventCleaningFlags()
     if(passTileErr(eventinfo))        m_cutFlags |= ECut_TileErr;
     if(passSCTErr(eventinfo))         m_cutFlags |= ECut_SCTErr;
     if(passGoodVtx())                 m_cutFlags |= ECut_GoodVtx;
-    if(passTileTrip())                m_cutFlags |= ECut_TileTrip;
+    //if(passTileTrip())                m_cutFlags |= ECut_TileTrip; // DONT USE CUTFLAGS FOR THIS
 }
 //----------------------------------------------------------
 void XaodAnalysis::assignObjectCleaningFlags(ST::SystInfo sysInfo, SusyNtSys sys)
 {
-    //AT check if m_cutFalgs save at each systematics ?
-    if(passTileHotSpot())             m_cutFlags |= ECut_HotSpot;
+    //if(passTileHotSpot())             m_cutFlags |= ECut_HotSpot; // dantrim Feb 21 2017 -- DONT USE CUTFLAGS FOR THIS
+    //if(passBadMuon(sysInfo,sys))      m_cutFlags |= ECut_BadMuon;
+    //if(passCosmic(sysInfo,sys))       m_cutFlags |= ECut_Cosmic;
+    //
     if(passBadJet(sysInfo, sys))      m_cutFlags |= ECut_BadJet;
-    if(passBadMuon(sysInfo,sys))      m_cutFlags |= ECut_BadMuon;
-    if(passCosmic(sysInfo,sys))       m_cutFlags |= ECut_Cosmic;
-    if(passLarHoleVeto())             m_cutFlags |= ECut_SmartVeto;
-}
-//----------------------------------------------------------
-bool XaodAnalysis::passLarHoleVeto()
-{
-    // LAr veto is not used anymore
-    return true;
-}
-//----------------------------------------------------------
-bool XaodAnalysis::passTileHotSpot()
-{
-    return false;
-//-DG--  xAOD::JetContainer *jets =  xaodJets();
-//-DG--  return !check_jet_tileHotSpot(jets, m_preJets, m_susyObj, !m_isMC, m_event.eventinfo.RunNumber());
+    //if(passLarHoleVeto())             m_cutFlags |= ECut_SmartVeto;
 }
 //----------------------------------------------------------
 bool XaodAnalysis::passBadJet(ST::SystInfo sysInfo, SusyNtSys sys)
@@ -1993,7 +1720,6 @@ bool XaodAnalysis::passBadJet(ST::SystInfo sysInfo, SusyNtSys sys)
         if((bool)jets->at(i)->auxdata< char >("bad")==1) pass_jetCleaning = false;
     } 
     return pass_jetCleaning;
-//  return !IsBadJetEvent(jets, m_baseJets, 20.*GeV, m_susyObj);
 }
 //----------------------------------------------------------
 bool XaodAnalysis::passGoodVtx()
@@ -2002,12 +1728,7 @@ bool XaodAnalysis::passGoodVtx()
     return true;
 }
 //----------------------------------------------------------
-bool XaodAnalysis::passTileTrip()
-{
-    return false;
-//  return !m_susyObj[m_eleIDDefault]->IsTileTrip(m_event.eventinfo.RunNumber(), m_event.eventinfo.lbn(), m_event.eventinfo.EventNumber());
-}
-//----------------------------------------------------------
+/*
 bool XaodAnalysis::passBadMuon(ST::SystInfo sysInfo, SusyNtSys sys)
 {
     xAOD::MuonContainer* muons = xaodMuons(sysInfo, sys);
@@ -2017,11 +1738,7 @@ bool XaodAnalysis::passBadMuon(ST::SystInfo sysInfo, SusyNtSys sys)
             pass_bad_muon = false;
         }
     }
-   // for(auto &i : m_baseMuons) {
-   //     if(m_susyObj[m_eleIDDefault]->IsBadMuon(*muons->at(i))) pass_bad_muon = false;
-   // }
     return pass_bad_muon;
-    //  return !IsBadMuonEvent(m_susyObj, xaodMuons(), m_preMuons, 0.2);
 }
 //----------------------------------------------------------
 bool XaodAnalysis::passCosmic(ST::SystInfo sysInfo, SusyNtSys sys)
@@ -2032,40 +1749,6 @@ bool XaodAnalysis::passCosmic(ST::SystInfo sysInfo, SusyNtSys sys)
         if((bool)muons->at(i)->auxdata< char >("passOR")==1 && (bool)muons->at(i)->auxdata< char >("cosmic")==1) pass_cosmic = false;
     }
     return pass_cosmic;
-
-
-//    for(auto it=muons->begin(), end=muons->end(); it!=end; ++it){
-//        const xAOD::Muon &mu = **it;
-//        if(!mu.auxdata< bool >("baseline")) continue; // dantrim -- removing this, cutflow is in line with Maria : Feb 14 2015
-//        if(!mu.auxdata< bool >("passOR")) continue; 
-//        if(m_susyObj[m_eleIDDefault]->IsCosmicMuon(mu)) return false;
-//
-//     //   return(mu.auxdata<bool>("baseline") && mu.auxdata<bool>("passOR") && !m_susyObj[m_eleIDDefault]->IsCosmicMuon(mu));
-//    }
-//     return true;
-    //  return !IsCosmic(m_susyObj, xaodMuons(), m_baseMuons, 1., 0.2);
-}
-//----------------------------------------------------------
-float XaodAnalysis::getEventWeight(float lumi)
-{
-    if(!m_isMC) return 1;
-    else
-        return 1.0;
-//  return m_event.eventinfo.mc_event_weight() * getXsecWeight() * getPileupWeight() * lumi / m_sumw;
-}
-//----------------------------------------------------------
-float XaodAnalysis::getXsecWeight()
-{
-    return 1.0;
-    // // Use user cross section if it has been set
-    // if(m_xsec > 0) return m_xsec;
-
-    // // Use SUSY cross section file
-    // int id = m_event.eventinfo.mc_channel_number();
-    // if(m_xsecMap.find(id) == m_xsecMap.end()) {
-    //   m_xsecMap[id] = m_susyXsec->process(id);
-    // }
-    // return m_xsecMap[id].xsect() * m_xsecMap[id].kfactor() * m_xsecMap[id].efficiency();
 }
 //----------------------------------------------------------
 double XaodAnalysis::getPileupWeight(const xAOD::EventInfo* eventinfo)
@@ -2073,106 +1756,11 @@ double XaodAnalysis::getPileupWeight(const xAOD::EventInfo* eventinfo)
     double pile_up_w = 1.0;
     if(eventinfo->eventType( xAOD::EventInfo::IS_SIMULATION ) ) {
         pile_up_w = m_pileupReweightingTool->getCombinedWeight(*eventinfo);
-    //    pile_up_w = m_pileupReweightingTool->GetCombinedWeight(eventinfo->runNumber(),
-    //                    eventinfo->mcChannelNumber(), eventinfo->averageInteractionsPerCrossing());
     }
     return pile_up_w;
 
-    //m_pileupReweightingTool->execute();
-    //return xaodEventInfo()->auxdata< double >( "PileupWeight" );
 }
-//----------------------------------------------------------
-float XaodAnalysis::getPileupWeightUp()
-{
-    return 1.0;
-    // return m_pileup_up->GetCombinedWeight(m_event.eventinfo.RunNumber(), m_event.eventinfo.mc_channel_number(), m_event.eventinfo.averageIntPerXing());
-}
-//----------------------------------------------------------
-float XaodAnalysis::getPileupWeightDown()
-{
-    return 1.0;
-    // return m_pileup_dn->GetCombinedWeight(m_event.eventinfo.RunNumber(), m_event.eventinfo.mc_channel_number(), m_event.eventinfo.averageIntPerXing());
-}
-//----------------------------------------------------------
-float XaodAnalysis::getPDFWeight8TeV()
-{
-    return 1.0;
-    // #ifdef USEPDFTOOL
-    // float scale = m_event.mcevt.pdf_scale()->at(0);
-    // float x1 = m_event.mcevt.pdf_x1()->at(0);
-    // float x2 = m_event.mcevt.pdf_x2()->at(0);
-    // int id1 = m_event.mcevt.pdf_id1()->at(0);
-    // int id2 = m_event.mcevt.pdf_id2()->at(0);
-
-    // // MultLeip function... Not working?
-    // //return scaleBeamEnergy(*m_pdfTool, 21000, m_event.mcevt.pdf_scale()->at(0), m_event.mcevt.pdf_x1()->at(0),
-    //                        //m_event.mcevt.pdf_x2()->at(0), m_event.mcevt.pdf_id1()->at(0), m_event.mcevt.pdf_id2()->at(0));
-    // // Simple scaling
-    // //return m_pdfTool->event_weight( pow(scale,2), x1, x2, id1, id2, 21000 );
-
-    // // For scaling to/from arbitrary beam energy
-    // m_pdfTool->setEventInfo( scale*scale, x1, x2, id1, id2 );
-    // //return m_pdfTool->scale((3.5+4.)/3.5);
-    // // possible typo correction?
-    // return m_pdfTool->scale(4./3.5);
-
-    // #else
-    // return 1;
-    // #endif
-}
-//----------------------------------------------------------
-float XaodAnalysis::getLepSF(const vector<LeptonInfo>& leptons)
-{
-    // TODO: incorporate systematics
-    float lepSF = 1;
-    if(m_isMC){
-        // // Loop over leptons
-        // for(uint iLep=0; iLep<leptons.size(); iLep++){
-        //   const LeptonInfo &lep = leptons[iLep];
-        //   // Electrons
-        //   if(lep.isElectron()){
-        //       const xAOD::ElectronD3PDObjectElement* el = lep.getElectronElement();
-        //     lepSF *= m_susyObj[m_eleIDDefault]->GetSignalElecSF(el->cl_eta(), lep.lv()->Pt(), true, true, false);
-        //   }
-        //   // Muons
-        //   else{
-        //     lepSF *= m_susyObj[m_eleIDDefault]->GetSignalMuonSF(lep.idx());
-        //   }
-        // }
-    }
-    return lepSF;
-}
-//----------------------------------------------------------
-float XaodAnalysis::getBTagSF(const vector<int>& jets)
-{
-    return 1;
-}
-//----------------------------------------------------------
-void XaodAnalysis::calcRandomRunLB()
-{
-//-DG--  if(m_pileup){
-//-DG--    m_mcRun = m_pileup->GetRandomRunNumber(m_event.eventinfo.RunNumber());
-//-DG--    m_mcLB = m_pileup->GetRandomLumiBlockNumber(m_mcRun);
-//-DG--  }
-}
-//----------------------------------------------------------
-int XaodAnalysis::getHFORDecision()
-{
-    //AT-2014-10-30 Not yet implemented for DC14
-    return 1;
-    // return m_hforTool.getDecision(m_event.eventinfo.mc_channel_number(),
-    //                               m_event.mc.n(),
-    //                               m_event.mc.pt(),
-    //                               m_event.mc.eta(),
-    //                               m_event.mc.phi(),
-    //                               m_event.mc.m(),
-    //                               m_event.mc.pdgId(),
-    //                               m_event.mc.status(),
-    //                               m_event.mc.vx_barcode(),
-    //                               m_event.mc.parent_index(),
-    //                               m_event.mc.child_index(),
-    //                               HforToolD3PD::ALL); //HforToolD3PD::DEFAULT
-}
+*/
 //----------------------------------------------------------
 void XaodAnalysis::dumpEvent()
 {

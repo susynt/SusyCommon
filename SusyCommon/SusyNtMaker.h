@@ -106,37 +106,6 @@ class SusyNtMaker : public XaodAnalysis
     void storeJetKinSys(ST::SystInfo sysInfo, SusyNtSys sys);
     void storeTauKinSys(ST::SystInfo sysInfo, SusyNtSys sys);
 
-    // This should be updated, we have some duplicated code which is dangerous
-    void addMissingElectron(const LeptonInfo*, SusyNtSys sys);
-    void addMissingMuon(const LeptonInfo*, SusyNtSys sys);
-    void addMissingJet(int index, SusyNtSys sys);
-    void addMissingTau(int index, SusyNtSys sys);
-
-    /*
-      //AT 05-09-15 obsolete
-    // Systematic enum checks
-    bool isElecSys(SusyNtSys s){
-    return (s == NtSys::EES_Z_UP   || s == NtSys::EES_Z_DN ||
-	      s == NtSys::EES_MAT_UP || s == NtSys::EES_MAT_DN ||
-	      s == NtSys::EES_PS_UP  || s == NtSys::EES_PS_DN ||
-	      s == NtSys::EES_LOW_UP || s == NtSys::EES_LOW_DN ||
-	      s == NtSys::EER_UP     || s == NtSys::EER_DN);
-    };
-    bool isMuonSys(SusyNtSys s){
-      return (s == NtSys::MS_UP || s == NtSys::MS_DN || s == NtSys::ID_UP || s == NtSys::ID_DN);
-    };
-    bool isJetSys(SusyNtSys s){
-      return (s == NtSys::JES_UP || s == NtSys::JES_DN || s == NtSys::JER);
-    };
-    bool isTauSys(SusyNtSys s){
-      return (s == NtSys::TES_UP || s == NtSys::TES_DN);
-    }
-    */
-
-    //void addEventFlag(SusyNtSys s, int eventFlag){
-      //m_susyNt.evt()->evtFlag[s] = eventFlag;
-    //};
-
     // Toggle SusyNt file writing
     void setFillNt(bool fill=true) { m_fillNt = fill; }
 
