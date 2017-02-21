@@ -1055,6 +1055,10 @@ void SusyNtMaker::storeMuon(const xAOD::Muon &in, const xAOD::MuonContainer &muo
                 else if(ourSys == NtSys::MUON_TTVA_STAT_DN)       out.errTTVA_stat_dn[i] = sf[i] - out.muoEffSF[i];
                 else if(ourSys == NtSys::MUON_TTVA_SYS_UP)        out.errTTVA_syst_up[i] = sf[i] - out.muoEffSF[i];
                 else if(ourSys == NtSys::MUON_TTVA_SYS_DN)        out.errTTVA_syst_dn[i] = sf[i] - out.muoEffSF[i];
+                else if(ourSys == NtSys::MUON_BADMUON_STAT_UP)    out.errBadMu_stat_up[i] = sf[i] - out.muoEffSF[i];
+                else if(ourSys == NtSys::MUON_BADMUON_STAT_DN)    out.errBadMu_stat_dn[i] = sf[i] - out.muoEffSF[i];
+                else if(ourSys == NtSys::MUON_BADMUON_SYS_UP)     out.errBadMu_syst_up[i] = sf[i] - out.muoEffSF[i];
+                else if(ourSys == NtSys::MUON_BADMUON_SYS_DN)     out.errBadMu_syst_dn[i] = sf[i] - out.muoEffSF[i]; 
 
 /*
                 if(i==1 || i==2) {
@@ -1070,6 +1074,8 @@ void SusyNtMaker::storeMuon(const xAOD::Muon &in, const xAOD::MuonContainer &muo
                 cout << "    eff_iso_syst   : " << out.errIso_syst_up[i] << "  " << out.errIso_syst_dn[i] << endl;
                 cout << "    eff_ttva_stat  : " << out.errTTVA_stat_up[i]<< "  " << out.errTTVA_stat_dn[i] << endl;
                 cout << "    eff_ttva_syst  : " << out.errTTVA_syst_up[i]<< "  " << out.errTTVA_syst_dn[i] << endl;
+                cout << "    eff_bad_mu_sys : " << out.errBadMu_syst_up[i]<<"  " << out.errBadMu_syst_dn[i] << endl;
+                cout << "    eff_bad_mu_stat: " << out.errBadMu_stat_up[i]<<"  " << out.errBadMu_stat_dn[i] << endl;
                 }
 */
             }
@@ -1093,6 +1099,8 @@ void SusyNtMaker::storeMuon(const xAOD::Muon &in, const xAOD::MuonContainer &muo
             out.errIso_syst_up[i] = out.errIso_syst_dn[i] = 0;
             out.errTTVA_stat_up[i] = out.errTTVA_stat_dn[i] = 0;
             out.errTTVA_syst_up[i] = out.errTTVA_syst_dn[i] = 0;
+            out.errBadMu_stat_up[i] = out.errBadMu_stat_dn[i] = 0;
+            out.errBadMu_syst_up[i] = out.errBadMu_syst_dn[i] = 0;
         }
     }
     /// do trigger SF variations here
@@ -1175,7 +1183,7 @@ void SusyNtMaker::storeMuon(const xAOD::Muon &in, const xAOD::MuonContainer &muo
     // ASM-2014-11-02 :: Store to be true at the moment
     all_available =  false;
     if(m_dbg && !all_available) cout<<"missing some muon variables"<<endl;
-    out.idx = (m_susyNt.muo()->size()); // add index of this jet in the susyNt muon container
+    out.idx = (m_susyNt.muo()->size()); // add index of this muon in the susyNt muon container
     m_susyNt.muo()->push_back(out);
 }
 /*--------------------------------------------------------------------------------*/
@@ -1870,6 +1878,10 @@ void SusyNtMaker::storeMuonKinSys(ST::SystInfo sysInfo, SusyNtSys sys)
         else if(sys == NtSys::MUON_ID_DN) mu_susyNt->id_dn = sf;
         else if(sys == NtSys::MUON_SCALE_UP) mu_susyNt->scale_up = sf;
         else if(sys == NtSys::MUON_SCALE_DN) mu_susyNt->scale_dn = sf;
+        else if(sys == NtSys::MUON_SAGITTA_RESBIAS_UP) mu_susyNt->sagitta_bias_up = sf;
+        else if(sys == NtSys::MUON_SAGITTA_RESBIAS_DN) mu_susyNt->sagitta_bias_dn = sf;
+        else if(sys == NtSys::MUON_SAGITTA_RHO_UP) mu_susyNt->sagitta_rho_up = sf;
+        else if(sys == NtSys::MUON_SAGITTA_RHO_DN) mu_susyNt->sagitta_rho_dn = sf;
     }
 }
 

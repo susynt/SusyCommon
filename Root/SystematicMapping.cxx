@@ -81,24 +81,22 @@ SusyNtSys CPsys2sys(const std::string &s)
   else if( s== "MUON_TTVA_STAT__1up" )                     r = MUON_TTVA_STAT_UP;
   else if( s== "MUON_TTVA_SYS__1down" )                    r = MUON_TTVA_SYS_DN;
   else if( s== "MUON_TTVA_SYS__1up" )                      r = MUON_TTVA_SYS_UP; 
-/*
-  else if( s== "PH_SCALE_CONVEFFICIENCY__1down" )          r = PH_SCALE_CONVEFFICIENCY_DN;
-  else if( s== "PH_SCALE_CONVEFFICIENCY__1up" )            r = PH_SCALE_CONVEFFICIENCY_UP;
-  else if( s== "PH_SCALE_CONVFAKERATE__1down" )            r = PH_SCALE_CONVFAKERATE_DN;
-  else if( s== "PH_SCALE_CONVFAKERATE__1up" )              r = PH_SCALE_CONVFAKERATE_UP;
-  else if( s== "PH_SCALE_CONVRADIUS__1down" )              r = PH_SCALE_CONVRADIUS_DN;
-  else if( s== "PH_SCALE_CONVRADIUS__1up" )                r = PH_SCALE_CONVRADIUS_UP;
-  else if( s== "PH_SCALE_LEAKAGECONV__1down" )             r = PH_SCALE_LEAKAGECONV_DN;
-  else if( s== "PH_SCALE_LEAKAGECONV__1up" )               r = PH_SCALE_LEAKAGECONV_UP;
-  else if( s== "PH_SCALE_LEAKAGEUNCONV__1down" )           r = PH_SCALE_LEAKAGEUNCONV_DN;
-  else if( s== "PH_SCALE_LEAKAGEUNCONV__1up" )             r = PH_SCALE_LEAKAGEUNCONV_UP;
-*/
+  else if( s== "MUON_SAGITTA_RESBIAS__1down" )             r = MUON_SAGITTA_RESBIAS_DN;
+  else if( s== "MUON_SAGITTA_RESBIAS__1up" )               r = MUON_SAGITTA_RESBIAS_UP;
+  else if( s== "MUON_SAGITTA_RHO__1down" )                 r = MUON_SAGITTA_RHO_DN;
+  else if( s== "MUON_SAGITTA_RHO__1up" )                   r = MUON_SAGITTA_RHO_UP;
+  else if( s=="MUON_BADMUON_STAT__1down" )                 r = MUON_BADMUON_STAT_DN;
+  else if( s=="MUON_BADMUON_STAT__1up" )                   r = MUON_BADMUON_STAT_UP;
+  else if( s=="MUON_BADMUON_SYS__1down" )                  r = MUON_BADMUON_SYS_DN;
+  else if( s=="MUON_BADMUON_SYS__1up" )                    r = MUON_BADMUON_SYS_UP;
+
   else if( s== "TAUS_EFF_CONTJETID_STAT__1down" )          r = TAUS_EFF_CONTJETID_STAT_DN;
   else if( s== "TAUS_EFF_CONTJETID_STAT__1up" )            r = TAUS_EFF_CONTJETID_STAT_UP;
   else if( s== "TAUS_EFF_CONTJETID_SYST__1down" )          r = TAUS_EFF_CONTJETID_SYST_DN;
   else if( s== "TAUS_EFF_CONTJETID_SYST__1up" )            r = TAUS_EFF_CONTJETID_SYST_UP;
   else if( s== "TAUS_SME_TOTAL__1down" )                   r = TAUS_SME_TOTAL_DN;
   else if( s== "TAUS_SME_TOTAL__1up" )                     r = TAUS_SME_TOTAL_UP;
+
   // PileupReweighting (mu) variations
   else if( s== "PRW_DATASF__1down" )                       r = PILEUP_DN;
   else if( s== "PRW_DATASF__1up" )                         r = PILEUP_UP;
