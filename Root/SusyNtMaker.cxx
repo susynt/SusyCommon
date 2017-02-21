@@ -352,7 +352,8 @@ void SusyNtMaker::fillEventVars()
     else { evt->isSherpaVjetsSample = false; }
     evt->sherpa22VjetsWeight = vjetweight;
 
-    evt->mcWeights = getMcWeights(eventinfo);
+    if(m_isMC)
+        evt->mcWeights = getMcWeights(eventinfo);
 
     m_susyNt.evt()->cutFlags[NtSys::NOM] = m_cutFlags;
 }
