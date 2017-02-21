@@ -380,7 +380,9 @@ void SusyNtMaker::fillEventVars()
     else { evt->isSherpaVjetsSample = false; }
     evt->sherpa22VjetsWeight = vjetweight;
 
-    evt->pdfSF            = m_isMC? getPDFWeight8TeV() : 1;
+    evt->pdfSF = m_isMC? getPDFWeight8TeV() : 1;
+    evt->mcWeights = getMcWeights(eventinfo);
+
     m_susyNt.evt()->cutFlags[NtSys::NOM] = m_cutFlags;
 }
 //----------------------------------------------------------
