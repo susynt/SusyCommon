@@ -1215,10 +1215,10 @@ void SusyNtMaker::storeJet(const xAOD::Jet &in)
 
     // JVF 
     // ASM-2014-11-04 :: Remember JVT is gonna replace JVF in Run-II but not yet available
-    vector<float> jetJVF;
-    in.getAttribute(xAOD::JetAttribute::JVF,jetJVF); // JVF returns a vector that holds jvf per vertex
-    const xAOD::Vertex* PV = getPV();                // Need to know the PV
-    out.jvf = (PV) ? jetJVF.at(PV->index()) : 0.;    // Upon discussion w/ TJ (2014-12-11)
+    //vector<float> jetJVF;
+    //in.getAttribute(xAOD::JetAttribute::JVF,jetJVF); // JVF returns a vector that holds jvf per vertex
+    //const xAOD::Vertex* PV = getPV();                // Need to know the PV
+    //out.jvf = (PV) ? jetJVF.at(PV->index()) : 0.;    // Upon discussion w/ TJ (2014-12-11)
 
     // JVT
     static SG::AuxElement::Accessor<float> acc_jvt("Jvt");

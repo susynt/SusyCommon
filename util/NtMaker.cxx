@@ -151,6 +151,13 @@ int main(int argc, char** argv)
   int fileErr = ChainHelper::addInput(chain, fileList, dbg);
   if(fileErr) return 1;
   Long64_t nEntries = chain->GetEntries();
+  if(!(nEntries>0)) {
+        cout << "------------------------------------------------------------------------------------------" << endl;
+        cout << "NtMaker    Built TChain has zero entries! Will not attempt to process. Exiting gracefully." << endl;
+        cout << "------------------------------------------------------------------------------------------" << endl;
+        delete chain;
+        return 0; 
+  }
   chain->ls();
 
   // Build the TSelector
