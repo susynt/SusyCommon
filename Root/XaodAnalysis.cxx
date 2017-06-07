@@ -68,7 +68,6 @@ XaodAnalysis::XaodAnalysis() :
     m_selectTruth(false),
     m_doMetMuCorr(false),
     m_doMetFix(false),
-    m_lumi(LUMI_A_A4),
     m_mcRun(0),
     m_mcLB(0),
     m_sys(false),
@@ -195,7 +194,7 @@ void XaodAnalysis::Init(TTree *tree)
 
     // GRL tool (if data)
     if(!m_isMC) {
-        if(!initGrlTool()) {
+        if(!init_grl_tool()) {
             cout << "XaodAnalysis::Init ERROR    Unable to initialize GRL tool. Exiting." << endl;
             exit(1);
         }
@@ -1941,7 +1940,7 @@ bool XaodAnalysis::runningOptionsAreValid()
     return valid;
 }
 //----------------------------------------------------------
-std::string XaodAnalysis::defaultGrlFile()
+std::string XaodAnalysis::default_grl_file()
 {
     string grl_file = "";
     if(m_isData15) {
@@ -1951,19 +1950,19 @@ std::string XaodAnalysis::defaultGrlFile()
         grl_file = "$ROOTCOREBIN/data/SusyCommon/data16_13TeV.periodAllYear_DetStatus-v88-pro20-21_DQDefects-00-02-04_PHYS_StandardGRL_All_Good_25ns.xml"; 
     }
     else {
-        cout << "XaodAnalysis::defaultGrlFile    ERROR Inconsistent data flags. Neither \"m_isData15\" nor \"m_isData15\" flags are set!" << endl;
+        cout << "XaodAnalysis::default_grl_file    ERROR Inconsistent data flags. Neither \"m_isData15\" nor \"m_isData15\" flags are set!" << endl;
         exit(1);
     }
     return grl_file;
 }
 //----------------------------------------------------------
-bool XaodAnalysis::initGrlTool()
+bool XaodAnalysis::init_grl_tool()
 {
     bool success = true;
     m_grl = new GoodRunsListSelectionTool("GoodRunsListSelectionTool");
     std::vector<std::string> grl_files;
-    grl_files.push_back(XaodAnalysis::defaultGrlFile());
-    cout << "XaodAnalysis::initGrlTool    Using GRL: " << grl_files[0] << endl;
+    grl_files.push_back(XaodAnalysis::default_grl_file());
+    cout << "XaodAnalysis::init_grl_tool    Using GRL: " << grl_files[0] << endl;
     m_grl->setProperty("GoodRunsListVec", grl_files);
     m_grl->setProperty("PassThrough", false);
     if(!m_grl->initialize().isSuccess()) success = false;

@@ -2,25 +2,15 @@
 #define SusyCommon_XaodAnalysis_h
 
 
-// Infrastructure include(s):
+//Infrastructure
 #ifdef ROOTCORE
-#   include "xAODRootAccess/Init.h"
-#   include "xAODRootAccess/TEvent.h"
-#endif // ROOTCORE
+#include "xAODRootAccess/Init.h"
+#include "xAODRootAccess/TEvent.h"
+#endif //ROOTCORE
 
-#include "GoodRunsLists/GoodRunsListSelectionTool.h"
-#include "SUSYTools/SUSYObjDef_xAOD.h"
-//handle
+//ASG
 #include "AsgTools/ToolHandle.h"
-#include <AsgTools/AnaToolHandle.h>
-//#include "LeptonTruthTools/RecoTauMatch.h" // dantrim Aug 18 obsolete package
-
-#include "SusyNtuple/ElectronId.h"
-#include "SusyCommon/LeptonInfo.h"
-#include "SusyNtuple/MuonId.h"
-#include "SusyNtuple/SusyDefs.h"
-#include "SusyNtuple/SusyNt.h"
-#include "SusyNtuple/SusyNtSys.h"
+//#include <AsgTools/AnaToolHandle.h>
 
 //xAOD
 #include "xAODEventInfo/EventInfo.h"
@@ -34,20 +24,17 @@
 #include "xAODTruth/TruthParticleContainer.h"
 #include "xAODTruth/TruthEventContainer.h"
 #include "xAODTruth/xAODTruthHelpers.h"
-
-#include "TauAnalysisTools/TauSelectionTool.h"
-#include "TauAnalysisTools/TauEfficiencyCorrectionsTool.h"
-#include "TauAnalysisTools/TauTruthMatchingTool.h"
-#include "TauAnalysisTools/TauTruthTrackMatchingTool.h"
-
-// #include "xAODTruth/TruthEvent.h"
 #include "xAODCore/ShallowCopy.h"
+#include "TrigConfHLTData/HLTTriggerElement.h"
+#include "TrigConfxAOD/xAODConfigTool.h"
+#include "xAODTrigger/TrigNavigation.h"
+#include "xAODTrigEgamma/TrigElectron.h"
+#include "xAODTrigEgamma/TrigElectronContainer.h"
 
 //CP systematics
 #include "PATInterfaces/SystematicVariation.h"
 #include "PATInterfaces/SystematicRegistry.h"
 #include "PATInterfaces/SystematicCode.h"
-
 
 //Tools
 #include "ElectronEfficiencyCorrection/AsgElectronEfficiencyCorrectionTool.h"
@@ -59,27 +46,38 @@ class AsgElectronChargeIDSelectorTool;
 #include "MuonEfficiencyCorrections/MuonEfficiencyScaleFactors.h"
 #include "MuonSelectorTools/MuonSelectionTool.h"
 #include "IsolationSelection/IsolationSelectionTool.h"
-#include "StopPolarization/PolarizationReweight.h" // ASM-2016-04-25
-
-//Trigger
-#include "TBits.h"
-#include "TrigConfxAOD/xAODConfigTool.h"
+#include "StopPolarization/PolarizationReweight.h"
 #include "TrigDecisionTool/TrigDecisionTool.h"
-#include "xAODTrigger/TrigNavigation.h"
-#include "TrigConfHLTData/HLTTriggerElement.h"
-#include "xAODTrigEgamma/TrigElectron.h"
-#include "xAODTrigEgamma/TrigElectronContainer.h"
-#include "SusyNtuple/TriggerTools.h"
+#include "TauAnalysisTools/TauSelectionTool.h"
+#include "TauAnalysisTools/TauEfficiencyCorrectionsTool.h"
+#include "TauAnalysisTools/TauTruthMatchingTool.h"
+#include "TauAnalysisTools/TauTruthTrackMatchingTool.h"
 
-#include "SusyCommon/SusyObjId.h"
-
-
+//ROOT
 #include "TSelector.h"
 #include "TTree.h"
 #include "TChain.h"
 #include "TTreeFormula.h"
+#include "TBits.h"
+class TDirectory;
 
+//std/stl
 #include <iostream>
+
+//SUSY
+#include "SUSYTools/SUSYObjDef_xAOD.h"
+
+//SusyNtuple
+#include "SusyNtuple/ElectronId.h"
+#include "SusyNtuple/MuonId.h"
+#include "SusyNtuple/SusyDefs.h"
+#include "SusyNtuple/SusyNt.h"
+#include "SusyNtuple/SusyNtSys.h"
+#include "SusyNtuple/TriggerTools.h"
+
+//SusyCommon
+#include "SusyCommon/LeptonInfo.h"
+#include "SusyCommon/SusyObjId.h"
 
 using namespace Susy;
 using namespace NtSys;
@@ -93,36 +91,42 @@ namespace Trig {
     class FeatureContainer;
 }
 
-class TDirectory;
 
 namespace Susy {
   
   const double MeV2GeV=1.0e-3;
 
-  ///  a class for performing object selections and event cleaning on xaod
+  ///  a class for performing object definition and selection and event cleaning of a DAOD
   class XaodAnalysis : public TSelector
   {
 
   public:
-    XaodAnalysis(); // original
+    XaodAnalysis();
     virtual ~XaodAnalysis();
 
+    //TSelector Methods
     virtual Bool_t  Process(Long64_t entry);
     virtual void    Terminate();
     virtual void    Init(TTree *tree); ///< Called every time a new TTree is attached
-    //virtual Bool_t    Notify(); ///< This method is called at the first entry of a new file in a chain
-    virtual void    SlaveBegin(TTree *tree);
-
     virtual Bool_t  Notify() { return kTRUE; } /// Called at the first entry of a new file in a chain
+    virtual void    SlaveBegin(TTree *tree);
     virtual void    SlaveTerminate(){};
-    /// Due to ROOT's stupid design, need to specify version >= 2 or the tree will not connect automatically
+    /// ROOT design: need to specify version >= 2 or the tree will not connect automatically
     virtual Int_t   Version() const { return 2; }
+
+    //XaodAnalysis
     virtual XaodAnalysis& setDebug(int debugLevel) { m_dbg = debugLevel; return *this; }
+    bool dbg() { return m_dbg; }
+
     virtual void setChain(TChain* input_chain) { m_input_chain = input_chain; }
-    void setTriggerSet(std::string set) { m_triggerSet = set; }
+    TChain* chain() { return m_input_chain; }
+
+    //void setTriggerSet(std::string set) { m_triggerSet = set; }
     virtual void setMC15b(bool isMC15b) { m_isMC15b = isMC15b; }
     virtual void setMC15c(bool isMC15c) { m_isMC15c = isMC15c; }
     virtual void setOneST(bool doOneST) { m_run_oneST = doOneST; }
+
+    //Initialize SUSYTools
     XaodAnalysis& initSusyTools(); ///< initialize SUSYObjDef_xAOD
     
     /**
@@ -150,7 +154,7 @@ namespace Susy {
     static const xAOD::EventInfo* retrieveEventInfo(xAOD::TEvent &e, bool dbg);
     /// wrapper of retrieveEventInfo; store result as datamember ptrs
     virtual const xAOD::EventInfo* xaodEventInfo();
-    /// access the default collection of muons from SUSYObjDef_xAOD
+
     //const xAOD::MissingETContainer* retrieveMET_Track(xAOD::TEvent &e, bool dbg);
     //const xAOD::MissingETContainer* xaodMET_Track();
     /**
@@ -175,7 +179,7 @@ namespace Susy {
     /**
        By default returns m_event.jet_AntiKt4LCTopo; for its motivation, see XaodAnalysis::xaodMuons().
     */
-    virtual std::vector<std::string> xaodTriggers();
+
     virtual xAOD::JetContainer* xaodJets(ST::SystInfo sysInfo, SusyNtSys sys = NtSys::NOM);
     /// access the default collection of photons from SUSYObjDef_xAOD
     virtual xAOD::PhotonContainer* xaodPhotons(ST::SystInfo sysInfo, SusyNtSys sys = NtSys::NOM);
@@ -189,9 +193,6 @@ namespace Susy {
     /// wrapper of retrieveTruthParticles; store outputs as datamembers
     virtual const xAOD::TruthParticleContainer* xaodTruthParticles();
 
-    /// access truth tau particles
-    //virtual const xAOD::TruthParticleContainer* xaodTruthTauParticles();
-    //virtual const xAOD::TruthParticleAuxContainer* xaodTruthTauParticlesAux();
 
     /// retrieve & build met
     virtual void retrieveXaodMet(ST::SystInfo sysInfo, SusyNtSys sys = NtSys::NOM);
@@ -209,6 +210,9 @@ namespace Susy {
     /// retrieve all the input collections and cache pointers
     XaodAnalysis& retrieveCollections();
 
+    /// get a list of triggers we consider
+    virtual std::vector<std::string> xaodTriggers();
+
     /// fill collections of baseline+signal+truth objects
     /**
        Object selection
@@ -221,23 +225,16 @@ namespace Susy {
     void selectSignalPhotons();
     void selectTruthObjects();
 
-
     // Clear object selection
     void clearOutputObjects(bool deleteNominal=true);
 
     //
     // Trigger - check matching for all baseline leptons
     //
-    void resetTriggers(){
-    // TBits
-      m_evtTrigBits.ResetAllBits();
-    }
-    void matchTriggers(){
-      fillEventTriggers();
-    }
+    void resetTriggers(){ m_evtTrigBits.ResetAllBits(); }
+    void matchTriggers(){ fillEventTriggers(); }
     
     void fillEventTriggers();
-    bool matchElectronTrigger(const TLorentzVector* lv, std::string chain);
     TBits matchMuonTriggers(const xAOD::Muon& in); 
     TBits matchElectronTriggers(const xAOD::Electron& in);
     std::map<std::string, std::vector<unsigned int>> getDiMuTrigMap(const xAOD::Muon &in, const xAOD::MuonContainer &muons);
@@ -246,13 +243,14 @@ namespace Susy {
     //ID if electron is a charge-flip
     //
     int truthElectronCharge(const xAOD::Electron &in);
+
     //
     // Event cleaning
     //
 
     // grl
-    std::string defaultGrlFile();
-    bool initGrlTool();
+    std::string default_grl_file();
+    bool init_grl_tool();
     bool passGRL(const xAOD::EventInfo* eventinfo); ///< good run list
     bool passTTCVeto(const xAOD::EventInfo* eventinfo); ///< incomplete event 
     bool passTileErr(const xAOD::EventInfo* eventinfo); ///< Tile error
@@ -275,7 +273,6 @@ namespace Susy {
         You can supply a different integrated luminosity,
         but the the pileup weights will still correspond to A-E.
     */
-    void setLumi(float lumi) { m_lumi = lumi; } ///< luminosity to normalize to (in 1/pb)
     double getPileupWeight(const xAOD::EventInfo* eventinfo); ///< pileup weight for full dataset: currently A-L
 
     // MC weights
@@ -440,8 +437,6 @@ namespace Susy {
     //
     // Event quantities
     //
-
-    float                       m_lumi;         // normalized luminosity (defaults to 4.7/fb)
 
     uint                        m_mcRun;        // Random run number for MC from pileup tool
     uint                        m_mcLB;         // Random lb number for MC from pileup tool
