@@ -1,201 +1,171 @@
-
+//std/stl
 #include <cstdlib>
 #include <string>
+#include <iostream>
 
+//ROOT
 #include "TChain.h"
 #include "TSystem.h"
 
+//SusyCommon
 #include "SusyCommon/SusyNtMaker.h"
-#include "SusyNtuple/SusyDefs.h"
+#include "SusyCommon/MCType.h"
+
+//SusyNtuple
+//#include "SusyNtuple/SusyDefs.h"
 #include "SusyNtuple/ChainHelper.h"
 #include "SusyNtuple/string_utils.h"
 
-
 using namespace std;
 using namespace Susy;
-using Susy::SusyNtMaker;
-
-/*
-
-    SusyNtMaker - an executable for running a basic looper/dumper of SUSY D3PDs
-    It is not intended to be very advanced but more to look quickly at a d3pd and test the code
-
-*/
+//using Susy::SusyNtMaker;
 
 void help()
 {
-  cout<<"Options:"                                                    <<endl
-      <<"  -i|--input       name of the input container"              <<endl
-      <<"  --oneST          run with only one instance of SUSYTools"  <<endl
-      <<"  -o|--output      name of the output container"             <<endl
-      <<"  -t|--tag         SustNtuple production tag"                <<endl
-      <<"  -n|--num-events  default: -1 (all events)"                 <<endl
-      <<"  -k|--num-skip    default: 0"                               <<endl
-      <<"  -d|--dbg-level   default: 0 (quiet) "                      <<endl
-      <<"  -f|--filelist    default: fileList.txt"                    <<endl
-      <<"  -s|--sample      default: ''"                              <<endl
-      <<"  -h|--help        print this help"                          <<endl
-      <<"  -l|--lumi        default: 5312/pb"                         <<endl /// \todo obsolete option?
-      <<"  -m|--write-nt    default: 1 (true, write tuple)"           <<endl
-      <<"  --outfile-name   default: 'susyNt.root'"                   <<endl
-      <<"  --sys            default: off"                             <<endl
-      <<"  --savePh         save photons"                             <<endl
-      <<"  --saveTau        save taus"                                <<endl
-      <<"  --saveContTau    save container taus (instead of selected)"<<endl
-      <<"  --saveTruth      save truth info"                          <<endl
-      <<"  --af2            toggle atlas-fast-2 sample"               <<endl
-      <<"  --filterOff      save all events"                          <<endl
-      <<"  --nLepFilter     default 0 (require N  light leptons)"     <<endl
-      <<"  --nLepTauFilter  default 2 (require N lepton+tau)"         <<endl
-      <<"  --mc15b          toggle mc15b (default: false)"            <<endl
-      <<"  --mc15c          toggle mc15c (default: false)"            <<endl
-      <<endl;
-}
+    cout << "--------------------------------------------------------------" << endl;
+    cout << " NtMaker " << endl;
+    cout << endl;
+    cout << "  Options:" << endl;
+    cout << "   -f|--filelist       input filelist (ROOT file, *.txt file, or dir) [REQUIRED]" << endl;
+    cout << "   -i|--input          input DAOD container name [REQUIRED]" << endl;
+    cout << "   -o|--output         name of output container with susyNt" << endl;
+    cout << "   -d|--debug          debug level (integer values) [default: 0]" << endl;
+    cout << "   -n|--nevents        number of events to process [default: -1 (all events)]" << endl;
+    cout << "   -t|--tag            SusyNtuple production tag [default: ""]" << endl;
+    cout << "   --mctype            MC campaign (allowed: mc15b, mc15c) [default: mc15c]" << endl;
+    cout << "   --sys               run with systematics [default: false]" << endl;
+    cout << "   --nLepFilter        filter on number of light leptons [default: 0]" << endl;
+    cout << "   --trigFilter        require a trigger to have fired to store event [default: false]" << endl;
 
+    cout << "   -h|--help           print this help message" << endl;
+    cout << "--------------------------------------------------------------" << endl;
+}
 
 int main(int argc, char** argv)
 {
-  int nEvt        = -1;
-  int nSkip       = 0;
-  int dbg         = 0;
-  float lumi      = 5831;
-  string sample   = "";
-  string fileList = "fileList.txt";
-  bool sysOn      = false;
-  bool savePh     = false;
-  bool saveTau    = false;
-  bool saveContTau= false;
-  bool saveTruth  = false;
-  bool isAF2      = false;
-  bool writeNt    = true;
-  bool filter     = true;
-  uint nLepFilter = 0;
-  uint nLepTauFilter = 2;
-  bool mc15b      = false;
-  bool mc15c      = false;
-  string inputContainer, outputContainer, ntTag;
-  string outputFileName = "susyNt.root";
-  bool one_susytools = false;
+    string filelist = "";
+    string input_container = "";
+    string output_container = "";
+    int dbg = 0;
+    int n_events = -1;
+    string nt_tag = "";
+    string mc_type_str = "mc15c";
+    MCType mc_type = MCType::MC15c;
+    bool run_sys = false;
+    bool run_lep_filter = false;
+    int n_lep_filter = 0;
+    bool run_trig_filter = false;
 
-  cout<<"SusyNtMaker"<<endl;
-  cout<<endl;
+    //cout << "NtMaker" << endl;
 
-  int optind(1);
-  while(optind < argc) {
-      std::string sw = argv[optind];
-      if      (sw=="-i" || sw=="--input"     ) { inputContainer = argv[++optind]; }
-      else if (sw=="--oneST"                 ) { one_susytools = true; }
-      else if (sw=="-o" || sw=="--output"    ) { outputContainer = argv[++optind]; }
-      else if (sw=="-t" || sw=="--tag"       ) { ntTag = argv[++optind]; }
-      else if (sw=="-n" || sw=="--num-events") { nEvt = atoi(argv[++optind]); }
-      else if (sw=="-k" || sw=="--num-skip"  ) { nSkip = atoi(argv[++optind]); }
-      else if (sw=="-d" || sw=="--dbg-level" ) { dbg = atoi(argv[++optind]); }
-      else if (sw=="-f" || sw=="--filelist"  ) { fileList = argv[++optind]; }
-      else if (sw=="-s" || sw=="--sample"    ) { sample = argv[++optind]; }
-      else if (sw=="-h" || sw=="--help"      ) { help(); return 0; }
-      else if (sw=="-l" || sw=="--lumi"      ) { lumi = atof(argv[++optind]); }
-      else if (sw=="-m" || sw=="--write-nt"  ) { writeNt = atoi(argv[++optind]); }
-      else if (sw=="--outfile-name"          ) { outputFileName = argv[++optind]; } 
-      else if (sw=="--sys"          ) { sysOn = true; }
-      else if (sw=="--savePh"       ) { savePh = true; }
-      else if (sw=="--saveTau"      ) { saveTau = true; }
-      else if (sw=="--saveContTau"  ) { saveTau = saveContTau = true; }
-      else if (sw=="--saveTruth"    ) { saveTruth = true; }
-      else if (sw=="--af2"          ) { isAF2 = true; }
-      else if (sw=="--filterOff"    ) { filter = false; }
-      else if (sw=="--nLepFilter"   ) { nLepFilter = atoi(argv[++optind]); }
-      else if (sw=="--nLepTauFilter") { nLepTauFilter = atoi(argv[++optind]); }
-      else if (sw=="--mc15b"        ) { mc15b = true; }
-      else if (sw=="--mc15c"        ) { mc15c = true; }
-      else {
-          cout<<"Unknown switch '"<<sw<<"'"<<endl;
-          help();
-          return 1;
-      }
-      optind++;
-  } // while(optind)
+    int optin = 1;
+    while(optin < argc) {
+        string in = argv[optin];
+        if      (in == "-f" || in == "--filelist"   ) { filelist = argv[++optin]; }
+        else if (in == "-i" || in == "--input"      ) { input_container = argv[++optin]; }
+        else if (in == "-o" || in == "--output"     ) { output_container = argv[++optin]; } 
+        else if (in == "-d" || in == "--debug"      ) { dbg = atoi(argv[++optin]); }
+        else if (in == "-n" || in == "--nevents"    ) { n_events = atoi(argv[++optin]); }
+        else if (in == "-t" || in == "--tag"        ) { nt_tag = argv[++optin]; }
+        else if (in == "--mctype"                   ) { mc_type_str = argv[++optin]; } 
+        else if (in == "--sys"                      ) { run_sys = true; }
+        else if (in == "--nLepFilter"               ) { run_lep_filter = true; n_lep_filter = atoi(argv[++optin]); }
+        else if (in == "--trigFilter"               ) { run_trig_filter = true; }
+        else if (in == "-h" || in == "--help"       ) { help(); return 0; }
+        else {
+            cout << "NtMaker    Unknown command line argument '" << in << "' provided, exiting" << endl;
+            help();
+            return 1;
+        }
+        optin++;
+    } // while
 
-  cout<<"flags:"<<endl;
-  cout<<"  sample         "<<sample  <<endl;
-  cout<<"  one SUSYTools  "<<one_susytools << endl;
-  cout<<"  mc15b          "<<mc15b   <<endl;
-  cout<<"  mc15c          "<<mc15c   <<endl;
-  cout<<"  nEvt           "<<nEvt    <<endl;
-  cout<<"  nSkip          "<<nSkip   <<endl;
-  cout<<"  dbg            "<<dbg     <<endl;
-  cout<<"  fileList       "<<fileList<<endl;
-  cout<<"  sys            "<<sysOn   <<endl;
-  cout<<"  savePh         "<<savePh  <<endl;
-  cout<<"  saveTau        "<<saveTau <<endl;
-  cout<<"  saveContTau    "<<saveContTau<<endl;
-  cout<<"  saveTru        "<<saveTruth<< endl;
-  cout<<"  isAF2          "<<isAF2   <<endl;
-  cout<<"  lumi           "<<lumi    <<endl;
-  cout<<"  filter         "<<filter  <<endl;
-  cout<<"  nLepFilter     "<<nLepFilter   <<endl;
-  cout<<"  nLepTauFilter  "<<nLepTauFilter<<endl;
-  cout<<"  input          "<<inputContainer <<endl;
-  cout<<"  output         "<<outputContainer<<endl;
-  cout<<"  ntTag          "<<ntTag          <<endl;
-  cout<<"  outputFileName "<<outputFileName <<endl;
-  cout<<endl;
+    ///////////////////////////////////////////////////////////////////////////
+    // provided filelist
+    if(filelist=="") {
+        cout << "NtMaker    No input filelist provided, exiting" << endl;
+        return 1;
+    }
 
-  if(mc15b && mc15c) {
-     cout << "NtMaker    Inconsisent MC configuration (mc15b AND mc15c)! Exiting." << endl;
-     return 1;
-  }
+    ///////////////////////////////////////////////////////////////////////////
+    // input container name
+    if(input_container=="") {
+        cout << "NtMaker    Input container name not provided, exiting" << endl;
+        return 1;
+    }
 
+    ///////////////////////////////////////////////////////////////////////////
+    // check MCType
+    vector<string> valid_mc_types = { "mc15b", "mc15c" };
+    bool foundit = false;
+    for(auto type : valid_mc_types) {
+        if(type==mc_type_str) {
+            foundit = true;
+            break;
+        }
+    }
+    if(!foundit) {
+        cout << "NtMaker    Invalid MCType '" << mc_type_str << "' provided. Valid types are:";
+        for(auto type : valid_mc_types) cout << " " << type;
+        cout << ", exiting" << endl;
+        return 1;
+    }
+    if(mc_type_str=="mc15b")
+        mc_type = MCType::MC15b;
+    else if(mc_type_str=="mc15c")
+        mc_type = MCType::MC15c;
 
-  // Build the input chain
-  TChain* chain = new TChain("CollectionTree");
-  int fileErr = ChainHelper::addInput(chain, fileList, dbg);
-  if(fileErr) return 1;
-  Long64_t nEntries = chain->GetEntries();
-  if(!(nEntries>0)) {
-        cout << "------------------------------------------------------------------------------------------" << endl;
-        cout << "NtMaker    Built TChain has zero entries! Will not attempt to process. Exiting gracefully." << endl;
-        cout << "------------------------------------------------------------------------------------------" << endl;
+    ///////////////////////////////////////////////////////////////////////////
+    // things look ok, lets start
+    cout << "-------------------------------------------------------------" << endl;
+    cout << " NtMaker run conditions" << endl;
+    cout << endl;
+    cout << "   filelist                : " << filelist << endl;
+    cout << "   input container         : " << input_container << endl;
+    cout << "   output container        : " << output_container << endl;
+    cout << "   debug level             : " << dbg << endl;
+    cout << "   n events to process     : " << n_events << endl;
+    cout << "   production tag          : " << nt_tag << endl;
+    cout << "   MC type                 : " << mc_type_str << endl;
+    cout << "   run systematics         : " << run_sys << endl;
+    cout << "   run lepton filter       : " << run_lep_filter << endl;
+    if(run_lep_filter)
+    cout << "   n leptons to filter (>=): " << n_lep_filter << endl;
+    cout << "   filter on trigger       : " << run_trig_filter << endl;
+    cout << "-------------------------------------------------------------" << endl;
+
+    TChain* chain = new TChain("CollectionTree");
+    int file_err = ChainHelper::addInput(chain, filelist, dbg);
+    if(file_err) return 1;
+    Long64_t n_entries = chain->GetEntries();
+    if(!(n_entries>0)) {
+        cout << "NtMaker    TChain has zero entries, exiting" << endl;
         delete chain;
-        return 0; 
-  }
-  chain->ls();
+        return 0;
+    }
+    chain->ls();
 
-  // Build the TSelector
-  SusyNtMaker* susyAna = new SusyNtMaker();
-  susyAna->setChain(chain);
-  susyAna->setDebug(dbg);
-  //susyAna->setSample(sample);
-  susyAna->setOneST(one_susytools);
-  susyAna->setMC15b(mc15b);
-  susyAna->setMC15c(mc15c);
-  susyAna->setLumi(lumi);
-  susyAna->setSys(sysOn);
-  susyAna->setSelectPhotons(savePh);
-  susyAna->setSelectTaus(saveTau);
-  susyAna->setSaveContTaus(saveContTau);
-  susyAna->setAF2(isAF2);
-  susyAna->setFillNt(writeNt);
-  susyAna->setSelectTruthObjects(saveTruth);
-  susyAna->setFilter(filter);
-  susyAna->setNLepFilter(nLepFilter);
-  susyAna->setNLepTauFilter(nLepTauFilter);
-  susyAna->m_inputContainerName = inputContainer;
-  susyAna->m_outputContainerName = outputContainer;
-  susyAna->m_productionTag = ntTag;
-  susyAna->m_outputFileName = outputFileName;
-  susyAna->m_productionCommand = Susy::utils::commandLineArguments(argc, argv);
-  // GRL - default is set in SusyD3PDAna::Begin, but now we can override it here
+    // build up the looper
+    SusyNtMaker* susyAna = new SusyNtMaker();
+    susyAna->set_debug(dbg);
+    susyAna->set_chain(chain);
+    if(!susyAna->set_input_container(input_container)) return 1;
+    susyAna->set_output_container(output_container);
+    susyAna->set_mctype(mc_type);
 
-  // Run the job
-  if(nEvt<0) nEvt = nEntries;
-  cout<<endl;
-  cout<<"Total entries:   "<<nEntries<<endl;
-  cout<<"Process entries: "<<nEvt<<endl;
-  chain->Process(susyAna, sample.c_str(), nEvt, nSkip);
+    // start up the looper
+    if(n_events < 0) n_events = n_entries;
+    cout << endl;
+    cout << "Total entries in input chain       : " << n_entries << endl;
+    cout << "Total number of entries to process : " << n_events << endl;
+    chain->Process(susyAna, "", n_events);
 
-  cout<<endl;
-  cout<<"SusyNtMaker job done"<<endl;
+    cout << endl;
+    cout << "NtMaker    Job done" << endl;
 
-  delete chain;
-  return 0;
-}
+    // check for expected output here?
+
+    delete chain;
+    return 0;
+
+} // end
