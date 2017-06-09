@@ -139,6 +139,12 @@ namespace Susy {
             virtual void set_af2(bool is_af2) { m_is_af2 = is_af2; }
             virtual bool af2() { return m_is_af2; }
 
+            virtual void set_write(bool write) { m_write_ntuple = write; }
+            virtual bool fill_nt() { return m_write_ntuple; }
+
+            virtual void run_systematics(bool run_sys) { m_sys = run_sys; }
+            virtual bool sys() { return m_sys; }
+
             // method to collect the sumw information from CutBookKeepers
             void get_sumw(TTree* tree);
             bool collect_cutbooks(xAOD::TEvent& event, int file_idx);
@@ -162,11 +168,16 @@ namespace Susy {
             // initialize SUSYTools
             void initialize_SUSYTools();
 
+            // systematics
+            void get_systematic_list();
+
 
         private :
             int m_dbg; // verbosity level
             bool m_isMC;
             bool m_is_af2;
+            bool m_write_ntuple; // produce the output susyNt file
+            bool m_sys; // run systematics
 
             TChain* m_input_chain; // input TChain of DAOD
 
@@ -238,6 +249,12 @@ namespace Susy {
             bool m_run_oneST;
             ST::SUSYObjDef_xAOD* m_susyObj[SusyObjId::Invalid];
             SusyObjId m_eleIDDefault;
+
+            //////////////////////////////////////////////
+            // CP systematics
+            //////////////////////////////////////////////
+            std::vector<CP::SystematicSet> sysList;
+            std::vector<ST::SystInfo> systInfoList;
 
     }; // class XaodAnalysis
 

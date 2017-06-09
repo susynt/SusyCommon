@@ -216,6 +216,16 @@ void XaodAnalysis::Init(TTree* tree)
     // initialize our instances of SUSYTools
     initialize_SUSYTools();
 
+    // systematics
+    if(mc() && sys()) get_systematic_list();
+    else {
+        ST::SystInfo infodef;
+        infodef.affectsKinematics = false;
+        infodef.affectsWeights = false;
+        infodef.affectsType = ST::Unknown;
+        systInfoList.push_back(infodef);
+    }
+
 
 }
 //////////////////////////////////////////////////////////////////////////////
@@ -787,4 +797,10 @@ void XaodAnalysis::initialize_SUSYTools()
 
     } // susyObjId
 
+}
+//////////////////////////////////////////////////////////////////////////////
+void XaodAnalysis::get_systematic_list()
+{
+    if(dbg()>=5) cout << "XaodAnalysis::get_systematic_list" << endl;
+    systInfoList = m_susyObj[m_eleIDDefault]->getSystInfoList();
 }

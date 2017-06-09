@@ -37,6 +37,8 @@ void help()
     cout << "   --nLepFilter        filter on number of light leptons [default: 0]" << endl;
     cout << "   --trigFilter        require a trigger to have fired to store event [default: false]" << endl;
     cout << "   --af2               sample is AFII reco [default: false]" << endl;
+    cout << "   --nowrite           do not write out an ntuple [default: false]" << endl;
+    cout << "   -s|--sys            run with systematics [default: false]" << endl;
 
     cout << "   -h|--help           print this help message" << endl;
     cout << "--------------------------------------------------------------" << endl;
@@ -57,6 +59,7 @@ int main(int argc, char** argv)
     bool run_lep_filter = false;
     int n_lep_filter = 0;
     bool run_trig_filter = false;
+    bool write_ntuple = true;
 
     //cout << "NtMaker" << endl;
 
@@ -70,10 +73,11 @@ int main(int argc, char** argv)
         else if (in == "-n" || in == "--nevents"    ) { n_events = atoi(argv[++optin]); }
         else if (in == "-t" || in == "--tag"        ) { nt_tag = argv[++optin]; }
         else if (in == "--mctype"                   ) { mc_type_str = argv[++optin]; } 
-        else if (in == "--sys"                      ) { run_sys = true; }
         else if (in == "--nLepFilter"               ) { run_lep_filter = true; n_lep_filter = atoi(argv[++optin]); }
         else if (in == "--trigFilter"               ) { run_trig_filter = true; }
         else if (in == "--af2"                      ) { is_af2 = true; }
+        else if (in == "--nowrite"                  ) { write_ntuple = false; }
+        else if (in == "-s" || in == "--sys"        ) { run_sys = true; }
         else if (in == "-h" || in == "--help"       ) { help(); return 0; }
         else {
             cout << "NtMaker    Unknown command line argument '" << in << "' provided, exiting" << endl;
@@ -157,6 +161,8 @@ int main(int argc, char** argv)
     susyAna->set_output_container(output_container);
     if(!susyAna->set_mctype(mc_type)) return 1;
     susyAna->set_af2(is_af2);
+    susyAna->set_write(write_ntuple);
+    susyAna->run_systematics(run_sys);
 
     // start up the looper
     if(n_events < 0) n_events = n_entries;
