@@ -49,20 +49,29 @@ SusyNtMaker::SusyNtMaker() :
 
 }
 //////////////////////////////////////////////////////////////////////////////
+void SusyNtMaker::Init(TTree *tree)
+{
+}
+//////////////////////////////////////////////////////////////////////////////
 void SusyNtMaker::SlaveBegin(TTree* tree)
 {
+    cout << "SusyNtMaker::SlaveBegin" << endl;
+    XaodAnalysis::SlaveBegin(tree);
+    XaodAnalysis::Init(tree);
 
     return;
 }
 //////////////////////////////////////////////////////////////////////////////
 Bool_t SusyNtMaker::Process(Long64_t entry)
 {
+    cout << "SusyNtMaker::Process" << endl;
 
     return kTRUE;
 }
 //////////////////////////////////////////////////////////////////////////////
 void SusyNtMaker::Terminate()
 {
+    cout << "SusyNtMaker::Terminate" << endl;
 
     return;
 }

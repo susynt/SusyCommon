@@ -29,6 +29,7 @@ class SusyNtMaker : public XaodAnalysis
         //////////////////////////////////////////////////////////////////////
         // TSelector
         //////////////////////////////////////////////////////////////////////
+        virtual void Init(TTree* tree);
         virtual void SlaveBegin(TTree* tree);
         virtual Bool_t Process(Long64_t entry);
         virtual void Terminate();

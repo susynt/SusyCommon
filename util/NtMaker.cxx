@@ -36,6 +36,7 @@ void help()
     cout << "   --sys               run with systematics [default: false]" << endl;
     cout << "   --nLepFilter        filter on number of light leptons [default: 0]" << endl;
     cout << "   --trigFilter        require a trigger to have fired to store event [default: false]" << endl;
+    cout << "   --af2               sample is AFII reco [default: false]" << endl;
 
     cout << "   -h|--help           print this help message" << endl;
     cout << "--------------------------------------------------------------" << endl;
@@ -51,6 +52,7 @@ int main(int argc, char** argv)
     string nt_tag = "";
     string mc_type_str = "mc15c";
     MCType mc_type = MCType::MC15c;
+    bool is_af2 = false;
     bool run_sys = false;
     bool run_lep_filter = false;
     int n_lep_filter = 0;
@@ -71,6 +73,7 @@ int main(int argc, char** argv)
         else if (in == "--sys"                      ) { run_sys = true; }
         else if (in == "--nLepFilter"               ) { run_lep_filter = true; n_lep_filter = atoi(argv[++optin]); }
         else if (in == "--trigFilter"               ) { run_trig_filter = true; }
+        else if (in == "--af2"                      ) { is_af2 = true; }
         else if (in == "-h" || in == "--help"       ) { help(); return 0; }
         else {
             cout << "NtMaker    Unknown command line argument '" << in << "' provided, exiting" << endl;
@@ -127,6 +130,7 @@ int main(int argc, char** argv)
     cout << "   n events to process     : " << n_events << endl;
     cout << "   production tag          : " << nt_tag << endl;
     cout << "   MC type                 : " << mc_type_str << endl;
+    cout << "   AFII                    : " << is_af2 << endl;
     cout << "   run systematics         : " << run_sys << endl;
     cout << "   run lepton filter       : " << run_lep_filter << endl;
     if(run_lep_filter)
@@ -151,14 +155,15 @@ int main(int argc, char** argv)
     susyAna->set_chain(chain);
     if(!susyAna->set_input_container(input_container)) return 1;
     susyAna->set_output_container(output_container);
-    susyAna->set_mctype(mc_type);
+    if(!susyAna->set_mctype(mc_type)) return 1;
+    susyAna->set_af2(is_af2);
 
     // start up the looper
     if(n_events < 0) n_events = n_entries;
     cout << endl;
     cout << "Total entries in input chain       : " << n_entries << endl;
     cout << "Total number of entries to process : " << n_events << endl;
-    chain->Process(susyAna, "", n_events);
+    chain->Process(susyAna, input_container.c_str(), n_events, 0);
 
     cout << endl;
     cout << "NtMaker    Job done" << endl;
