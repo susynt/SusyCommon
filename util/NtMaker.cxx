@@ -18,7 +18,7 @@
 
 using namespace std;
 using namespace Susy;
-//using Susy::SusyNtMaker;
+using Susy::SusyNtMaker;
 
 void help()
 {
@@ -29,6 +29,7 @@ void help()
     cout << "   -f|--filelist       input filelist (ROOT file, *.txt file, or dir) [REQUIRED]" << endl;
     cout << "   -i|--input          input DAOD container name [REQUIRED]" << endl;
     cout << "   -o|--output         name of output container with susyNt" << endl;
+    cout << "   --outfilename       name of output ROOT file [default: susyNt.root]" << endl;
     cout << "   -d|--debug          debug level (integer values) [default: 0]" << endl;
     cout << "   -n|--nevents        number of events to process [default: -1 (all events)]" << endl;
     cout << "   -t|--tag            SusyNtuple production tag [default: ""]" << endl;
@@ -60,6 +61,7 @@ int main(int argc, char** argv)
     int n_lep_filter = 0;
     bool run_trig_filter = false;
     bool write_ntuple = true;
+    string outfilename = "susyNt.root";
 
     //cout << "NtMaker" << endl;
 
@@ -69,6 +71,7 @@ int main(int argc, char** argv)
         if      (in == "-f" || in == "--filelist"   ) { filelist = argv[++optin]; }
         else if (in == "-i" || in == "--input"      ) { input_container = argv[++optin]; }
         else if (in == "-o" || in == "--output"     ) { output_container = argv[++optin]; } 
+        else if (in == "--outfilename"              ) { outfilename = argv[++optin]; }
         else if (in == "-d" || in == "--debug"      ) { dbg = atoi(argv[++optin]); }
         else if (in == "-n" || in == "--nevents"    ) { n_events = atoi(argv[++optin]); }
         else if (in == "-t" || in == "--tag"        ) { nt_tag = argv[++optin]; }
@@ -130,6 +133,7 @@ int main(int argc, char** argv)
     cout << "   filelist                : " << filelist << endl;
     cout << "   input container         : " << input_container << endl;
     cout << "   output container        : " << output_container << endl;
+    cout << "   output file name        : " << outfilename << endl;
     cout << "   debug level             : " << dbg << endl;
     cout << "   n events to process     : " << n_events << endl;
     cout << "   production tag          : " << nt_tag << endl;
@@ -163,6 +167,12 @@ int main(int argc, char** argv)
     susyAna->set_af2(is_af2);
     susyAna->set_write(write_ntuple);
     susyAna->run_systematics(run_sys);
+    susyAna->set_output_name(outfilename);
+    susyAna->set_production_tag(nt_tag);
+    susyAna->set_production_command(Susy::utils::commandLineArguments(argc, argv));
+    susyAna->set_nlep_filter(n_lep_filter);
+    susyAna->set_trig_filter(run_trig_filter);
+    
 
     // start up the looper
     if(n_events < 0) n_events = n_entries;
