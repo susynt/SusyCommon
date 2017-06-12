@@ -88,16 +88,15 @@ struct FillCutFlow {
     FillCutFlow& disableFilterNextCuts() { includeThisCut = false; return *this; }
     FillCutFlow& enableFilterNextCuts() { includeThisCut = true; return *this; }
 }; // struct
-//////////////////////////////////////////////////////////////////////////////
-void SusyNtMaker::Init(TTree *tree)
-{
-}
+////////////////////////////////////////////////////////////////////////////////
+//void SusyNtMaker::Init(TTree *tree)
+//{
+//}
 //////////////////////////////////////////////////////////////////////////////
 void SusyNtMaker::SlaveBegin(TTree* tree)
 {
     cout << "SusyNtMaker::SlaveBegin" << endl;
     XaodAnalysis::SlaveBegin(tree);
-    XaodAnalysis::Init(tree);
 
     if(fill_nt()) {
         initialize_output_tree();
