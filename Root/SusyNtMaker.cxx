@@ -571,6 +571,9 @@ void SusyNtMaker::fill_nt_variables()
     // Susy::Electron
     fill_electron_variables();
 
+    // Susy::Muon
+    fill_muon_variables();
+
 
 }
 //////////////////////////////////////////////////////////////////////////////
@@ -1038,4 +1041,344 @@ void SusyNtMaker::store_electron(const xAOD::Electron& in, int ele_idx)
     //______________ ALL DONE WITH THE ELECTRON ______________ //
     out.idx = (m_susyNt.ele()->size());
     m_susyNt.ele()->push_back(out);
+}
+//////////////////////////////////////////////////////////////////////////////
+void SusyNtMaker::fill_muon_variables()
+{
+    if(dbg()>=5) cout << "SusyNtMaker::fill_muon_variables    Filling Susy::Muon" << endl;
+
+    xAOD::MuonContainer* muons = xaodMuons(systInfoList[0]);
+
+    if(muons) {
+        for(auto &i : m_preMuons) {
+            store_muon(*(muons->at(i)), *muons);
+        } // i
+
+    }
+    else {
+        cout << "SusyNtMaker::fill_muon_variables    WARNING Muon container is null" << endl;
+    }
+}
+//////////////////////////////////////////////////////////////////////////////
+void SusyNtMaker::store_muon(const xAOD::Muon& in, const xAOD::MuonContainer& muons)
+{
+    if(dbg()>=15) cout << "SusyNtMaker::store_muon   Muon (pt=" << in.pt()*MeV2GeV << ")" << endl; 
+
+    const xAOD::EventInfo* eventinfo = xaodEventInfo();
+
+    Susy::Muon out;
+
+    //////////////////////////////////////
+    // 4-vector
+    //////////////////////////////////////
+    double pt = ( (in.pt()*MeV2GeV < 0) ? 0 : in.pt()*MeV2GeV);
+    double m = ( (in.m()*MeV2GeV < 0) ? 0 : in.m()*MeV2GeV);
+    double eta(in.eta()), phi(in.phi());
+    out.SetPtEtaPhiM(pt, eta, phi, m);
+    out.pt  = pt;
+    out.eta = eta;
+    out.phi = phi;
+    out.m   = m;
+    out.q   = in.charge();
+    
+    //////////////////////////////////////
+    // SUSYTools flags
+    //////////////////////////////////////
+    out.isBaseline = (bool)in.auxdata< char >("baseline");
+    out.isSignal   = (bool)in.auxdata< char >("signal");
+    out.isCaloTagged = (bool)in.muonType()==xAOD::Muon::CaloTagged;
+    out.isSiForward = (bool)in.muonType()==xAOD::Muon::SiliconAssociatedForwardMuon;
+    out.isCombined = in.muonType()==xAOD::Muon::Combined;
+    out.isCosmic   = (bool)in.auxdata< char >("cosmic");  // note: this depends on definition of baseline and OR!
+    out.isBadMuon  = (bool)in.auxdata<char>("bad");       // note: independent of definition of baseline/OR
+
+    //////////////////////////////////////
+    // Muon ID
+    //////////////////////////////////////
+    static SG::AuxElement::Accessor<float> mePt_acc("MuonSpectrometerPt");
+    static SG::AuxElement::Accessor<float> idPt_acc("InnerDetectorPt");
+    bool mu_has_decorations =  mePt_acc.isAvailable(in) && idPt_acc.isAvailable(in);
+    if(mu_has_decorations) {
+        out.veryLoose   = muIsOfType(in, MuonId::VeryLoose);
+        out.loose       = muIsOfType(in, MuonId::Loose);
+        out.medium      = muIsOfType(in, MuonId::Medium);
+        out.tight       = muIsOfType(in, MuonId::Tight);
+    }
+
+    //////////////////////////////////////
+    // Isolation selection
+    //////////////////////////////////////
+    out.isoGradientLoose          = m_isoToolGradientLooseTight->accept(in) ? true : false;
+    out.isoGradient               = m_isoToolGradientTightCalo->accept(in) ? true : false;
+    out.isoLooseTrackOnly         = m_isoToolLooseTrackOnlyLoose->accept(in) ? true : false;
+    out.isoLoose                  = m_isoToolLoose->accept(in) ? true : false;
+    out.isoFixedCutTightTrackOnly = m_isoToolTight->accept(in) ? true : false;
+
+    bool all_available = true;
+    //////////////////////////////////////
+    // Isolation variables
+    //////////////////////////////////////
+    all_available &= in.isolation(out.ptcone20, xAOD::Iso::ptcone20); out.ptcone20 *= MeV2GeV;
+    all_available &= in.isolation(out.ptcone30, xAOD::Iso::ptcone30); out.ptcone30 *= MeV2GeV;
+    out.ptvarcone20 = in.auxdataConst<float>("ptvarcone20") * MeV2GeV;
+    out.ptvarcone30 = in.auxdataConst<float>("ptvarcone30") * MeV2GeV;
+    out.etconetopo20 = in.isolation(xAOD::Iso::topoetcone20) * MeV2GeV;
+    out.etconetopo30 = in.isolation(xAOD::Iso::topoetcone30) * MeV2GeV;
+
+    //////////////////////////////////////
+    // Muon Track 
+    //////////////////////////////////////
+    const xAOD::TrackParticle* track;
+    if(in.muonType()==xAOD::Muon::SiliconAssociatedForwardMuon) {
+        track = in.trackParticle(xAOD::Muon::ExtrapolatedMuonSpectrometerTrackParticle);
+        if(!track) { track = nullptr; track = 0; }
+    } // SAF
+    else {
+        track = in.primaryTrackParticle();
+    }
+    if(track) {
+        const xAOD::Vertex* PV = m_susyObj[m_eleIDDefault]->GetPrimVtx();
+        double  primvertex_z = (PV) ? PV->z() : 0.;
+        out.d0             = track->d0();
+        out.errD0          = Amg::error(track->definingParametersCovMatrix(),0);
+        // add protection against missing muon track covariance matrix
+        try {
+            out.d0sigBSCorr = xAOD::TrackingHelpers::d0significance( track, eventinfo->beamPosSigmaX(),
+                                        eventinfo->beamPosSigmaY(), eventinfo->beamPosSigmaXY() );
+        }
+        catch (...) {
+            out.d0sigBSCorr = -99.;
+            cout << "SusyNtMaker::store_muon    WARNING Exception caught from d0significance calculation (event #" << eventinfo->eventNumber() << ", muon pT=" << in.pt()*MeV2GeV << "), setting d0sigBSCorr to -99" << endl;
+        }
+        out.z0             = track->z0() + track->vz() - primvertex_z;
+        out.errZ0          = Amg::error(track->definingParametersCovMatrix(),1);
+    }
+
+    //////////////////////////////////////
+    // Muon ID Track
+    //////////////////////////////////////
+    if(const xAOD::TrackParticle* idtrack = in.trackParticle( xAOD::Muon::InnerDetectorTrackParticle )){
+        out.idTrackPt      = idtrack->pt()*MeV2GeV;
+        out.idTrackEta     = idtrack->eta();
+        out.idTrackPhi     = idtrack->phi();
+        out.idTrackQ       = idtrack->qOverP() < 0 ? -1 : 1;
+        out.idTrackQoverP  = idtrack->qOverP()*MeV2GeV;
+        out.idTrackTheta   = idtrack->theta();
+    }
+
+    //////////////////////////////////////
+    // Muon MS Track
+    //////////////////////////////////////
+    if(const xAOD::TrackParticle* mstrack = in.trackParticle( xAOD::Muon::MuonSpectrometerTrackParticle )){
+        out.msTrackPt      = mstrack->pt()*MeV2GeV;
+        out.msTrackEta     = mstrack->eta();
+        out.msTrackPhi     = mstrack->phi();
+        out.msTrackQ       = mstrack->qOverP() < 0 ? -1 : 1;
+        out.msTrackQoverP  = mstrack->qOverP()*MeV2GeV;
+        out.msTrackTheta   = mstrack->theta();
+    }
+
+    //////////////////////////////////////
+    // Muon Truth Matching/Info
+    //////////////////////////////////////
+    if(mc()) {
+        const xAOD::TrackParticle* trackParticle = in.primaryTrackParticle();
+        if(trackParticle){
+            // mcType <==> "truthType" of input xAOD (MCTruthClassifier)
+            out.mcType = xAOD::TruthHelpers::getParticleTruthType(*trackParticle);
+            // mcOrigin <==> "truthOrigin" of input xAOD (MCTruthClassifier)
+            out.mcOrigin = xAOD::TruthHelpers::getParticleTruthOrigin(*trackParticle);
+            const xAOD::TruthParticle* truthMu = xAOD::TruthHelpers::getTruthParticle(*trackParticle);
+            out.matched2TruthLepton = truthMu ? true : false;
+            int matchedPdgId = truthMu ? truthMu->pdgId() : -999;
+            out.truthType = isFakeLepton(out.mcOrigin, out.mcType, matchedPdgId);
+        }
+    }
+
+    //////////////////////////////////////
+    // Ghost Association of ID Track
+    //////////////////////////////////////
+    const xAOD::TrackParticle* idtrack = in.trackParticle( xAOD::Muon::InnerDetectorTrackParticle );
+    out.ghostTrack.resize(m_preJets.size(), 0);
+    out.ghostTrack.assign(m_preJets.size(), 0);
+    if(idtrack) {
+        xAOD::JetContainer* jets = XaodAnalysis::xaodJets(systInfoList[0]);
+        for(int ij = 0; ij < (int)m_preJets.size(); ij++) {
+            for(const auto& ghostLink : ghostAcc(*(jets->at(m_preJets[ij]))) ) {
+                if(ghostLink.isValid() && (idtrack == *ghostLink)) {
+                    out.ghostTrack.at(ij) = 1;
+                    break; // move to next jet
+                }
+            } // ghostLink loop
+        } // preJets loop
+    } else {
+        out.ghostTrack.assign(m_preJets.size(), 0);
+    }
+
+    //////////////////////////////////////
+    // Trigger Matching
+    //////////////////////////////////////
+    // dantrim 2017 June 12 - TODO change how do do lepton trigger matching
+    out.trigBits = matchMuonTriggers(in);
+//    cout << "testing muon trigBits" << endl;
+//    int nbins = h_passTrigLevel->GetXaxis()->GetNbins();
+//    for(int iTrig=0; iTrig<46; iTrig++){
+//        bool bit = out.trigBits.TestBitNumber(iTrig);
+//        string trigger = h_passTrigLevel->GetXaxis()->GetBinLabel(iTrig+1);
+//        cout << "\t passed trigger " << trigger << "? " << (bit ? "yes" : "no") << endl;
+//    }
+//    cout << endl;
+    out.diMuTrigMap = getDiMuTrigMap(in, muons);
+
+    //////////////////////////////////////
+    // Lepton SF
+    // - one for each MuonId that we use:
+    // - Loose and Medium
+    //////////////////////////////////////
+    bool recoSF = true;
+    bool isoSF = true;
+    if(mc() && fabs(out.eta)<2.5 && out.pt>20){ // SF's are not binned for pt < 20 GeV
+        if(m_run_oneST) {
+            out.muoEffSF[MuonId::Loose] = m_susyObj[m_eleIDDefault]->GetSignalMuonSF(in, recoSF, isoSF);
+        }
+        else {
+            out.muoEffSF[MuonId::Loose]  = m_susyObj[SusyObjId::muoLoose]->GetSignalMuonSF (in, recoSF, isoSF);
+            out.muoEffSF[MuonId::Medium] = m_susyObj[SusyObjId::muoMedium]->GetSignalMuonSF(in, recoSF, isoSF);
+        }
+
+        // dantrim Jan 5 2015 : trigger SF kludge -- this is not absolutely correct as the SF are meant for the final signal muons
+        // going into your selection, which is not the case here as we are forcing the tool to provide us
+        // the SF on a per-muon basis
+        xAOD::MuonContainer *sf_muon = new xAOD::MuonContainer;
+        xAOD::MuonAuxContainer *sf_muon_aux = new xAOD::MuonAuxContainer;
+        sf_muon->setStore(sf_muon_aux);
+        xAOD::Muon* sfMu = new xAOD::Muon;
+        sfMu->makePrivateStore(in);
+        sf_muon->push_back(sfMu);
+
+        TString trig_exp_med = "HLT_mu20_iloose_L1MU15_OR_HLT_mu50";
+        if(m_run_oneST) {
+            if(m_susyObj[m_eleIDDefault]->treatAsYear()==2016)
+                trig_exp_med = "HLT_mu24_imedium";
+        }
+        else {
+            if(m_susyObj[SusyObjId::muoMedium]->treatAsYear()==2016)
+                trig_exp_med = "HLT_mu24_imedium";
+        }
+        // dantrim Sept 15 2016 -- don't get trigger SF for loose muons (MuonTriggerScaleFactors tool complains... not yet sure if it is a problem
+        // from our mangled setup or the tool's issue)
+        if(m_run_oneST) {
+            out.muoTrigSF[MuonId::Medium] = m_susyObj[m_eleIDDefault]->GetTotalMuonTriggerSF(*sf_muon, static_cast<string>(trig_exp_med.Data()));
+        }
+        else {
+            out.muoTrigSF[MuonId::Medium] = m_susyObj[SusyObjId::muoMedium]->GetTotalMuonTriggerSF(*sf_muon, static_cast<string>(trig_exp_med.Data()));
+        }
+
+        delete sf_muon;
+        delete sf_muon_aux;
+        //delete sfMu;
+    }
+
+    //////////////////////////////////////
+    // Systematic Varation of SF
+    //////////////////////////////////////
+    if(mc() && m_sys && fabs(out.eta)<2.5 && out.pt>20){
+        for(const auto& sysInfo : systInfoList) {
+            if(!(sysInfo.affectsType == ST::SystObjType::Muon && sysInfo.affectsWeights)) continue;
+            const CP::SystematicSet& sys = sysInfo.systset;
+            SusyNtSys ourSys = CPsys2sys((sys.name()).c_str());
+            for(int i : Susy::muonIds()){
+                int index_to_check = (m_run_oneST==true ? (int)m_eleIDDefault : i);
+                if(m_susyObj[index_to_check]->applySystematicVariation(sys) != CP::SystematicCode::Ok) {
+                    cout << "SusyNtMaker::storeMuon    cannot configure SUSYTools for systematic " << sys.name() << endl;
+                    continue;
+                }
+                if(m_run_oneST) break;
+            }
+            vector<float> sf;
+            sf.assign(MuonId::MuonIdInvalid, 1);
+            if(m_run_oneST) {
+                sf[MuonId::Medium] = m_susyObj[m_eleIDDefault]->GetSignalMuonSF(in, recoSF, isoSF);
+                sf[MuonId::Loose] =  m_susyObj[m_eleIDDefault]->GetSignalMuonSF(in, recoSF, isoSF);
+            }
+            else {
+                sf[MuonId::Medium] = m_susyObj[SusyObjId::muoMedium]->GetSignalMuonSF(in, recoSF, isoSF);
+                sf[MuonId::Loose] = m_susyObj[SusyObjId::muoLoose]->GetSignalMuonSF(in, recoSF, isoSF);
+            }
+
+            for(int i=MuonId::VeryLoose; i<MuonId::MuonIdInvalid; i++){
+                if     (ourSys == NtSys::MUON_EFF_STAT_UP)        out.errEffSF_stat_up[i] = sf[i] - out.muoEffSF[i];
+                else if(ourSys == NtSys::MUON_EFF_STAT_DN)        out.errEffSF_stat_dn[i] = sf[i] - out.muoEffSF[i];
+                else if(ourSys == NtSys::MUON_EFF_SYS_UP)         out.errEffSF_syst_up[i] = sf[i] - out.muoEffSF[i];
+                else if(ourSys == NtSys::MUON_EFF_SYS_DN)         out.errEffSF_syst_dn[i] = sf[i] - out.muoEffSF[i];
+                else if(ourSys == NtSys::MUON_EFF_STAT_LOWPT_UP)  out.errEffSF_stat_lowpt_up[i] = sf[i] - out.muoEffSF[i];
+                else if(ourSys == NtSys::MUON_EFF_STAT_LOWPT_DN)  out.errEffSF_stat_lowpt_dn[i] = sf[i] - out.muoEffSF[i];
+                else if(ourSys == NtSys::MUON_EFF_SYS_LOWPT_UP)   out.errEffSF_syst_lowpt_up[i] = sf[i] - out.muoEffSF[i];
+                else if(ourSys == NtSys::MUON_EFF_SYS_LOWPT_DN)   out.errEffSF_syst_lowpt_dn[i] = sf[i] - out.muoEffSF[i];
+                else if(ourSys == NtSys::MUON_ISO_STAT_UP)        out.errIso_stat_up[i] = sf[i] - out.muoEffSF[i];
+                else if(ourSys == NtSys::MUON_ISO_STAT_DN)        out.errIso_stat_dn[i] = sf[i] - out.muoEffSF[i];
+                else if(ourSys == NtSys::MUON_ISO_SYS_UP)         out.errIso_syst_up[i] = sf[i] - out.muoEffSF[i];
+                else if(ourSys == NtSys::MUON_ISO_SYS_DN)         out.errIso_syst_dn[i] = sf[i] - out.muoEffSF[i];
+                else if(ourSys == NtSys::MUON_TTVA_STAT_UP)       out.errTTVA_stat_up[i] = sf[i] - out.muoEffSF[i];
+                else if(ourSys == NtSys::MUON_TTVA_STAT_DN)       out.errTTVA_stat_dn[i] = sf[i] - out.muoEffSF[i];
+                else if(ourSys == NtSys::MUON_TTVA_SYS_UP)        out.errTTVA_syst_up[i] = sf[i] - out.muoEffSF[i];
+                else if(ourSys == NtSys::MUON_TTVA_SYS_DN)        out.errTTVA_syst_dn[i] = sf[i] - out.muoEffSF[i];
+                else if(ourSys == NtSys::MUON_BADMUON_STAT_UP)    out.errBadMu_stat_up[i] = sf[i] - out.muoEffSF[i];
+                else if(ourSys == NtSys::MUON_BADMUON_STAT_DN)    out.errBadMu_stat_dn[i] = sf[i] - out.muoEffSF[i];
+                else if(ourSys == NtSys::MUON_BADMUON_SYS_UP)     out.errBadMu_syst_up[i] = sf[i] - out.muoEffSF[i];
+                else if(ourSys == NtSys::MUON_BADMUON_SYS_DN)     out.errBadMu_syst_dn[i] = sf[i] - out.muoEffSF[i];
+
+/*
+                if(i==1 || i==2) {
+                if(i==1)
+                    cout << "MuonId: Loose " << endl;
+                else if(i==2)
+                    cout << "MuonId: Medium" << endl;
+                cout << "    effstat        : " << out.errEffSF_stat_up[i] << "  " << out.errEffSF_stat_dn[i] << endl;
+                cout << "    effsyst        : " << out.errEffSF_syst_up[i] << "  " << out.errEffSF_syst_dn[i] << endl;
+                cout << "    eff_stat_lowpt : " << out.errEffSF_stat_lowpt_up[i] << "  " << out.errEffSF_stat_lowpt_dn[i] << endl;
+                cout << "    eff_syst_lowpt : " << out.errEffSF_syst_lowpt_up[i] << "  " << out.errEffSF_syst_lowpt_dn[i] << endl;
+                cout << "    eff_iso_stat   : " << out.errIso_stat_up[i] << "  " << out.errIso_stat_dn[i] << endl;
+                cout << "    eff_iso_syst   : " << out.errIso_syst_up[i] << "  " << out.errIso_syst_dn[i] << endl;
+                cout << "    eff_ttva_stat  : " << out.errTTVA_stat_up[i]<< "  " << out.errTTVA_stat_dn[i] << endl;
+                cout << "    eff_ttva_syst  : " << out.errTTVA_syst_up[i]<< "  " << out.errTTVA_syst_dn[i] << endl;
+                cout << "    eff_bad_mu_sys : " << out.errBadMu_syst_up[i]<<"  " << out.errBadMu_syst_dn[i] << endl;
+                cout << "    eff_bad_mu_stat: " << out.errBadMu_stat_up[i]<<"  " << out.errBadMu_stat_dn[i] << endl;
+                }
+*/
+            }
+        } // sysInfo
+        for(int i : Susy::muonIds()){
+            int index_to_check = (m_run_oneST==true ? (int)m_eleIDDefault : i);
+            if(m_susyObj[index_to_check]->resetSystematics() != CP::SystematicCode::Ok){
+                cout << "SusyNtMaker::storeMuon    cannot reset SUSYTools systematics. Aborting." << endl;
+                abort();
+            }
+            if(m_run_oneST) break;
+        }
+    } // ifMC && sys
+    else {
+        for(int i=MuonId::VeryLoose; i<MuonId::MuonIdInvalid; i++){
+            out.errEffSF_stat_up[i] = out.errEffSF_stat_dn[i] = 0;
+            out.errEffSF_syst_up[i] = out.errEffSF_syst_dn[i] = 0;
+            out.errEffSF_stat_lowpt_up[i] = out.errEffSF_stat_lowpt_dn[i] = 0;
+            out.errEffSF_syst_lowpt_up[i] = out.errEffSF_syst_lowpt_dn[i] = 0;
+            out.errIso_stat_up[i] = out.errIso_stat_dn[i] = 0;
+            out.errIso_syst_up[i] = out.errIso_syst_dn[i] = 0;
+            out.errTTVA_stat_up[i] = out.errTTVA_stat_dn[i] = 0;
+            out.errTTVA_syst_up[i] = out.errTTVA_syst_dn[i] = 0;
+            out.errBadMu_stat_up[i] = out.errBadMu_stat_dn[i] = 0;
+            out.errBadMu_syst_up[i] = out.errBadMu_syst_dn[i] = 0;
+        }
+    }
+
+
+
+
+
+
+
+
+
+
 }

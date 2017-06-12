@@ -68,6 +68,8 @@ class SusyNtMaker : public XaodAnalysis
         std::vector<float> get_mc_weights(const xAOD::EventInfo* eventinfo);
         void fill_electron_variables();
         void store_electron(const xAOD::Electron& in, int ele_idx);
+        void fill_muon_variables();
+        void store_muon(const xAOD::Muon& in, const xAOD::MuonContainer& muons);
 
         void clear_event();
 

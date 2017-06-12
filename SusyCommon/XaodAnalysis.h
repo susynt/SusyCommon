@@ -257,6 +257,10 @@ namespace Susy {
             bool eleIsOfType(const xAOD::Electron& in, ElectronId id);
             TBits matchElectronTriggers(const xAOD::Electron& in);
 
+            // muons
+            TBits matchMuonTriggers(const xAOD::Muon& in);
+            std::map<std::string, std::vector<unsigned int>> getDiMuTrigMap(const xAOD::Muon &in, const xAOD::MuonContainer &muons);
+
         protected :
             int m_dbg; // verbosity level
             std::string m_production_command;
