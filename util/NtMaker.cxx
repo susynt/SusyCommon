@@ -35,7 +35,7 @@ void help()
     cout << "   -t|--tag            SusyNtuple production tag [default: ""]" << endl;
     cout << "   --mctype            MC campaign (allowed: mc15b, mc15c) [default: mc15c]" << endl;
     cout << "   --sys               run with systematics [default: false]" << endl;
-    cout << "   --nLepFilter        filter on number of light leptons [default: 0]" << endl;
+    cout << "   --nLepFilter        filter on number of light leptons [default: >=1]" << endl;
     cout << "   --trigFilter        require a trigger to have fired to store event [default: false]" << endl;
     cout << "   --af2               sample is AFII reco [default: false]" << endl;
     cout << "   --nowrite           do not write out an ntuple [default: false]" << endl;
@@ -57,8 +57,8 @@ int main(int argc, char** argv)
     MCType mc_type = MCType::MC15c;
     bool is_af2 = false;
     bool run_sys = false;
-    bool run_lep_filter = false;
-    int n_lep_filter = 0;
+    bool run_lep_filter = true;
+    int n_lep_filter = 1;
     bool run_trig_filter = false;
     bool write_ntuple = true;
     string outfilename = "susyNt.root";

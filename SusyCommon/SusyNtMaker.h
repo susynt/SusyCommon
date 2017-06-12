@@ -44,7 +44,7 @@ class SusyNtMaker : public XaodAnalysis
 
         void fill_event_trigger_histo();
 
-        int susy_finalstate(); // get final state based on produced SUSY particles, c.f. SUSYTools/SUSYCrossSection.h
+        std::vector<int> susy_finalstate(); // get final state based on produced SUSY particles, c.f. SUSYTools/SUSYCrossSection.h
 
         void initialize_counters();
 
@@ -56,10 +56,20 @@ class SusyNtMaker : public XaodAnalysis
         // event and object selection
         bool pass_event_level_selection();
         void fill_nominal_objects();
+        bool pass_object_level_selection();
 
         // summaries
         std::string counter_summary();
         std::string timer_summary();
+
+        // write to the output susyNt file
+        void fill_nt_variables();
+        void fill_event_variables();
+        std::vector<float> get_mc_weights(const xAOD::EventInfo* eventinfo);
+        void fill_electron_variables();
+        void store_electron(const xAOD::Electron& in, int ele_idx);
+
+        void clear_event();
 
 
     private :

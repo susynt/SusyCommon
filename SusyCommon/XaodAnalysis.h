@@ -39,7 +39,7 @@
 #include "ElectronEfficiencyCorrection/AsgElectronEfficiencyCorrectionTool.h"
 #include "ElectronPhotonSelectorTools/AsgElectronLikelihoodTool.h"
 #include "ElectronPhotonSelectorTools/AsgPhotonIsEMSelector.h"
-class AsgElectronChargeIDSelectorTool;
+#include "ElectronPhotonSelectorTools/AsgElectronChargeIDSelectorTool.h"
 #include "PileupReweighting/PileupReweightingTool.h"
 #include "AsgTools/ToolHandle.h"
 #include "MuonEfficiencyCorrections/MuonEfficiencyScaleFactors.h"
@@ -170,6 +170,7 @@ namespace Susy {
             // check what time of sample this is
             bool is_derivation_from_metadata(TTree* tree);
             TDirectory* get_directory_from_chain(TTree* tree);
+            TString get_derivation_type(xAOD::TEvent& event);
 
             DataStream stream_from_input_container(const TString &s, bool isMC);
 
@@ -178,6 +179,7 @@ namespace Susy {
             std::string default_grl_file();
             bool initialize_GRL_tool();
             void initialize_electron_tools();
+            void initialize_chargeflip_tagger();
             void initialize_photon_tools();
             void initialize_muon_tools();
             void initialize_tau_tools();
@@ -197,6 +199,11 @@ namespace Susy {
             bool passTileErr(const xAOD::EventInfo* ei);
             bool passSCTErr(const xAOD::EventInfo* ei);
             bool passGoodVtx();
+
+            void fill_object_cleaning_flags();
+            bool passBadJet(ST::SystInfo sysInfo, SusyNtSys sys);
+            bool passBadMuon(ST::SystInfo sysInfo, SusyNtSys sys);
+            bool passCosmic(ST::SystInfo sysInfo, SusyNtSys sys);
 
 
             ///////////////////////////////////////////////////////////////////
@@ -239,6 +246,16 @@ namespace Susy {
             ///////////////////////////////////////////////////////////////////
             void fill_objects(SusyNtSys sys, ST::SystInfo sysInfo);
             void fill_baseline_objects(SusyNtSys sys, ST::SystInfo sysInfo);
+            void fill_signal_objects(SusyNtSys sys, ST::SystInfo sysInfo);
+
+            ///////////////////////////////////////////////////////////////////
+            // Output to SusyNtObject
+            ///////////////////////////////////////////////////////////////////
+            void sample_event_triggers();
+
+            // electrons
+            bool eleIsOfType(const xAOD::Electron& in, ElectronId id);
+            TBits matchElectronTriggers(const xAOD::Electron& in);
 
         protected :
             int m_dbg; // verbosity level
@@ -249,6 +266,8 @@ namespace Susy {
             std::string m_nt_tag;
             std::string m_output_filename; // name of output susyNt file
             bool m_sys; // run systematics
+
+            TString m_derivation;
 
             int m_nlep_filter;
             bool m_filter_trig;
@@ -293,6 +312,9 @@ namespace Susy {
             asg::AnaToolHandle<IAsgElectronLikelihoodTool> m_elecSelLikelihoodLooseBLayer;
             asg::AnaToolHandle<IAsgElectronLikelihoodTool> m_elecSelLikelihoodMedium;
             asg::AnaToolHandle<IAsgElectronLikelihoodTool> m_elecSelLikelihoodTight;
+
+            // charge ID
+            asg::AnaToolHandle<IAsgElectronLikelihoodTool> m_electronChargeIDTool;
 
             // photon ID
             asg::AnaToolHandle<IAsgPhotonIsEMSelector> m_photonSelLoose;
@@ -443,6 +465,11 @@ namespace Susy {
             std::vector<int> m_contTaus_nom;
             std::vector<int> m_prePhotons_nom;
             
+            //////////////////////////////////////////////
+            // trigger bits
+            //////////////////////////////////////////////
+            TBits m_evtTrigBits;
+            static const size_t m_nTriggerBits=64;
 
     }; // class XaodAnalysis
 
