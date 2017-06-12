@@ -1282,7 +1282,7 @@ void SusyNtMaker::store_muon(const xAOD::Muon& in, const xAOD::MuonContainer& mu
     //////////////////////////////////////
     // Systematic Varation of SF
     //////////////////////////////////////
-    if(mc() && m_sys && fabs(out.eta)<2.5 && out.pt>20){
+    if(mc() && sys() && fabs(out.eta)<2.5 && out.pt>20){
         for(const auto& sysInfo : systInfoList) {
             if(!(sysInfo.affectsType == ST::SystObjType::Muon && sysInfo.affectsWeights)) continue;
             const CP::SystematicSet& sys = sysInfo.systset;
@@ -1372,13 +1372,84 @@ void SusyNtMaker::store_muon(const xAOD::Muon& in, const xAOD::MuonContainer& mu
         }
     }
 
+    #warning check muon trigger SF variations once we get these SFs
+    if(mc() && sys() && fabs(out.eta)<2.5 && out.pt>20){
+        for(const auto& sysInfo : systInfoList) {
+            if(!(sysInfo.affectsType == ST::SystObjType::Muon && sysInfo.affectsWeights)) continue;
+            const CP::SystematicSet& sys = sysInfo.systset;
+            SusyNtSys ourSys = CPsys2sys((sys.name()).c_str());
+            for(int i : Susy::muonIds()){
+                int index_to_check = (m_run_oneST==true ? (int)m_eleIDDefault : i);
+                if(m_susyObj[index_to_check]->applySystematicVariation(sys) != CP::SystematicCode::Ok) {
+                    cout << "SusyNtMaker::storeMuon    cannot configure SUSYTools for systematic " << sys.name() << endl;
+                    continue;
+                }
+                if(m_run_oneST) break;
+            }
+            vector<float> sf_trig;
+            sf_trig.assign(MuonId::MuonIdInvalid, 1);
 
+            xAOD::MuonContainer *sf_muon = new xAOD::MuonContainer;
+            xAOD::MuonAuxContainer *sf_muon_aux = new xAOD::MuonAuxContainer;
+            sf_muon->setStore(sf_muon_aux);
+            xAOD::Muon* sfMu = new xAOD::Muon;
+            sfMu->makePrivateStore(in);
+            sf_muon->push_back(sfMu);
 
+            TString trig_exp_med = "HLT_mu20_iloose_L1MU15_OR_HLT_mu50";
+            if(m_run_oneST) {
+                if(m_susyObj[m_eleIDDefault]->treatAsYear()==2016)
+                    trig_exp_med = "HLT_mu24_imedium";
+            }
+            else {
+                if(m_susyObj[SusyObjId::muoMedium]->treatAsYear()==2016)
+                    trig_exp_med = "HLT_mu24_imedium";
+            }
+            if(m_run_oneST) {
+                sf_trig[MuonId::Medium] = m_susyObj[m_eleIDDefault]->GetTotalMuonTriggerSF(*sf_muon, static_cast<string>(trig_exp_med.Data()));
+            }
+            else {
+                sf_trig[MuonId::Medium] = m_susyObj[SusyObjId::muoMedium]->GetTotalMuonTriggerSF(*sf_muon, static_cast<string>(trig_exp_med.Data()));
+            }
+            delete sf_muon;
+            delete sf_muon_aux;
+            //delete sfMu;
 
+            for(int i=MuonId::VeryLoose; i < MuonId::MuonIdInvalid; i++) {
+                if      (ourSys == NtSys::MUON_EFF_TRIG_STAT_UP)    out.errTrigSF_stat_up[i] = sf_trig[i] - out.muoTrigSF[i];
+                else if (ourSys == NtSys::MUON_EFF_TRIG_STAT_DN)    out.errTrigSF_stat_dn[i] = sf_trig[i] - out.muoTrigSF[i];
+                else if (ourSys == NtSys::MUON_EFF_TRIG_SYST_UP)    out.errTrigSF_syst_up[i] = sf_trig[i] - out.muoTrigSF[i];
+                else if (ourSys == NtSys::MUON_EFF_TRIG_SYST_DN)    out.errTrigSF_syst_dn[i] = sf_trig[i] - out.muoTrigSF[i];
 
+               // if(i == 1 || i == 2) {
+               //     if(i==1)
+               //         cout << "MuonId: Loose" << endl;
+               //     else if(i==2)
+               //         cout << "MuonId: Medium" << endl;
+               //     cout << "       eff trig stat        : " << out.errTrigSF_stat_up[i] << "  " << out.errTrigSF_stat_dn[i] << endl;
+               //     cout << "       eff trig syst        : " << out.errTrigSF_syst_up[i] << "  " << out.errTrigSF_syst_dn[i] << endl;
+               // }
+            } // i
 
+        } // sysInfo
+        for(int i : Susy::muonIds()){
+            int index_to_check = (m_run_oneST==true ? (int)m_eleIDDefault : i);
+            if(m_susyObj[index_to_check]->resetSystematics() != CP::SystematicCode::Ok){
+                cout << "SusyNtMaker::store_muon    ERROR cannot reset SUSYTools systematics. Aborting." << endl;
+                abort();
+            }
+            if(m_run_oneST) break;
+        }
+    } // ifMC && sys
+    else {
+        for(int i=MuonId::VeryLoose; i<MuonId::MuonIdInvalid; i++){
+            out.errTrigSF_stat_up[i] = out.errTrigSF_stat_dn[i] = 0;
+            out.errTrigSF_syst_up[i] = out.errTrigSF_syst_dn[i] = 0;
+        }
+    }
 
-
-
+    //______________ ALL DONE WITH THE MUON ______________ //
+    out.idx = (m_susyNt.muo()->size());
+    m_susyNt.muo()->push_back(out);
 
 }

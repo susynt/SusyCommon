@@ -1743,3 +1743,12 @@ std::map<std::string, std::vector<unsigned int>> XaodAnalysis::getDiMuTrigMap(co
 
     return diMuTrigMap;
 }
+//////////////////////////////////////////////////////////////////////////////
+bool XaodAnalysis::muIsOfType(const xAOD::Muon& in, MuonId id)
+{
+    if     (id==MuonId::VeryLoose && m_muonSelectionToolVeryLoose->accept(in))  return true;
+    else if(id==MuonId::Loose     && m_muonSelectionToolLoose    ->accept(in))  return true;
+    else if(id==MuonId::Medium    && m_muonSelectionToolMedium   ->accept(in))  return true;
+    else if(id==MuonId::Tight     && m_muonSelectionToolTight    ->accept(in))  return true;
+    return false;
+}

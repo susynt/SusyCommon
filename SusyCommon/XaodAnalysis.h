@@ -260,6 +260,7 @@ namespace Susy {
             // muons
             TBits matchMuonTriggers(const xAOD::Muon& in);
             std::map<std::string, std::vector<unsigned int>> getDiMuTrigMap(const xAOD::Muon &in, const xAOD::MuonContainer &muons);
+            bool muIsOfType(const xAOD::Muon &in, MuonId id);
 
         protected :
             int m_dbg; // verbosity level
