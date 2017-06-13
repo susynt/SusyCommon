@@ -625,6 +625,10 @@ void SusyNtMaker::fill_event_variables()
     if(year<0) cout << "SusyNtMaker::fill_event_variables    WARNING treatAsYear was not found correctly for event " << eventinfo->eventNumber() << "!" << endl;
     evt->treatAsYear = year;
 
+    // <mu>
+    evt->avgMu = m_susyObj[m_eleIDDefault]->GetCorrectedAverageInteractionsPerCrossing(false);
+    evt->avgMuDataSF = m_susyObj[m_eleIDDefault]->GetCorrectedAverageInteractionsPerCrossing(true);
+
     evt->isMC = mc();
     evt->mcChannel = mc() ? eventinfo->mcChannelNumber() : 0;
     evt->w = mc() ? eventinfo->mcEventWeight() : 1;
