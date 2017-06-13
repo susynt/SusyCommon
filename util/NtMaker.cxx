@@ -41,6 +41,7 @@ void help()
     cout << "   --nowrite           do not write out an ntuple [default: false]" << endl;
     cout << "   -s|--sys            run with systematics [default: false]" << endl;
     cout << "   --contTau           save container (loose selection) taus [default: false]" << endl;
+    cout << "   --storeTruth        store truth particles in the output [default: false]" << endl;
 
     cout << "   -h|--help           print this help message" << endl;
     cout << "--------------------------------------------------------------" << endl;
@@ -64,6 +65,7 @@ int main(int argc, char** argv)
     bool write_ntuple = true;
     string outfilename = "susyNt.root";
     bool contTaus = false;
+    bool storeTruth = false;
 
     //cout << "NtMaker" << endl;
 
@@ -84,6 +86,7 @@ int main(int argc, char** argv)
         else if (in == "--nowrite"                  ) { write_ntuple = false; }
         else if (in == "-s" || in == "--sys"        ) { run_sys = true; }
         else if (in == "--contTau"                  ) { contTaus = true; }
+        else if (in == "--storeTruth"               ) { storeTruth = true; }
         else if (in == "-h" || in == "--help"       ) { help(); return 0; }
         else {
             cout << "NtMaker    Unknown command line argument '" << in << "' provided, exiting" << endl;
@@ -128,6 +131,13 @@ int main(int argc, char** argv)
     else if(mc_type_str=="mc15c")
         mc_type = MCType::MC15c;
 
+    if(n_events > 20 && dbg >=10) {
+        cout << "\n---------------------------------------------------------------------" << endl;
+        cout << "NtMaker    You have set more than 20 events to be processed with a high (" << dbg << ") verbosity, setting number of events to process to 20" << endl;
+        cout << "\n---------------------------------------------------------------------\n" << endl;
+        n_events = 20;
+    }
+
     ///////////////////////////////////////////////////////////////////////////
     // things look ok, lets start
     cout << "-------------------------------------------------------------" << endl;
@@ -148,7 +158,13 @@ int main(int argc, char** argv)
     cout << "   n leptons to filter (>=): " << n_lep_filter << endl;
     cout << "   filter on trigger       : " << run_trig_filter << endl;
     cout << "   save container taus     : " << contTaus << endl;
+    cout << "   store truth particles   : " << storeTruth << endl;
     cout << "-------------------------------------------------------------" << endl;
+
+    if(storeTruth) {
+        cout << "NtMaker    You have requsted to store TruthParticles. This is not yet implemented. Exiting." << endl;
+        return 1;
+    }
 
     TChain* chain = new TChain("CollectionTree");
     int file_err = ChainHelper::addInput(chain, filelist, dbg);

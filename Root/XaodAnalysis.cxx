@@ -54,6 +54,7 @@ XaodAnalysis::XaodAnalysis() :
     m_filter_trig(false),
     m_filter(false),
     m_saveContTaus(false),
+    m_store_truth(false),
     m_input_chain(0),
     m_input_container_name(""),
     m_output_container_name(""),
@@ -98,16 +99,13 @@ XaodAnalysis::XaodAnalysis() :
     m_xaodEventInfo(nullptr),
     m_evtTrigBits(m_nTriggerBits)
 {
-
     m_triggerNames.clear();
     clear_output_objects();
     clear_containers();
-
 }
 /////////////////////////////////////////////////////////////////////////////
 XaodAnalysis::~XaodAnalysis()
 {
-
 }
 //////////////////////////////////////////////////////////////////////////////
 void XaodAnalysis::set_debug(int dbg_level)
@@ -209,7 +207,6 @@ void XaodAnalysis::set_output_container(std::string name)
 /////////////////////////////////////////////////////////////////////////////
 bool XaodAnalysis::set_mctype(MCType type)
 {
-
     if(type==MCType::MCInvalid) {
         cout << "XaodAnalysis::set_mctype    Provided MCType is Invalid, cannot continue" << endl;
         return false;
@@ -221,8 +218,6 @@ bool XaodAnalysis::set_mctype(MCType type)
 /////////////////////////////////////////////////////////////////////////////
 void XaodAnalysis::SlaveBegin(TTree* tree)
 {
-
-
     return;
 }
 //////////////////////////////////////////////////////////////////////////////
@@ -277,21 +272,15 @@ void XaodAnalysis::Init(TTree* tree)
         infodef.affectsType = ST::Unknown;
         systInfoList.push_back(infodef);
     }
-
-
 }
 //////////////////////////////////////////////////////////////////////////////
 Bool_t XaodAnalysis::Process(Long64_t entry)
 {
-
-
     return kTRUE;
 }
 //////////////////////////////////////////////////////////////////////////////
 void XaodAnalysis::Terminate()
 {
-
-
 }
 //////////////////////////////////////////////////////////////////////////////
 void XaodAnalysis::get_sumw(TTree* tree)
@@ -569,7 +558,6 @@ void XaodAnalysis::initialize_electron_tools()
         CHECK( m_elecSelLikelihoodTight.setProperty("WorkingPoint", wp_tight) ); 
         CHECK( m_elecSelLikelihoodTight.retrieve() );
     } // configured
-
 }
 //////////////////////////////////////////////////////////////////////////////
 void XaodAnalysis::initialize_chargeflip_tagger()
@@ -583,7 +571,6 @@ void XaodAnalysis::initialize_chargeflip_tagger()
         CHECK( m_electronChargeIDTool.setProperty("TrainingFile", "ElectronPhotonSelectorTools/ChargeID/ECIDS_20161125for2017Moriond.root"));
         CHECK( m_electronChargeIDTool.setProperty("CutOnBDT", BDTcut));
         CHECK( m_electronChargeIDTool.retrieve() );
-    
     }
 }
 //////////////////////////////////////////////////////////////////////////////
@@ -719,9 +706,7 @@ void XaodAnalysis::initialize_tau_tools()
     m_tauTruthMatchingTool = new TauAnalysisTools::TauTruthMatchingTool("SusyCommonTauTruthMatchingTool");
     CHECK( m_tauTruthMatchingTool->initialize() );
     m_tauTruthMatchingTool->msg().setLevel( MSG::INFO );
-
 }
-
 //////////////////////////////////////////////////////////////////////////////
 void XaodAnalysis::initialize_isolation_tools()
 {
@@ -881,7 +866,6 @@ void XaodAnalysis::initialize_SUSYTools()
         if(m_run_oneST) break;
 
     } // susyObjId
-
 }
 //////////////////////////////////////////////////////////////////////////////
 void XaodAnalysis::get_systematic_list()
@@ -1033,7 +1017,6 @@ void XaodAnalysis::delete_shallow_copies(bool do_nominal)
         m_store.clear();
 
     clear_containers(do_nominal);
-
 }
 //////////////////////////////////////////////////////////////////////////////
 void XaodAnalysis::clear_containers(bool do_nominal)
@@ -1161,7 +1144,6 @@ const xAOD::EventInfo* XaodAnalysis::retrieveEventInfo(xAOD::TEvent &e, bool dbg
         else   cout << "XaodAnalysis::retrieveEventInfo    WARNING EventInfo unable to be retrieved" << endl;
     }
     return ei;
-
 }
 //////////////////////////////////////////////////////////////////////////////
 const xAOD::EventInfo* XaodAnalysis::xaodEventInfo()
@@ -1368,7 +1350,6 @@ const xAOD::TruthParticleContainer* XaodAnalysis::xaodTruthParticles()
 //////////////////////////////////////////////////////////////////////////////
 void XaodAnalysis::fill_objects(SusyNtSys sys, ST::SystInfo sysInfo)
 {
-
     // fill the containers for:
     //  1) "pre" susyNt objects --> THESE ARE THE ONES THAT GET STORED IN THE OUTPUT NTUPLE
     //  2) "baseline" objects, those that base the default SUSYTools' baseline defintion
@@ -1377,7 +1358,6 @@ void XaodAnalysis::fill_objects(SusyNtSys sys, ST::SystInfo sysInfo)
     // fill the containers for:
     // 3) "signal" objects, those that base the default SUSYTools' signal definition
     fill_signal_objects(sys, sysInfo);
-
 }
 //////////////////////////////////////////////////////////////////////////////
 void XaodAnalysis::fill_baseline_objects(SusyNtSys sys, ST::SystInfo sysInfo)
@@ -1509,12 +1489,10 @@ void XaodAnalysis::fill_baseline_objects(SusyNtSys sys, ST::SystInfo sysInfo)
         m_contTaus_nom = m_contTaus;
         m_preTaus_nom = m_preTaus;
     }
-
 }
 //////////////////////////////////////////////////////////////////////////////
 void XaodAnalysis::fill_signal_objects(SusyNtSys sys, ST::SystInfo sysInfo)
 {
-
     if(dbg()>=10) cout << "XaodAnalysis::fill_signal_objects    Filling signal objects (sys=" << SusyNtSysNames[sys] << ")" << endl;
 
     /////////////////////////////////
@@ -1616,8 +1594,6 @@ void XaodAnalysis::fill_signal_objects(SusyNtSys sys, ST::SystInfo sysInfo)
     else {
         if(dbg()) cout << "XaodAnalysis::fill_signal_objects    WARNING Photon container null" << endl;
     }
-    
-
 }
 //////////////////////////////////////////////////////////////////////////////
 void XaodAnalysis::sample_event_triggers()
@@ -1639,7 +1615,6 @@ bool XaodAnalysis::eleIsOfType(const xAOD::Electron& in, ElectronId id)
     else if(id==ElectronId::TightLLH  && m_elecSelLikelihoodTight->accept(in))  return true;
     
     return false;
-
 }
 //////////////////////////////////////////////////////////////////////////////
 TBits XaodAnalysis::matchElectronTriggers(const xAOD::Electron& in)
@@ -1698,7 +1673,6 @@ TBits XaodAnalysis::matchMuonTriggers(const xAOD::Muon& in)
             if(m_susyObj[m_eleIDDefault]->IsTrigMatched(&in, trigs[iTrig])) muoTrigBits.SetBitNumber(iTrig, true);
     }
     return muoTrigBits;
-
 }
 //////////////////////////////////////////////////////////////////////////////
 std::map<std::string, std::vector<unsigned int>> XaodAnalysis::getDiMuTrigMap(const xAOD::Muon &in, const xAOD::MuonContainer &muons)

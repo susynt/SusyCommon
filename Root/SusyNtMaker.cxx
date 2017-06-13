@@ -69,7 +69,6 @@ SusyNtMaker::SusyNtMaker() :
 //////////////////////////////////////////////////////////////////////////////
 SusyNtMaker::~SusyNtMaker()
 {
-
 }
 //////////////////////////////////////////////////////////////////////////////
 struct FillCutFlow {
@@ -92,10 +91,6 @@ struct FillCutFlow {
     FillCutFlow& enableFilterNextCuts() { includeThisCut = true; return *this; }
 }; // struct
 ////////////////////////////////////////////////////////////////////////////////
-//void SusyNtMaker::Init(TTree *tree)
-//{
-//}
-//////////////////////////////////////////////////////////////////////////////
 void SusyNtMaker::SlaveBegin(TTree* tree)
 {
     if(dbg()) cout << "SusyNtMaker::SlaveBegin" << endl;
@@ -125,7 +120,6 @@ void SusyNtMaker::initialize_counters()
     m_cutstageCounters.clear();
     for(uint icut = 0; icut < cutflow_labels().size(); icut++)
         m_cutstageCounters.push_back(0);
-
 }
 //////////////////////////////////////////////////////////////////////////////
 const vector<string> SusyNtMaker::cutflow_labels()
@@ -606,8 +600,6 @@ void SusyNtMaker::fill_nt_variables()
     fill_track_met_variables();
 
     #warning NEED TO FILL TRUTH VARIABLES
-
-
 }
 //////////////////////////////////////////////////////////////////////////////
 void SusyNtMaker::fill_event_variables()
@@ -637,7 +629,7 @@ void SusyNtMaker::fill_event_variables()
     evt->mcChannel = mc() ? eventinfo->mcChannelNumber() : 0;
     evt->w = mc() ? eventinfo->mcEventWeight() : 1;
 
-    cout << "SusyNtMaker::fill_event_variables    mc channel : " << evt->mcChannel << "  year: " << year << endl;
+    //cout << "SusyNtMaker::fill_event_variables    mc channel : " << evt->mcChannel << "  year: " << year << endl;
 
     evt->initialNumberOfEvents = m_nEventsProcessed;
     evt->sumOfEventWeights = m_sumOfWeights;
@@ -764,7 +756,7 @@ void SusyNtMaker::fill_jet_variables()
         // b-jet SF
         // dantrim June 13 2017 - TODO check if better to do this on per-jet basis inside (as with muon trigger SF)
         if(mc()) m_susyObj[m_eleIDDefault]->BtagSF(jets); // decorates jets with effscalefact
-        for(auto& i : m_preJets) {
+        for(auto& i : m_preJets_nom) {
             store_jet(*(jets->at(i)));
         }
     }
@@ -898,12 +890,16 @@ void SusyNtMaker::fill_met_variables(SusyNtSys sys)
 
     //__________________ DONE WITH MET _____________________//
     m_susyNt.met()->push_back(*met);
+
+    if( dbg()>20 && (sys!=NtSys::NOM)) {
+        cout << "SusyNtMaker::fill_met_variables       > Nominal MET: " << m_susyNt.met()->at(0).Et << ",  Sys varied MET: " << m_susyNt.met()->back().Et << endl;
+    }
 }
 //////////////////////////////////////////////////////////////////////////////
 void SusyNtMaker::fill_track_met_variables(SusyNtSys sys)
 {
 
-    if(dbg()>-15) cout << "SusyNtMaker::fill_track_met_variables    Filling TrackMet (sys="<<SusyNtSysNames[sys]<<")" <<endl;
+    if(dbg()>=15) cout << "SusyNtMaker::fill_track_met_variables    Filling TrackMet (sys="<<SusyNtSysNames[sys]<<")" <<endl;
 
     xAOD::MissingETContainer::const_iterator trackMet_it = xaodTrackMET()->find("Track");
 
@@ -1219,7 +1215,7 @@ void SusyNtMaker::store_electron(const xAOD::Electron& in, int ele_idx)
                 else if(ourSys == NtSys::EL_EFF_Iso_TOTAL_Uncorr_DN)     out.errEffSF_iso_dn[i]  = sf[i] - out.eleEffSF[i];
                 else if(ourSys == NtSys::EL_EFF_Trigger_TOTAL_Uncorr_UP) out.errEffSF_trig_up[i] = sf_trig[i] - out.eleTrigSF[i];
                 else if(ourSys == NtSys::EL_EFF_Trigger_TOTAL_Uncorr_DN) out.errEffSF_trig_dn[i] = sf_trig[i] - out.eleTrigSF[i];
-        
+/*        
                 if(i==0 || i==1 || i==2){
                 if(i==0)
                     cout << "ElectronId : TightLH " <<  endl;
@@ -1233,6 +1229,7 @@ void SusyNtMaker::store_electron(const xAOD::Electron& in, int ele_idx)
                 cout << "   effIso          : " << out.errEffSF_iso_up[i] << "  " << out.errEffSF_iso_dn[i] << endl;
                 cout << "   effTrig         : " << out.errEffSF_trig_up[i] << "  " << out.errEffSF_trig_dn[i] << endl;
                 }
+*/
         
             }
         } // sysInfo
@@ -1698,7 +1695,7 @@ void SusyNtMaker::store_muon(const xAOD::Muon& in, const xAOD::MuonContainer& mu
 //////////////////////////////////////////////////////////////////////////////
 void SusyNtMaker::store_jet(const xAOD::Jet& in)
 {
-    if(dbg()>=15) cout << "SusyNtMaker::fill_jet    Storing Jet (pt=" << in.pt()*MeV2GeV << ")" << endl;
+    if(dbg()>=15) cout << "SusyNtMaker::store_jet    Storing Jet (pt=" << in.pt()*MeV2GeV << ")" << endl;
 
     const xAOD::EventInfo* eventinfo = xaodEventInfo();
 
@@ -2132,11 +2129,13 @@ void SusyNtMaker::store_electron_kinematic_sys(ST::SystInfo sysInfo, SusyNtSys s
             }
         }
     
-        // dantrim June 13 2017 -- is it even possible to reach this?
         //Nominal electron was not found. Add it at its nominal scale to susyNt and m_preElectron_nom 
+        //this happens if the systematic varied object passes the (e.g. pT) threshold that the nominal did not (c.f. XaodAnalysis::fill_baseline_objects)
         if(ele_susyNt == NULL){
-            cout << "SusyNtMaker::store_electron_kinematic_sys    Electron not found (sys=" << SusyNtSysNames[sys] << ") at nominal scale, adding nominal electron to output susyNt" << endl;
             ele_nom = electrons_nom->at(iEl);
+            if(dbg()>=20) {
+                cout << "SusyNtMaker::store_electron_kinematic_sys    Nominal electron not found at sys idx " << iEl << " (there are " << m_preElectrons_nom.size() << " nominal electrons, " << m_preElectrons.size() << " sys varied electrons) : pT_sys=" << ele->pt()*MeV2GeV << "  pT_nom=" << ele_nom->pt()*MeV2GeV << "  -> Adding (new) nominal electron to output susyNt for SF calculation" << endl;
+            }
             store_electron(*ele_nom, iEl);
             m_preElectrons_nom.push_back(iEl);
             ele_susyNt = & m_susyNt.ele()->back(); // now get the newly inserted element and use it
@@ -2184,9 +2183,12 @@ void SusyNtMaker::store_muon_kinematic_sys(ST::SystInfo sysInfo, SusyNtSys sys)
         }
     
         //Nominal muon was not found. Add it at its nominal scale to susyNt
+        //this happens if the systematic varied object passes the (e.g. pT) threshold that the nominal did not (c.f. XaodAnalysis::fill_baseline_objects)
         if(mu_susyNt == NULL){
-            cout << "SusyNtMaker::store_muon_kinematic_sys    WARNING Muon not found (sys=" << SusyNtSysNames[sys] << ") at nominal scale, adding nominal muon to output SusyNt" << endl;
             mu_nom = muons_nom->at(iMu);
+            if(dbg()>=20) {
+                cout << "SusyNtMaker::store_muon_kinematic_sys    Nominal muon not found at sys idx " << iMu << " (there are " << m_preMuons_nom.size() << " nominal muons, " << m_preMuons.size() << " sys varied muons) : pT_sys=" << mu->pt()*MeV2GeV << "  pT_nom=" << mu_nom->pt()*MeV2GeV << "  -> Adding (new) nominal muon to output susyNt for SF calculation" << endl;
+            }
             store_muon(*mu_nom, *muons);
             m_preMuons_nom.push_back(iMu);
             mu_susyNt = & m_susyNt.muo()->back(); // now get the newly inserted element and use it for SF calculation
@@ -2241,9 +2243,12 @@ void SusyNtMaker::store_tau_kinematic_sys(ST::SystInfo sysInfo, SusyNtSys sys)
         }
 
         //Tau was not found. Add it at its nominal scale to susyNt and m_preTau_nom 
+        //this happens if the systematic varied object passes the (e.g. pT) threshold that the nominal did not (c.f. XaodAnalysis::fill_baseline_objects)
         if(tau_susyNt == NULL){
-            cout << "SusyNtMaker::store_tau_kinematic_sys    WARNING Tau not found (sys=" << SusyNtSysNames[sys] <<") at nominal scale, adding nominal tau to output susyNt" << endl;
             tau_nom = taus_nom->at(iTau);
+            if(dbg()>=20) {
+                cout << "SusyNtMaker::store_tau_kinematic_sys    Nominal tau not found at sys idx " << iTau << " (there are " << m_preTaus_nom.size() << " nominal taus, " << m_preTaus.size() << " sys varied taus) : pT_sys=" << tau->pt()*MeV2GeV << "  pT_nom=" << tau_nom->pt()*MeV2GeV << "  -> Adding (new) nominal tau to output susyNt for SF calculation" << endl;
+            }
             store_tau(*tau_nom);
             saveTaus_nom.push_back(iTau);
             tau_susyNt = & m_susyNt.tau()->back(); //get the newly inserted taument
@@ -2269,7 +2274,7 @@ void SusyNtMaker::store_jet_kinematic_sys(ST::SystInfo sysInfo, SusyNtSys sys)
 
     for(const auto &iJ : m_preJets) {
         const xAOD::Jet* jet = jets->at(iJ);
-    
+
         const xAOD::Jet* jet_nom = NULL;
         Susy::Jet* jet_susyNt = NULL;
         int idx_susyNt = -1;
@@ -2289,9 +2294,12 @@ void SusyNtMaker::store_jet_kinematic_sys(ST::SystInfo sysInfo, SusyNtSys sys)
         }
 
         //Jet was not found. Add it at its nominal scale to susyNt and m_preJet_nom 
+        //this happens if the systematic varied object passes the (e.g. pT) threshold that the nominal did not (c.f. XaodAnalysis::fill_baseline_objects)
         if(jet_susyNt == NULL){
-            cout << "SusyNtMaker::store_jet_kinematic_sys    WARNING Jet not found (sys="<<SusyNtSysNames[sys] << ") at nominal scale, adding nominal jet to output susyNt" << endl;
             jet_nom = jets_nom->at(iJ);
+            if(dbg()>=20) {
+                cout << "SusyNtMaker::store_jet_kinematic_sys    Nominal jet not found at sys idx " << iJ << " (there are " << m_preJets_nom.size() << " nominal jets, " << m_preJets.size() << " sys varied jets) : pT_sys=" << jet->pt()*MeV2GeV << "  pT_nom=" << jet_nom->pt()*MeV2GeV << "  -> Adding (new) nominal jet to output susyNt for SF calculation" << endl;
+            }
             store_jet(*jet_nom);
             m_preJets_nom.push_back(iJ);
             jet_susyNt = & m_susyNt.jet()->back(); //get the newly inserted jet
