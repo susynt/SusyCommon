@@ -83,6 +83,13 @@ class SusyNtMaker : public XaodAnalysis
         void fill_jet_variables();
         void store_jet(const xAOD::Jet& in);
 
+        // Tau
+        void fill_tau_variables();
+        void store_tau(const xAOD::TauJet& in);
+
+        // MET
+        void fill_met_variables(SusyNtSys sys = NtSys::NOM);
+
         void clear_event();
 
 

@@ -53,6 +53,7 @@ XaodAnalysis::XaodAnalysis() :
     m_nlep_filter(1),
     m_filter_trig(false),
     m_filter(false),
+    m_saveContTaus(false),
     m_input_chain(0),
     m_input_container_name(""),
     m_output_container_name(""),

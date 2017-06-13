@@ -577,6 +577,12 @@ void SusyNtMaker::fill_nt_variables()
     // Susy::Jet
     fill_jet_variables();
 
+    // Susy::Tau
+    fill_tau_variables();
+
+    // Susy::Met
+    fill_met_variables();
+
 
 }
 //////////////////////////////////////////////////////////////////////////////
@@ -726,7 +732,7 @@ void SusyNtMaker::fill_muon_variables()
 //////////////////////////////////////////////////////////////////////////////
 void SusyNtMaker::fill_jet_variables()
 {
-    if(dbg()>=5) cout << "SusyNtMaker::fill_jet_variables    Filling Susy::Jet" << endl;
+    if(dbg()>=15) cout << "SusyNtMaker::fill_jet_variables    Filling Susy::Jet" << endl;
 
     xAOD::JetContainer* jets = xaodJets(systInfoList[0]);
 
@@ -742,6 +748,116 @@ void SusyNtMaker::fill_jet_variables()
         cout << "SusyNtMaker::fill_jet_variables    WARNING Jet container is null" << endl;
     }
 
+}
+//////////////////////////////////////////////////////////////////////////////
+void SusyNtMaker::fill_tau_variables()
+{
+    if(dbg()>=15) cout << "SusyNtMaker::fill_tau_variables    Filling Susy::Tau" << endl;
+
+    xAOD::TauJetContainer* taus = xaodTaus(systInfoList[0]);
+
+    if(taus) {
+        vector<int>& saveTaus = m_saveContTaus ? m_contTaus : m_preTaus;
+        for(auto& i: saveTaus) {
+            store_tau(*(taus->at(i)));
+        }
+    }
+    else {
+        cout << "SusyNtMaker::fill_tau_variables    WARNING Tau container is null" << endl;
+    }
+}
+//////////////////////////////////////////////////////////////////////////////
+void SusyNtMaker::fill_met_variables(SusyNtSys sys)
+{
+
+    if(dbg()>=15) cout << "SusyNtMaker::fill_met_variables    Filling MET (sys=" << SusyNtSysNames[sys] << ")" << endl;
+
+    xAOD::MissingETContainer::const_iterator met_it = xaodMET()->find("Final");
+
+    if(dbg()>=15) {
+        cout << "SusyNtMaker::fill_met_variables    Dumping MET container " << endl;
+        for(auto it = xaodMET()->begin(), end = xaodMET()->end(); it!=end; ++it) {
+            cout << "SusyNtMaker::fill_met_variables      > MET " << (*it)->name() << endl;
+        }
+    }
+
+    if(met_it == xaodMET()->end()) {
+        cout << "SusyNtMaker::fill_met_variables    WARNING No RefFinal inside MET container, not filling MET variables" << endl;
+        return;
+    }
+
+    Susy::Met* met = new Susy::Met();
+    met->Et = (*met_it)->met()*MeV2GeV;
+    met->phi = (*met_it)->phi();
+    met->sumet = (*met_it)->sumet()*MeV2GeV;
+    met->sys = sys;
+
+    if(dbg()>=15) cout << "SusyNtMaker::fill_met_variables    (sys=" << SusyNtSysNames[sys] << ") (Et,phi,pt)=("<<met->Et<<","<<met->phi<<","<<met->lv().Pt()<<")"<<endl;
+
+    ////////////////////////////////////////////
+    // Electron Term (RefEle)
+    ////////////////////////////////////////////
+    xAOD::MissingETContainer::const_iterator met_find = xaodMET()->find("RefEle");
+    if(met_find != xaodMET()->end()) {
+        met->refEle_et = (*met_find)->met()*MeV2GeV;
+        met->refEle_phi = (*met_find)->phi();
+        met->refEle_sumet = (*met_find)->sumet()*MeV2GeV;
+    }
+
+    ////////////////////////////////////////////
+    // Photon Term (RefGamma)
+    ////////////////////////////////////////////
+    met_find = xaodMET()->find("RefGamma");
+    if(met_find != xaodMET()->end()) {
+        met->refGamma_et = (*met_find)->met()*MeV2GeV;
+        met->refGamma_phi = (*met_find)->phi();
+        met->refGamma_sumet = (*met_find)->sumet()*MeV2GeV;
+    }
+
+
+    ////////////////////////////////////////////
+    // Tau Term (RefTau)
+    ////////////////////////////////////////////
+    met_find = xaodMET()->find("RefTau");
+    if(met_find != xaodMET()->end()) {
+        met->refTau_et = (*met_find)->met()*MeV2GeV;
+        met->refTau_phi = (*met_find)->phi();
+        met->refTau_sumet = (*met_find)->sumet()*MeV2GeV;
+
+    }
+
+    ////////////////////////////////////////////
+    // Jet Term (RefJet)
+    ////////////////////////////////////////////
+    met_find = xaodMET()->find("RefJet");
+    if (met_find != xaodMET()->end()) {
+        met->refJet_et = (*met_find)->met()*MeV2GeV;
+        met->refJet_phi = (*met_find)->phi();
+        met->refJet_sumet = (*met_find)->sumet()*MeV2GeV;
+    }
+
+    ////////////////////////////////////////////
+    // SoftTerm
+    ////////////////////////////////////////////
+    met_find = xaodMET()->find("PVSoftTrk"); // using TST (track soft term, not PVSoftClus)
+    if (met_find != xaodMET()->end()) {
+        met->softTerm_et = (*met_find)->met()*MeV2GeV;
+        met->softTerm_phi = (*met_find)->phi();
+        met->softTerm_sumet = (*met_find)->sumet()*MeV2GeV;
+    }
+
+    ////////////////////////////////////////////
+    // Muon Term (RefMuons)
+    ////////////////////////////////////////////
+    met_find = xaodMET()->find("Muons");
+    if (met_find != xaodMET()->end()) {
+        met->refMuo_et = (*met_find)->met()*MeV2GeV;
+        met->refMuo_phi = (*met_find)->phi();
+        met->refMuo_sumet = (*met_find)->sumet()*MeV2GeV;
+    }
+
+    //__________________ DONE WITH MET _____________________//
+    m_susyNt.met()->push_back(*met);
 }
 //////////////////////////////////////////////////////////////////////////////
 void SusyNtMaker::store_electron(const xAOD::Electron& in, int ele_idx)
@@ -1647,4 +1763,79 @@ void SusyNtMaker::store_jet(const xAOD::Jet& in)
     //______________ ALL DONE WITH THE JET ______________ //
     out.idx = (m_susyNt.jet()->size());
     m_susyNt.jet()->push_back(out);
+}
+//////////////////////////////////////////////////////////////////////////////
+void SusyNtMaker::store_tau(const xAOD::TauJet& in)
+{
+    if(dbg()>=15) cout << "SusyNtMaker::store_tau   Storing tau (pt=" << in.pt()*MeV2GeV << ")" << endl; 
+
+    Susy::Tau out;
+
+    //////////////////////////////////////////
+    // 4-vector
+    //////////////////////////////////////////
+    double pt(in.pt()*MeV2GeV), eta(in.eta()), phi(in.phi()), m(in.m()*MeV2GeV);
+
+    out.SetPtEtaPhiM(pt, eta, phi, m);
+    out.pt  = pt;
+    out.eta = eta;
+    out.phi = phi;
+    out.m   = m;
+    out.q = int(in.charge());
+
+    //////////////////////////////////////
+    // TauSelectionTool WP
+    //////////////////////////////////////
+    out.loose   = static_cast<bool>( m_tauSelToolLoose->accept(in) );
+    out.medium  = static_cast<bool>( m_tauSelToolMedium->accept(in) );
+    out.tight   = static_cast<bool>( m_tauSelToolTight->accept(in) );
+
+    //////////////////////////////////////
+    // number of associated tracks
+    //////////////////////////////////////
+    out.nTrack = in.nTracks();
+
+
+    //////////////////////////////////////
+    // Truth info/classification
+    //////////////////////////////////////
+    if (mc()){
+        auto truthTau = m_tauTruthMatchingTool->getTruth(in);
+        out.isTruthMatched = (bool)in.auxdata<char>("IsTruthMatched");
+        if(out.isTruthMatched) {
+            if(truthTau->isTau()) {
+                out.truthNProngs = int(truthTau->auxdata<size_t>("numCharged"));
+                out.isHadronicTau = (bool)truthTau->auxdata<char>("IsHadronicTau");
+            } //isTau
+            out.truthCharge = int(truthTau->charge());
+            out.truthPdgId = int(truthTau->absPdgId());
+
+            out.truthType = truthTau->auxdata<unsigned int>("classifierParticleType");
+            out.truthOrigin = truthTau->auxdata<unsigned int>("classifierParticleOrigin");
+
+        }//isTruthMatched
+        // TODO -- dantrim Feb 23 2016 -- what vars are needed from truth jet
+        //auto truthJetLink = in.auxdata< ElementLink< xAOD::JetContainer > >("truthJetLink");
+        //if(truthJetLink.isValid()) {
+        //    const xAOD::Jet* truthJet = *truthJetLink;
+        //    cout << "  > tau was matched to truth jet with (pt, eta, phi, m) = (" << truthJet->p4().Pt() << ", " << truthJet->p4().Eta() << ", " << truthJet->p4().Phi() << ", " << truthJet->p4().M() << endl;
+        //}
+
+        // MJF: Scale factors are only valid for pre-selected taus
+        if ( in.auxdata< char >("baseline") ) {
+            //if (in.nTracks() > 0) m_TauEffEleTool->applyEfficiencyScaleFactor(in);
+            // these #'s are dummies for testing the various SF's!
+            bool idSF = true;
+            bool trigSF = false;
+            out.looseEffSF  = m_susyObj[m_eleIDDefault]->GetSignalTauSF(in,idSF,trigSF);
+            out.mediumEffSF = m_susyObj[m_eleIDDefault]->GetSignalTauSF(in,idSF,trigSF);
+            out.tightEffSF  = m_susyObj[m_eleIDDefault]->GetSignalTauSF(in,idSF,trigSF);
+        }
+
+        if(dbg()>=15) cout << "SusyNtMaker::store_tau    MCTruthClassifier found Tau with (truthType, origin) = (" << out.truthType << ", " << out.truthOrigin << ")" << endl;
+
+    }// if isMC
+
+    //______________ ALL DONE WITH THE TAU ______________ //
+    m_susyNt.tau()->push_back(out);
 }

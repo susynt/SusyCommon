@@ -40,6 +40,7 @@ void help()
     cout << "   --af2               sample is AFII reco [default: false]" << endl;
     cout << "   --nowrite           do not write out an ntuple [default: false]" << endl;
     cout << "   -s|--sys            run with systematics [default: false]" << endl;
+    cout << "   --contTau           save container (loose selection) taus [default: false]" << endl;
 
     cout << "   -h|--help           print this help message" << endl;
     cout << "--------------------------------------------------------------" << endl;
@@ -62,6 +63,7 @@ int main(int argc, char** argv)
     bool run_trig_filter = false;
     bool write_ntuple = true;
     string outfilename = "susyNt.root";
+    bool contTaus = false;
 
     //cout << "NtMaker" << endl;
 
@@ -81,6 +83,7 @@ int main(int argc, char** argv)
         else if (in == "--af2"                      ) { is_af2 = true; }
         else if (in == "--nowrite"                  ) { write_ntuple = false; }
         else if (in == "-s" || in == "--sys"        ) { run_sys = true; }
+        else if (in == "--contTau"                  ) { contTaus = true; }
         else if (in == "-h" || in == "--help"       ) { help(); return 0; }
         else {
             cout << "NtMaker    Unknown command line argument '" << in << "' provided, exiting" << endl;
@@ -144,6 +147,7 @@ int main(int argc, char** argv)
     if(run_lep_filter)
     cout << "   n leptons to filter (>=): " << n_lep_filter << endl;
     cout << "   filter on trigger       : " << run_trig_filter << endl;
+    cout << "   save container taus     : " << contTaus << endl;
     cout << "-------------------------------------------------------------" << endl;
 
     TChain* chain = new TChain("CollectionTree");
@@ -172,6 +176,7 @@ int main(int argc, char** argv)
     susyAna->set_production_command(Susy::utils::commandLineArguments(argc, argv));
     susyAna->set_nlep_filter(n_lep_filter);
     susyAna->set_trig_filter(run_trig_filter);
+    susyAna->set_cont_taus(contTaus);
     
 
     // start up the looper

@@ -163,6 +163,9 @@ namespace Susy {
 
             virtual bool do_event_filter() { return m_filter; }
 
+            virtual void set_cont_taus(bool save_them) { m_saveContTaus = save_them; }
+            virtual bool cont_taus() { return m_saveContTaus; }
+
             // method to collect the sumw information from CutBookKeepers
             void get_sumw(TTree* tree);
             bool collect_cutbooks(xAOD::TEvent& event, int file_idx);
@@ -277,6 +280,7 @@ namespace Susy {
             int m_nlep_filter;
             bool m_filter_trig;
             bool m_filter;
+            bool m_saveContTaus;
 
             TChain* m_input_chain; // input TChain of DAOD
 
