@@ -221,8 +221,6 @@ bool XaodAnalysis::set_mctype(MCType type)
 /////////////////////////////////////////////////////////////////////////////
 void XaodAnalysis::SlaveBegin(TTree* tree)
 {
-    cout << "XaodAnalysis::SlaveBegin" << endl;
-
 
 
     return;
@@ -230,8 +228,7 @@ void XaodAnalysis::SlaveBegin(TTree* tree)
 //////////////////////////////////////////////////////////////////////////////
 void XaodAnalysis::Init(TTree* tree)
 {
-    cout << "XaodAnalysis::Init" << endl;
-    if(dbg()>=10) cout << "XaodAnalysis::Init" << endl;
+    if(dbg()) cout << "XaodAnalysis::Init" << endl;
 
     xAOD::Init("Susy::XaodAnalysis").ignore();
     
@@ -286,7 +283,6 @@ void XaodAnalysis::Init(TTree* tree)
 //////////////////////////////////////////////////////////////////////////////
 Bool_t XaodAnalysis::Process(Long64_t entry)
 {
-    cout << "XaodAnalysis::Process" << endl;
 
 
     return kTRUE;
@@ -294,7 +290,6 @@ Bool_t XaodAnalysis::Process(Long64_t entry)
 //////////////////////////////////////////////////////////////////////////////
 void XaodAnalysis::Terminate()
 {
-    cout << "XaodAnalysis::Terminate" << endl;
 
 
 }
@@ -858,28 +853,28 @@ void XaodAnalysis::initialize_SUSYTools()
             if(x.second->typeName()=="string"){
                 string foo;
                 m_susyObj[susyObjId]->getPropertyMgr()->getProperty(x.first, foo);
-                cout << " Property << " << x.first << ": " << foo << endl;
+                cout << "XaodAnalysis::initialize_SUSYTools     - ["<<idname<<"] Property << " << x.first << ": " << foo << endl;
             }
             else if(x.second->typeName()=="int"){
                 int foo;
                 m_susyObj[susyObjId]->getPropertyMgr()->getProperty(x.first, foo);
-                cout << " Property << " << x.first << ": " << foo << endl;
+                cout << "XaodAnalysis::initialize_SUSYTools     - ["<<idname<<"] Property << " << x.first << ": " << foo << endl;
             }
             else if(x.second->typeName()=="float"){
                 float foo;
                 m_susyObj[susyObjId]->getPropertyMgr()->getProperty(x.first, foo);
-                cout << " Property << " << x.first << ": " << foo << endl;
+                cout << "XaodAnalysis::initialize_SUSYTools     - ["<<idname<<"] Property << " << x.first << ": " << foo << endl;
             }
             else if(x.second->typeName()=="double"){
                 double foo;
                 m_susyObj[susyObjId]->getPropertyMgr()->getProperty(x.first, foo);
-                cout << " Property << " << x.first << ": " << foo << endl;
+                cout << "XaodAnalysis::initialize_SUSYTools     - ["<<idname<<"] Property << " << x.first << ": " << foo << endl;
             }
             else if(x.second->typeName()=="bool"){
                 bool foo;
                 m_susyObj[susyObjId]->getPropertyMgr()->getProperty(x.first, foo);
                 string value = foo ? "True" : "False";
-                cout << " Property << " << x.first << ": " << value << endl;
+                cout << "XaodAnalysis::initialize_SUSYTools     - ["<<idname<<"] Property << " << x.first << ": " << value << endl;
             }
         }
 

@@ -108,6 +108,12 @@ class SusyNtMaker : public XaodAnalysis
         // Muon
         void store_muon_kinematic_sys(ST::SystInfo sysInfo, SusyNtSys sys);
 
+        // Tau
+        void store_tau_kinematic_sys(ST::SystInfo sysInfo, SusyNtSys sys);
+
+        // Jets
+        void store_jet_kinematic_sys(ST::SystInfo sysInfo, SusyNtSys sys);
+
 
         void clear_event();
 
