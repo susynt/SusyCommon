@@ -144,8 +144,6 @@ Bool_t SusyNtMaker::Process(Long64_t entry)
     chainEntry++;
     m_event.getEntry(chainEntry);
 
-    // clear the output storage indices
-    clear_output_objects();
 
     // start the PRW tool since all tools depend on it downstream
     for(int susyObjId : Susy::leptonIds()) {
@@ -225,6 +223,8 @@ Bool_t SusyNtMaker::Process(Long64_t entry)
     }
 
     clear_event();
+    // clear the output storage indices
+    //clear_output_objects();
 
     return kTRUE;
 }
@@ -898,6 +898,7 @@ void SusyNtMaker::fill_met_variables(SusyNtSys sys)
     if( dbg()>20 && (sys!=NtSys::NOM)) {
         cout << "SusyNtMaker::fill_met_variables       > Nominal MET: " << m_susyNt.met()->at(0).Et << ",  Sys varied MET: " << m_susyNt.met()->back().Et << endl;
     }
+    delete met;
 }
 //////////////////////////////////////////////////////////////////////////////
 void SusyNtMaker::fill_track_met_variables(SusyNtSys sys)
@@ -961,6 +962,8 @@ void SusyNtMaker::fill_track_met_variables(SusyNtSys sys)
 
     //__________________ DONE WITH TRACK MET _____________________//
     m_susyNt.tkm()->push_back(*tmet);
+
+    delete tmet;
 }
 //////////////////////////////////////////////////////////////////////////////
 void SusyNtMaker::store_electron(const xAOD::Electron& in, int ele_idx)
@@ -1219,21 +1222,20 @@ void SusyNtMaker::store_electron(const xAOD::Electron& in, int ele_idx)
                 else if(ourSys == NtSys::EL_EFF_Iso_TOTAL_Uncorr_DN)     out.errEffSF_iso_dn[i]  = sf[i] - out.eleEffSF[i];
                 else if(ourSys == NtSys::EL_EFF_Trigger_TOTAL_Uncorr_UP) out.errEffSF_trig_up[i] = sf_trig[i] - out.eleTrigSF[i];
                 else if(ourSys == NtSys::EL_EFF_Trigger_TOTAL_Uncorr_DN) out.errEffSF_trig_dn[i] = sf_trig[i] - out.eleTrigSF[i];
-/*        
-                if(i==0 || i==1 || i==2){
-                if(i==0)
-                    cout << "ElectronId : TightLH " <<  endl;
-                else if(i==1)
-                    cout << "ElectronId : MediumLH " <<  endl;
-                else if(i==2)
-                    cout << "ElectronId : LooseLH " <<  endl;
         
-                cout << "   effId           : " << out.errEffSF_id_up[i] << "  " << out.errEffSF_id_dn[i] << endl;
-                cout << "   effReco         : " << out.errEffSF_reco_up[i] << "  " << out.errEffSF_reco_dn[i] << endl;
-                cout << "   effIso          : " << out.errEffSF_iso_up[i] << "  " << out.errEffSF_iso_dn[i] << endl;
-                cout << "   effTrig         : " << out.errEffSF_trig_up[i] << "  " << out.errEffSF_trig_dn[i] << endl;
-                }
-*/
+//                if(i==0 || i==1 || i==2){
+//                if(i==0)
+//                    cout << "ElectronId : TightLH " <<  endl;
+//                else if(i==1)
+//                    cout << "ElectronId : MediumLH " <<  endl;
+//                else if(i==2)
+//                    cout << "ElectronId : LooseLH " <<  endl;
+//        
+//                cout << "   effId           : " << out.errEffSF_id_up[i] << "  " << out.errEffSF_id_dn[i] << endl;
+//                cout << "   effReco         : " << out.errEffSF_reco_up[i] << "  " << out.errEffSF_reco_dn[i] << endl;
+//                cout << "   effIso          : " << out.errEffSF_iso_up[i] << "  " << out.errEffSF_iso_dn[i] << endl;
+//                cout << "   effTrig         : " << out.errEffSF_trig_up[i] << "  " << out.errEffSF_trig_dn[i] << endl;
+//                }
         
             }
         } // sysInfo
@@ -2047,9 +2049,9 @@ void SusyNtMaker::run_kinematic_systematics()
     for(const auto& sysInfo : systInfoList) {
         const CP::SystematicSet& sys = sysInfo.systset;
         if(sys.name()=="") continue; // skip nominal
+        if(!sysInfo.affectsKinematics) continue;
         if(dbg()>=15) cout << "SusyNtMaker::run_kinematic_systematics     --------------------------------------------------------------" << endl;
         if(dbg()>=15) cout << "SusyNtMaker::run_kinematic_systematics     > Variation: " << sys.name().c_str() << endl;
-        if(!sysInfo.affectsKinematics) continue;
 
         SusyNtSys ourSys = CPsys2sys((sys.name()).c_str());
         if(ourSys == NtSys::SYS_UNKNOWN) continue;
@@ -2065,8 +2067,10 @@ void SusyNtMaker::run_kinematic_systematics()
         /////////////////////////////////////////////
         // save objects with vthe ariations applied
         ////////////////////////////////////////////
+
+        // these clearing steps ARE NECESSARY TO AVOID MEMORY LEAKS
         clear_output_objects(false);
-        clear_containers(false);
+        delete_shallow_copies(false);
 
         fill_objects(ourSys, sysInfo);
 

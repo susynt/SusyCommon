@@ -281,6 +281,14 @@ Bool_t XaodAnalysis::Process(Long64_t entry)
 //////////////////////////////////////////////////////////////////////////////
 void XaodAnalysis::Terminate()
 {
+
+    // clean up
+    delete m_tauTruthMatchingTool;
+
+    for(int i : Susy::leptonIds()) {
+        delete m_susyObj[i];
+        if(m_run_oneST) break;
+    }
 }
 //////////////////////////////////////////////////////////////////////////////
 void XaodAnalysis::get_sumw(TTree* tree)

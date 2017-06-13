@@ -32,11 +32,11 @@ void help()
     cout << "   --outfilename       name of output ROOT file [default: susyNt.root]" << endl;
     cout << "   -d|--debug          debug level (integer values) [default: 0]" << endl;
     cout << "   -n|--nevents        number of events to process [default: -1 (all events)]" << endl;
-    cout << "   -t|--tag            SusyNtuple production tag [default: ""]" << endl;
+    cout << "   -t|--tag            SusyNtuple production tag [default: \"\"]" << endl;
     cout << "   --mctype            MC campaign (allowed: mc15b, mc15c) [default: mc15c]" << endl;
     cout << "   --sys               run with systematics [default: false]" << endl;
     cout << "   --nLepFilter        filter on number of light leptons [default: >=1]" << endl;
-    cout << "   --trigFilter        require a trigger to have fired to store event [default: false]" << endl;
+    cout << "   --trigFilter        require one of our triggers to have fired to store event [default: false]" << endl;
     cout << "   --af2               sample is AFII reco [default: false]" << endl;
     cout << "   --nowrite           do not write out an ntuple [default: false]" << endl;
     cout << "   -s|--sys            run with systematics [default: false]" << endl;
@@ -70,6 +70,10 @@ int main(int argc, char** argv)
     //cout << "NtMaker" << endl;
 
     int optin = 1;
+    if(argc==1) {
+        help();
+        return 1;
+    }
     while(optin < argc) {
         string in = argv[optin];
         if      (in == "-f" || in == "--filelist"   ) { filelist = argv[++optin]; }
@@ -130,13 +134,6 @@ int main(int argc, char** argv)
         mc_type = MCType::MC15b;
     else if(mc_type_str=="mc15c")
         mc_type = MCType::MC15c;
-
-    if(n_events > 20 && dbg >=10) {
-        cout << "\n---------------------------------------------------------------------" << endl;
-        cout << "NtMaker    You have set more than 20 events to be processed with a high (" << dbg << ") verbosity, setting number of events to process to 20" << endl;
-        cout << "\n---------------------------------------------------------------------\n" << endl;
-        n_events = 20;
-    }
 
     ///////////////////////////////////////////////////////////////////////////
     // things look ok, lets start
@@ -200,7 +197,7 @@ int main(int argc, char** argv)
     cout << endl;
     cout << "Total entries in input chain       : " << n_entries << endl;
     cout << "Total number of entries to process : " << n_events << endl;
-    chain->Process(susyAna, input_container.c_str(), n_events, 0);
+    chain->Process(susyAna, input_container.c_str(), n_events);
 
     cout << endl;
     cout << "NtMaker    Job done" << endl;
