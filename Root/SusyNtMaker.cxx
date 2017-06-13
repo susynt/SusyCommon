@@ -574,6 +574,9 @@ void SusyNtMaker::fill_nt_variables()
     // Susy::Muon
     fill_muon_variables();
 
+    // Susy::Jet
+    fill_jet_variables();
+
 
 }
 //////////////////////////////////////////////////////////////////////////////
@@ -702,6 +705,43 @@ void SusyNtMaker::fill_electron_variables()
     else {
         cout << "SusyNtMaker::fill_electron_variables    WARNING Electron container is null" << endl;
     }
+}
+//////////////////////////////////////////////////////////////////////////////
+void SusyNtMaker::fill_muon_variables()
+{
+    if(dbg()>=5) cout << "SusyNtMaker::fill_muon_variables    Filling Susy::Muon" << endl;
+
+    xAOD::MuonContainer* muons = xaodMuons(systInfoList[0]);
+
+    if(muons) {
+        for(auto &i : m_preMuons) {
+            store_muon(*(muons->at(i)), *muons);
+        } // i
+
+    }
+    else {
+        cout << "SusyNtMaker::fill_muon_variables    WARNING Muon container is null" << endl;
+    }
+}
+//////////////////////////////////////////////////////////////////////////////
+void SusyNtMaker::fill_jet_variables()
+{
+    if(dbg()>=5) cout << "SusyNtMaker::fill_jet_variables    Filling Susy::Jet" << endl;
+
+    xAOD::JetContainer* jets = xaodJets(systInfoList[0]);
+
+    if(jets) {
+        // b-jet SF
+        // dantrim June 13 2017 - TODO check if better to do this on per-jet basis inside (as with muon trigger SF)
+        if(mc()) m_susyObj[m_eleIDDefault]->BtagSF(jets); // decorates jets with effscalefact
+        for(auto& i : m_preJets) {
+            store_jet(*(jets->at(i)));
+        }
+    }
+    else {
+        cout << "SusyNtMaker::fill_jet_variables    WARNING Jet container is null" << endl;
+    }
+
 }
 //////////////////////////////////////////////////////////////////////////////
 void SusyNtMaker::store_electron(const xAOD::Electron& in, int ele_idx)
@@ -1043,23 +1083,6 @@ void SusyNtMaker::store_electron(const xAOD::Electron& in, int ele_idx)
     m_susyNt.ele()->push_back(out);
 }
 //////////////////////////////////////////////////////////////////////////////
-void SusyNtMaker::fill_muon_variables()
-{
-    if(dbg()>=5) cout << "SusyNtMaker::fill_muon_variables    Filling Susy::Muon" << endl;
-
-    xAOD::MuonContainer* muons = xaodMuons(systInfoList[0]);
-
-    if(muons) {
-        for(auto &i : m_preMuons) {
-            store_muon(*(muons->at(i)), *muons);
-        } // i
-
-    }
-    else {
-        cout << "SusyNtMaker::fill_muon_variables    WARNING Muon container is null" << endl;
-    }
-}
-//////////////////////////////////////////////////////////////////////////////
 void SusyNtMaker::store_muon(const xAOD::Muon& in, const xAOD::MuonContainer& muons)
 {
     if(dbg()>=15) cout << "SusyNtMaker::store_muon   Muon (pt=" << in.pt()*MeV2GeV << ")" << endl; 
@@ -1290,7 +1313,7 @@ void SusyNtMaker::store_muon(const xAOD::Muon& in, const xAOD::MuonContainer& mu
             for(int i : Susy::muonIds()){
                 int index_to_check = (m_run_oneST==true ? (int)m_eleIDDefault : i);
                 if(m_susyObj[index_to_check]->applySystematicVariation(sys) != CP::SystematicCode::Ok) {
-                    cout << "SusyNtMaker::storeMuon    cannot configure SUSYTools for systematic " << sys.name() << endl;
+                    cout << "SusyNtMaker::store_muon    WARNING Cannot configure SUSYTools for systematic " << sys.name() << endl;
                     continue;
                 }
                 if(m_run_oneST) break;
@@ -1351,7 +1374,7 @@ void SusyNtMaker::store_muon(const xAOD::Muon& in, const xAOD::MuonContainer& mu
         for(int i : Susy::muonIds()){
             int index_to_check = (m_run_oneST==true ? (int)m_eleIDDefault : i);
             if(m_susyObj[index_to_check]->resetSystematics() != CP::SystematicCode::Ok){
-                cout << "SusyNtMaker::storeMuon    cannot reset SUSYTools systematics. Aborting." << endl;
+                cout << "SusyNtMaker::store_muon    ERROR Cannot reset SUSYTools systematics. Aborting." << endl;
                 abort();
             }
             if(m_run_oneST) break;
@@ -1381,7 +1404,7 @@ void SusyNtMaker::store_muon(const xAOD::Muon& in, const xAOD::MuonContainer& mu
             for(int i : Susy::muonIds()){
                 int index_to_check = (m_run_oneST==true ? (int)m_eleIDDefault : i);
                 if(m_susyObj[index_to_check]->applySystematicVariation(sys) != CP::SystematicCode::Ok) {
-                    cout << "SusyNtMaker::storeMuon    cannot configure SUSYTools for systematic " << sys.name() << endl;
+                    cout << "SusyNtMaker::store_muon    WARNING Cannot configure SUSYTools for systematic " << sys.name() << endl;
                     continue;
                 }
                 if(m_run_oneST) break;
@@ -1452,4 +1475,176 @@ void SusyNtMaker::store_muon(const xAOD::Muon& in, const xAOD::MuonContainer& mu
     out.idx = (m_susyNt.muo()->size());
     m_susyNt.muo()->push_back(out);
 
+}
+//////////////////////////////////////////////////////////////////////////////
+void SusyNtMaker::store_jet(const xAOD::Jet& in)
+{
+    if(dbg()>=15) cout << "SusyNtMaker::fill_jet    Storing Jet (pt=" << in.pt()*MeV2GeV << ")" << endl;
+
+    const xAOD::EventInfo* eventinfo = xaodEventInfo();
+
+    Susy::Jet out;
+
+    ///////////////////////////////////////////
+    // 4-vector
+    ///////////////////////////////////////////
+    double pt = ( (in.pt()*MeV2GeV < 0) ? 0 : in.pt()*MeV2GeV);
+    double m = ( (in.m()*MeV2GeV < 0) ? 0 : in.m()*MeV2GeV);
+    double eta(in.eta()), phi(in.phi());
+    out.SetPtEtaPhiM(pt, eta, phi, m);
+    out.pt  = pt;
+    out.eta = eta;
+    out.phi = phi;
+    out.m   = m;
+    
+    ///////////////////////////////////////////
+    // Associated tracks
+    ///////////////////////////////////////////
+    vector<int> nTrkVec;
+    in.getAttribute(xAOD::JetAttribute::NumTrkPt500, nTrkVec);
+    int jet_nTrk = (m_susyObj[m_eleIDDefault]->GetPrimVtx()==0 || nTrkVec.size()==0) ? 0 : nTrkVec[m_susyObj[m_eleIDDefault]->GetPrimVtx()->index()];
+    out.nTracks = jet_nTrk;
+    float jet_sumTrkPt = (m_susyObj[m_eleIDDefault]->GetPrimVtx()==0 ? 0 :
+                            in.getAttribute< std::vector<float> >(xAOD::JetAttribute::SumPtTrkPt500)[m_susyObj[m_eleIDDefault]->GetPrimVtx()->index()]);
+    out.sumTrkPt = jet_sumTrkPt * MeV2GeV;
+
+    ///////////////////////////////////////////
+    // JVT (Jet Vertex Tagger)
+    ///////////////////////////////////////////
+    static SG::AuxElement::Accessor<float> acc_jvt("Jvt");
+    out.jvt = acc_jvt(in);
+
+    ///////////////////////////////////////////
+    // Truth Labeling
+    ///////////////////////////////////////////
+    if(mc()) {
+        in.getAttribute("HadronConeExclTruthLabelID", out.truthLabel);
+    }
+
+    ///////////////////////////////////////////
+    // b-tagging
+    ///////////////////////////////////////////
+    double weight_mv2c20(0.);
+    if(!in.btagging()->MVx_discriminant("MV2c20", weight_mv2c20)) {
+        cout << "SusyNtMaker::store_jet    WARNING Failed to retrieve MV2c20 weight for jet (event:" << eventinfo->eventNumber() << ", pt=" << in.pt()*MeV2GeV << ")" << endl;
+    }
+    out.mv2c20 = weight_mv2c20;
+
+    double weight_mv2c10(0.);
+    if(!in.btagging()->MVx_discriminant("MV2c10", weight_mv2c10)) {
+        cout << "SusyNtMaker::store_jet    WARNING Failed to retrieve MV2c10 weight for jet (event: " << eventinfo->eventNumber() << ", pt=" << in.pt()*MeV2GeV << ")" << endl;
+    }
+    out.mv2c10 = weight_mv2c10;
+
+    // SUSYTools' label -- not to be used at the analysis level
+    out.bjet = m_susyObj[m_eleIDDefault]->IsBJet(in) ? 1 : 0;
+
+    //////////////////////////////////////////
+    // b-tagging scale factor
+    //////////////////////////////////////////
+
+    // dantrim June 13 2017 -- TODO check implementation/storage of these
+    out.effscalefact = mc() ? in.auxdata<double>("effscalefact") : 1;
+
+    
+    //////////////////////////////////////////
+    // flavor tagging systematics
+    //////////////////////////////////////////
+    if(mc() && sys()) {
+        for(const auto& sysInfo : systInfoList) {
+            if(!(sysInfo.affectsType == ST::SystObjType::BTag && sysInfo.affectsWeights)) continue;
+            const CP::SystematicSet& sys = sysInfo.systset;
+            if(m_susyObj[m_eleIDDefault]->applySystematicVariation(sys) != CP::SystematicCode::Ok) {
+                cout << "SusyNtMaker::store_jet    WARNING Cannot configure SUSYTools for systematic " << sys.name() << endl;
+                continue;
+            }
+            SusyNtSys ourSys = CPsys2sys((sys.name()).c_str());
+            if(!(ourSys==NtSys::FT_EFF_B_systematics_UP       || ourSys==NtSys::FT_EFF_B_systematics_DN
+               ||ourSys==NtSys::FT_EFF_C_systematics_UP       || ourSys==NtSys::FT_EFF_C_systematics_DN
+               ||ourSys==NtSys::FT_EFF_Light_systematics_UP   || ourSys==NtSys::FT_EFF_Light_systematics_DN
+               ||ourSys==NtSys::FT_EFF_extrapolation_UP       || ourSys==NtSys::FT_EFF_extrapolation_DN
+               ||ourSys==NtSys::FT_EFF_extrapolation_charm_UP || ourSys==NtSys::FT_EFF_extrapolation_charm_DN) ) continue;
+
+            // redecorate the jets
+            m_susyObj[m_eleIDDefault]->BtagSF(XaodAnalysis::xaodJets(systInfoList[0]));
+
+            double sf_out = out.effscalefact - in.auxdata< double >("effscalefact");
+            out.setFTSys(ourSys, sf_out);
+        } // sysInfo
+        // reset systematics
+        if(m_susyObj[m_eleIDDefault]->resetSystematics() != CP::SystematicCode::Ok){
+            cout << "SusyNtMaker::store_jet    Cannot reset SUSYTools systematics. Aborting." << endl;
+            abort();
+        }
+    } // isMC && sys
+
+    //////////////////////////////////////////
+    // JVT SF systematic variation
+    //////////////////////////////////////////
+    if(mc()) { 
+        if(out.Pt()>20. && out.Pt()<60. && fabs(out.Eta()) < 2.4 && fabs(out.Eta())>0.){ 
+
+            xAOD::JetContainer *jvt_jet = new xAOD::JetContainer;
+            xAOD::JetAuxContainer *jvt_jet_aux = new xAOD::JetAuxContainer;
+            jvt_jet->setStore(jvt_jet_aux);
+            xAOD::Jet* jvtJet = new xAOD::Jet;
+            jvtJet->makePrivateStore(in);
+            jvt_jet->push_back(jvtJet);
+
+            out.jvtEff = m_susyObj[m_eleIDDefault]->JVT_SF(jvt_jet);
+            if(m_sys) {
+                for(const auto& sysInfo : systInfoList) {
+                    if(!(sysInfo.affectsType == ST::SystObjType::Jet && sysInfo.affectsWeights)) continue;
+                    const CP::SystematicSet& sys = sysInfo.systset;
+                    if(m_susyObj[m_eleIDDefault]->applySystematicVariation(sys) != CP::SystematicCode::Ok) {
+                        cout << "SusyNtMaker::store_jet    Cannot configure SUSYTools for systematic " << sys.name () << endl;
+                        continue;
+                    }
+                    SusyNtSys ourSys = CPsys2sys((sys.name()).c_str());
+                    if(!(ourSys==NtSys::JET_JVTEff_UP || ourSys==NtSys::JET_JVTEff_DN)) continue;
+
+                    if(ourSys==NtSys::JET_JVTEff_UP) {
+                        out.jvtEff_up = out.jvtEff - m_susyObj[m_eleIDDefault]->JVT_SFsys(jvt_jet, sys);
+                    }
+                    else if(ourSys==NtSys::JET_JVTEff_DN) {
+                        out.jvtEff_dn = out.jvtEff - m_susyObj[m_eleIDDefault]->JVT_SFsys(jvt_jet, sys);
+                    }
+                } // sysInfo
+                // reset systematics
+                if(m_susyObj[m_eleIDDefault]->resetSystematics() != CP::SystematicCode::Ok){
+                    cout << "SusyNtMaker::store_jet    Cannot reset SUSYTools systematics. Aborting." << endl;
+                    abort();
+                }
+            } // if sys
+            delete jvt_jet;
+            delete jvt_jet_aux;
+            //delete jvtJet;
+        } // pt/eta range
+    }//mc
+
+    //////////////////////////////////////////
+    // Jet attributes
+    //////////////////////////////////////////
+    out.detEta = (in.jetP4(xAOD::JetConstitScaleMomentum)).eta();
+    in.getAttribute(xAOD::JetAttribute::EMFrac,out.emfrac);
+    in.getAttribute(xAOD::JetAttribute::BchCorrJet,out.bch_corr_jet);
+    in.getAttribute(xAOD::JetAttribute::BchCorrCell,out.bch_corr_cell);
+
+    //////////////////////////////////////////
+    // Bad Jet ID
+    //////////////////////////////////////////
+    out.isBadVeryLoose = (bool)in.auxdata<char>("bad") ? 1 : 0;
+
+
+    //////////////////////////////////////////
+    // Hot Tile
+    //////////////////////////////////////////
+    // dantrim June 13 2017 -- TODO confirm that this variable is non-zero and still used
+    float fracSamplingMax, samplingMax;
+    in.getAttribute(xAOD::JetAttribute::SamplingMax, samplingMax);
+    in.getAttribute(xAOD::JetAttribute::FracSamplingMax, fracSamplingMax);
+
+    //______________ ALL DONE WITH THE JET ______________ //
+    out.idx = (m_susyNt.jet()->size());
+    m_susyNt.jet()->push_back(out);
 }

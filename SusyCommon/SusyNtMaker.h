@@ -62,14 +62,26 @@ class SusyNtMaker : public XaodAnalysis
         std::string counter_summary();
         std::string timer_summary();
 
-        // write to the output susyNt file
+        ////////////////////////////////////////////
+        // storing object variables
+        ////////////////////////////////////////////
         void fill_nt_variables();
+
+        // Event
         void fill_event_variables();
         std::vector<float> get_mc_weights(const xAOD::EventInfo* eventinfo);
+
+        // Electron
         void fill_electron_variables();
         void store_electron(const xAOD::Electron& in, int ele_idx);
+
+        // Muon
         void fill_muon_variables();
         void store_muon(const xAOD::Muon& in, const xAOD::MuonContainer& muons);
+
+        // Jet
+        void fill_jet_variables();
+        void store_jet(const xAOD::Jet& in);
 
         void clear_event();
 
