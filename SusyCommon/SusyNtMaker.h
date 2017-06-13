@@ -97,6 +97,18 @@ class SusyNtMaker : public XaodAnalysis
         // TrackMET
         void fill_track_met_variables(SusyNtSys sys = NtSys::NOM);
 
+        //////////////////////////////////////////
+        // systematics
+        //////////////////////////////////////////
+        void run_kinematic_systematics();
+
+        // Electron
+        void store_electron_kinematic_sys(ST::SystInfo sysInfo, SusyNtSys sys);
+
+        // Muon
+        void store_muon_kinematic_sys(ST::SystInfo sysInfo, SusyNtSys sys);
+
+
         void clear_event();
 
 
