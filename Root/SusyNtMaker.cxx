@@ -53,14 +53,17 @@ SusyNtMaker::SusyNtMaker() :
     n_pre_muo = 0;
     n_pre_tau = 0;
     n_pre_jet = 0;
+    n_pre_pho = 0;
     n_base_ele = 0;
     n_base_muo = 0;
     n_base_tau = 0;
     n_base_jet = 0;
+    n_base_pho = 0;
     n_sig_ele = 0;
     n_sig_muo = 0;
     n_sig_tau = 0;
     n_sig_jet = 0;
+    n_sig_pho = 0;
 
 }
 //////////////////////////////////////////////////////////////////////////////
@@ -327,14 +330,19 @@ string SusyNtMaker::counter_summary()
         << "   > pre muo   " << n_pre_muo << endl
         << "   > pre tau   " << n_pre_tau << endl
         << "   > pre jet   " << n_pre_jet << endl
-        << "   > base ele  " << n_pre_ele << endl
-        << "   > base muo  " << n_pre_muo << endl
-        << "   > base tau  " << n_pre_tau << endl
-        << "   > base jet  " << n_pre_jet << endl
-        << "   > sig ele   " << n_pre_ele << endl
-        << "   > sig muo   " << n_pre_muo << endl
-        << "   > sig tau   " << n_pre_tau << endl
-        << "   > sig jet   " << n_pre_jet << endl
+        << "   > pre pho   " << n_pre_pho << endl
+        << " - - - - - - - - - - - - - - - - " << endl
+        << "   > base ele  " << n_base_ele << endl
+        << "   > base muo  " << n_base_muo << endl
+        << "   > base tau  " << n_base_tau << endl
+        << "   > base jet  " << n_base_jet << endl
+        << "   > base pho  " << n_base_pho << endl
+        << " - - - - - - - - - - - - - - - - " << endl
+        << "   > sig ele   " << n_sig_ele << endl
+        << "   > sig muo   " << n_sig_muo << endl
+        << "   > sig tau   " << n_sig_tau << endl
+        << "   > sig jet   " << n_sig_jet << endl
+        << "   > sig pho   " << n_sig_pho << endl
         << endl;
 
     oss << " Event Counter " << endl;
@@ -544,18 +552,21 @@ bool SusyNtMaker::pass_object_level_selection()
         n_pre_muo   += m_preMuons.size();
         n_pre_tau   += m_preTaus.size();
         n_pre_jet   += m_preJets.size();
+        n_pre_pho   += m_prePhotons.size();
 
         // base objects
         n_base_ele  += m_baseElectrons.size();
         n_base_muo  += m_baseMuons.size();
         n_base_tau  += m_baseTaus.size();
         n_base_jet  += m_baseJets.size();
+        n_base_pho  += m_basePhotons.size();
 
         // signal objects
         n_sig_ele   += m_sigElectrons.size();
         n_sig_muo   += m_sigMuons.size();
         n_sig_tau   += m_sigTaus.size();
         n_sig_jet   += m_sigJets.size();
+        n_sig_pho   += m_sigPhotons.size();
     }
 
     return event_passes;
@@ -580,8 +591,14 @@ void SusyNtMaker::fill_nt_variables()
     // Susy::Tau
     fill_tau_variables();
 
+    // Susy::Photon
+    fill_photon_variables();
+
     // Susy::Met
     fill_met_variables();
+
+    // Susy::TrackMet
+    fill_track_met_variables();
 
 
 }
@@ -767,6 +784,22 @@ void SusyNtMaker::fill_tau_variables()
     }
 }
 //////////////////////////////////////////////////////////////////////////////
+void SusyNtMaker::fill_photon_variables()
+{
+    if(dbg()>=15) cout << "SusyNtMaker::fill_photon_variables    Filling Susy::Photon" << endl;
+
+    xAOD::PhotonContainer* photons = xaodPhotons(systInfoList[0]);
+
+    if(photons) {
+        for(auto& i : m_prePhotons) {
+            store_photon(*(photons->at(i)));
+        }
+    }
+    else {
+        cout << "SusyNtMaker::fill_photon_variables    WARNING Photon container is null" << endl;
+    }
+}
+//////////////////////////////////////////////////////////////////////////////
 void SusyNtMaker::fill_met_variables(SusyNtSys sys)
 {
 
@@ -858,6 +891,69 @@ void SusyNtMaker::fill_met_variables(SusyNtSys sys)
 
     //__________________ DONE WITH MET _____________________//
     m_susyNt.met()->push_back(*met);
+}
+//////////////////////////////////////////////////////////////////////////////
+void SusyNtMaker::fill_track_met_variables(SusyNtSys sys)
+{
+
+    if(dbg()>-15) cout << "SusyNtMaker::fill_track_met_variables    Filling TrackMet (sys="<<SusyNtSysNames[sys]<<")" <<endl;
+
+    xAOD::MissingETContainer::const_iterator trackMet_it = xaodTrackMET()->find("Track");
+
+    if(trackMet_it == xaodTrackMET()->end()) {
+        cout << "SusyNtMaker::fill_track_met_variables    WARNING Cannot find 'Track' inside MET_Track container, unable to fill TrackMet" << endl;
+        return;
+    }
+
+    Susy::TrackMet* tmet = new Susy::TrackMet();
+
+    tmet->Et =  (*trackMet_it)->met()*MeV2GeV;// m_met.Et();
+    tmet->phi = (*trackMet_it)->phi();// m_met.Phi();
+    tmet->sys = sys;
+    tmet->sumet = (*trackMet_it)->sumet()*MeV2GeV;
+
+    //////////////////////////////////////////////
+    // Electron Term
+    //////////////////////////////////////////////
+    xAOD::MissingETContainer::const_iterator met_find = xaodTrackMET()->find("RefEle");
+    if(met_find != xaodTrackMET()->end()) {
+        tmet->refEle_et = (*met_find)->met()*MeV2GeV;
+        tmet->refEle_phi = (*met_find)->phi();
+        tmet->refEle_sumet = (*met_find)->sumet()*MeV2GeV;
+    }
+
+    //////////////////////////////////////////////
+    // Muon Term
+    //////////////////////////////////////////////
+    met_find = xaodTrackMET()->find("Muons");
+    if(met_find != xaodTrackMET()->end()) {
+        tmet->refMuo_et = (*met_find)->met()*MeV2GeV;
+        tmet->refMuo_phi = (*met_find)->phi();
+        tmet->refMuo_sumet = (*met_find)->sumet()*MeV2GeV;
+    }
+
+    //////////////////////////////////////////////
+    // Jet Term
+    //////////////////////////////////////////////
+    met_find = xaodTrackMET()->find("RefJet");
+    if(met_find != xaodTrackMET()->end()) {
+        tmet->refJet_et = (*met_find)->met()*MeV2GeV;
+        tmet->refJet_phi = (*met_find)->phi();
+        tmet->refJet_sumet = (*met_find)->sumet()*MeV2GeV;
+    }
+
+    //////////////////////////////////////////////
+    // Soft Term
+    //////////////////////////////////////////////
+    met_find = xaodTrackMET()->find("PVSoftTrk");
+    if(met_find != xaodTrackMET()->end()) {
+        tmet->softTerm_et = (*met_find)->met()*MeV2GeV;
+        tmet->softTerm_phi = (*met_find)->phi();
+        tmet->softTerm_sumet = (*met_find)->sumet()*MeV2GeV;
+    } 
+
+    //__________________ DONE WITH TRACK MET _____________________//
+    m_susyNt.tkm()->push_back(*tmet);
 }
 //////////////////////////////////////////////////////////////////////////////
 void SusyNtMaker::store_electron(const xAOD::Electron& in, int ele_idx)
@@ -1838,4 +1934,73 @@ void SusyNtMaker::store_tau(const xAOD::TauJet& in)
 
     //______________ ALL DONE WITH THE TAU ______________ //
     m_susyNt.tau()->push_back(out);
+}
+//////////////////////////////////////////////////////////////////////////////
+void SusyNtMaker::store_photon(const xAOD::Photon& in)
+{
+
+    if(dbg()>=15) cout << "SusyNtMaker::store_photon    Filling photon (pt=" << in.pt()*MeV2GeV << ")" << endl;
+
+    Susy::Photon out;
+
+    //////////////////////////////////////
+    // 4-vector
+    //////////////////////////////////////
+    double pt(in.pt()*MeV2GeV), eta(in.eta()), phi(in.phi()), m(in.m()*MeV2GeV);
+    out.SetPtEtaPhiM(pt, eta, phi, m);
+    out.pt  = pt;
+    out.eta = eta;
+    out.phi = phi;
+    out.m   = m;
+
+    //////////////////////////////////////
+    // Author information
+    //////////////////////////////////////
+    out.author = static_cast<int>(in.author());
+    out.authorPhoton = in.author() & xAOD::EgammaParameters::AuthorPhoton;
+    out.authorAmbiguous = in.author() & xAOD::EgammaParameters::AuthorAmbiguous;
+
+    //////////////////////////////////////
+    // Photon is Converted
+    //////////////////////////////////////
+    out.isConv = xAOD::EgammaHelpers::isConvertedPhoton(&in);
+
+    //////////////////////////////////////
+    // IsEM ID
+    //////////////////////////////////////
+    out.loose = (bool)m_photonSelLoose->accept(&in);
+    out.tight = (bool)m_photonSelTight->accept(&in);
+
+    //////////////////////////////////////
+    // CaloCluster
+    //////////////////////////////////////
+    const xAOD::CaloCluster* c = in.caloCluster();
+    if(c) {
+        out.clusE   = c->e()*MeV2GeV;
+        // use coordinates from 2nd sampling
+        out.clusEtaBE = c->etaBE(2);
+        out.clusPhiBE = c->phiBE(2);
+        out.clusEta = c->eta();
+        out.clusPhi = c->phi();
+    }
+
+    //////////////////////////////////////
+    // OQ
+    //////////////////////////////////////
+    out.OQ = in.isGoodOQ(xAOD::EgammaParameters::BADCLUSPHOTON);
+
+    //////////////////////////////////////
+    // Isolation Variables
+    //////////////////////////////////////
+    out.topoEtcone40 = in.isolationValue(xAOD::Iso::topoetcone40) * MeV2GeV;
+
+    //////////////////////////////////////
+    // Isolation Selection
+    //////////////////////////////////////
+    out.isoFixedCutTight         = m_isoToolGradientLooseTight->accept(in) ? true : false;
+    out.isoFixedCutTightCaloOnly = m_isoToolGradientTightCalo->accept(in) ? true : false;
+    out.isoFixedCutLoose         = m_isoToolLooseTrackOnlyLoose->accept(in) ? true : false;
+
+    //__________________ DONE WITH THE PHOTON _______________ //
+    m_susyNt.pho()->push_back(out);
 }

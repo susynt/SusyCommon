@@ -87,8 +87,15 @@ class SusyNtMaker : public XaodAnalysis
         void fill_tau_variables();
         void store_tau(const xAOD::TauJet& in);
 
+        // Photon
+        void fill_photon_variables();
+        void store_photon(const xAOD::Photon& in);
+
         // MET
         void fill_met_variables(SusyNtSys sys = NtSys::NOM);
+
+        // TrackMET
+        void fill_track_met_variables(SusyNtSys sys = NtSys::NOM);
 
         void clear_event();
 
@@ -119,14 +126,19 @@ class SusyNtMaker : public XaodAnalysis
         uint    n_pre_muo;
         uint    n_pre_tau;
         uint    n_pre_jet;
+        uint    n_pre_pho;
+
         uint    n_base_ele;
         uint    n_base_muo;
         uint    n_base_tau;
         uint    n_base_jet;
+        uint    n_base_pho;
+
         uint    n_sig_ele;
         uint    n_sig_muo;
         uint    n_sig_tau;
         uint    n_sig_jet;
+        uint    n_sig_pho;
 
 
 }; // clas SusyNtMaker
