@@ -664,7 +664,7 @@ void SusyNtMaker::fill_event_variables()
             bool do_down = ourSys==NtSys::PILEUP_DN;
             // configure the tools
             if ( m_susyObj[m_eleIDDefault]->applySystematicVariation(sys) != CP::SystematicCode::Ok) {
-                cout << "SusyNtMaker::fill_event_variables    cannot configure SUSYTools for systematic " << sys.name() << " (" << SusyNtSysNames[ourSys] << ")" << endl;
+                cout << "SusyNtMaker::fill_event_variables    cannot configure SUSYTools for systematic " << sys.name() << " (" << SusyNtSysNames.at(ourSys) << ")" << endl;
                 continue;
             }
             // get and store
@@ -806,7 +806,7 @@ void SusyNtMaker::fill_photon_variables()
 void SusyNtMaker::fill_met_variables(SusyNtSys sys)
 {
 
-    if(dbg()>=15) cout << "SusyNtMaker::fill_met_variables    Filling MET (sys=" << SusyNtSysNames[sys] << ")" << endl;
+    if(dbg()>=15) cout << "SusyNtMaker::fill_met_variables    Filling MET (sys=" << SusyNtSysNames.at(sys) << ")" << endl;
 
     xAOD::MissingETContainer::const_iterator met_it = xaodMET()->find("Final");
 
@@ -828,7 +828,7 @@ void SusyNtMaker::fill_met_variables(SusyNtSys sys)
     met->sumet = (*met_it)->sumet()*MeV2GeV;
     met->sys = sys;
 
-    if(dbg()>=15) cout << "SusyNtMaker::fill_met_variables    (sys=" << SusyNtSysNames[sys] << ") (Et,phi,pt)=("<<met->Et<<","<<met->phi<<","<<met->lv().Pt()<<")"<<endl;
+    if(dbg()>=15) cout << "SusyNtMaker::fill_met_variables    (sys=" << SusyNtSysNames.at(sys) << ") (Et,phi,pt)=("<<met->Et<<","<<met->phi<<","<<met->lv().Pt()<<")"<<endl;
 
     ////////////////////////////////////////////
     // Electron Term (RefEle)
@@ -904,7 +904,7 @@ void SusyNtMaker::fill_met_variables(SusyNtSys sys)
 void SusyNtMaker::fill_track_met_variables(SusyNtSys sys)
 {
 
-    if(dbg()>=15) cout << "SusyNtMaker::fill_track_met_variables    Filling TrackMet (sys="<<SusyNtSysNames[sys]<<")" <<endl;
+    if(dbg()>=15) cout << "SusyNtMaker::fill_track_met_variables    Filling TrackMet (sys="<<SusyNtSysNames.at(sys)<<")" <<endl;
 
     xAOD::MissingETContainer::const_iterator trackMet_it = xaodTrackMET()->find("Track");
 
@@ -2041,7 +2041,7 @@ void SusyNtMaker::run_kinematic_systematics()
         string kinOrSys = "";
         if(sysInfo.affectsKinematics) kinOrSys = "Kinematics";
         else if(sysInfo.affectsWeights) kinOrSys = "Weights";
-        cout << "systematic: " << (sys.name()).c_str() << "                 ours: " << NtSys::SusyNtSysNames[ourSys] << "   affects: " << affects << "  " << kinOrSys << endl;
+        cout << "systematic: " << (sys.name()).c_str() << "                 ours: " << NtSys::SusyNtSysNames.at(ourSys) << "   affects: " << affects << "  " << kinOrSys << endl;
     }
     cout << endl;
 */
@@ -2056,7 +2056,7 @@ void SusyNtMaker::run_kinematic_systematics()
         SusyNtSys ourSys = CPsys2sys((sys.name()).c_str());
         if(ourSys == NtSys::SYS_UNKNOWN) continue;
 
-        if(dbg()>=15) cout << "SusyNtMaker::run_kinematic_systematics        >> Matches our systematic: " << NtSys::SusyNtSysNames[ourSys] << endl;
+        if(dbg()>=15) cout << "SusyNtMaker::run_kinematic_systematics        >> Matches our systematic: " << NtSys::SusyNtSysNames.at(ourSys) << endl;
 
         if(m_susyObj[m_eleIDDefault]->applySystematicVariation(sys) != CP::SystematicCode::Ok) {
             cout << "SusyNtMaker::run_kinematic_systematics    WARNING Cannot configure SUYSTools for systematic " << sys.name() << ", will not apply this variation" << endl;
@@ -2113,7 +2113,7 @@ void SusyNtMaker::store_electron_kinematic_sys(ST::SystInfo sysInfo, SusyNtSys s
     xAOD::ElectronContainer* electrons     = xaodElectrons(sysInfo,sys);
     xAOD::ElectronContainer* electrons_nom = xaodElectrons(sysInfo,NtSys::NOM);
 
-    if(dbg()>=15) cout << "SusyNtMaker::store_electron_kinematic_sys    " << NtSys::SusyNtSysNames[sys] << endl;
+    if(dbg()>=15) cout << "SusyNtMaker::store_electron_kinematic_sys    " << NtSys::SusyNtSysNames.at(sys) << endl;
 
     for(const auto &iEl : m_preElectrons) {
         const xAOD::Electron* ele = electrons->at(iEl);
@@ -2128,7 +2128,7 @@ void SusyNtMaker::store_electron_kinematic_sys(ST::SystInfo sysInfo, SusyNtSys s
                 ele_susyNt = & m_susyNt.ele()->at(idx);
                 idx_susyNt = idx;
                 if(dbg()>=15){
-                    cout << "SusyNtMaker::store_electron_kinematic_sys    Found matching electron for ele " << idx_susyNt << " (sys=" << SusyNtSysNames[sys] << ")   (idx_sys, idx_nom) = (" << iEl << "," << iEl_nom << "), (pT_sys, eta_sys) = (" << ele->pt()*MeV2GeV << "," << ele->eta() << ")  (pT_nom, eta_nom) = (" << ele_nom->pt()*MeV2GeV << "," << ele_nom->eta() << ")" << endl;
+                    cout << "SusyNtMaker::store_electron_kinematic_sys    Found matching electron for ele " << idx_susyNt << " (sys=" << SusyNtSysNames.at(sys) << ")   (idx_sys, idx_nom) = (" << iEl << "," << iEl_nom << "), (pT_sys, eta_sys) = (" << ele->pt()*MeV2GeV << "," << ele->eta() << ")  (pT_nom, eta_nom) = (" << ele_nom->pt()*MeV2GeV << "," << ele_nom->eta() << ")" << endl;
                     //ele_susyNt->print();
                 }
                 if( fabs(ele_nom->eta() - ele->eta())>0.001 || fabs(ele_nom->phi() - ele->phi())>0.001)
@@ -2152,7 +2152,7 @@ void SusyNtMaker::store_electron_kinematic_sys(ST::SystInfo sysInfo, SusyNtSys s
         // now calculate the shift in the electron kinematics
         // store as shift/nom
         float sf = ele->e() / ele_nom->e();
-        if(dbg()>=20) cout << "SusyNtMaker::store_electron_kinematic_sys      > (sys="<<SusyNtSysNames[sys]<<") electron SF " << sf << endl;
+        if(dbg()>=20) cout << "SusyNtMaker::store_electron_kinematic_sys      > (sys="<<SusyNtSysNames.at(sys)<<") electron SF " << sf << endl;
         if     ( sys == NtSys::EG_RESOLUTION_ALL_DN ) ele_susyNt->res_all_dn = sf;
         else if( sys == NtSys::EG_RESOLUTION_ALL_UP ) ele_susyNt->res_all_up = sf;
         else if( sys == NtSys::EG_SCALE_ALL_DN ) ele_susyNt->scale_all_dn = sf;
@@ -2167,7 +2167,7 @@ void SusyNtMaker::store_muon_kinematic_sys(ST::SystInfo sysInfo, SusyNtSys sys)
     xAOD::MuonContainer* muons     = xaodMuons(sysInfo,sys);
     xAOD::MuonContainer* muons_nom = xaodMuons(sysInfo, NtSys::NOM);
 
-    if(dbg()>=15) cout << "SusyNtMaker::store_muon_kinematic_sys    " << NtSys::SusyNtSysNames[sys] << endl;
+    if(dbg()>=15) cout << "SusyNtMaker::store_muon_kinematic_sys    " << NtSys::SusyNtSysNames.at(sys) << endl;
     for(const auto& iMu : m_preMuons) {
         const xAOD::Muon* mu = muons->at(iMu);
         
@@ -2181,7 +2181,7 @@ void SusyNtMaker::store_muon_kinematic_sys(ST::SystInfo sysInfo, SusyNtSys sys)
                 mu_susyNt = & m_susyNt.muo()->at(idx);
                 idx_susyNt=idx;
                 if(dbg()>=15){
-                    cout << "SusyNtMaker::store_muon_kinematic_sys    Found matching muon for muo " << idx_susyNt << " (sys=" << SusyNtSysNames[sys] << ")   (idx_sys, idx_nom) = (" << iMu << "," << iMu_nom << "), (pT_sys, eta_sys) = (" << mu->pt()*MeV2GeV << "," << mu->eta() << ")  (pT_nom, eta_nom) = (" << mu_nom->pt()*MeV2GeV << "," << mu_nom->eta() << ")" << endl;
+                    cout << "SusyNtMaker::store_muon_kinematic_sys    Found matching muon for muo " << idx_susyNt << " (sys=" << SusyNtSysNames.at(sys) << ")   (idx_sys, idx_nom) = (" << iMu << "," << iMu_nom << "), (pT_sys, eta_sys) = (" << mu->pt()*MeV2GeV << "," << mu->eta() << ")  (pT_nom, eta_nom) = (" << mu_nom->pt()*MeV2GeV << "," << mu_nom->eta() << ")" << endl;
                     //mu_susyNt->print();
                 }
                 if( fabs(mu_nom->eta() - mu->eta())>0.001 || fabs(mu_nom->phi() - mu->phi())>0.001)
@@ -2203,7 +2203,7 @@ void SusyNtMaker::store_muon_kinematic_sys(ST::SystInfo sysInfo, SusyNtSys sys)
         }
 
         float sf = mu->e() / mu_nom->e();
-        if(dbg()>=20) cout << "SusyNtMaker::store_muon_kinematic_sys      > (sys="<< SusyNtSysNames[sys]<<") muon SF " << sf << endl;
+        if(dbg()>=20) cout << "SusyNtMaker::store_muon_kinematic_sys      > (sys="<< SusyNtSysNames.at(sys)<<") muon SF " << sf << endl;
         if(sys == NtSys::MUON_MS_UP)      mu_susyNt->ms_up = sf;
         else if(sys == NtSys::MUON_MS_DN) mu_susyNt->ms_dn = sf;
         else if(sys == NtSys::MUON_ID_UP) mu_susyNt->id_up = sf;
@@ -2224,7 +2224,7 @@ void SusyNtMaker::store_tau_kinematic_sys(ST::SystInfo sysInfo, SusyNtSys sys)
     xAOD::TauJetContainer* taus     = xaodTaus(sysInfo,sys);
     xAOD::TauJetContainer* taus_nom = xaodTaus(sysInfo,NtSys::NOM);
 
-    if(dbg()>=15) cout << "SusyNtMaker::store_tau_kinematic_sys    " << NtSys::SusyNtSysNames[sys] << endl;
+    if(dbg()>=15) cout << "SusyNtMaker::store_tau_kinematic_sys    " << NtSys::SusyNtSysNames.at(sys) << endl;
 
     vector<int>& saveTaus = cont_taus() ? m_contTaus : m_preTaus;
     vector<int>& saveTaus_nom = cont_taus() ? m_contTaus_nom : m_preTaus_nom;
@@ -2242,7 +2242,7 @@ void SusyNtMaker::store_tau_kinematic_sys(ST::SystInfo sysInfo, SusyNtSys sys)
                 tau_susyNt = & m_susyNt.tau()->at(idx);
                 idx_susyNt = idx;
                 if(dbg()>=15) {
-                    cout << "SusyNtMaker::store_tau_kinematic_sys    Found matching tau for tao " << idx_susyNt << "  (sys=" << SusyNtSysNames[sys] << ")    (idx_sys, idx_nom) = (" << iTau << "," << iTau_nom << "), (pT_sys, eta_sys) = (" << tau->pt()*MeV2GeV << "," << tau->eta() << ")  (pT_nom, eta_nom) = (" << tau_nom->pt()*MeV2GeV << "," << tau_nom->eta() << ")" << endl;
+                    cout << "SusyNtMaker::store_tau_kinematic_sys    Found matching tau for tao " << idx_susyNt << "  (sys=" << SusyNtSysNames.at(sys) << ")    (idx_sys, idx_nom) = (" << iTau << "," << iTau_nom << "), (pT_sys, eta_sys) = (" << tau->pt()*MeV2GeV << "," << tau->eta() << ")  (pT_nom, eta_nom) = (" << tau_nom->pt()*MeV2GeV << "," << tau_nom->eta() << ")" << endl;
                 }
                 if( fabs(tau_nom->eta() - tau->eta())>0.001 || fabs(tau_nom->phi() - tau->phi())>0.001)
                     cout << "SusyNtMaker::store_tau_kinematic_sys    WARNING Index mis-match!" << endl;
@@ -2264,7 +2264,7 @@ void SusyNtMaker::store_tau_kinematic_sys(ST::SystInfo sysInfo, SusyNtSys sys)
 
         //Calculate systematic SF: shift/nom
         float sf = tau->e() / tau_nom->e();
-        if(dbg()>=20) cout << "SusyNtMaker::store_tau_kinematic_sys      > (sys=" << SusyNtSysNames[sys] << ") tau SF " << sf << endl;
+        if(dbg()>=20) cout << "SusyNtMaker::store_tau_kinematic_sys      > (sys=" << SusyNtSysNames.at(sys) << ") tau SF " << sf << endl;
 
         if(sys == NtSys::TAUS_SME_TOTAL_UP) tau_susyNt->sme_total_up = sf;
         if(sys == NtSys::TAUS_SME_TOTAL_DN) tau_susyNt->sme_total_dn = sf;
@@ -2278,7 +2278,7 @@ void SusyNtMaker::store_jet_kinematic_sys(ST::SystInfo sysInfo, SusyNtSys sys)
     xAOD::JetContainer* jets     = xaodJets(sysInfo,sys);
     xAOD::JetContainer* jets_nom = xaodJets(sysInfo,NtSys::NOM);
   
-    if(dbg()>=15) cout << "SusyNtMaker::store_jet_kinematic_sys    " << NtSys::SusyNtSysNames[sys] << endl;
+    if(dbg()>=15) cout << "SusyNtMaker::store_jet_kinematic_sys    " << NtSys::SusyNtSysNames.at(sys) << endl;
 
     for(const auto &iJ : m_preJets) {
         const xAOD::Jet* jet = jets->at(iJ);
@@ -2293,7 +2293,7 @@ void SusyNtMaker::store_jet_kinematic_sys(ST::SystInfo sysInfo, SusyNtSys sys)
                 jet_susyNt = & m_susyNt.jet()->at(idx);
                 idx_susyNt = idx;
                 if(dbg()>=15) {
-                    cout << "SusyNtMaker::store_jet_kinematic_sys    Found matching jet for jet " << idx_susyNt << " (sys=" << SusyNtSysNames[sys] << ")  (idx_sys, idx_nom) = (" << iJ <<"," << iJ_nom << "), (pT_sys, eta_sys) = (" << jet->pt()*MeV2GeV <<"," << jet->eta() << ")  (pT_nom, eta_nom) = (" << jet_nom->pt()*MeV2GeV << "," << jet_nom->eta() << ")" << endl;
+                    cout << "SusyNtMaker::store_jet_kinematic_sys    Found matching jet for jet " << idx_susyNt << " (sys=" << SusyNtSysNames.at(sys) << ")  (idx_sys, idx_nom) = (" << iJ <<"," << iJ_nom << "), (pT_sys, eta_sys) = (" << jet->pt()*MeV2GeV <<"," << jet->eta() << ")  (pT_nom, eta_nom) = (" << jet_nom->pt()*MeV2GeV << "," << jet_nom->eta() << ")" << endl;
                 }
                 if( fabs(jet_nom->eta() - jet->eta())>0.001 || fabs(jet_nom->phi() - jet->phi())>0.001)
                     cout << "SusyNtMaker::store_jet_kinematic_sys    WARNING Index mis-match!" << endl;
@@ -2315,7 +2315,7 @@ void SusyNtMaker::store_jet_kinematic_sys(ST::SystInfo sysInfo, SusyNtSys sys)
 
         //Calculate systematic SF: shift/nom
         float sf = jet->e() / jet_nom->e();
-        if(dbg()>=20) cout << "SusyNtMaker::store_jet_kinematic_sys      > (sys=" << SusyNtSysNames[sys] <<") jet SF " << sf << endl;
+        if(dbg()>=20) cout << "SusyNtMaker::store_jet_kinematic_sys      > (sys=" << SusyNtSysNames.at(sys) <<") jet SF " << sf << endl;
 
         if     ( sys == NtSys::JER)                jet_susyNt->jer = sf;
         else if( sys == NtSys::JET_GroupedNP_1_UP) jet_susyNt->groupedNP[0] = sf;

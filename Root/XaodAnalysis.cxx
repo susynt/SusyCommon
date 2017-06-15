@@ -1283,7 +1283,7 @@ xAOD::PhotonContainer* XaodAnalysis::xaodPhotons(ST::SystInfo sysInfo, SusyNtSys
 //////////////////////////////////////////////////////////////////////////////
 void XaodAnalysis::retrieveXaodMet(ST::SystInfo sysInfo, SusyNtSys sys)
 {
-    if(dbg()>=5) cout <<"XaodAnalysis::retrieveXaodMet    Building met for sys " << SusyNtSysNames[sys] << endl;
+    if(dbg()>=5) cout <<"XaodAnalysis::retrieveXaodMet    Building met for sys " << SusyNtSysNames.at(sys) << endl;
 
     m_metContainer = new xAOD::MissingETContainer;
     m_metAuxContainer = new xAOD::MissingETAuxContainer;
@@ -1312,7 +1312,7 @@ void XaodAnalysis::retrieveXaodMet(ST::SystInfo sysInfo, SusyNtSys sys)
 //////////////////////////////////////////////////////////////////////////////
 void XaodAnalysis::retrieveXaodTrackMet(ST::SystInfo sysInfo, SusyNtSys sys)
 {
-    if(dbg()>=5) cout << "XaodAnalysis::retrieveXaodTrackMet    Building track met for sys " << SusyNtSysNames[sys] << endl;
+    if(dbg()>=5) cout << "XaodAnalysis::retrieveXaodTrackMet    Building track met for sys " << SusyNtSysNames.at(sys) << endl;
 
     m_trackMetContainer = new xAOD::MissingETContainer;
     m_trackMetAuxContainer = new xAOD::MissingETAuxContainer;
@@ -1370,7 +1370,7 @@ void XaodAnalysis::fill_objects(SusyNtSys sys, ST::SystInfo sysInfo)
 //////////////////////////////////////////////////////////////////////////////
 void XaodAnalysis::fill_baseline_objects(SusyNtSys sys, ST::SystInfo sysInfo)
 {
-    if(dbg()>=10) cout << "XaodAnalysis::fill_baseline_objects    Filling baseline objects (sys=" << SusyNtSysNames[sys] << ")" << endl;
+    if(dbg()>=10) cout << "XaodAnalysis::fill_baseline_objects    Filling baseline objects (sys=" << SusyNtSysNames.at(sys) << ")" << endl;
 
     ///////////////////////////////////////////
     // containers
@@ -1501,7 +1501,7 @@ void XaodAnalysis::fill_baseline_objects(SusyNtSys sys, ST::SystInfo sysInfo)
 //////////////////////////////////////////////////////////////////////////////
 void XaodAnalysis::fill_signal_objects(SusyNtSys sys, ST::SystInfo sysInfo)
 {
-    if(dbg()>=10) cout << "XaodAnalysis::fill_signal_objects    Filling signal objects (sys=" << SusyNtSysNames[sys] << ")" << endl;
+    if(dbg()>=10) cout << "XaodAnalysis::fill_signal_objects    Filling signal objects (sys=" << SusyNtSysNames.at(sys) << ")" << endl;
 
     /////////////////////////////////
     // grab the containers 
