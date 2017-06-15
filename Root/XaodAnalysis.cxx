@@ -792,7 +792,9 @@ void XaodAnalysis::initialize_SUSYTools()
 
         m_susyObj[susyObjId]->msg().setLevel(dbg() ? MSG::DEBUG : MSG::WARNING);
 
-        ST::ISUSYObjDef_xAODTool::DataSource datasource = mc() ? ST::ISUSYObjDef_xAODTool::Data :
+        // TODO  - check with ST developers if this can't be obtained from MetaData... you really
+        // can make SUSYTools think it's running over data when in fact is is MC!!
+        ST::ISUSYObjDef_xAODTool::DataSource datasource = !mc() ? ST::ISUSYObjDef_xAODTool::Data :
             ( af2() ? ST::ISUSYObjDef_xAODTool::AtlfastII : ST::ISUSYObjDef_xAODTool::FullSim);
 
         CHECK( m_susyObj[susyObjId]->setProperty("DataSource", datasource) ); 
