@@ -97,6 +97,9 @@ class SusyNtMaker : public XaodAnalysis
         // TrackMET
         void fill_track_met_variables(SusyNtSys sys = NtSys::NOM);
 
+        // Dilepton trigger matching
+        void perform_dilepton_trigger_matching();
+
         //////////////////////////////////////////
         // systematics
         //////////////////////////////////////////

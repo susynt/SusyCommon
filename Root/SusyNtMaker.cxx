@@ -65,6 +65,8 @@ SusyNtMaker::SusyNtMaker() :
     n_sig_jet = 0;
     n_sig_pho = 0;
 
+    CP::SystematicCode::enableFailure();
+
 }
 //////////////////////////////////////////////////////////////////////////////
 SusyNtMaker::~SusyNtMaker()
@@ -152,13 +154,11 @@ Bool_t SusyNtMaker::Process(Long64_t entry)
     }
 
     const xAOD::EventInfo* eventinfo = XaodAnalysis::xaodEventInfo();
-
     if(dbg() || chainEntry % 500 == 0) {
         cout << "SusyNtMaker::Process     *** Processing entry " << setw(6) << chainEntry
                 << "  run " << setw(6) << eventinfo->runNumber()
                 << "  event " << setw(7) << eventinfo->eventNumber() << " *** " << endl;
     }
-
 
     // before filling check that things are consistent
     if(!m_flags_checked) {
@@ -175,7 +175,7 @@ Bool_t SusyNtMaker::Process(Long64_t entry)
     // fill the event level trigger histo
     fill_event_trigger_histo();
 
-    // SUSY final state
+    // collect the SUSY final state (if there is one)
     susy_finalstate();
 
     ///////////////////////////////////////////////////////////
@@ -207,6 +207,9 @@ Bool_t SusyNtMaker::Process(Long64_t entry)
 
         // store objects to the output susyNt
         fill_nt_variables();
+
+        // perform dilepton trigger matching 
+        perform_dilepton_trigger_matching();
 
         // run systematics
         if(mc() && sys()) {
@@ -614,7 +617,7 @@ void SusyNtMaker::fill_event_variables()
     evt->eventNumber = eventinfo->eventNumber();
     evt->lb = eventinfo->lumiBlock();
     evt->stream = m_stream;
-    int year = -1;
+    int year = 0;
     if(mc()) {
         year = m_susyObj[m_eleIDDefault]->treatAsYear();
     }
@@ -622,7 +625,7 @@ void SusyNtMaker::fill_event_variables()
         if(data15()) year = 2015;
         else if(data16()) year = 2016;
     }
-    if(year<0) cout << "SusyNtMaker::fill_event_variables    WARNING treatAsYear was not found correctly for event " << eventinfo->eventNumber() << "!" << endl;
+    if(year==0) cout << "SusyNtMaker::fill_event_variables    WARNING treatAsYear was not found correctly for event " << eventinfo->eventNumber() << "!" << endl;
     evt->treatAsYear = year;
 
     // <mu>
@@ -2325,4 +2328,144 @@ void SusyNtMaker::store_jet_kinematic_sys(ST::SystInfo sysInfo, SusyNtSys sys)
         else if( sys == NtSys::JET_GroupedNP_3_UP) jet_susyNt->groupedNP[4] = sf;
         else if( sys == NtSys::JET_GroupedNP_3_DN) jet_susyNt->groupedNP[5] = sf;
     }
+}
+//////////////////////////////////////////////////////////////////////////////
+void SusyNtMaker::perform_dilepton_trigger_matching()
+{
+    cout << "----------------------------------------------------" << endl;
+    if(dbg()>=10) cout << "SusyNtMaker::perform_dilepton_trigger_matching" << endl;
+    const xAOD::EventInfo* ei = xaodEventInfo();
+    m_susyObj[m_eleIDDefault]->ApplyPRWTool();
+
+    // get nominal objects
+    xAOD::ElectronContainer* electrons = xaodElectrons(systInfoList[0]);
+    xAOD::MuonContainer* muons = xaodMuons(systInfoList[0]);
+
+    // ele-ele trigger matching
+    size_t n_stored_ele = m_susyNt.ele()->size();
+    for(unsigned int ie_store = 0; ie_store < n_stored_ele; ie_store++) {
+        for(unsigned int je_store = 0; je_store < n_stored_ele; je_store++) {
+            if(!(je_store > ie_store)) continue;
+            int idx_i = m_susyNt.ele()->at(ie_store).idx;
+            int idx_j = m_susyNt.ele()->at(je_store).idx;
+
+            // only consider leptons with pT > 17
+            bool pass_pt = (m_susyNt.ele()->at(ie_store).pt > 17.);
+            pass_pt = (pass_pt && (m_susyNt.ele()->at(je_store).pt > 17.));
+            if(!pass_pt) continue;
+
+            // this assumes that in SusyNtMaker::store_electron we do not do
+            // not apply any further selection
+            xAOD::Electron* ele_i = electrons->at(idx_i);
+            xAOD::Electron* ele_j = electrons->at(idx_j);
+
+            std::string test_ele_ele_trigger_2015 = "HLT_2e12_lhloose_L12EM10VH";
+            std::string test_ele_ele_trigger_2016 = "HLT_2e17_lhvloose_nod0";
+            std::string test_trigger = "";
+
+            if(m_susyNt.evt()->treatAsYear == 2015)
+                test_trigger = test_ele_ele_trigger_2015;
+            else if(m_susyNt.evt()->treatAsYear == 2016)
+                test_trigger = test_ele_ele_trigger_2016;
+            else {
+                cout << "SusyNtMaker::perform_dilepton_trigger_matching    Event classified neither as 2015 nor 2016!" << endl;
+                return;
+            }
+
+            bool is_match = dilepton_trigger_matched(ele_i, ele_j, test_trigger);
+
+            cout << "SusyNtMaker::perform_dilepton_trigger_matching   EE [" << m_susyNt.evt()->treatAsYear << "] "
+                    << "("<< ie_store << ","<<je_store<<")   matched? " << is_match << "  "
+                    << "  ele(" << ie_store << ") pt=" << m_susyNt.ele()->at(ie_store).pt
+                    << ", eta=" << m_susyNt.ele()->at(ie_store).eta
+                    << "    ele(" << je_store << ") pt=" << m_susyNt.ele()->at(je_store).pt
+                    << ", eta=" << m_susyNt.ele()->at(je_store).eta << endl;
+
+
+        } // je_store
+    } // ie_store
+
+
+    size_t n_stored_muo = m_susyNt.muo()->size();
+    for(unsigned int im_store = 0; im_store < n_stored_muo; im_store++) {
+        for(unsigned int jm_store = 0; jm_store < n_stored_muo; jm_store++) {
+            if(!(jm_store > im_store)) continue;
+
+            int idx_i = m_susyNt.muo()->at(im_store).idx;
+            int idx_j = m_susyNt.muo()->at(jm_store).idx;
+
+            bool pass_pt = (m_susyNt.muo()->at(im_store).pt > 17.);
+            pass_pt = (pass_pt && (m_susyNt.muo()->at(jm_store).pt > 17.));
+            if(!pass_pt) continue;
+
+            xAOD::Muon* muo_i = muons->at(idx_i);
+            xAOD::Muon* muo_j = muons->at(idx_j);
+
+            std::string test_mu_mu_trigger_2015 = "HLT_mu18_mu8noL1";
+            std::string test_mu_mu_trigger_2016 = "HLT_mu22_mu8noL1";
+            std::string test_trigger = "";
+
+            if(m_susyNt.evt()->treatAsYear == 2015)
+                test_trigger = test_mu_mu_trigger_2015;
+            else if(m_susyNt.evt()->treatAsYear == 2016)
+                test_trigger = test_mu_mu_trigger_2016;
+            else {
+                cout << "SusyNtMaker::perform_dilepton_trigger_matching    Event classified neither as 2015 nor 2016 (mm)!" << endl;
+                return;
+            }
+
+            bool is_match = dilepton_trigger_matched(muo_i, muo_j, test_trigger);
+            cout << "SusyNtMaker::perform_dilepton_trigger_matching   MM [" << m_susyNt.evt()->treatAsYear << "] "
+                    << "("<< im_store << ","<<jm_store<<")   matched? " << is_match << "  "
+                    << "  muo(" << im_store << ") pt=" << m_susyNt.muo()->at(im_store).pt
+                    << ", eta=" << m_susyNt.muo()->at(im_store).eta
+                    << "    muo(" << jm_store << ") pt=" << m_susyNt.muo()->at(jm_store).pt
+                    << ", eta=" << m_susyNt.muo()->at(jm_store).eta << endl;
+
+        } // jm_store
+    } // im-store
+
+    // different flavor trigger
+    for(unsigned int ie_store = 0; ie_store < n_stored_ele; ie_store++) {
+        for(unsigned int im_store = 0; im_store < n_stored_muo; im_store++) {
+
+            int idx_e = m_susyNt.ele()->at(ie_store).idx;
+            int idx_m = m_susyNt.muo()->at(im_store).idx;
+
+            bool pass_pt = (m_susyNt.ele()->at(ie_store).pt > 17.);
+            pass_pt = (pass_pt && (m_susyNt.muo()->at(im_store).pt > 17.));
+
+            if(!pass_pt) continue;
+
+            xAOD::Electron* ele_i = electrons->at(idx_e);
+            xAOD::Muon* muo_i = muons->at(idx_m);
+
+            std::string test_el_mu_trigger_2015 = "HLT_e17_lhloose_mu14";
+            std::string test_el_mu_trigger_2016 = "HLT_e17_lhloose_nod0_mu14";
+            std::string test_trigger = "";
+
+            if(m_susyNt.evt()->treatAsYear == 2015)
+                test_trigger = test_el_mu_trigger_2015;
+            else if(m_susyNt.evt()->treatAsYear == 2016)
+                test_trigger = test_el_mu_trigger_2016;
+            else {
+                cout << "SusyNtMaker::perform_dilepton_trigger_matching    Event classified neither as 2015 nor 2016 (em)!" << endl;
+                return;
+            }
+
+            bool is_match = dilepton_trigger_matched(ele_i, muo_i, test_trigger);
+            cout << "SusyNtMaker::perform_dilepton_trigger_matching   EM [" << m_susyNt.evt()->treatAsYear << "] "
+                    << "("<< ie_store << ","<<im_store<<")   matched? " << is_match << "  "
+                    << "  ele(" << ie_store << ") pt=" << m_susyNt.ele()->at(ie_store).pt
+                    << ", eta=" << m_susyNt.ele()->at(ie_store).eta
+                    << "    muo(" << im_store << ") pt=" << m_susyNt.muo()->at(im_store).pt
+                    << ", eta=" << m_susyNt.muo()->at(im_store).eta << endl;
+
+        } // im_store
+    } // ie_store
+
+    DileptonTrigTuple trig_tuple(1,2,3);
+    cout << "SusyNtMaker::perform_dilepton_trigger_matching    " << std::get<0>(trig_tuple) << "  " << std::get<1>(trig_tuple) << "  " << std::get<2>(trig_tuple) << endl;
+
+
 }

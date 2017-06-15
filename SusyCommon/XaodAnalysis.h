@@ -80,6 +80,9 @@ class TDirectory;
 #include "SusyCommon/SusyObjId.h"
 #include "SusyCommon/MCType.h"
 
+//std/stl
+#include <tuple>
+
 using namespace Susy;
 using namespace NtSys;
 
@@ -94,6 +97,8 @@ namespace Trig {
 
 
 namespace Susy {
+
+    typedef std::tuple<int, int, int> DileptonTrigTuple;
 
     const double MeV2GeV=1.0e-3;
 
@@ -258,6 +263,8 @@ namespace Susy {
             // Output to SusyNtObject
             ///////////////////////////////////////////////////////////////////
             void sample_event_triggers();
+
+            bool dilepton_trigger_matched(const xAOD::IParticle* part1, const xAOD::IParticle* part2, std::string chain = "");
 
             // electrons
             bool eleIsOfType(const xAOD::Electron& in, ElectronId id);

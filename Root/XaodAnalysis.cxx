@@ -257,11 +257,12 @@ void XaodAnalysis::Init(TTree* tree)
         << (mc() ?  MCType2str(mc_type()) : "data") << endl;
     cout << "---------------------------------------------------------------------" << endl;
 
+    // initialize our instances of SUSYTools
+    initialize_SUSYTools();
+
     // initialize all local tools
     initialize_local_tools();
 
-    // initialize our instances of SUSYTools
-    initialize_SUSYTools();
 
     // systematics
     if(mc() && sys()) get_systematic_list();
@@ -1730,4 +1731,15 @@ bool XaodAnalysis::muIsOfType(const xAOD::Muon& in, MuonId id)
     else if(id==MuonId::Medium    && m_muonSelectionToolMedium   ->accept(in))  return true;
     else if(id==MuonId::Tight     && m_muonSelectionToolTight    ->accept(in))  return true;
     return false;
+}
+//////////////////////////////////////////////////////////////////////////////
+bool XaodAnalysis::dilepton_trigger_matched(const xAOD::IParticle* part1, const xAOD::IParticle* part2,
+            string trigger_chain)
+{
+
+    if(trigger_chain=="") {
+        cout << "XaodAnalysis::dilepton_trigger_matched    ERROR Trigger chain is \"\", returning false" << endl;
+        return false;
+    }
+    return m_susyObj[m_eleIDDefault]->IsTrigMatched({part1, part2}, trigger_chain);
 }
