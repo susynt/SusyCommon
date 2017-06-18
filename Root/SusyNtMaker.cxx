@@ -146,8 +146,8 @@ Bool_t SusyNtMaker::Process(Long64_t entry)
     chainEntry++;
     m_event.getEntry(chainEntry);
 
-
     // start the PRW tool since all tools depend on it downstream
+    // (specifically the RandomRunNumber being attached to EventInfo)
     for(int susyObjId : Susy::leptonIds()) {
         m_susyObj[susyObjId]->ApplyPRWTool();
         if(m_run_oneST) break;
@@ -203,13 +203,11 @@ Bool_t SusyNtMaker::Process(Long64_t entry)
         if(mc()) m_tauTruthMatchingTool->initializeEvent(); // gives the tool the truth info
 
         // dantrim June 12 2017 -- TODO update the dilepton trigger matching to be Event
-        sample_event_triggers(); // check if triggers fired at event level (not matching)
+        sample_event_triggers(); // check if triggers fired at event level (no trigger object matching)
 
         // store objects to the output susyNt
         fill_nt_variables();
 
-        // perform dilepton trigger matching 
-        perform_dilepton_trigger_matching();
 
         // run systematics
         if(mc() && sys()) {
@@ -219,15 +217,12 @@ Bool_t SusyNtMaker::Process(Long64_t entry)
         // fill the output tree
         int bytes = m_outtree->Fill();
         if(bytes < 0) {
-            cout << "SusyNtMaker::Process    ERROR Unable to fill output tree, abort (fill returns " << bytes << ")" << endl;
+            cout << "SusyNtMaker::Process    ERROR Unable to fill output tree, abort (TTree::Fill returns " << bytes << ")" << endl;
             abort();
         }
-
     }
 
     clear_event();
-    // clear the output storage indices
-    //clear_output_objects();
 
     return kTRUE;
 }
@@ -603,6 +598,10 @@ void SusyNtMaker::fill_nt_variables()
     fill_track_met_variables();
 
     #warning NEED TO FILL TRUTH VARIABLES
+
+    // perform dilepton trigger matching 
+    // WARNING this must come AFTER or AT THE END OF 'fill_nt_variables'
+    perform_dilepton_trigger_matching();
 }
 //////////////////////////////////////////////////////////////////////////////
 void SusyNtMaker::fill_event_variables()
@@ -2332,16 +2331,23 @@ void SusyNtMaker::store_jet_kinematic_sys(ST::SystInfo sysInfo, SusyNtSys sys)
 //////////////////////////////////////////////////////////////////////////////
 void SusyNtMaker::perform_dilepton_trigger_matching()
 {
-    cout << "----------------------------------------------------" << endl;
+    bool verbose_trig_match = true;
+
     if(dbg()>=10) cout << "SusyNtMaker::perform_dilepton_trigger_matching" << endl;
     const xAOD::EventInfo* ei = xaodEventInfo();
-    m_susyObj[m_eleIDDefault]->ApplyPRWTool();
+
+    if(verbose_trig_match) {
+        cout << "----------------------------------------------------" << endl;
+        cout << " trig evt: " << ei->eventNumber() << endl;
+    }
 
     // get nominal objects
     xAOD::ElectronContainer* electrons = xaodElectrons(systInfoList[0]);
     xAOD::MuonContainer* muons = xaodMuons(systInfoList[0]);
 
-    // ele-ele trigger matching
+    ///////////////////////////////////////////////////////////////////////////
+    // E+M Dilepton Trigger Matching
+    ///////////////////////////////////////////////////////////////////////////
     size_t n_stored_ele = m_susyNt.ele()->size();
     for(unsigned int ie_store = 0; ie_store < n_stored_ele; ie_store++) {
         for(unsigned int je_store = 0; je_store < n_stored_ele; je_store++) {
@@ -2350,42 +2356,47 @@ void SusyNtMaker::perform_dilepton_trigger_matching()
             int idx_j = m_susyNt.ele()->at(je_store).idx;
 
             // only consider leptons with pT > 17
-            bool pass_pt = (m_susyNt.ele()->at(ie_store).pt > 17.);
-            pass_pt = (pass_pt && (m_susyNt.ele()->at(je_store).pt > 17.));
+            bool pass_pt = (m_susyNt.ele()->at(ie_store).pt > TriggerTools::ele_match_pt());
+            pass_pt = (pass_pt && (m_susyNt.ele()->at(je_store).pt > TriggerTools::ele_match_pt()));
             if(!pass_pt) continue;
 
             // this assumes that in SusyNtMaker::store_electron we do not do
             // not apply any further selection
-            xAOD::Electron* ele_i = electrons->at(idx_i);
-            xAOD::Electron* ele_j = electrons->at(idx_j);
+            xAOD::Electron* ele_i = electrons->at(m_preElectrons.at(ie_store));
+            xAOD::Electron* ele_j = electrons->at(m_preElectrons.at(je_store));
 
-            std::string test_ele_ele_trigger_2015 = "HLT_2e12_lhloose_L12EM10VH";
-            std::string test_ele_ele_trigger_2016 = "HLT_2e17_lhvloose_nod0";
-            std::string test_trigger = "";
+            const vector<string> di_triggers = TriggerTools::di_ele_triggers();
+            const vector<string> triggers = TriggerTools::getTrigNames();
+            // loop over entire trigger list in order to use global indices for the triggers
+            for(int i = 0; i < (int) triggers.size(); i++) {
 
-            if(m_susyNt.evt()->treatAsYear == 2015)
-                test_trigger = test_ele_ele_trigger_2015;
-            else if(m_susyNt.evt()->treatAsYear == 2016)
-                test_trigger = test_ele_ele_trigger_2016;
-            else {
-                cout << "SusyNtMaker::perform_dilepton_trigger_matching    Event classified neither as 2015 nor 2016!" << endl;
-                return;
+                // only test dilepton ee triggers
+                if((std::find(di_triggers.begin(), di_triggers.end(), triggers.at(i))==di_triggers.end())) continue;
+
+                bool is_match = dilepton_trigger_matched(ele_i, ele_j, triggers.at(i));
+
+                // build the mask
+                DileptonTrigTuple tuple = 0;
+                tuple |= (i << 8);
+                tuple |= (idx_i << 4);
+                tuple |= (idx_j);
+                m_susyNt.evt()->m_dilepton_trigger_matches[tuple] = (is_match ? 1 : 0);
+
+                if(is_match && verbose_trig_match) {
+                    cout << "SusyNtMaker::perform_dilepton_trigger_matching   EE MATCH [" << triggers.at(i) << "]"
+                            << "("<< ie_store << ","<<je_store<<")   matched? " << is_match << "  "
+                            << "  ele(" << ie_store << ") pt=" << m_susyNt.ele()->at(ie_store).pt
+                            << ", eta=" << m_susyNt.ele()->at(ie_store).eta
+                            << "    ele(" << je_store << ") pt=" << m_susyNt.ele()->at(je_store).pt
+                            << ", eta=" << m_susyNt.ele()->at(je_store).eta << endl;
+                }
             }
-
-            bool is_match = dilepton_trigger_matched(ele_i, ele_j, test_trigger);
-
-            cout << "SusyNtMaker::perform_dilepton_trigger_matching   EE [" << m_susyNt.evt()->treatAsYear << "] "
-                    << "("<< ie_store << ","<<je_store<<")   matched? " << is_match << "  "
-                    << "  ele(" << ie_store << ") pt=" << m_susyNt.ele()->at(ie_store).pt
-                    << ", eta=" << m_susyNt.ele()->at(ie_store).eta
-                    << "    ele(" << je_store << ") pt=" << m_susyNt.ele()->at(je_store).pt
-                    << ", eta=" << m_susyNt.ele()->at(je_store).eta << endl;
-
-
         } // je_store
     } // ie_store
 
-
+    ///////////////////////////////////////////////////////////////////////////
+    // M+M Dilepton Trigger Matching
+    ///////////////////////////////////////////////////////////////////////////
     size_t n_stored_muo = m_susyNt.muo()->size();
     for(unsigned int im_store = 0; im_store < n_stored_muo; im_store++) {
         for(unsigned int jm_store = 0; jm_store < n_stored_muo; jm_store++) {
@@ -2394,78 +2405,85 @@ void SusyNtMaker::perform_dilepton_trigger_matching()
             int idx_i = m_susyNt.muo()->at(im_store).idx;
             int idx_j = m_susyNt.muo()->at(jm_store).idx;
 
-            bool pass_pt = (m_susyNt.muo()->at(im_store).pt > 17.);
-            pass_pt = (pass_pt && (m_susyNt.muo()->at(jm_store).pt > 17.));
+            bool pass_pt = (m_susyNt.muo()->at(im_store).pt > TriggerTools::muo_match_pt());
+            pass_pt = (pass_pt && (m_susyNt.muo()->at(jm_store).pt > TriggerTools::muo_match_pt()));
             if(!pass_pt) continue;
 
-            xAOD::Muon* muo_i = muons->at(idx_i);
-            xAOD::Muon* muo_j = muons->at(idx_j);
+            xAOD::Muon* muo_i = muons->at(m_preMuons.at(im_store));
+            xAOD::Muon* muo_j = muons->at(m_preMuons.at(jm_store));
 
-            std::string test_mu_mu_trigger_2015 = "HLT_mu18_mu8noL1";
-            std::string test_mu_mu_trigger_2016 = "HLT_mu22_mu8noL1";
-            std::string test_trigger = "";
+            const vector<string> di_triggers = TriggerTools::di_muo_triggers();
+            const vector<string> triggers = TriggerTools::getTrigNames();
+            // loop over entire trigger list in order to use global indices for the triggers
+            for(int i = 0; i < (int) triggers.size(); i++) {
 
-            if(m_susyNt.evt()->treatAsYear == 2015)
-                test_trigger = test_mu_mu_trigger_2015;
-            else if(m_susyNt.evt()->treatAsYear == 2016)
-                test_trigger = test_mu_mu_trigger_2016;
-            else {
-                cout << "SusyNtMaker::perform_dilepton_trigger_matching    Event classified neither as 2015 nor 2016 (mm)!" << endl;
-                return;
+                // only test dilepton mm triggers
+                if((std::find(di_triggers.begin(), di_triggers.end(), triggers.at(i))==di_triggers.end())) continue;
+
+                bool is_match = dilepton_trigger_matched(muo_i, muo_j, triggers.at(i));
+
+                // build the mask
+                DileptonTrigTuple tuple = 0;
+                tuple |= (i << 8);
+                tuple |= (idx_i << 4);
+                tuple |= (idx_j);
+                m_susyNt.evt()->m_dilepton_trigger_matches[tuple] = (is_match ? 1 : 0);
+
+                if(is_match && verbose_trig_match) {
+                cout << "SusyNtMaker::perform_dilepton_trigger_matching   MM MATCH [" << triggers.at(i)<< "] "
+                        << "("<< im_store << ","<<jm_store<<")   matched? " << is_match << "  "
+                        << "  muo(" << im_store << ") pt=" << m_susyNt.muo()->at(im_store).pt
+                        << ", eta=" << m_susyNt.muo()->at(im_store).eta
+                        << "    muo(" << jm_store << ") pt=" << m_susyNt.muo()->at(jm_store).pt
+                        << ", eta=" << m_susyNt.muo()->at(jm_store).eta << endl;
+                }
             }
-
-            bool is_match = dilepton_trigger_matched(muo_i, muo_j, test_trigger);
-            cout << "SusyNtMaker::perform_dilepton_trigger_matching   MM [" << m_susyNt.evt()->treatAsYear << "] "
-                    << "("<< im_store << ","<<jm_store<<")   matched? " << is_match << "  "
-                    << "  muo(" << im_store << ") pt=" << m_susyNt.muo()->at(im_store).pt
-                    << ", eta=" << m_susyNt.muo()->at(im_store).eta
-                    << "    muo(" << jm_store << ") pt=" << m_susyNt.muo()->at(jm_store).pt
-                    << ", eta=" << m_susyNt.muo()->at(jm_store).eta << endl;
-
         } // jm_store
     } // im-store
 
-    // different flavor trigger
+    ///////////////////////////////////////////////////////////////////////////
+    // E+M Dilepton Trigger Matching
+    ///////////////////////////////////////////////////////////////////////////
     for(unsigned int ie_store = 0; ie_store < n_stored_ele; ie_store++) {
         for(unsigned int im_store = 0; im_store < n_stored_muo; im_store++) {
 
             int idx_e = m_susyNt.ele()->at(ie_store).idx;
             int idx_m = m_susyNt.muo()->at(im_store).idx;
 
-            bool pass_pt = (m_susyNt.ele()->at(ie_store).pt > 17.);
-            pass_pt = (pass_pt && (m_susyNt.muo()->at(im_store).pt > 17.));
+            bool pass_pt = (m_susyNt.ele()->at(ie_store).pt > TriggerTools::ele_match_pt());
+            pass_pt = (pass_pt && (m_susyNt.muo()->at(im_store).pt > TriggerTools::muo_match_pt()));
 
             if(!pass_pt) continue;
 
-            xAOD::Electron* ele_i = electrons->at(idx_e);
-            xAOD::Muon* muo_i = muons->at(idx_m);
+            xAOD::Electron* ele_i = electrons->at(m_preElectrons.at(ie_store));
+            xAOD::Muon* muo_i = muons->at(m_preMuons.at(im_store));
 
-            std::string test_el_mu_trigger_2015 = "HLT_e17_lhloose_mu14";
-            std::string test_el_mu_trigger_2016 = "HLT_e17_lhloose_nod0_mu14";
-            std::string test_trigger = "";
+            const vector<string> di_triggers = TriggerTools::ele_muo_triggers();
+            const vector<string> triggers = TriggerTools::getTrigNames();
+            // loop over entire trigger list in order to use global indices for the triggers
+            for(int i = 0; i < (int) triggers.size(); i++) {
 
-            if(m_susyNt.evt()->treatAsYear == 2015)
-                test_trigger = test_el_mu_trigger_2015;
-            else if(m_susyNt.evt()->treatAsYear == 2016)
-                test_trigger = test_el_mu_trigger_2016;
-            else {
-                cout << "SusyNtMaker::perform_dilepton_trigger_matching    Event classified neither as 2015 nor 2016 (em)!" << endl;
-                return;
+                // only test dilepton em triggers
+                if(std::find(di_triggers.begin(), di_triggers.end(), triggers.at(i))==di_triggers.end()) continue;
+
+                bool is_match = dilepton_trigger_matched(ele_i, muo_i, triggers.at(i));
+
+                // build the mask
+                DileptonTrigTuple tuple = 0;
+                tuple |= (i << 8);
+                tuple |= (idx_e << 4);
+                tuple |= (idx_m);
+                m_susyNt.evt()->m_dilepton_trigger_matches[tuple] = (is_match ? 1 : 0);
+
+                if(is_match && verbose_trig_match) {
+                cout << "SusyNtMaker::perform_dilepton_trigger_matching   EM MATCH [" << triggers.at(i)<< "] "
+                        << "("<< ie_store << ","<<im_store<<")   matched? " << is_match << "  "
+                        << "  ele(" << ie_store << ") pt=" << m_susyNt.ele()->at(ie_store).pt
+                        << ", eta=" << m_susyNt.ele()->at(ie_store).eta
+                        << "    muo(" << im_store << ") pt=" << m_susyNt.muo()->at(im_store).pt
+                        << ", eta=" << m_susyNt.muo()->at(im_store).eta << endl;
+                }
             }
-
-            bool is_match = dilepton_trigger_matched(ele_i, muo_i, test_trigger);
-            cout << "SusyNtMaker::perform_dilepton_trigger_matching   EM [" << m_susyNt.evt()->treatAsYear << "] "
-                    << "("<< ie_store << ","<<im_store<<")   matched? " << is_match << "  "
-                    << "  ele(" << ie_store << ") pt=" << m_susyNt.ele()->at(ie_store).pt
-                    << ", eta=" << m_susyNt.ele()->at(ie_store).eta
-                    << "    muo(" << im_store << ") pt=" << m_susyNt.muo()->at(im_store).pt
-                    << ", eta=" << m_susyNt.muo()->at(im_store).eta << endl;
-
         } // im_store
     } // ie_store
-
-    DileptonTrigTuple trig_tuple(1,2,3);
-    cout << "SusyNtMaker::perform_dilepton_trigger_matching    " << std::get<0>(trig_tuple) << "  " << std::get<1>(trig_tuple) << "  " << std::get<2>(trig_tuple) << endl;
-
-
 }

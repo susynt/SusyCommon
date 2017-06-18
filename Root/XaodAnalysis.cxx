@@ -1099,7 +1099,7 @@ void XaodAnalysis::clear_containers(bool do_nominal)
 vector<string> XaodAnalysis::xaodTriggers()
 {
     if(m_triggerNames.size()==0) {
-        m_triggerNames = getTrigNames("run2");
+        m_triggerNames = TriggerTools::getTrigNames();
         return m_triggerNames;
     }
     else {
@@ -1738,7 +1738,6 @@ bool XaodAnalysis::muIsOfType(const xAOD::Muon& in, MuonId id)
 bool XaodAnalysis::dilepton_trigger_matched(const xAOD::IParticle* part1, const xAOD::IParticle* part2,
             string trigger_chain)
 {
-
     if(trigger_chain=="") {
         cout << "XaodAnalysis::dilepton_trigger_matched    ERROR Trigger chain is \"\", returning false" << endl;
         return false;

@@ -98,8 +98,6 @@ namespace Trig {
 
 namespace Susy {
 
-    typedef std::tuple<int, int, int> DileptonTrigTuple;
-
     const double MeV2GeV=1.0e-3;
 
     class XaodAnalysis : public TSelector
