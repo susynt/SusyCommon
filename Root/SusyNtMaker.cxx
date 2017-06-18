@@ -2331,7 +2331,7 @@ void SusyNtMaker::store_jet_kinematic_sys(ST::SystInfo sysInfo, SusyNtSys sys)
 //////////////////////////////////////////////////////////////////////////////
 void SusyNtMaker::perform_dilepton_trigger_matching()
 {
-    bool verbose_trig_match = true;
+    bool verbose_trig_match = false;
 
     if(dbg()>=10) cout << "SusyNtMaker::perform_dilepton_trigger_matching" << endl;
     const xAOD::EventInfo* ei = xaodEventInfo();
