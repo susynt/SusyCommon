@@ -1290,7 +1290,6 @@ void SusyNtMaker::store_electron(const xAOD::Electron& in, int ele_idx)
     //////////////////////////////////////
     // Trigger Matching
     //////////////////////////////////////
-    // dantrim 2017 June 12 - TODO change how do do lepton trigger matching
     out.trigBits = matchElectronTriggers(in);
 //    cout << "testing electron trigBits" << endl;
 //    int nbins = h_passTrigLevel->GetXaxis()->GetNbins();
@@ -1465,7 +1464,6 @@ void SusyNtMaker::store_muon(const xAOD::Muon& in, const xAOD::MuonContainer& mu
     //////////////////////////////////////
     // Trigger Matching
     //////////////////////////////////////
-    // dantrim 2017 June 12 - TODO change how do do lepton trigger matching
     out.trigBits = matchMuonTriggers(in);
 //    cout << "testing muon trigBits" << endl;
 //    int nbins = h_passTrigLevel->GetXaxis()->GetNbins();
@@ -1475,7 +1473,7 @@ void SusyNtMaker::store_muon(const xAOD::Muon& in, const xAOD::MuonContainer& mu
 //        cout << "\t passed trigger " << trigger << "? " << (bit ? "yes" : "no") << endl;
 //    }
 //    cout << endl;
-    out.diMuTrigMap = getDiMuTrigMap(in, muons);
+//    out.diMuTrigMap = getDiMuTrigMap(in, muons);
 
     //////////////////////////////////////
     // Lepton SF

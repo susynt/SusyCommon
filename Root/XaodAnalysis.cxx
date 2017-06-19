@@ -1630,32 +1630,29 @@ bool XaodAnalysis::eleIsOfType(const xAOD::Electron& in, ElectronId id)
 //////////////////////////////////////////////////////////////////////////////
 TBits XaodAnalysis::matchElectronTriggers(const xAOD::Electron& in)
 {
-    // DA: maybe split up trigger list in terms of electron/muon/etc triggers? but then bit numbers
-    // may be out of sync w.r.t. the stored histogram... in any case, the non-passed triggers are always
-    // false and on SusyNtuple side the user will provide specific string for the ele/muo trigger that
-    // is checked against the trig histo
     if(m_dbg>=15) cout << "XaodAnalysis::matchElectronTriggers" << endl;
     TBits eleTrigBits(m_nTriggerBits);
     eleTrigBits.ResetAllBits();
-    std::vector<std::string> trigs = XaodAnalysis::xaodTriggers();
+    vector<string> trigs = XaodAnalysis::xaodTriggers();
+    vector<string> ele_trigs;
+
+    // match against our triggers that have an electron leg and MET
+    const vector<string> single_ele_trigs = TriggerTools::single_ele_triggers();
+    const vector<string> di_ele_trigs = TriggerTools::di_ele_triggers();
+    const vector<string> ele_muo_trigs = TriggerTools::ele_muo_triggers();
+    const vector<string> met_trigs = TriggerTools::met_triggers();
+
+    ele_trigs.insert(ele_trigs.end(), single_ele_trigs.begin(), single_ele_trigs.end());
+    ele_trigs.insert(ele_trigs.end(), di_ele_trigs.begin(), di_ele_trigs.end());
+    ele_trigs.insert(ele_trigs.end(), ele_muo_trigs.begin(), ele_muo_trigs.end());
+    ele_trigs.insert(ele_trigs.end(), met_trigs.begin(), met_trigs.end());
+    
     for(unsigned int iTrig = 0; iTrig < trigs.size(); iTrig++) {
+        // only consider ele_trigs
+        if(std::find(ele_trigs.begin(), ele_trigs.end(), trigs.at(iTrig))==ele_trigs.end()) continue;
     
-        std::size_t elfound = trigs[iTrig].find("HLT_e");
-        std::size_t elfound2 = trigs[iTrig].find("HLT_2e");
-        std::size_t mufound = trigs[iTrig].find("mu");
-        std::size_t mufound2 = trigs[iTrig].find("MU");
-        std::size_t metfound = trigs[iTrig].find("xe");
-    
-        bool mu_chain = ((mufound != std::string::npos) || (mufound2 != std::string::npos));
-        bool el_chain = ((elfound != std::string::npos) || (elfound2 != std::string::npos));
-        bool met_chain = (metfound != std::string::npos);
-        bool dilepton = mu_chain && el_chain;
-    
-        bool ismatch = false;
-        if( (el_chain || dilepton) && !met_chain)
-            ismatch = m_susyObj[m_eleIDDefault]->IsTrigMatched(&in, trigs[iTrig]);
+        bool ismatch = m_susyObj[m_eleIDDefault]->IsTrigMatched(&in, trigs[iTrig]);
         if(ismatch) {
-            //cout << "     > ele match to : " << trigs[iTrig] << endl;
             eleTrigBits.SetBitNumber(iTrig,true);
         }
     }
@@ -1668,20 +1665,25 @@ TBits XaodAnalysis::matchMuonTriggers(const xAOD::Muon& in)
     TBits muoTrigBits(m_nTriggerBits);
     muoTrigBits.ResetAllBits();
     std::vector<std::string> trigs = XaodAnalysis::xaodTriggers();
+    vector<string> muo_trigs;
+
+    // match against our triggers than have a muon leg
+    const vector<string> single_muo_trigs = TriggerTools::single_muo_triggers();
+    const vector<string> di_muo_trigs = TriggerTools::di_muo_triggers();
+    const vector<string> ele_muo_trigs = TriggerTools::ele_muo_triggers();
+
+    muo_trigs.insert(muo_trigs.end(), single_muo_trigs.begin(), single_muo_trigs.end());
+    muo_trigs.insert(muo_trigs.end(), di_muo_trigs.begin(), di_muo_trigs.end());
+    muo_trigs.insert(muo_trigs.end(), ele_muo_trigs.begin(), ele_muo_trigs.end());
+
     for(unsigned int iTrig=0; iTrig<trigs.size(); iTrig++){
-    
-        std::size_t elfound = trigs[iTrig].find("el");
-        std::size_t mufound = trigs[iTrig].find("mu");
-        std::size_t mufound2 = trigs[iTrig].find("MU");
-        std::size_t metfound = trigs[iTrig].find("xe");
-    
-        bool mu_chain = ((mufound != std::string::npos) || (mufound2 != std::string::npos));
-        bool el_chain = (elfound != std::string::npos);
-        bool met_chain = (metfound != std::string::npos);
-        bool dilepton = mu_chain && el_chain;
-    
-        if( (mu_chain || dilepton) && !met_chain)
-            if(m_susyObj[m_eleIDDefault]->IsTrigMatched(&in, trigs[iTrig])) muoTrigBits.SetBitNumber(iTrig, true);
+        // only consdier muo_trigs
+        if(std::find(muo_trigs.begin(), muo_trigs.end(), trigs.at(iTrig))==muo_trigs.end()) continue;
+
+        bool ismatch = m_susyObj[m_eleIDDefault]->IsTrigMatched(&in, trigs.at(iTrig));
+        if(ismatch) {
+            muoTrigBits.SetBitNumber(iTrig, true);
+        }
     }
     return muoTrigBits;
 }
@@ -1706,15 +1708,6 @@ std::map<std::string, std::vector<unsigned int>> XaodAnalysis::getDiMuTrigMap(co
 
         if (count >= 2) {
             diMuTrigMap[trig] = {};
-            //for (unsigned int i = 0; i < muons.size(); ++i) {
-            //    if (m_susyObj[m_eleIDDefault]->IsTrigMatched(&in, muons[i], trig)) {
-            //        diMuTrigMap[trig].push_back(i);
-            //    }
-            //} // i
-
-            // dantrim -- loop over indices of pre muons container, since pre-muons are the ones
-            //              that will get stored in the output susyNt file and whose indices
-            //              we store
             for(auto &i : m_preMuons) {
                 if (m_susyObj[m_eleIDDefault]->IsTrigMatched(&in, muons.at(i), trig)) {
                     diMuTrigMap[trig].push_back(i);
