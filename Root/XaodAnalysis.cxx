@@ -361,6 +361,8 @@ XaodAnalysis& XaodAnalysis::initSusyTools()
             prwFiles.push_back(m_data_dir+"SusyCommon/signal_prw.root");
             // additional mc backgrounds
             prwFiles.push_back(m_data_dir+"SusyCommon/additional_mc_prw.root");
+            // additional higgs derivation samples backgrounds
+            prwFiles.push_back(m_data_dir+"SusyCommon/higgs_prw.root");
         }
         else {
             cout << "XaodAnalysis::initSusyTools    "
