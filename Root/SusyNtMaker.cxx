@@ -1089,6 +1089,11 @@ void SusyNtMaker::store_electron(const xAOD::Electron& in, int ele_idx)
     bool idSF=true;
     bool trigSF=false;
     bool isoSF=true;
+
+    string single_ele = "singleLepton";
+    string double_ele = "diLepton";
+    string mixed_ele = "mixedLepton";
+
     if(mc()) {
         //////////////////////////////////////
         // Lepton SF
@@ -1097,6 +1102,7 @@ void SusyNtMaker::store_electron(const xAOD::Electron& in, int ele_idx)
         //////////////////////////////////////
         // signature: (input electron, bool doRecoSF, bool doIDSF, bool doTrigSF, bool doIsoSF, string trigExpr)
         // default trigExpr: "e24_lhmedium_L1EM20VH_OR_e60_lhmedium_OR_e120_lhloose"
+
         
         if(in.pt()*MeV2GeV >= 25.) {
             std::string ele_trig;
@@ -1108,7 +1114,12 @@ void SusyNtMaker::store_electron(const xAOD::Electron& in, int ele_idx)
                 if(m_susyObj[m_eleIDDefault]->treatAsYear()==2016)
                     ele_trig = ele_trig16;
                 out.eleEffSF[ElectronId::TightLLH] =  m_susyObj[m_eleIDDefault]->GetSignalElecSF (in, recoSF, idSF, trigSF, isoSF);
-                out.eleTrigSF[ElectronId::TightLLH] = m_susyObj[m_eleIDDefault]->GetSignalElecSF (in, false, false, true, false, ele_trig);
+
+                out.eleTrigSF_single[ElectronId::TightLLH] = m_susyObj[m_eleIDDefault]->GetSignalElecSF(in, false, false, true, false, single_ele);
+                out.eleTrigSF_double[ElectronId::TightLLH] = m_susyObj[m_eleIDDefault]->GetSignalElecSF(in, false, false, true, false, double_ele);
+                out.eleTrigSF_mixed[ElectronId::TightLLH] = m_susyObj[m_eleIDDefault]->GetSignalElecSF(in, false, false, true, false, mixed_ele);
+
+                //out.eleTrigSF[ElectronId::TightLLH] = m_susyObj[m_eleIDDefault]->GetSignalElecSF (in, false, false, true, false, ele_trig);
                 //out.eleCHFSF[ElectronId::TightLLH] = m_susyObj[m_eleIDDefault]->GetSignalElecSF (in, false, false, false, false, ele_trig, true);
             }
             else {
@@ -1116,7 +1127,10 @@ void SusyNtMaker::store_electron(const xAOD::Electron& in, int ele_idx)
                     ele_trig = ele_trig16;
         
                 out.eleEffSF[ElectronId::TightLLH] =  m_susyObj[SusyObjId::eleTightLLH]->GetSignalElecSF (in, recoSF, idSF, trigSF, isoSF);
-                out.eleTrigSF[ElectronId::TightLLH] = m_susyObj[SusyObjId::eleTightLLH]->GetSignalElecSF (in, false, false, true, false, ele_trig);
+
+                out.eleTrigSF_single[ElectronId::TightLLH] = m_susyObj[SusyObjId::eleTightLLH]->GetSignalElecSF(in, false, false, true, false, single_ele);
+                out.eleTrigSF_double[ElectronId::TightLLH] = m_susyObj[SusyObjId::eleTightLLH]->GetSignalElecSF(in, false, false, true, false, double_ele);
+                out.eleTrigSF_mixed[ElectronId::TightLLH] = m_susyObj [SusyObjId::eleTightLLH]->GetSignalElecSF(in, false, false, true, false, mixed_ele);
                 //out.eleCHFSF[ElectronId::TightLLH] = m_susyObj[SusyObjId::eleTightLLH]->GetSignalElecSF (in, false, false, false, false, ele_trig, true);
                 ele_trig = ele_trig15;
         
@@ -1124,7 +1138,10 @@ void SusyNtMaker::store_electron(const xAOD::Electron& in, int ele_idx)
                 if(m_susyObj[SusyObjId::eleMediumLLH]->treatAsYear()==2016)
                     ele_trig = ele_trig16;
                 out.eleEffSF[ElectronId::MediumLLH] = m_susyObj[SusyObjId::eleMediumLLH]->GetSignalElecSF(in, recoSF, idSF, trigSF, isoSF);
-                out.eleTrigSF[ElectronId::MediumLLH] = m_susyObj[SusyObjId::eleMediumLLH]->GetSignalElecSF(in, false, false, true, false, ele_trig);
+
+                out.eleTrigSF_single[ElectronId::MediumLLH] = m_susyObj[SusyObjId::eleMediumLLH]->GetSignalElecSF(in, false, false, true, false, single_ele);
+                out.eleTrigSF_double[ElectronId::MediumLLH] = m_susyObj[SusyObjId::eleMediumLLH]->GetSignalElecSF(in, false, false, true, false, double_ele);
+                out.eleTrigSF_mixed [ElectronId::MediumLLH] = m_susyObj[SusyObjId::eleMediumLLH]->GetSignalElecSF(in, false, false, true, false, mixed_ele);
                 //out.eleCHFSF[ElectronId::MediumLLH] = m_susyObj[SusyObjId::eleMediumLLH]->GetSignalElecSF(in, false, false, false, false, ele_trig, true);
             }
         }
@@ -1202,14 +1219,14 @@ void SusyNtMaker::store_electron(const xAOD::Electron& in, int ele_idx)
             if(m_run_oneST) {
                 if(m_susyObj[m_eleIDDefault]->treatAsYear()==2016)
                     ele_trig = ele_trig16;
-                sf_trig[ElectronId::TightLLH]  = m_susyObj[m_eleIDDefault] ->GetSignalElecSF(in, false, false, true, false, ele_trig);
-                sf_trig[ElectronId::MediumLLH] = m_susyObj[m_eleIDDefault]->GetSignalElecSF(in, false, false, true, false, ele_trig);
+                sf_trig[ElectronId::TightLLH]  = m_susyObj[m_eleIDDefault] ->GetSignalElecSF(in, false, false, true, false, single_ele);
+                sf_trig[ElectronId::MediumLLH] = m_susyObj[m_eleIDDefault]->GetSignalElecSF(in, false, false, true, false, single_ele);
             }
             else {
                 if(m_susyObj[m_eleIDDefault]->treatAsYear()==2016)
                     ele_trig = ele_trig16;
-                sf_trig[ElectronId::TightLLH]  = m_susyObj[SusyObjId::eleTightLLH] ->GetSignalElecSF(in, false, false, true, false, ele_trig);
-                sf_trig[ElectronId::MediumLLH] = m_susyObj[SusyObjId::eleMediumLLH]->GetSignalElecSF(in, false, false, true, false, ele_trig);
+                sf_trig[ElectronId::TightLLH]  = m_susyObj[SusyObjId::eleTightLLH] ->GetSignalElecSF(in, false, false, true, false, single_ele);
+                sf_trig[ElectronId::MediumLLH] = m_susyObj[SusyObjId::eleMediumLLH]->GetSignalElecSF(in, false, false, true, false, single_ele);
             }
 
             // there are no isolation SF's for electrion ID looseLH
@@ -1222,8 +1239,8 @@ void SusyNtMaker::store_electron(const xAOD::Electron& in, int ele_idx)
                 else if(ourSys == NtSys::EL_EFF_Reco_TOTAL_Uncorr_DN)    out.errEffSF_reco_dn[i] = sf[i] - out.eleEffSF[i];
                 else if(ourSys == NtSys::EL_EFF_Iso_TOTAL_Uncorr_UP)     out.errEffSF_iso_up[i]  = sf[i] - out.eleEffSF[i];
                 else if(ourSys == NtSys::EL_EFF_Iso_TOTAL_Uncorr_DN)     out.errEffSF_iso_dn[i]  = sf[i] - out.eleEffSF[i];
-                else if(ourSys == NtSys::EL_EFF_Trigger_TOTAL_Uncorr_UP) out.errEffSF_trig_up[i] = sf_trig[i] - out.eleTrigSF[i];
-                else if(ourSys == NtSys::EL_EFF_Trigger_TOTAL_Uncorr_DN) out.errEffSF_trig_dn[i] = sf_trig[i] - out.eleTrigSF[i];
+                else if(ourSys == NtSys::EL_EFF_Trigger_TOTAL_Uncorr_UP) out.errEffSF_trig_up[i] = sf_trig[i] - out.eleTrigSF_single[i];
+                else if(ourSys == NtSys::EL_EFF_Trigger_TOTAL_Uncorr_DN) out.errEffSF_trig_dn[i] = sf_trig[i] - out.eleTrigSF_single[i];
         
 //                if(i==0 || i==1 || i==2){
 //                if(i==0)
@@ -2344,7 +2361,7 @@ void SusyNtMaker::perform_dilepton_trigger_matching()
     xAOD::MuonContainer* muons = xaodMuons(systInfoList[0]);
 
     ///////////////////////////////////////////////////////////////////////////
-    // E+M Dilepton Trigger Matching
+    // E+E Dilepton Trigger Matching
     ///////////////////////////////////////////////////////////////////////////
     size_t n_stored_ele = m_susyNt.ele()->size();
     for(unsigned int ie_store = 0; ie_store < n_stored_ele; ie_store++) {
