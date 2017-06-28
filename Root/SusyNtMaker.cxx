@@ -1105,14 +1105,7 @@ void SusyNtMaker::store_electron(const xAOD::Electron& in, int ele_idx)
 
         
         if(in.pt()*MeV2GeV >= 25.) {
-            std::string ele_trig;
-            std::string ele_trig15 = "e24_lhmedium_L1EM20VH_OR_e60_lhmedium_OR_e120_lhloose";
-            ele_trig = ele_trig15;
-            std::string ele_trig16 = "e26_lhtight_nod0_ivarloose_OR_e60_lhmedium_nod0_OR_e140_lhloose_nod0";
-            ele_trig16 = ele_trig15;
             if(m_run_oneST) {
-                if(m_susyObj[m_eleIDDefault]->treatAsYear()==2016)
-                    ele_trig = ele_trig16;
                 out.eleEffSF[ElectronId::TightLLH] =  m_susyObj[m_eleIDDefault]->GetSignalElecSF (in, recoSF, idSF, trigSF, isoSF);
 
                 out.eleTrigSF_single[ElectronId::TightLLH] = m_susyObj[m_eleIDDefault]->GetSignalElecSF(in, false, false, true, false, single_ele);
@@ -1123,20 +1116,13 @@ void SusyNtMaker::store_electron(const xAOD::Electron& in, int ele_idx)
                 //out.eleCHFSF[ElectronId::TightLLH] = m_susyObj[m_eleIDDefault]->GetSignalElecSF (in, false, false, false, false, ele_trig, true);
             }
             else {
-                if(m_susyObj[SusyObjId::eleTightLLH]->treatAsYear()==2016)
-                    ele_trig = ele_trig16;
-        
                 out.eleEffSF[ElectronId::TightLLH] =  m_susyObj[SusyObjId::eleTightLLH]->GetSignalElecSF (in, recoSF, idSF, trigSF, isoSF);
 
                 out.eleTrigSF_single[ElectronId::TightLLH] = m_susyObj[SusyObjId::eleTightLLH]->GetSignalElecSF(in, false, false, true, false, single_ele);
                 out.eleTrigSF_double[ElectronId::TightLLH] = m_susyObj[SusyObjId::eleTightLLH]->GetSignalElecSF(in, false, false, true, false, double_ele);
                 out.eleTrigSF_mixed[ElectronId::TightLLH] = m_susyObj [SusyObjId::eleTightLLH]->GetSignalElecSF(in, false, false, true, false, mixed_ele);
                 //out.eleCHFSF[ElectronId::TightLLH] = m_susyObj[SusyObjId::eleTightLLH]->GetSignalElecSF (in, false, false, false, false, ele_trig, true);
-                ele_trig = ele_trig15;
         
-        
-                if(m_susyObj[SusyObjId::eleMediumLLH]->treatAsYear()==2016)
-                    ele_trig = ele_trig16;
                 out.eleEffSF[ElectronId::MediumLLH] = m_susyObj[SusyObjId::eleMediumLLH]->GetSignalElecSF(in, recoSF, idSF, trigSF, isoSF);
 
                 out.eleTrigSF_single[ElectronId::MediumLLH] = m_susyObj[SusyObjId::eleMediumLLH]->GetSignalElecSF(in, false, false, true, false, single_ele);
@@ -1208,23 +1194,13 @@ void SusyNtMaker::store_electron(const xAOD::Electron& in, int ele_idx)
                 //sf_chf[ElectronId::MediumLLH] = m_susyObj[m_eleIDDefault] ->GetSignalElecSF(in, false, false, false, false, nan_trig, true);
             }
 
-            std::string ele_trig;
-            std::string ele_trig15 = "e24_lhmedium_L1EM20VH_OR_e60_lhmedium_OR_e120_lhloose";
-            ele_trig = ele_trig15;
-            std::string ele_trig16 = "e26_lhtight_nod0_ivarloose_OR_e60_lhmedium_nod0_OR_e140_lhloose_nod0";
-            ele_trig16 = ele_trig15;
-            
             vector<float> sf_trig;
             sf_trig.assign(ElectronId::ElectronIdInvalid, 1);
             if(m_run_oneST) {
-                if(m_susyObj[m_eleIDDefault]->treatAsYear()==2016)
-                    ele_trig = ele_trig16;
                 sf_trig[ElectronId::TightLLH]  = m_susyObj[m_eleIDDefault] ->GetSignalElecSF(in, false, false, true, false, single_ele);
                 sf_trig[ElectronId::MediumLLH] = m_susyObj[m_eleIDDefault]->GetSignalElecSF(in, false, false, true, false, single_ele);
             }
             else {
-                if(m_susyObj[m_eleIDDefault]->treatAsYear()==2016)
-                    ele_trig = ele_trig16;
                 sf_trig[ElectronId::TightLLH]  = m_susyObj[SusyObjId::eleTightLLH] ->GetSignalElecSF(in, false, false, true, false, single_ele);
                 sf_trig[ElectronId::MediumLLH] = m_susyObj[SusyObjId::eleMediumLLH]->GetSignalElecSF(in, false, false, true, false, single_ele);
             }
@@ -1539,6 +1515,34 @@ void SusyNtMaker::store_muon(const xAOD::Muon& in, const xAOD::MuonContainer& mu
         delete sf_muon;
         delete sf_muon_aux;
         //delete sfMu;
+
+        /////////////////////////////////////////
+        //  new method for trigger SF
+        /////////////////////////////////////////
+        //2485             const vector<string> di_triggers = TriggerTools::ele_muo_triggers();
+        //2486             const vector<string> triggers = TriggerTools::getTrigNames();
+        const vector<string> triggers = TriggerTools::getTrigNames();
+        vector<string> muon_triggers;
+        vector<string> single_muo = TriggerTools::single_muo_triggers();
+        vector<string> di_muo = TriggerTools::di_muo_triggers();
+        muon_triggers.insert(muon_triggers.end(), single_muo.begin(), single_muo.end());
+        muon_triggers.insert(muon_triggers.end(), di_muo.begin(), di_muo.end());
+
+        for(int itrig = 0; itrig < (int)triggers.size(); itrig++) {
+            string chain_name = triggers.at(itrig);
+            if(std::find(muon_triggers.begin(), muon_triggers.end(), chain_name) == muon_triggers.end()) continue;
+            float eff_data = m_susyObj[SusyObjId::muoMedium]->GetMuonTriggerEfficiency(in, chain_name, true); 
+            float eff_mc   = m_susyObj[SusyObjId::muoMedium]->GetMuonTriggerEfficiency(in, chain_name, false); 
+            out.muoTrigEffData_medium[itrig] = eff_data;
+            out.muoTrigEffMC_medium[itrig] = eff_mc;
+
+            eff_data = m_susyObj[SusyObjId::muoLoose]->GetMuonTriggerEfficiency(in, chain_name, true);
+            eff_mc = m_susyObj[SusyObjId::muoLoose]->GetMuonTriggerEfficiency(in, chain_name, false);
+            out.muoTrigEffData_loose[itrig] = eff_data;
+            out.muoTrigEffMC_loose[itrig] = eff_mc;
+            //if(chain_name == "HLT_mu20")
+            //cout << "SusyNtMaker::store_muon    pt = " << out.Pt() << "   eff_data = " << eff_data << "  eff_mc = " << eff_mc << endl;
+        } // itrig
     }
 
     //////////////////////////////////////
