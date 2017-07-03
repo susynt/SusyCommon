@@ -1205,9 +1205,6 @@ void SusyNtMaker::store_electron(const xAOD::Electron& in, int ele_idx)
                 sf_trig[ElectronId::MediumLLH] = m_susyObj[SusyObjId::eleMediumLLH]->GetSignalElecSF(in, false, false, true, false, single_ele);
             }
 
-            // there are no isolation SF's for electrion ID looseLH
-            //sf[ElectronId::LooseLH]  = m_susyObj[SusyObjId::eleLooseLH] ->GetSignalElecSF(in, recoSF, idSF, trigSF);
-        
             for(int i=ElectronId::TightLLH; i<ElectronIdInvalid; i++){
                 if     (ourSys == NtSys::EL_EFF_ID_TOTAL_Uncorr_UP)      out.errEffSF_id_up[i]   = sf[i] - out.eleEffSF[i];
                 else if(ourSys == NtSys::EL_EFF_ID_TOTAL_Uncorr_DN)      out.errEffSF_id_dn[i]   = sf[i] - out.eleEffSF[i];
@@ -1503,6 +1500,7 @@ void SusyNtMaker::store_muon(const xAOD::Muon& in, const xAOD::MuonContainer& mu
             if(m_susyObj[SusyObjId::muoMedium]->treatAsYear()==2016)
                 trig_exp_med = "HLT_mu24_imedium";
         }
+        trig_exp_med = "HLT_mu22_mu8noL1";
         // dantrim Sept 15 2016 -- don't get trigger SF for loose muons (MuonTriggerScaleFactors tool complains... not yet sure if it is a problem
         // from our mangled setup or the tool's issue)
         if(m_run_oneST) {
