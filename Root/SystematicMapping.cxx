@@ -23,8 +23,8 @@ SusyNtSys CPsys2sys(const std::string &s)
   else if( s== "EL_EFF_Iso_TOTAL_1NPCOR_PLUS_UNCOR__1up" )          r = EL_EFF_Iso_TOTAL_Uncorr_UP; 
   else if( s== "EL_EFF_Reco_TOTAL_1NPCOR_PLUS_UNCOR__1down" )       r = EL_EFF_Reco_TOTAL_Uncorr_DN; 
   else if( s== "EL_EFF_Reco_TOTAL_1NPCOR_PLUS_UNCOR__1up" )         r = EL_EFF_Reco_TOTAL_Uncorr_UP; 
-  else if( s== "EL_EFF_TriggerEff_TOTAL_1NPCOR_PLUS_UNCOR__1down")  r = EL_EFF_Trigger_TOTAL_Uncorr_DN; 
-  else if( s== "EL_EFF_TriggerEff_TOTAL_1NPCOR_PLUS_UNCOR__1up")    r = EL_EFF_Trigger_TOTAL_Uncorr_UP; 
+  else if( s== "EL_EFF_Trigger_TOTAL_1NPCOR_PLUS_UNCOR__1down")     r = EL_EFF_Trigger_TOTAL_DN; 
+  else if( s== "EL_EFF_Trigger_TOTAL_1NPCOR_PLUS_UNCOR__1up")       r = EL_EFF_Trigger_TOTAL_UP; 
 
   else if( s== "FT_EFF_B_systematics__1down" )             r = FT_EFF_B_systematics_DN;
   else if( s== "FT_EFF_B_systematics__1up" )               r = FT_EFF_B_systematics_UP;
@@ -46,6 +46,8 @@ SusyNtSys CPsys2sys(const std::string &s)
   else if( s== "JET_GroupedNP_3__1down" )                  r = JET_GroupedNP_3_DN;
   else if( s== "JET_JvtEfficiency__1up" )                  r = JET_JVTEff_UP;
   else if( s== "JET_JvtEfficiency__1down" )                r = JET_JVTEff_DN;
+  else if( s== "JET_EtaIntercalibration_NonClosure__1up" ) r = JET_EtaIntercalibration_UP;
+  else if( s== "JET_EtaIntercalibration_NonClosure__1down") r = JET_EtaIntercalibration_DN;
 
   else if( s== "MET_SoftCalo_Reso" )                       r = MET_SoftCalo_Reso;
   else if( s== "MET_SoftCalo_ScaleDown" )                  r = MET_SoftCalo_ScaleDown;

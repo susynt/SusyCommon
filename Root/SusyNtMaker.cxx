@@ -745,6 +745,26 @@ void SusyNtMaker::fill_muon_variables()
         for(auto &i : m_preMuons) {
             store_muon(*(muons->at(i)), *muons);
         } // i
+    //    cout << "---------------------------------" << endl;
+    // xAOD::MuonContainer *sf_muon = new xAOD::MuonContainer;
+    // xAOD::MuonAuxContainer *sf_muon_aux = new xAOD::MuonAuxContainer;
+    // sf_muon->setStore(sf_muon_aux);
+    // xAOD::Muon* sfMu = new xAOD::Muon;
+    // sfMu->makePrivateStore(in);
+    // sf_muon->push_back(sfMu);
+    //    if(m_preMuons.size() == 2 && (m_preMuons.size() + m_preElectrons.size())==2 ) {
+    //        xAOD::MuonContainer* test_mu = new xAOD::MuonContainer;
+    //        xAOD::MuonAuxContainer* test_mu_aux = new xAOD::MuonAuxContainer;
+    //        test_mu->setStore(test_mu_aux);
+    //        for(auto &i : m_preMuons) {
+    //            xAOD::Muon* mu = new xAOD::Muon;
+    //            mu->makePrivateStore(*(muons->at(i)));
+    //            test_mu->push_back(mu);
+    //            cout << "  >> mu with pt = " << mu->pt() * MeV2GeV << endl;
+    //        }
+    //        std::string trig = "HLT_mu24_iloose_L1MU15";
+    //        cout << "trigger sf " << m_susyObj[m_eleIDDefault]->GetTotalMuonTriggerSF(*test_mu, trig) << endl;
+    //    }
 
     }
     else {
@@ -1122,6 +1142,7 @@ void SusyNtMaker::store_electron(const xAOD::Electron& in, int ele_idx)
                 out.eleTrigSF_double[ElectronId::TightLLH] = m_susyObj[SusyObjId::eleTightLLH]->GetSignalElecSF(in, false, false, true, false, double_ele);
                 out.eleTrigSF_mixed[ElectronId::TightLLH] = m_susyObj [SusyObjId::eleTightLLH]->GetSignalElecSF(in, false, false, true, false, mixed_ele);
                 //out.eleCHFSF[ElectronId::TightLLH] = m_susyObj[SusyObjId::eleTightLLH]->GetSignalElecSF (in, false, false, false, false, ele_trig, true);
+
         
                 out.eleEffSF[ElectronId::MediumLLH] = m_susyObj[SusyObjId::eleMediumLLH]->GetSignalElecSF(in, recoSF, idSF, trigSF, isoSF);
 
@@ -1129,6 +1150,10 @@ void SusyNtMaker::store_electron(const xAOD::Electron& in, int ele_idx)
                 out.eleTrigSF_double[ElectronId::MediumLLH] = m_susyObj[SusyObjId::eleMediumLLH]->GetSignalElecSF(in, false, false, true, false, double_ele);
                 out.eleTrigSF_mixed [ElectronId::MediumLLH] = m_susyObj[SusyObjId::eleMediumLLH]->GetSignalElecSF(in, false, false, true, false, mixed_ele);
                 //out.eleCHFSF[ElectronId::MediumLLH] = m_susyObj[SusyObjId::eleMediumLLH]->GetSignalElecSF(in, false, false, false, false, ele_trig, true);
+                //
+                //cout << "SusyNtMaker::store_electron    NOMINAL TriggerSF   single = " << out.eleTrigSF_single[ElectronId::MediumLLH]
+                //            << "   double = " << out.eleTrigSF_double[ElectronId::MediumLLH]
+                //            << "   mixed  = " << out.eleTrigSF_mixed [ElectronId::MediumLLH] << endl;
             }
         }
     } // mc
@@ -1194,15 +1219,31 @@ void SusyNtMaker::store_electron(const xAOD::Electron& in, int ele_idx)
                 //sf_chf[ElectronId::MediumLLH] = m_susyObj[m_eleIDDefault] ->GetSignalElecSF(in, false, false, false, false, nan_trig, true);
             }
 
-            vector<float> sf_trig;
-            sf_trig.assign(ElectronId::ElectronIdInvalid, 1);
+            vector<float> sf_trig_single;
+            vector<float> sf_trig_double;
+            vector<float> sf_trig_mixed;
+            sf_trig_single.assign(ElectronId::ElectronIdInvalid, 1);
+            sf_trig_double.assign(ElectronId::ElectronIdInvalid, 1);
+            sf_trig_mixed.assign(ElectronId::ElectronIdInvalid, 1);
             if(m_run_oneST) {
-                sf_trig[ElectronId::TightLLH]  = m_susyObj[m_eleIDDefault] ->GetSignalElecSF(in, false, false, true, false, single_ele);
-                sf_trig[ElectronId::MediumLLH] = m_susyObj[m_eleIDDefault]->GetSignalElecSF(in, false, false, true, false, single_ele);
+                sf_trig_single[ElectronId::TightLLH]  = m_susyObj[m_eleIDDefault]->GetSignalElecSF(in, false, false, true, false, single_ele);
+                sf_trig_single[ElectronId::MediumLLH] = m_susyObj[m_eleIDDefault]->GetSignalElecSF(in, false, false, true, false, single_ele);
+
+                sf_trig_double[ElectronId::TightLLH]  = m_susyObj[m_eleIDDefault]->GetSignalElecSF(in, false, false, true, false, double_ele);
+                sf_trig_double[ElectronId::MediumLLH] = m_susyObj[m_eleIDDefault]->GetSignalElecSF(in, false, false, true, false, double_ele);
+
+                sf_trig_mixed[ElectronId::TightLLH]  = m_susyObj[m_eleIDDefault]->GetSignalElecSF(in, false, false, true, false, mixed_ele);
+                sf_trig_mixed[ElectronId::MediumLLH] = m_susyObj[m_eleIDDefault]->GetSignalElecSF(in, false, false, true, false, mixed_ele);
             }
             else {
-                sf_trig[ElectronId::TightLLH]  = m_susyObj[SusyObjId::eleTightLLH] ->GetSignalElecSF(in, false, false, true, false, single_ele);
-                sf_trig[ElectronId::MediumLLH] = m_susyObj[SusyObjId::eleMediumLLH]->GetSignalElecSF(in, false, false, true, false, single_ele);
+                sf_trig_single[ElectronId::TightLLH]  = m_susyObj[SusyObjId::eleTightLLH] ->GetSignalElecSF(in, false, false, true, false, single_ele);
+                sf_trig_single[ElectronId::MediumLLH] = m_susyObj[SusyObjId::eleMediumLLH]->GetSignalElecSF(in, false, false, true, false, single_ele);
+
+                sf_trig_double[ElectronId::TightLLH]  = m_susyObj[SusyObjId::eleTightLLH] ->GetSignalElecSF(in, false, false, true, false, double_ele);
+                sf_trig_double[ElectronId::MediumLLH] = m_susyObj[SusyObjId::eleMediumLLH]->GetSignalElecSF(in, false, false, true, false, double_ele);
+
+                sf_trig_mixed[ElectronId::TightLLH]  = m_susyObj[SusyObjId::eleTightLLH] ->GetSignalElecSF(in, false, false, true, false, mixed_ele);
+                sf_trig_mixed[ElectronId::MediumLLH] = m_susyObj[SusyObjId::eleMediumLLH]->GetSignalElecSF(in, false, false, true, false, mixed_ele);
             }
 
             for(int i=ElectronId::TightLLH; i<ElectronIdInvalid; i++){
@@ -1212,8 +1253,27 @@ void SusyNtMaker::store_electron(const xAOD::Electron& in, int ele_idx)
                 else if(ourSys == NtSys::EL_EFF_Reco_TOTAL_Uncorr_DN)    out.errEffSF_reco_dn[i] = sf[i] - out.eleEffSF[i];
                 else if(ourSys == NtSys::EL_EFF_Iso_TOTAL_Uncorr_UP)     out.errEffSF_iso_up[i]  = sf[i] - out.eleEffSF[i];
                 else if(ourSys == NtSys::EL_EFF_Iso_TOTAL_Uncorr_DN)     out.errEffSF_iso_dn[i]  = sf[i] - out.eleEffSF[i];
-                else if(ourSys == NtSys::EL_EFF_Trigger_TOTAL_Uncorr_UP) out.errEffSF_trig_up[i] = sf_trig[i] - out.eleTrigSF_single[i];
-                else if(ourSys == NtSys::EL_EFF_Trigger_TOTAL_Uncorr_DN) out.errEffSF_trig_dn[i] = sf_trig[i] - out.eleTrigSF_single[i];
+
+                else if(ourSys == NtSys::EL_EFF_Trigger_TOTAL_UP) {
+                    out.errEffSF_trig_up_single[i] = sf_trig_single[i] - out.eleTrigSF_single[i];
+                    out.errEffSF_trig_up_double[i] = sf_trig_double[i] - out.eleTrigSF_double[i];
+                    out.errEffSF_trig_up_mixed[i] = sf_trig_mixed[i] - out.eleTrigSF_mixed[i];
+                    //if(i==ElectronId::MediumLLH) {
+                    //    cout << "SusyNtMaker::store_electron    UP     TriggerSF   single = " << out.eleTrigSF_single[ElectronId::MediumLLH]
+                    //                << "   double = " << out.eleTrigSF_double[ElectronId::MediumLLH]
+                    //                << "   mixed  = " << out.eleTrigSF_mixed [ElectronId::MediumLLH] << endl;
+                    //}
+                }
+                else if(ourSys == NtSys::EL_EFF_Trigger_TOTAL_DN) {
+                    out.errEffSF_trig_dn_single[i] = sf_trig_single[i] - out.eleTrigSF_single[i];
+                    out.errEffSF_trig_dn_double[i] = sf_trig_double[i] - out.eleTrigSF_double[i];
+                    out.errEffSF_trig_dn_mixed[i] = sf_trig_mixed[i] - out.eleTrigSF_mixed[i];
+                    //if(i==ElectronId::MediumLLH) {
+                    //    cout << "SusyNtMaker::store_electron    DN     TriggerSF   single = " << sf_trig_single[i] 
+                    //                << "   double = " << sf_trig_double[i] 
+                    //                << "   mixed  = " << sf_trig_mixed[i] << endl; 
+                    //}
+                }
         
 //                if(i==0 || i==1 || i==2){
 //                if(i==0)
@@ -1301,6 +1361,31 @@ void SusyNtMaker::store_muon(const xAOD::Muon& in, const xAOD::MuonContainer& mu
     if(dbg()>=15) cout << "SusyNtMaker::store_muon   Muon (pt=" << in.pt()*MeV2GeV << ")" << endl; 
 
     const xAOD::EventInfo* eventinfo = xaodEventInfo();
+
+    // testing
+    //std::string test_chain = "HLT_mu8noL1";
+    //float test_eff_data = m_susyObj[m_eleIDDefault]->GetMuonTriggerEfficiency(in, test_chain, true);
+    //float test_eff_mc   = m_susyObj[m_eleIDDefault]->GetMuonTriggerEfficiency(in, test_chain, false);
+    //cout << "SusyNtMaker::store_muon    test muon eff for " << test_chain << "  data = " << test_eff_data << "  mc = " << test_eff_mc << endl;
+
+    //std::string test_mixed = "HLT_e17_lhloose_mu14";
+    //std::string test_single = "HLT_mu14";
+
+    //float test_mixed_eff = m_susyObj[m_eleIDDefault]->GetMuonTriggerEfficiency(in, test_mixed, false);
+    //float test_single_eff = m_susyObj[m_eleIDDefault]->GetMuonTriggerEfficiency(in, test_single, false);
+    ////cout << "SusyNtMaker::store_muon   test muon eff for mixed " << test_mixed << " = " << test_mixed_eff << ", for single " << test_single << " = " << test_single_eff << "  ---> equal? " << ( (test_mixed_eff==test_single_eff) ? "YES" : "NO") << endl;
+    // xAOD::MuonContainer *sf_muon = new xAOD::MuonContainer;
+    // xAOD::MuonAuxContainer *sf_muon_aux = new xAOD::MuonAuxContainer;
+    // sf_muon->setStore(sf_muon_aux);
+    // xAOD::Muon* sfMu = new xAOD::Muon;
+    // sfMu->makePrivateStore(in);
+    // sf_muon->push_back(sfMu);
+    //float st_mixed = m_susyObj[m_eleIDDefault]->GetTotalMuonTriggerSF(*sf_muon, test_mixed);
+    //cout << "SusyNtMaker::store_muon sf returned by SUSYTools for " << test_mixed << " = " << st_mixed << endl;
+    //delete sf_muon;
+    //delete sf_muon_aux;
+
+    
 
     Susy::Muon out;
 
@@ -1538,8 +1623,8 @@ void SusyNtMaker::store_muon(const xAOD::Muon& in, const xAOD::MuonContainer& mu
             eff_mc = m_susyObj[SusyObjId::muoLoose]->GetMuonTriggerEfficiency(in, chain_name, false);
             out.muoTrigEffData_loose[itrig] = eff_data;
             out.muoTrigEffMC_loose[itrig] = eff_mc;
-            //if(chain_name == "HLT_mu20")
-            //cout << "SusyNtMaker::store_muon    pt = " << out.Pt() << "   eff_data = " << eff_data << "  eff_mc = " << eff_mc << endl;
+            //if(chain_name == "HLT_mu24")
+            //    cout << "SusyNtMaker::store_muon    NOMINAL MUON SF pt = " << out.Pt() << "   eff_data = " << eff_data << "  eff_mc = " << eff_mc << endl;
         } // itrig
     }
 
@@ -1642,75 +1727,64 @@ void SusyNtMaker::store_muon(const xAOD::Muon& in, const xAOD::MuonContainer& mu
             if(!(sysInfo.affectsType == ST::SystObjType::Muon && sysInfo.affectsWeights)) continue;
             const CP::SystematicSet& sys = sysInfo.systset;
             SusyNtSys ourSys = CPsys2sys((sys.name()).c_str());
-            for(int i : Susy::muonIds()){
-                int index_to_check = (m_run_oneST==true ? (int)m_eleIDDefault : i);
-                if(m_susyObj[index_to_check]->applySystematicVariation(sys) != CP::SystematicCode::Ok) {
-                    cout << "SusyNtMaker::store_muon    WARNING Cannot configure SUSYTools for systematic " << sys.name() << endl;
-                    continue;
+
+            // only want trigger SF variations
+            if(!( (ourSys == NtSys::MUON_EFF_TRIG_STAT_UP) || (ourSys == NtSys::MUON_EFF_TRIG_STAT_DN)
+                || (ourSys == NtSys::MUON_EFF_TRIG_SYST_UP) || (ourSys == NtSys::MUON_EFF_TRIG_SYST_DN) )) continue;
+
+            // only store muon trigger SF variations for medium muons
+            if(m_susyObj[SusyObjId::muoMedium]->applySystematicVariation(sys) != CP::SystematicCode::Ok) {
+                cout << "SusyNtMaker::store_muon    WARNING Cannot configure SUSYTools for systematic " << sys.name() << endl;
+                continue;
+            }
+
+            const vector<string> triggers = TriggerTools::getTrigNames();
+            vector<string> muon_triggers;
+            vector<string> single_muo = TriggerTools::single_muo_triggers();
+            vector<string> di_muo = TriggerTools::di_muo_triggers();
+            muon_triggers.insert(muon_triggers.end(), single_muo.begin(), single_muo.end());
+            muon_triggers.insert(muon_triggers.end(), di_muo.begin(), di_muo.end());
+
+            // loop over the global trigger indices
+            for(int itrig = 0; itrig < (int)triggers.size(); itrig++) {
+                string chain_name = triggers.at(itrig);
+                if(std::find(muon_triggers.begin(), muon_triggers.end(), chain_name) == muon_triggers.end()) continue;
+                float eff_data_sys = m_susyObj[SusyObjId::muoMedium]->GetMuonTriggerEfficiency(in, chain_name, true);
+                float eff_mc_sys = m_susyObj[SusyObjId::muoMedium]->GetMuonTriggerEfficiency(in, chain_name, false);
+            
+
+                if(ourSys == NtSys::MUON_EFF_TRIG_STAT_UP) {
+                    //if(chain_name == "HLT_mu24")
+                    //    cout << "SusyNtMaker::store_muon      > TRIG_STAT_UP   eff_data = " << eff_data_sys << "   eff_mc = " << eff_mc_sys << endl;
+                    out.muoTrigEffErrData_stat_up_medium[itrig] = eff_data_sys;
+                    out.muoTrigEffErrMC_stat_up_medium[itrig] = eff_mc_sys;
                 }
-                if(m_run_oneST) break;
-            }
-            vector<float> sf_trig;
-            sf_trig.assign(MuonId::MuonIdInvalid, 1);
+                else if(ourSys == NtSys::MUON_EFF_TRIG_STAT_DN) {
+                    //if(chain_name == "HLT_mu24")
+                    //    cout << "SusyNtMaker::store_muon      > TRIG_STAT_DN   eff_data = " << eff_data_sys << "   eff_mc = " << eff_mc_sys << endl;
+                    out.muoTrigEffErrData_stat_dn_medium[itrig] = eff_data_sys;
+                    out.muoTrigEffErrMC_stat_dn_medium[itrig] = eff_mc_sys;
+                }
+                else if(ourSys == NtSys::MUON_EFF_TRIG_SYST_UP) {
+                    //if(chain_name == "HLT_mu24")
+                    //    cout << "SusyNtMaker::store_muon      > TRIG_SYST_UP   eff_data = " << eff_data_sys << "   eff_mc = " << eff_mc_sys << endl;
+                    out.muoTrigEffErrData_syst_up_medium[itrig] = eff_data_sys;
+                    out.muoTrigEffErrMC_syst_up_medium[itrig] = eff_mc_sys;
+                }
+                else if(ourSys == NtSys::MUON_EFF_TRIG_SYST_DN) {
+                    //if(chain_name == "HLT_mu24")
+                    //    cout << "SusyNtMaker::store_muon      > TRIG_SYST_DN   eff_data = " << eff_data_sys << "   eff_mc = " << eff_mc_sys << endl;
+                    out.muoTrigEffErrData_syst_dn_medium[itrig] = eff_data_sys;
+                    out.muoTrigEffErrMC_syst_dn_medium[itrig] = eff_mc_sys;
+                }
+            } // itrig
 
-            xAOD::MuonContainer *sf_muon = new xAOD::MuonContainer;
-            xAOD::MuonAuxContainer *sf_muon_aux = new xAOD::MuonAuxContainer;
-            sf_muon->setStore(sf_muon_aux);
-            xAOD::Muon* sfMu = new xAOD::Muon;
-            sfMu->makePrivateStore(in);
-            sf_muon->push_back(sfMu);
-
-            TString trig_exp_med = "HLT_mu20_iloose_L1MU15_OR_HLT_mu50";
-            if(m_run_oneST) {
-                if(m_susyObj[m_eleIDDefault]->treatAsYear()==2016)
-                    trig_exp_med = "HLT_mu24_imedium";
-            }
-            else {
-                if(m_susyObj[SusyObjId::muoMedium]->treatAsYear()==2016)
-                    trig_exp_med = "HLT_mu24_imedium";
-            }
-            if(m_run_oneST) {
-                sf_trig[MuonId::Medium] = m_susyObj[m_eleIDDefault]->GetTotalMuonTriggerSF(*sf_muon, static_cast<string>(trig_exp_med.Data()));
-            }
-            else {
-                sf_trig[MuonId::Medium] = m_susyObj[SusyObjId::muoMedium]->GetTotalMuonTriggerSF(*sf_muon, static_cast<string>(trig_exp_med.Data()));
-            }
-            delete sf_muon;
-            delete sf_muon_aux;
-            //delete sfMu;
-
-            for(int i=MuonId::VeryLoose; i < MuonId::MuonIdInvalid; i++) {
-                if      (ourSys == NtSys::MUON_EFF_TRIG_STAT_UP)    out.errTrigSF_stat_up[i] = sf_trig[i] - out.muoTrigSF[i];
-                else if (ourSys == NtSys::MUON_EFF_TRIG_STAT_DN)    out.errTrigSF_stat_dn[i] = sf_trig[i] - out.muoTrigSF[i];
-                else if (ourSys == NtSys::MUON_EFF_TRIG_SYST_UP)    out.errTrigSF_syst_up[i] = sf_trig[i] - out.muoTrigSF[i];
-                else if (ourSys == NtSys::MUON_EFF_TRIG_SYST_DN)    out.errTrigSF_syst_dn[i] = sf_trig[i] - out.muoTrigSF[i];
-
-               // if(i == 1 || i == 2) {
-               //     if(i==1)
-               //         cout << "MuonId: Loose" << endl;
-               //     else if(i==2)
-               //         cout << "MuonId: Medium" << endl;
-               //     cout << "       eff trig stat        : " << out.errTrigSF_stat_up[i] << "  " << out.errTrigSF_stat_dn[i] << endl;
-               //     cout << "       eff trig syst        : " << out.errTrigSF_syst_up[i] << "  " << out.errTrigSF_syst_dn[i] << endl;
-               // }
-            } // i
-
-        } // sysInfo
-        for(int i : Susy::muonIds()){
-            int index_to_check = (m_run_oneST==true ? (int)m_eleIDDefault : i);
-            if(m_susyObj[index_to_check]->resetSystematics() != CP::SystematicCode::Ok){
-                cout << "SusyNtMaker::store_muon    ERROR cannot reset SUSYTools systematics. Aborting." << endl;
+            if(m_susyObj[SusyObjId::muoMedium]->resetSystematics() != CP::SystematicCode::Ok) {
+                cout << "SusyNtMaker::store_muon    ERROR Cannot reset SUSYTools systematics. Aborting." << endl;
                 abort();
             }
-            if(m_run_oneST) break;
         }
     } // ifMC && sys
-    else {
-        for(int i=MuonId::VeryLoose; i<MuonId::MuonIdInvalid; i++){
-            out.errTrigSF_stat_up[i] = out.errTrigSF_stat_dn[i] = 0;
-            out.errTrigSF_syst_up[i] = out.errTrigSF_syst_dn[i] = 0;
-        }
-    }
 
     //______________ ALL DONE WITH THE MUON ______________ //
     out.idx = (m_susyNt.muo()->size());
@@ -2343,6 +2417,8 @@ void SusyNtMaker::store_jet_kinematic_sys(ST::SystInfo sysInfo, SusyNtSys sys)
         else if( sys == NtSys::JET_GroupedNP_2_DN) jet_susyNt->groupedNP[3] = sf;
         else if( sys == NtSys::JET_GroupedNP_3_UP) jet_susyNt->groupedNP[4] = sf;
         else if( sys == NtSys::JET_GroupedNP_3_DN) jet_susyNt->groupedNP[5] = sf;
+        else if( sys == NtSys::JET_EtaIntercalibration_UP) jet_susyNt->eta_intercal_up = sf;
+        else if( sys == NtSys::JET_EtaIntercalibration_DN) jet_susyNt->eta_intercal_dn = sf;
     }
 }
 //////////////////////////////////////////////////////////////////////////////
