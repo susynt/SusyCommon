@@ -186,6 +186,8 @@ bool XaodAnalysis::data_or_mc_from_name(const TString &s)
         return false;
     }
 
+    cout << "XaodAnalysis::data_or_mc_from_name    Treating sample as " << ( m_isMC ? "MC" : "DATA" ) << endl;
+
     return true;
 }
 /////////////////////////////////////////////////////////////////////////////
@@ -214,6 +216,7 @@ bool XaodAnalysis::set_mctype(MCType type)
         return false;
     }
     m_mc_type = type;
+    if(mc())
     cout << "XaodAnalysis::set_mctype    Treating input MC sample as " << MCType2str(type) << endl;
     return true;
 }
@@ -229,7 +232,12 @@ void XaodAnalysis::Init(TTree* tree)
 
     xAOD::Init("Susy::XaodAnalysis").ignore();
     
-    get_sumw(tree);
+    if(mc())
+        get_sumw(tree);
+
+    // revert back
+    m_event.readFrom(tree);
+    m_event.getEntry(0);
 
     m_is_derivation = is_derivation_from_metadata(tree); 
     m_derivation = get_derivation_type(m_event);
@@ -320,9 +328,6 @@ void XaodAnalysis::get_sumw(TTree* tree)
     cout << "XaodAnalysis::get_sumw      > sum of weights^2     : " << m_sumOfWeightsSquared << endl;
     cout << "------------------------------------------------------------------" << endl;
 
-    // revert back
-    m_event.readFrom(tree);
-    m_event.getEntry(0);
 }
 //////////////////////////////////////////////////////////////////////////////
 bool XaodAnalysis::collect_cutbooks(xAOD::TEvent& event, int file_counter)
