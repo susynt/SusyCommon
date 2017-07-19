@@ -90,6 +90,8 @@ XaodAnalysis::XaodAnalysis() :
     m_isoToolLooseTrackOnlyLoose(""),
     m_isoToolLoose(""),
     m_isoToolTight(""),
+    m_isoCloseByTight(""),
+    m_isoCloseByGradientLoose(""),
     m_run_oneST(false),
     m_eleIDDefault(eleTightLLH),
     // xAOD EDM
@@ -472,6 +474,9 @@ void XaodAnalysis::initialize_local_tools()
     // isolation
     initialize_isolation_tools();
 
+    // isolation close-by correction
+    initialize_isolation_closeby_correction_tools();
+
     if(dbg())
     cout << "XaodAnalysis::initialize_local_tools    Local tool initialization complete" << endl;
     
@@ -771,6 +776,28 @@ void XaodAnalysis::initialize_isolation_tools()
         CHECK( m_isoToolTight.setProperty("PhotonWP",   "FixedCutTight") );
         CHECK( m_isoToolTight.retrieve() );
     } // configured
+}
+//////////////////////////////////////////////////////////////////////////////
+void XaodAnalysis::initialize_isolation_closeby_correction_tools()
+{
+    if(dbg()>=5) cout << "XaodAnalysis::initialize_isolation_closeby_correction_tools" << endl;
+
+    string tool_name;
+    // close by correction for lepton isolation selection WP FixedCutTightTrackOnly
+    if(!m_isoCloseByTight.isUserConfigured()) {
+        tool_name = "SUSY_IsoCloseByTight";
+        SET_DUAL_TOOL(m_isoCloseByTight, CP::IsolationCloseByCorrectionTool, tool_name);
+        CHECK( m_isoCloseByTight.setProperty("IsolationSelectionTool", m_isoToolTight) );
+        CHECK( m_isoCloseByTight.retrieve() );
+    }
+
+    // close by correction for lepton isolation selection WP GradientLoose
+    if(!m_isoCloseByGradientLoose.isUserConfigured()) {
+        tool_name = "SUSY_IsoCloseByGradientLoose";
+        SET_DUAL_TOOL(m_isoCloseByGradientLoose, CP::IsolationCloseByCorrectionTool, tool_name);
+        CHECK( m_isoCloseByGradientLoose.setProperty("IsolationSelectionTool", m_isoToolGradientLooseTight) );
+        CHECK( m_isoCloseByGradientLoose.retrieve() );
+    }
 }
 //////////////////////////////////////////////////////////////////////////////
 void XaodAnalysis::initialize_SUSYTools()

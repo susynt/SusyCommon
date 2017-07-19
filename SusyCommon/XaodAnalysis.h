@@ -45,6 +45,7 @@
 #include "MuonEfficiencyCorrections/MuonEfficiencyScaleFactors.h"
 #include "MuonSelectorTools/MuonSelectionTool.h"
 #include "IsolationSelection/IsolationSelectionTool.h"
+#include "IsolationSelection/IsolationCloseByCorrectionTool.h"
 #include "TrigDecisionTool/TrigDecisionTool.h"
 #include "TauAnalysisTools/TauSelectionTool.h"
 #include "TauAnalysisTools/TauEfficiencyCorrectionsTool.h"
@@ -193,6 +194,7 @@ namespace Susy {
             void initialize_muon_tools();
             void initialize_tau_tools();
             void initialize_isolation_tools();
+            void initialize_isolation_closeby_correction_tools();
 
             // initialize SUSYTools
             void initialize_SUSYTools();
@@ -356,6 +358,10 @@ namespace Susy {
             asg::AnaToolHandle<CP::IIsolationSelectionTool> m_isoToolLooseTrackOnlyLoose;
             asg::AnaToolHandle<CP::IIsolationSelectionTool> m_isoToolLoose;
             asg::AnaToolHandle<CP::IIsolationSelectionTool> m_isoToolTight;
+
+            // closeby isolation correction
+            asg::AnaToolHandle<CP::IIsolationCloseByCorrectionTool> m_isoCloseByTight;
+            asg::AnaToolHandle<CP::IIsolationCloseByCorrectionTool> m_isoCloseByGradientLoose;
 
             //////////////////////////////////////////////
             // SUSYTools instances

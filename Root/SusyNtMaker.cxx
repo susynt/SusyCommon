@@ -725,8 +725,13 @@ void SusyNtMaker::fill_electron_variables()
             int dsid = xaodEventInfo()->mcChannelNumber();
             fillElectronChargeFlip(electrons, xaodTruthParticles(), dsid);
         }
+        std::vector<const xAOD::IParticle*> pVec;
+        for(auto pobj : *electrons) {
+            pVec.push_back((const xAOD::IParticle*) pobj);
+        }
+
         for(auto& i : m_preElectrons) {
-            store_electron(*(electrons->at(i)), i);
+            store_electron(*(electrons->at(i)), i, pVec);
         }
     }
     else {
@@ -741,8 +746,12 @@ void SusyNtMaker::fill_muon_variables()
     xAOD::MuonContainer* muons = xaodMuons(systInfoList[0]);
 
     if(muons) {
+        std::vector<const xAOD::IParticle*> pVec;
+        for(auto pobj : *muons) {
+            pVec.push_back((const xAOD::IParticle*) pobj);
+        }
         for(auto &i : m_preMuons) {
-            store_muon(*(muons->at(i)), *muons);
+            store_muon(*(muons->at(i)), *muons, pVec);
         } // i
     //    cout << "---------------------------------" << endl;
     // xAOD::MuonContainer *sf_muon = new xAOD::MuonContainer;
@@ -987,7 +996,8 @@ void SusyNtMaker::fill_track_met_variables(SusyNtSys sys)
     delete tmet;
 }
 //////////////////////////////////////////////////////////////////////////////
-void SusyNtMaker::store_electron(const xAOD::Electron& in, int ele_idx)
+void SusyNtMaker::store_electron(const xAOD::Electron& in, int ele_idx,
+      vector<const xAOD::IParticle*> pVec) 
 {
     if(dbg()>=15) cout << "SusyNtMaker::store_electron    Electron[" << ele_idx << "], pt=" << in.pt()*MeV2GeV << endl;
 
@@ -1044,6 +1054,11 @@ void SusyNtMaker::store_electron(const xAOD::Electron& in, int ele_idx)
     out.isoLooseTrackOnly         = m_isoToolLooseTrackOnlyLoose->accept(in) ? true : false;
     out.isoLoose                  = m_isoToolLoose->accept(in) ? true : false;
     out.isoFixedCutTightTrackOnly = m_isoToolTight->accept(in) ? true : false;
+
+    //////////////////////////////////
+    // CloseBy Correction
+    //////////////////////////////////
+    out.isoFixedCutTightTrackOnlyCloseBy = m_isoCloseByTight->acceptCorrected(in, pVec); 
     
     //////////////////////////////////
     // Isolation Variables
@@ -1355,7 +1370,8 @@ void SusyNtMaker::store_electron(const xAOD::Electron& in, int ele_idx)
     m_susyNt.ele()->push_back(out);
 }
 //////////////////////////////////////////////////////////////////////////////
-void SusyNtMaker::store_muon(const xAOD::Muon& in, const xAOD::MuonContainer& muons)
+void SusyNtMaker::store_muon(const xAOD::Muon& in, const xAOD::MuonContainer& muons,
+        vector<const xAOD::IParticle*> pVec)
 {
     if(dbg()>=15) cout << "SusyNtMaker::store_muon   Muon (pt=" << in.pt()*MeV2GeV << ")" << endl; 
 
@@ -1433,6 +1449,11 @@ void SusyNtMaker::store_muon(const xAOD::Muon& in, const xAOD::MuonContainer& mu
     out.isoLooseTrackOnly         = m_isoToolLooseTrackOnlyLoose->accept(in) ? true : false;
     out.isoLoose                  = m_isoToolLoose->accept(in) ? true : false;
     out.isoFixedCutTightTrackOnly = m_isoToolTight->accept(in) ? true : false;
+
+    //////////////////////////////////////
+    // CloseBy correction
+    //////////////////////////////////////
+    out.isoFixedCutTightTrackOnlyCloseBy = m_isoCloseByTight->acceptCorrected(in, pVec);
 
     bool all_available = true;
     //////////////////////////////////////
@@ -2231,11 +2252,17 @@ void SusyNtMaker::store_electron_kinematic_sys(ST::SystInfo sysInfo, SusyNtSys s
         //Nominal electron was not found. Add it at its nominal scale to susyNt and m_preElectron_nom 
         //this happens if the systematic varied object passes the (e.g. pT) threshold that the nominal did not (c.f. XaodAnalysis::fill_baseline_objects)
         if(ele_susyNt == NULL){
+
+            std::vector<const xAOD::IParticle*> pVec;
+            for(auto pobj : *electrons_nom) {
+                pVec.push_back((const xAOD::IParticle*) pobj);
+            }
+
             ele_nom = electrons_nom->at(iEl);
             if(dbg()>=20) {
                 cout << "SusyNtMaker::store_electron_kinematic_sys    Nominal electron not found at sys idx " << iEl << " (there are " << m_preElectrons_nom.size() << " nominal electrons, " << m_preElectrons.size() << " sys varied electrons) : pT_sys=" << ele->pt()*MeV2GeV << "  pT_nom=" << ele_nom->pt()*MeV2GeV << "  -> Adding (new) nominal electron to output susyNt for SF calculation" << endl;
             }
-            store_electron(*ele_nom, iEl);
+            store_electron(*ele_nom, iEl, pVec);
             m_preElectrons_nom.push_back(iEl);
             ele_susyNt = & m_susyNt.ele()->back(); // now get the newly inserted element and use it
         }
@@ -2288,7 +2315,13 @@ void SusyNtMaker::store_muon_kinematic_sys(ST::SystInfo sysInfo, SusyNtSys sys)
             if(dbg()>=20) {
                 cout << "SusyNtMaker::store_muon_kinematic_sys    Nominal muon not found at sys idx " << iMu << " (there are " << m_preMuons_nom.size() << " nominal muons, " << m_preMuons.size() << " sys varied muons) : pT_sys=" << mu->pt()*MeV2GeV << "  pT_nom=" << mu_nom->pt()*MeV2GeV << "  -> Adding (new) nominal muon to output susyNt for SF calculation" << endl;
             }
-            store_muon(*mu_nom, *muons);
+
+            std::vector<const xAOD::IParticle*> pVec;
+            for(auto pobj : *muons_nom) {
+                pVec.push_back((const xAOD::IParticle*) pobj);
+            }
+
+            store_muon(*mu_nom, *muons, pVec);
             m_preMuons_nom.push_back(iMu);
             mu_susyNt = & m_susyNt.muo()->back(); // now get the newly inserted element and use it for SF calculation
         }

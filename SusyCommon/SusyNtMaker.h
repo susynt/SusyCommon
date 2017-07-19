@@ -73,11 +73,11 @@ class SusyNtMaker : public XaodAnalysis
 
         // Electron
         void fill_electron_variables();
-        void store_electron(const xAOD::Electron& in, int ele_idx);
+        void store_electron(const xAOD::Electron& in, int ele_idx, std::vector<const xAOD::IParticle*> vec);
 
         // Muon
         void fill_muon_variables();
-        void store_muon(const xAOD::Muon& in, const xAOD::MuonContainer& muons);
+        void store_muon(const xAOD::Muon& in, const xAOD::MuonContainer& muons, std::vector<const xAOD::IParticle*> vec);
 
         // Jet
         void fill_jet_variables();
