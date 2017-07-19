@@ -1594,7 +1594,6 @@ void XaodAnalysis::fill_signal_objects(SusyNtSys sys, ST::SystInfo sysInfo)
     if(photons) {
     int iPh = 0;
     for(const auto& ph : *photons) {
-        #warning need to set photon decorators in SUSYTools
         bool pass_cleaning = (bool)ph->auxdata<char>("passCleaning");
         bool pass_ambiguity = (bool)ph->auxdata<char>("passAmbiguity");
         if(pass_cleaning && pass_ambiguity) { m_prePhotons.push_back(iPh); m_basePhotons.push_back(iPh); m_sigPhotons.push_back(iPh); }

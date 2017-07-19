@@ -154,7 +154,7 @@ Bool_t SusyNtMaker::Process(Long64_t entry)
     }
 
     const xAOD::EventInfo* eventinfo = XaodAnalysis::xaodEventInfo();
-    if(dbg() || chainEntry % 500 == 0) {
+    if(dbg() || chainEntry % 5000 == 0) {
         cout << "SusyNtMaker::Process     *** Processing entry " << setw(6) << chainEntry
                 << "  run " << setw(6) << eventinfo->runNumber()
                 << "  event " << setw(7) << eventinfo->eventNumber() << " *** " << endl;
@@ -203,11 +203,11 @@ Bool_t SusyNtMaker::Process(Long64_t entry)
         if(mc()) m_tauTruthMatchingTool->initializeEvent(); // gives the tool the truth info
 
         // dantrim June 12 2017 -- TODO update the dilepton trigger matching to be Event
-        sample_event_triggers(); // check if triggers fired at event level (no trigger object matching)
+        // store the event-wide trigger bits to Susy::Event (not doing trigger object matching here)
+        sample_event_triggers();
 
         // store objects to the output susyNt
         fill_nt_variables();
-
 
         // run systematics
         if(mc() && sys()) {
@@ -487,7 +487,7 @@ bool SusyNtMaker::pass_object_level_selection()
     const xAOD::EventInfo* eventinfo = XaodAnalysis::xaodEventInfo();
     double w = mc() ? eventinfo->mcEventWeight() : 1;
 
-    fill_object_cleaning_flags();
+    fill_object_cleaning_flags(); // bad jet, bad muon, cosmic muon
 
     ////////////////////////////////////////
     // update cutflow
@@ -696,7 +696,6 @@ void SusyNtMaker::fill_event_variables()
         evt->mcWeights = get_mc_weights(eventinfo);
 
     m_susyNt.evt()->cutFlags[NtSys::NOM] = m_cutFlags;
-
 }
 //////////////////////////////////////////////////////////////////////////////
 vector<float> SusyNtMaker::get_mc_weights(const xAOD::EventInfo* ei)
@@ -1721,7 +1720,6 @@ void SusyNtMaker::store_muon(const xAOD::Muon& in, const xAOD::MuonContainer& mu
         }
     }
 
-    #warning check muon trigger SF variations once we get these SFs
     if(mc() && sys() && fabs(out.eta)<2.5 && out.pt>20){
         for(const auto& sysInfo : systInfoList) {
             if(!(sysInfo.affectsType == ST::SystObjType::Muon && sysInfo.affectsWeights)) continue;
