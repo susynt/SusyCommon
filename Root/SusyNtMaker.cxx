@@ -200,7 +200,8 @@ Bool_t SusyNtMaker::Process(Long64_t entry)
     ////////////////////////////////////////////////////////////
     if(fill_nt()) {
 
-        if(mc()) m_tauTruthMatchingTool->initializeEvent(); // gives the tool the truth info
+        // dantrim 2017 Aug 27 - this method is deprecated TODO check if replaced by something else?
+        //if(mc()) m_tauTruthMatchingTool->initializeEvent(); // gives the tool the truth info
 
         // dantrim June 12 2017 -- TODO update the dilepton trigger matching to be Event
         // store the event-wide trigger bits to Susy::Event (not doing trigger object matching here)
