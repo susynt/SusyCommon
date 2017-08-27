@@ -27,8 +27,8 @@
 #include "TrigConfHLTData/HLTTriggerElement.h"
 #include "TrigConfxAOD/xAODConfigTool.h"
 #include "xAODTrigger/TrigNavigation.h"
-#include "xAODTrigEgamma/TrigElectron.h"
-#include "xAODTrigEgamma/TrigElectronContainer.h"
+//#include "xAODTrigEgamma/TrigElectron.h"
+//#include "xAODTrigEgamma/TrigElectronContainer.h"
 
 //CP systematics
 #include "PATInterfaces/SystematicVariation.h"
