@@ -6,6 +6,7 @@
 #include "xAODEgamma/EgammaxAODHelpers.h"
 #include "xAODCutFlow/CutBookkeeper.h"
 #include "xAODCutFlow/CutBookkeeperContainer.h"
+#include "PathResolver/PathResolver.h"
 
 //SusyNtuple
 //#include "SusyNtuple/RecoTruthClassificiation.h" // is this needed?
@@ -242,24 +243,6 @@ void XaodAnalysis::Init(TTree* tree)
     m_is_derivation = is_derivation_from_metadata(tree); 
     m_derivation = get_derivation_type(m_event);
     m_stream = stream_from_input_container(input_container(), mc());
-
-    // get the data/ area
-    char *tmparea = getenv("ROOTCOREBIN");
-    char *test_area = getenv("TestArea"); // Athena, for the big dogs
-
-    if(tmparea != NULL) {
-        m_data_dir = tmparea;
-        m_data_dir = m_data_dir + "/data/";
-    }
-    else if(test_area != NULL) {
-        tmparea = test_area;
-        m_data_dir = tmparea;
-        m_data_dir = m_data_dir + "/";
-    }
-    else {
-        cout << "XaodAnalysis::Init    ERROR RootCore area may not be set up, exiting" << endl;
-        exit(1);
-    }
 
     ///////////////////////////////////////////////////////////
     cout << "---------------------------------------------------------------------" << endl;
@@ -843,10 +826,12 @@ void XaodAnalysis::initialize_SUSYTools()
             prw_files.push_back("dev/SUSYTools/merged_prw_mc15c_latest.root");
 
             // add our signal
-            prw_files.push_back(m_data_dir + "SusyCommon/signal_prw.root");
+            string sig_prw_file = PathResolverFindDataFile("SusyCommon/signal_prw.root");
+            prw_files.push_back(sig_prw_file);
 
             // add'l MC
-            prw_files.push_back(m_data_dir + "SusyCommon/additional_mc_prw.root");
+            string add_mc_prw_file = PathResolverFindDataFile("SusyCommon/additional_mc_prw.root");
+            prw_files.push_back(add_mc_prw_file);
         }
         else {
             cout << "XaodAnalysis::initialize_SUSYTools    "
@@ -857,8 +842,10 @@ void XaodAnalysis::initialize_SUSYTools()
         m_susyObj[susyObjId]->setProperty("PRWConfigFiles", prw_files);
 
         vector<string> lumi_calc_files;
-        lumi_calc_files.push_back(m_data_dir+"SusyCommon/ilumicalc_histograms_None_297730-311481_OflLumi-13TeV-008.root");
-        lumi_calc_files.push_back(m_data_dir+"SusyCommon/ilumicalc_histograms_None_276262-284484.root");
+        string lumi_calc_2015 = PathResolverFindDataFile("SusyCommon/ilumicalc_histograms_None_297730-311481_OflLumi-13TeV-008.root");
+        string lumi_calc_2016 = PathResolverFindDataFile("SusyCommon/ilumicalc_histograms_None_276262-284484.root");
+        lumi_calc_files.push_back(lumi_calc_2015);
+        lumi_calc_files.push_back(lumi_calc_2016);
         m_susyObj[susyObjId]->setProperty("PRWLumiCalcFiles", lumi_calc_files);
         cout << endl;
         cout << "XaodAnalysis::initialize_SUSYTools    Configuring PRW tool " << endl;
