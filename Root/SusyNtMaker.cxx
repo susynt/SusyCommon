@@ -34,6 +34,7 @@
 #include <sstream>
 #include <string>
 #include <iostream>
+#include <numeric>
 using namespace std;
 
 using Susy::SusyNtMaker;
