@@ -351,7 +351,7 @@ namespace Susy {
             asg::AnaToolHandle<TauAnalysisTools::ITauSelectionTool> m_tauSelToolLoose;
             asg::AnaToolHandle<TauAnalysisTools::ITauSelectionTool> m_tauSelToolMedium;
             asg::AnaToolHandle<TauAnalysisTools::ITauSelectionTool> m_tauSelToolTight;
-            TauAnalysisTools::TauTruthMatchingTool *m_tauTruthMatchingTool;
+            asg::AnaToolHandle<TauAnalysisTools::ITauTruthMatchingTool> m_tauTruthMatchingTool;
 
             // lepton/photon isolation
             asg::AnaToolHandle<CP::IIsolationSelectionTool> m_isoToolGradientLooseTight;

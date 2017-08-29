@@ -14,13 +14,18 @@
 //Tools
 //#include "ElectronPhotonSelectorTools/AsgElectronChargeIDSelectorTool.h"
 
+//Interfaces
+#include "TauAnalysisTools/ITauTruthMatchingTool.h"
+
 //std/stl
 #include <limits>
 #include <algorithm> // copy_if, transform
 #include <iterator> // back_inserter
 #include <numeric> // accumulate
+#include <sstream>
 #include <iostream>
 using namespace std;
+
 
 using Susy::XaodAnalysis;
 
@@ -86,7 +91,7 @@ XaodAnalysis::XaodAnalysis() :
     m_tauSelToolLoose(""),
     m_tauSelToolMedium(""),
     m_tauSelToolTight(""),
-    m_tauTruthMatchingTool(0),
+    m_tauTruthMatchingTool(""),
     m_isoToolGradientLooseTight(""),
     m_isoToolGradientTightCalo(""),
     m_isoToolLooseTrackOnlyLoose(""),
@@ -276,9 +281,6 @@ Bool_t XaodAnalysis::Process(Long64_t entry)
 //////////////////////////////////////////////////////////////////////////////
 void XaodAnalysis::Terminate()
 {
-
-    // clean up
-    delete m_tauTruthMatchingTool;
 
     for(int i : Susy::leptonIds()) {
         delete m_susyObj[i];
@@ -653,7 +655,9 @@ void XaodAnalysis::initialize_tau_tools()
     if(dbg()>=5) cout << "XaodAnalysis::initialize_tau_tools" << endl;
 
     // Let's select some taus
-    string tool_name = "";
+    //string tool_name = "";
+    stringstream tool_name;
+    string type = "TauAnalysisTools::TauSelectionTool";
     string input_file = "";
     
     // dantrim (Feb 20 2017) : Recalculate tau-lep OR -- current samples (MC p-tag p2879, 20.7.8.2) are not AODFixed
@@ -663,9 +667,12 @@ void XaodAnalysis::initialize_tau_tools()
     
     // loose
     if(!m_tauSelToolLoose.isUserConfigured()) {
-        tool_name = "SUSY_TauSel_Loose";
         input_file = "SUSYTools/tau_selection_loose.conf";
-        SET_DUAL_TOOL(m_tauSelToolLoose, TauAnalysisTools::TauSelectionTool, tool_name);
+        //tool_name = "SUSY_TauSel_Loose";
+        //SET_DUAL_TOOL(m_tauSelToolLoose, TauAnalysisTools::TauSelectionTool, tool_name);
+        tool_name.str("");
+        tool_name << type << "/" << "SUSYTauSel_Loose";
+        m_tauSelToolLoose.setTypeAndName(tool_name.str());
         CHECK( m_tauSelToolLoose.setProperty("ConfigPath", input_file) );
     
         if(tauRecalcOLR) {
@@ -677,9 +684,12 @@ void XaodAnalysis::initialize_tau_tools()
     } // configured
     // medium
     if(!m_tauSelToolMedium.isUserConfigured()) {
-        tool_name = "SUSY_TauSel_Medium";
         input_file = "SUSYTools/tau_selection_medium.conf";
-        SET_DUAL_TOOL(m_tauSelToolMedium, TauAnalysisTools::TauSelectionTool, tool_name);
+        //tool_name = "SUSY_TauSel_Medium";
+        //SET_DUAL_TOOL(m_tauSelToolMedium, TauAnalysisTools::TauSelectionTool, tool_name);
+        tool_name.str("");
+        tool_name << type << "/" << "SUSYTauSel_Medium";
+        m_tauSelToolMedium.setTypeAndName(tool_name.str());
         CHECK( m_tauSelToolMedium.setProperty("ConfigPath", input_file) );
     
         if(tauRecalcOLR) {
@@ -692,9 +702,12 @@ void XaodAnalysis::initialize_tau_tools()
     
     // tight
     if(!m_tauSelToolTight.isUserConfigured()) {
-        tool_name = "SUSY_TauSel_Tight";
         input_file = "SUSYTools/tau_selection_tight.conf";
-        SET_DUAL_TOOL(m_tauSelToolTight, TauAnalysisTools::TauSelectionTool, tool_name);
+        //tool_name = "SUSY_TauSel_Tight";
+        //SET_DUAL_TOOL(m_tauSelToolTight, TauAnalysisTools::TauSelectionTool, tool_name);
+        tool_name.str("");
+        tool_name << type << "/" << "SUSYTauSel_Tight";
+        m_tauSelToolTight.setTypeAndName(tool_name.str());
         CHECK( m_tauSelToolTight.setProperty("ConfigPath", input_file) );
     
         if(tauRecalcOLR) {
@@ -726,12 +739,17 @@ void XaodAnalysis::initialize_isolation_tools()
     if(dbg()>=5) cout << "XaodAnalysis::initialize_isolation_tools" << endl;
 
     // see: https://twiki.cern.ch/twiki/bin/view/AtlasProtected/IsolationSelectionTool
-    string tool_name = "";
+    //string tool_name = "";
+    stringstream tool_name;
+    string type = "CP::IsolationSelectionTool";
     
     // Gradient Loose WP for leptons, FixedCutTight WP for photons
     if(!m_isoToolGradientLooseTight.isUserConfigured()) {
-        tool_name = "SUSY_IsoTool_GLTight";
-        SET_DUAL_TOOL(m_isoToolGradientLooseTight, CP::IsolationSelectionTool, tool_name);
+        //tool_name = "SUSY_IsoTool_GLTight";
+        //SET_DUAL_TOOL(m_isoToolGradientLooseTight, CP::IsolationSelectionTool, tool_name);
+        tool_name.str("");
+        tool_name << type << "/" << "SUSYIsoTool_GLTight";
+        m_isoToolGradientLooseTight.setTypeAndName(tool_name.str());
         CHECK( m_isoToolGradientLooseTight.setProperty("ElectronWP", "GradientLoose") );
         CHECK( m_isoToolGradientLooseTight.setProperty("MuonWP",     "GradientLoose") );
         CHECK( m_isoToolGradientLooseTight.setProperty("PhotonWP",   "FixedCutTight") );
@@ -740,8 +758,11 @@ void XaodAnalysis::initialize_isolation_tools()
     
     // Gradient WP for leptons, FixedCutTightCaloOnly WP for photons
     if(!m_isoToolGradientTightCalo.isUserConfigured()) {
-        tool_name = "SUSY_IsoTool_GCalo";
-        SET_DUAL_TOOL(m_isoToolGradientTightCalo, CP::IsolationSelectionTool, tool_name);
+        //tool_name = "SUSY_IsoTool_GCalo";
+        //SET_DUAL_TOOL(m_isoToolGradientTightCalo, CP::IsolationSelectionTool, tool_name);
+        tool_name.str("");
+        tool_name << type << "/" << "SUSYIsoTool_GCalo";
+        m_isoToolGradientTightCalo.setTypeAndName(tool_name.str());
         CHECK( m_isoToolGradientTightCalo.setProperty("ElectronWP", "Gradient") );
         CHECK( m_isoToolGradientTightCalo.setProperty("MuonWP",     "Gradient") );
         CHECK( m_isoToolGradientTightCalo.setProperty("PhotonWP",   "FixedCutTightCaloOnly") );
