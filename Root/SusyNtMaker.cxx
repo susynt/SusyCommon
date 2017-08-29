@@ -1860,11 +1860,12 @@ void SusyNtMaker::store_jet(const xAOD::Jet& in)
     ///////////////////////////////////////////
     // b-tagging
     ///////////////////////////////////////////
-    double weight_mv2c20(0.);
-    if(!in.btagging()->MVx_discriminant("MV2c20", weight_mv2c20)) {
-        cout << "SusyNtMaker::store_jet    WARNING Failed to retrieve MV2c20 weight for jet (event:" << eventinfo->eventNumber() << ", pt=" << in.pt()*MeV2GeV << ")" << endl;
-    }
-    out.mv2c20 = weight_mv2c20;
+    // MV2c20 is OOOOLLD
+    //double weight_mv2c20(0.);
+    //if(!in.btagging()->MVx_discriminant("MV2c20", weight_mv2c20)) {
+    //    cout << "SusyNtMaker::store_jet    WARNING Failed to retrieve MV2c20 weight for jet (event:" << eventinfo->eventNumber() << ", pt=" << in.pt()*MeV2GeV << ")" << endl;
+    //}
+    //out.mv2c20 = weight_mv2c20;
 
     double weight_mv2c10(0.);
     if(!in.btagging()->MVx_discriminant("MV2c10", weight_mv2c10)) {
