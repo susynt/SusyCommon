@@ -2020,7 +2020,7 @@ void SusyNtMaker::store_tau(const xAOD::TauJet& in)
     //////////////////////////////////////
     // Truth info/classification
     //////////////////////////////////////
-    if (mc()){
+    if (mc() && m_do_tau_truth){
         auto truthTau = m_tauTruthMatchingTool->getTruth(in);
         out.isTruthMatched = (bool)in.auxdata<char>("IsTruthMatched");
         if(out.isTruthMatched) {

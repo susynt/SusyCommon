@@ -50,6 +50,7 @@ XaodAnalysis::XaodAnalysis() :
     m_nt_tag(""),
     m_output_filename(""),
     m_sys(false),
+    m_do_tau_truth(false),
     m_derivation("Unknown"),
     m_nlep_filter(1),
     m_filter_trig(false),
@@ -705,9 +706,19 @@ void XaodAnalysis::initialize_tau_tools()
     } // configured
     
     // Truth Matching for all of the infos
-    m_tauTruthMatchingTool = new TauAnalysisTools::TauTruthMatchingTool("SusyCommonTauTruthMatchingTool");
-    CHECK( m_tauTruthMatchingTool->initialize() );
-    m_tauTruthMatchingTool->msg().setLevel( MSG::INFO );
+    #warning not initializing tau truth matching
+    if(!m_do_tau_truth) {
+        cout << "XaodAnalysis::initialize_tau_tools    WARNING Not initializing TauTruthMatch tool" << endl;
+    }
+    if(!m_tauTruthMatchingTool.isUserConfigured() && m_do_tau_truth) {
+        m_tauTruthMatchingTool.setTypeAndName("TauAnalysisTools::TauTruthMatchingTool/SUSYTauTruthMatch");
+        CHECK( m_tauTruthMatchingTool.setProperty("WriteTruthTaus", true) );
+        CHECK( m_tauTruthMatchingTool.retrieve() );
+    }
+
+    //m_tauTruthMatchingTool = new TauAnalysisTools::TauTruthMatchingTool("SusyCommonTauTruthMatchingTool");
+    //CHECK( m_tauTruthMatchingTool->initialize() );
+    //m_tauTruthMatchingTool->msg().setLevel( MSG::INFO );
 }
 //////////////////////////////////////////////////////////////////////////////
 void XaodAnalysis::initialize_isolation_tools()

@@ -284,6 +284,7 @@ namespace Susy {
             std::string m_nt_tag;
             std::string m_output_filename; // name of output susyNt file
             bool m_sys; // run systematics
+            bool m_do_tau_truth;
 
             TString m_derivation;
 
