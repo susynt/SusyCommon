@@ -478,10 +478,10 @@ string XaodAnalysis::default_grl_file()
 {
     string grl_file = "";
     if(data15()) {
-        grl_file = "$ROOTCOREBIN/data/SusyCommon/data15_13TeV.periodAllYear_DetStatus-v79-repro20-02_DQDefects-00-02-02_PHYS_StandardGRL_All_Good_25ns.xml";
+        grl_file = PathResolverFindDataFile("SusyCommon/data15_13TeV.periodAllYear_DetStatus-v79-repro20-02_DQDefects-00-02-02_PHYS_StandardGRL_All_Good_25ns.xml");
     }
     else if(data16()) {
-        grl_file = "$ROOTCOREBIN/data/SusyCommon/data16_13TeV.periodAllYear_DetStatus-v88-pro20-21_DQDefects-00-02-04_PHYS_StandardGRL_All_Good_25ns.xml"; 
+        grl_file = PathResolverFindDataFile("SusyCommon/data16_13TeV.periodAllYear_DetStatus-v88-pro20-21_DQDefects-00-02-04_PHYS_StandardGRL_All_Good_25ns.xml");
     }
     else {
         cout << "XaodAnalysis::default_grl_file    ERROR Inconsistent data flags, cannot get GRL" << endl;
