@@ -521,45 +521,59 @@ void XaodAnalysis::initialize_electron_tools()
     std::string wp_tight = "TightLHElectron";
 
     //handle
-    string tool_name = "";
+    //string tool_name = "";
+    stringstream tool_name;
 
     // veryloose
     if(!m_elecSelLikelihoodVeryLoose.isUserConfigured()) {
-        tool_name = "SUSY_EleLH_" + wp_veryloose;
-        SET_DUAL_TOOL(m_elecSelLikelihoodVeryLoose, AsgElectronLikelihoodTool, tool_name);
+        tool_name.str("");
+        tool_name << "AsgElectronLikelihoodTool/SUSY_EleLH_" << wp_veryloose;
+        m_elecSelLikelihoodVeryLoose.setTypeAndName(tool_name.str());
+        //SET_DUAL_TOOL(m_elecSelLikelihoodVeryLoose, AsgElectronLikelihoodTool, tool_name);
         CHECK( m_elecSelLikelihoodVeryLoose.setProperty("WorkingPoint", wp_veryloose) );
         CHECK( m_elecSelLikelihoodVeryLoose.retrieve() );
     } // configured
 
     // loose
     if(!m_elecSelLikelihoodLoose.isUserConfigured()) {
-        tool_name = "SUSY_EleLH_" + wp_loose;
-        SET_DUAL_TOOL(m_elecSelLikelihoodLoose, AsgElectronLikelihoodTool, tool_name);
+        //tool_name = "SUSY_EleLH_" + wp_loose;
+        tool_name.str("");
+        tool_name << "AsgElectronLikelihoodTool/SUSY_EleLH_" << wp_loose;
+        m_elecSelLikelihoodLoose.setTypeAndName(tool_name.str());
+        //SET_DUAL_TOOL(m_elecSelLikelihoodLoose, AsgElectronLikelihoodTool, tool_name);
         CHECK( m_elecSelLikelihoodLoose.setProperty("WorkingPoint", wp_loose) );
         CHECK( m_elecSelLikelihoodLoose.retrieve() );
     } // configured
 
     // loose + b-layer
     if(!m_elecSelLikelihoodLooseBLayer.isUserConfigured()) {
-        tool_name = "SUSY_EleLH_" + wp_loose_blayer;
-        SET_DUAL_TOOL(m_elecSelLikelihoodLooseBLayer, AsgElectronLikelihoodTool, tool_name);
+        //tool_name = "SUSY_EleLH_" + wp_loose_blayer;
+        //SET_DUAL_TOOL(m_elecSelLikelihoodLooseBLayer, AsgElectronLikelihoodTool, tool_name);
+        tool_name.str("");
+        tool_name << "AsgElectronLikelihoodTool/SUSY_EleLH_" << wp_loose_blayer; 
+        m_elecSelLikelihoodLooseBLayer.setTypeAndName(tool_name.str());
         CHECK( m_elecSelLikelihoodLooseBLayer.setProperty("WorkingPoint", wp_loose_blayer) );
         CHECK( m_elecSelLikelihoodLooseBLayer.retrieve() );
     } // configured 
 
     // medium
     if(!m_elecSelLikelihoodMedium.isUserConfigured()) {
-        tool_name = "SUSY_EleLH_" + wp_medium;
-        SET_DUAL_TOOL(m_elecSelLikelihoodMedium, AsgElectronLikelihoodTool, tool_name);
+        //tool_name = "SUSY_EleLH_" + wp_medium;
+        //SET_DUAL_TOOL(m_elecSelLikelihoodMedium, AsgElectronLikelihoodTool, tool_name);
+        tool_name.str("");
+        tool_name << "AsgElectronLikelihoodTool/SUSY_EleLH_" << wp_medium;
+        m_elecSelLikelihoodMedium.setTypeAndName(tool_name.str());
         CHECK( m_elecSelLikelihoodMedium.setProperty("WorkingPoint", wp_medium) );
         CHECK( m_elecSelLikelihoodMedium.retrieve() );
     } // configured 
 
     // tight
     if(!m_elecSelLikelihoodTight.isUserConfigured()) {
-        tool_name = "SUSY_EleLH_" + wp_tight;
-        SET_DUAL_TOOL(m_elecSelLikelihoodTight, AsgElectronLikelihoodTool, tool_name);
-
+        //tool_name = "SUSY_EleLH_" + wp_tight;
+        //SET_DUAL_TOOL(m_elecSelLikelihoodTight, AsgElectronLikelihoodTool, tool_name);
+        tool_name.str("");
+        tool_name << "AsgElectronLikelihoodTool/SUSY_EleLH_" << wp_tight;
+        m_elecSelLikelihoodTight.setTypeAndName(tool_name.str());
         CHECK( m_elecSelLikelihoodTight.setProperty("WorkingPoint", wp_tight) ); 
         CHECK( m_elecSelLikelihoodTight.retrieve() );
     } // configured
@@ -568,8 +582,10 @@ void XaodAnalysis::initialize_electron_tools()
 void XaodAnalysis::initialize_chargeflip_tagger()
 {
     if(!m_electronChargeIDTool.isUserConfigured()) {
-        std::string tool_name = "ElectronChargeIDTool_medium";
-        SET_DUAL_TOOL(m_electronChargeIDTool, AsgElectronChargeIDSelectorTool, tool_name);
+        //std::string tool_name = "ElectronChargeIDTool_medium";
+        //SET_DUAL_TOOL(m_electronChargeIDTool, AsgElectronChargeIDSelectorTool, tool_name);
+        std::string tool_name = "AsgElectronChargeIDSelectorTool/SUSYElectronChargeIDTool_Medium";
+        m_electronChargeIDTool.setTypeAndName(tool_name);
     
         //default cut value for https://twiki.cern.ch/twiki/bin/view/AtlasProtected/ElectronChargeFlipTaggerTool
         float BDTcut = -0.28087; // medium 97%
@@ -584,20 +600,28 @@ void XaodAnalysis::initialize_photon_tools()
     if(dbg()>=5) cout << "XaodAnalysis::initialize_photon_tools" << endl;
 
     // Initialize photon selection tools
-    string tool_name = "";
+    //string tool_name = "";
+    stringstream tool_name;
+    string type = "AsgPhotonIsEMSelector";
     
     // loose
     if(!m_photonSelLoose.isUserConfigured()) {
-        tool_name = "SUSY_PhoSel_Loose";
-        SET_DUAL_TOOL(m_photonSelLoose, AsgPhotonIsEMSelector, tool_name);
+        //tool_name = "SUSY_PhoSel_Loose";
+        //SET_DUAL_TOOL(m_photonSelLoose, AsgPhotonIsEMSelector, tool_name);
+        tool_name.str("");
+        tool_name << type << "/" << "SUSYPhoSel_Loose"; 
+        m_photonSelLoose.setTypeAndName(tool_name.str());
         CHECK( m_photonSelLoose.setProperty("WorkingPoint", "LoosePhoton") );
         CHECK( m_photonSelLoose.retrieve() );
     } // configured
     
     // tight
     if(!m_photonSelTight.isUserConfigured()) {
-        tool_name = "SUSY_PhoSel_Tight";
-        SET_DUAL_TOOL(m_photonSelTight, AsgPhotonIsEMSelector, tool_name);
+        //tool_name = "SUSY_PhoSel_Tight";
+        //SET_DUAL_TOOL(m_photonSelTight, AsgPhotonIsEMSelector, tool_name);
+        tool_name.str("");
+        tool_name << type << "/" << "SUSYPhoSel_Tight";
+        m_photonSelTight.setTypeAndName(tool_name.str());
         CHECK( m_photonSelTight.setProperty("WorkingPoint", "TightPhoton") );
         CHECK( m_photonSelTight.retrieve() );
     } // configured
@@ -608,12 +632,16 @@ void XaodAnalysis::initialize_muon_tools()
     if(dbg()>=5) cout << "XaodAnalysis::initialize_muon_tools" << endl;
 
     // Initialize muon selection tools
-    string tool_name = "";
+    stringstream tool_name;
+    string type = "CP::MuonSelectionTool";
     
     // very loose
     if(!m_muonSelectionToolVeryLoose.isUserConfigured()) {
-        tool_name = "SUSY_MuonSelTool_VeryLoose";
-        SET_DUAL_TOOL(m_muonSelectionToolVeryLoose, CP::MuonSelectionTool, tool_name);
+        //tool_name = "SUSY_MuonSelTool_VeryLoose";
+        //SET_DUAL_TOOL(m_muonSelectionToolVeryLoose, CP::MuonSelectionTool, tool_name);
+        tool_name.str("");
+        tool_name << type << "/" << "SUSYMuonSelTool_VeryLoose";
+        m_muonSelectionToolVeryLoose.setTypeAndName(tool_name.str());
         CHECK( m_muonSelectionToolVeryLoose.setProperty("MaxEta", 2.7) );
         CHECK( m_muonSelectionToolVeryLoose.setProperty("MuQuality", int(xAOD::Muon::VeryLoose)) );
         CHECK( m_muonSelectionToolVeryLoose.setProperty("TrtCutOff", false) ); // SUSYTools default
@@ -622,8 +650,11 @@ void XaodAnalysis::initialize_muon_tools()
     
     // loose
     if(!m_muonSelectionToolLoose.isUserConfigured()) {
-        tool_name = "SUSY_MuonSelTool_Loose";
-        SET_DUAL_TOOL(m_muonSelectionToolLoose, CP::MuonSelectionTool, tool_name);
+        //tool_name = "SUSY_MuonSelTool_Loose";
+        //SET_DUAL_TOOL(m_muonSelectionToolLoose, CP::MuonSelectionTool, tool_name);
+        tool_name.str("");
+        tool_name << type << "/" << "SUSYMuonSelTool_Loose";
+        m_muonSelectionToolLoose.setTypeAndName(tool_name.str());
         CHECK( m_muonSelectionToolLoose.setProperty("MaxEta", 2.7) );
         CHECK( m_muonSelectionToolLoose.setProperty("MuQuality", int(xAOD::Muon::Loose)) );
         CHECK( m_muonSelectionToolLoose.setProperty("TrtCutOff", false) ); // SUSYTools default
@@ -631,8 +662,11 @@ void XaodAnalysis::initialize_muon_tools()
     } // configured
     // medium
     if(!m_muonSelectionToolMedium.isUserConfigured()) {
-        tool_name = "SUSY_MuonSelTool_Medium";
-        SET_DUAL_TOOL(m_muonSelectionToolMedium, CP::MuonSelectionTool, tool_name);
+        //tool_name = "SUSY_MuonSelTool_Medium";
+        //SET_DUAL_TOOL(m_muonSelectionToolMedium, CP::MuonSelectionTool, tool_name);
+        tool_name.str("");
+        tool_name << type << "/" << "SUSYMuonSelTool_Medium";
+        m_muonSelectionToolMedium.setTypeAndName(tool_name.str());
         CHECK( m_muonSelectionToolMedium.setProperty("MaxEta", 2.7) );
         CHECK( m_muonSelectionToolMedium.setProperty("MuQuality", int(xAOD::Muon::Medium)) );
         CHECK( m_muonSelectionToolMedium.setProperty("TrtCutOff", false) ); // SUSYTools default
@@ -641,8 +675,11 @@ void XaodAnalysis::initialize_muon_tools()
     
     // tight
     if(!m_muonSelectionToolTight.isUserConfigured()) {
-        tool_name = "SUSY_MuonSelTool_Tight";
-        SET_DUAL_TOOL(m_muonSelectionToolTight, CP::MuonSelectionTool, tool_name);
+        //tool_name = "SUSY_MuonSelTool_Tight";
+        //SET_DUAL_TOOL(m_muonSelectionToolTight, CP::MuonSelectionTool, tool_name);
+        tool_name.str("");
+        tool_name << type << "/" << "SUSYMuonSelTool_Tight";
+        m_muonSelectionToolTight.setTypeAndName(tool_name.str());
         CHECK( m_muonSelectionToolTight.setProperty("MaxEta", 2.7) );
         CHECK( m_muonSelectionToolTight.setProperty("MuQuality", int(xAOD::Muon::Tight)) );
         CHECK( m_muonSelectionToolTight.setProperty("TrtCutOff", false) ); // SUSYTools default
@@ -770,8 +807,11 @@ void XaodAnalysis::initialize_isolation_tools()
     
     // LooseTrackOnly WP, Loose WP for photons
     if(!m_isoToolLooseTrackOnlyLoose.isUserConfigured()) {
-        tool_name = "SUSY_IsoTool_LooseTrackLoose";
-        SET_DUAL_TOOL(m_isoToolLooseTrackOnlyLoose, CP::IsolationSelectionTool, tool_name);
+        //tool_name = "SUSY_IsoTool_LooseTrackLoose";
+        //SET_DUAL_TOOL(m_isoToolLooseTrackOnlyLoose, CP::IsolationSelectionTool, tool_name);
+        tool_name.str("");
+        tool_name << type << "/" << "SUSYIsoTool_LooseTrackLoose";
+        m_isoToolLooseTrackOnlyLoose.setTypeAndName(tool_name.str());
         CHECK( m_isoToolLooseTrackOnlyLoose.setProperty("ElectronWP", "LooseTrackOnly") );
         CHECK( m_isoToolLooseTrackOnlyLoose.setProperty("MuonWP",     "LooseTrackOnly") );
         CHECK( m_isoToolLooseTrackOnlyLoose.setProperty("PhotonWP",   "FixedCutLoose") );
@@ -779,8 +819,11 @@ void XaodAnalysis::initialize_isolation_tools()
     } // configured
     // Loose WP for leptons, FixedCutTight WP for photons
     if(!m_isoToolLoose.isUserConfigured()) {
-        tool_name = "SUSY_IsoTool_Loose";
-        SET_DUAL_TOOL(m_isoToolLoose, CP::IsolationSelectionTool, tool_name);
+        //tool_name = "SUSY_IsoTool_Loose";
+        //SET_DUAL_TOOL(m_isoToolLoose, CP::IsolationSelectionTool, tool_name);
+        tool_name.str("");
+        tool_name << type << "/" << "SUSYIsoTool_Loose";
+        m_isoToolLoose.setTypeAndName(tool_name.str());
         CHECK( m_isoToolLoose.setProperty("ElectronWP", "Loose") );
         CHECK( m_isoToolLoose.setProperty("MuonWP",     "Loose") );
         CHECK( m_isoToolLoose.setProperty("PhotonWP",   "FixedCutTight") );
@@ -789,8 +832,11 @@ void XaodAnalysis::initialize_isolation_tools()
     
     // FixedCutTightTrackOnly WP for leptons, FixedCutTight WP for photons
     if(!m_isoToolTight.isUserConfigured()) {
-        tool_name = "SUSY_IsoTool_Tight";
-        SET_DUAL_TOOL(m_isoToolTight, CP::IsolationSelectionTool, tool_name);
+        //tool_name = "SUSY_IsoTool_Tight";
+        //SET_DUAL_TOOL(m_isoToolTight, CP::IsolationSelectionTool, tool_name);
+        tool_name.str("");
+        tool_name << type << "/" << "SUSYIsoTool_Tight";
+        m_isoToolTight.setTypeAndName(tool_name.str());
         CHECK( m_isoToolTight.setProperty("ElectronWP", "FixedCutTightTrackOnly") );
         CHECK( m_isoToolTight.setProperty("MuonWP",     "FixedCutTightTrackOnly") );
         CHECK( m_isoToolTight.setProperty("PhotonWP",   "FixedCutTight") );
@@ -802,19 +848,26 @@ void XaodAnalysis::initialize_isolation_closeby_correction_tools()
 {
     if(dbg()>=5) cout << "XaodAnalysis::initialize_isolation_closeby_correction_tools" << endl;
 
-    string tool_name;
+    //string tool_name;
+    stringstream tool_name;
+    string type = "CP::IsolationCloseByCorrectionTool";
     // close by correction for lepton isolation selection WP FixedCutTightTrackOnly
     if(!m_isoCloseByTight.isUserConfigured()) {
-        tool_name = "SUSY_IsoCloseByTight";
-        SET_DUAL_TOOL(m_isoCloseByTight, CP::IsolationCloseByCorrectionTool, tool_name);
+        //tool_name = "SUSY_IsoCloseByTight";
+        //SET_DUAL_TOOL(m_isoCloseByTight, CP::IsolationCloseByCorrectionTool, tool_name);
+        tool_name << type << "/" << "SUSYIsoCloseByTight";
+        m_isoCloseByTight.setTypeAndName(tool_name.str());
         CHECK( m_isoCloseByTight.setProperty("IsolationSelectionTool", m_isoToolTight) );
         CHECK( m_isoCloseByTight.retrieve() );
     }
 
     // close by correction for lepton isolation selection WP GradientLoose
     if(!m_isoCloseByGradientLoose.isUserConfigured()) {
-        tool_name = "SUSY_IsoCloseByGradientLoose";
-        SET_DUAL_TOOL(m_isoCloseByGradientLoose, CP::IsolationCloseByCorrectionTool, tool_name);
+        //tool_name = "SUSY_IsoCloseByGradientLoose";
+        //SET_DUAL_TOOL(m_isoCloseByGradientLoose, CP::IsolationCloseByCorrectionTool, tool_name);
+        tool_name.str("");
+        tool_name << type << "/" << "SUSYIsoCloseByGradientLoose";
+        m_isoCloseByGradientLoose.setTypeAndName(tool_name.str());
         CHECK( m_isoCloseByGradientLoose.setProperty("IsolationSelectionTool", m_isoToolGradientLooseTight) );
         CHECK( m_isoCloseByGradientLoose.retrieve() );
     }
