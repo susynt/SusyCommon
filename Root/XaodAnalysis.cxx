@@ -1698,9 +1698,13 @@ void XaodAnalysis::fill_signal_objects(SusyNtSys sys, ST::SystInfo sysInfo)
     if(photons) {
     int iPh = 0;
     for(const auto& ph : *photons) {
-        bool pass_cleaning = (bool)ph->auxdata<char>("passCleaning");
-        bool pass_ambiguity = (bool)ph->auxdata<char>("passAmbiguity");
-        if(pass_cleaning && pass_ambiguity) { m_prePhotons.push_back(iPh); m_basePhotons.push_back(iPh); m_sigPhotons.push_back(iPh); }
+        // dantrim 2017 Sept 6 - we don't use photons in any analysis so I'm stopping the use of these patched decorators
+        //bool pass_cleaning = (bool)ph->auxdata<char>("passCleaning");
+        //bool pass_ambiguity = (bool)ph->auxdata<char>("passAmbiguity");
+        //if(pass_cleaning && pass_ambiguity) { m_prePhotons.push_back(iPh); m_basePhotons.push_back(iPh); m_sigPhotons.push_back(iPh); }
+        m_prePhotons.push_back(iPh);
+        m_basePhotons.push_back(iPh);
+        m_sigPhotons.push_back(iPh);
         iPh++;
     }
     if(dbg()>=10) cout << "XaodAnalysis::fill_signal_objects    sigPhotons size = " << m_sigPhotons.size() << endl;
