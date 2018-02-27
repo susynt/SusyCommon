@@ -118,6 +118,7 @@ class SusyNtMaker : public XaodAnalysis
         void store_jet_kinematic_sys(ST::SystInfo sysInfo, SusyNtSys sys);
 
 
+        void print_event_info(Long64_t chainEntry);
         void clear_event();
 
 

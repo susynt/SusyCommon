@@ -781,6 +781,7 @@ void XaodAnalysis::initialize_isolation_tools()
         CHECK( m_isoToolTight.setProperty("PhotonWP",   "FixedCutTight") );
         CHECK( m_isoToolTight.retrieve() );
     } // configured
+
 }
 //////////////////////////////////////////////////////////////////////////////
 void XaodAnalysis::initialize_isolation_closeby_correction_tools()
@@ -1671,12 +1672,12 @@ TBits XaodAnalysis::matchElectronTriggers(const xAOD::Electron& in)
     const vector<string> single_ele_trigs = TriggerTools::single_ele_triggers();
     const vector<string> di_ele_trigs = TriggerTools::di_ele_triggers();
     const vector<string> ele_muo_trigs = TriggerTools::ele_muo_triggers();
-    const vector<string> met_trigs = TriggerTools::met_triggers();
+    //const vector<string> met_trigs = TriggerTools::met_triggers();
 
     ele_trigs.insert(ele_trigs.end(), single_ele_trigs.begin(), single_ele_trigs.end());
     ele_trigs.insert(ele_trigs.end(), di_ele_trigs.begin(), di_ele_trigs.end());
     ele_trigs.insert(ele_trigs.end(), ele_muo_trigs.begin(), ele_muo_trigs.end());
-    ele_trigs.insert(ele_trigs.end(), met_trigs.begin(), met_trigs.end());
+    //ele_trigs.insert(ele_trigs.end(), met_trigs.begin(), met_trigs.end());
     
     for(unsigned int iTrig = 0; iTrig < trigs.size(); iTrig++) {
         // only consider ele_trigs

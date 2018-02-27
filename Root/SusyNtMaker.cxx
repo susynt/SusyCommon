@@ -40,6 +40,8 @@ using Susy::SusyNtMaker;
 
 using GhostList_t = std::vector< ElementLink<xAOD::IParticleContainer> >;
 static SG::AuxElement::ConstAccessor<GhostList_t> ghostAcc("GhostTrack");
+static SG::AuxElement::ConstAccessor<char>  acc_passFJvt("passFJvt");
+static SG::AuxElement::Accessor<float> acc_fjvt("fJvt");
 
 //////////////////////////////////////////////////////////////////////////////
 SusyNtMaker::SusyNtMaker() :
@@ -132,7 +134,7 @@ const vector<string> SusyNtMaker::cutflow_labels()
     labels.push_back("error flags");
     labels.push_back("good pvs");
     labels.push_back("bad muon");
-    labels.push_back("cosmic muon");
+    labels.push_back("cosmic muoni (off)");
     labels.push_back("jet cleaning");
     labels.push_back(">=1 pre lepton");
     labels.push_back(">=1 base lepton");
@@ -220,6 +222,7 @@ Bool_t SusyNtMaker::Process(Long64_t entry)
             cout << "SusyNtMaker::Process    ERROR Unable to fill output tree, abort (TTree::Fill returns " << bytes << ")" << endl;
             abort();
         }
+        print_event_info(chainEntry);
     }
 
     clear_event();
@@ -227,6 +230,59 @@ Bool_t SusyNtMaker::Process(Long64_t entry)
     return kTRUE;
 }
 //////////////////////////////////////////////////////////////////////////////
+void SusyNtMaker::print_event_info(Long64_t chainEntry) {
+    cout << chainEntry << ") SUSY Event Information Print: \n";
+    cout << "\tEvent #" << m_susyNt.evt()->eventNumber << '\n';
+    cout << "\tWeights and Scale Factors:\n";
+    // Event level scale factors
+    cout << "\t\tEvent Generator Weight = " << m_susyNt.evt()->w << '\n';
+    cout << "\t\tEvent Pileup Weight    = " << m_susyNt.evt()->wPileup << '\n';
+    cout << "\t\tSum of Event Weights   = " << m_susyNt.evt()->sumOfEventWeights << '\n';
+    // Lepton Scale Factors
+    cout << "\t\t" << m_preElectrons.size() << " electrons before baseline selection\n";
+    uint counter = 0;
+    float eleSF = 1;
+    for (const auto& el : *m_susyNt.ele()) {
+        float SF = el.eleEffSF[ElectronId::MediumLLH];
+        if(el.isSignal) eleSF *= SF;
+        cout << "\t\t\t";
+        if(el.isSignal) cout << "Signal ";
+        else if(el.isBaseline) cout << "Baseline ";
+        else cout << "Pre ";
+        cout << "Electron " << ++counter << ") "
+             << "MediumID SF = " << SF << '\n';
+    }
+    if (m_preElectrons.size()) {
+        cout << "\t\t\t-> Total SF (signal electrons) = " << eleSF << '\n';
+    }
+    cout << "\t\t" << m_preMuons.size() << " muons before baseline selection\n";
+    counter = 0;
+    float muoSF = 1;
+    for (const auto& muo : *m_susyNt.muo()) {
+        float SF = muo.muoEffSF[MuonId::Medium];
+        if(muo.isSignal) muoSF *= SF;
+        cout << "\t\t\t";
+        if(muo.isSignal) cout << "Signal ";
+        else if(muo.isBaseline) cout << "Baseline ";
+        else cout << "Pre ";
+        cout << "Muon " << ++counter << ") "
+             << "MediumID SF = " << SF << '\n';
+    }
+    if (m_preMuons.size()) {
+        cout << "\t\t\t-> Total SF (signal muons) = " << muoSF << '\n';
+    }
+    // Jet Scale Factors
+    cout << "\t\t" << m_preJets_nom.size() << " jets before baseline selection\n";
+    counter = 0;
+    for (const auto& jet : *m_susyNt.jet()) {
+        float btagSF = jet.effscalefact;
+        float jvtSF = jet.jvtEff;
+        cout << "\t\t\tJet " << ++counter << ") ";
+        cout << "Btag SF = " << btagSF << ", "
+             << "JVT SF = " << jvtSF << '\n';
+    }
+
+}
 void SusyNtMaker::clear_event()
 {
     // clear the object containers before the next event
@@ -499,11 +555,20 @@ bool SusyNtMaker::pass_object_level_selection()
     bool pass_jet_cleaning(m_cutFlags & ECut_BadJet);
     bool pass_good_pv(m_cutFlags & ECut_GoodVtx);
     bool pass_bad_muon(m_cutFlags & ECut_BadMuon);
-    bool pass_cosmic(m_cutFlags & ECut_Cosmic);
+    //bool pass_cosmic(m_cutFlags & ECut_Cosmic);
+    bool pass_cosmic(true);
 
     bool pass_ge1pl( (m_preElectrons.size() + m_preMuons.size()) >= 1);
     bool pass_ge1bl( (m_baseElectrons.size() + m_baseMuons.size()) >= 1);
     bool pass_ge1sl( (m_sigElectrons.size() + m_sigMuons.size()) >= 1);
+
+    bool pass_TauVtxrequirement = std::count_if(xaodVertices()->begin(), xaodVertices()->end(),
+                       [](const xAOD::Vertex * vtx ) -> unsigned short {
+                         return ( vtx->vertexType() == xAOD::VxType::PriVtx &&
+                                  vtx->nTrackParticles() >= 4 &&
+                                  std::fabs( vtx->z() ) <= 100 ); }
+                       );
+    pass_good_pv = pass_TauVtxrequirement && pass_good_pv;
 
     fillCutFlow(pass_good_pv, w);
     fillCutFlow(pass_bad_muon, w);
@@ -513,6 +578,8 @@ bool SusyNtMaker::pass_object_level_selection()
     fillCutFlow(pass_ge1bl, w);
     fillCutFlow(pass_ge1sl, w);
 
+  
+    
     ////////////////////////////////////////
     // apply filtering
     ////////////////////////////////////////
@@ -520,6 +587,8 @@ bool SusyNtMaker::pass_object_level_selection()
     if(do_event_filter()) {
         bool pass_nlep_filter = true;
         bool pass_trig_filter = true;
+        // filter on primary vertices (outdated from xTauFW)
+        event_passes = (event_passes && pass_TauVtxrequirement);
 
         // filter on pre lepton objects
         if(nlep_for_filter()>0) {
@@ -725,13 +794,39 @@ void SusyNtMaker::fill_electron_variables()
             int dsid = xaodEventInfo()->mcChannelNumber();
             fillElectronChargeFlip(electrons, xaodTruthParticles(), dsid);
         }
+
+
         std::vector<const xAOD::IParticle*> pVec;
         for(auto pobj : *electrons) {
             pVec.push_back((const xAOD::IParticle*) pobj);
         }
 
+        std::vector<int> evts_to_chk = {183392,97257,207450,317181,106752, 380544, 169156, 358344, 297324, 40469, 447279, 155952, 356072, 394258, 284949, 383831, 416255, 410878, 227189};
+        int evt = xaodEventInfo()->eventNumber();
+        bool print_evt = false;
+        for (const auto event : evts_to_chk) {
+            if (evt == event) {
+                print_evt = true;        
+                cout << "CUTFLOW CHECK: Event " << evt << ")\n";
+            }
+        }
+
         for(auto& i : m_preElectrons) {
             store_electron(*(electrons->at(i)), i, pVec);
+            if (print_evt) {
+                const xAOD::Electron& in = *(electrons->at(i));
+                cout << "\tLepton " << &in << ")\n";
+                cout << "\t\tpT = " << ( (in.pt()/1000 < 0) ? 0 : in.pt()/1000 ) << '\n';
+                cout << "\t\teta = " << in.eta() << '\n';
+                cout << "\t\tphi = " << in.phi() << '\n';
+                cout << "\t\tetconetopo20 = " << in.isolationValue(xAOD::Iso::topoetcone20) / 1000 << '\n';                      
+                cout << "\t\tetconetopo30 = " << in.isolationValue(xAOD::Iso::topoetcone30) / 1000 << '\n';                      
+                cout << "\t\tptcone20 = " << in.isolationValue(xAOD::Iso::ptcone20) / 1000 << '\n';                      
+                cout << "\t\tptcone30 = " << in.isolationValue(xAOD::Iso::ptcone30) / 1000 << '\n';
+                cout << "\t\tptvarcone20 = " << in.auxdataConst<float>("ptvarcone20") / 1000 << '\n';
+                cout << "\t\tptvarcone30 = " << in.auxdataConst<float>("ptvarcone30") / 1000 << '\n';
+            }
+
         }
     }
     else {
@@ -1818,6 +1913,8 @@ void SusyNtMaker::store_jet(const xAOD::Jet& in)
     const xAOD::EventInfo* eventinfo = xaodEventInfo();
 
     Susy::Jet out;
+    out.fjvt = acc_fjvt(in);
+    out.pass_fjvt = acc_passFJvt(in);
 
     ///////////////////////////////////////////
     // 4-vector
