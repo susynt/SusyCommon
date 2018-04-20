@@ -40,8 +40,8 @@ using Susy::SusyNtMaker;
 
 using GhostList_t = std::vector< ElementLink<xAOD::IParticleContainer> >;
 static SG::AuxElement::ConstAccessor<GhostList_t> ghostAcc("GhostTrack");
-static SG::AuxElement::ConstAccessor<char>  acc_passFJvt("passFJvt");
-static SG::AuxElement::Accessor<float> acc_fjvt("fJvt");
+//static SG::AuxElement::ConstAccessor<char>  acc_passFJvt("passFJvt");
+//static SG::AuxElement::Accessor<float> acc_fjvt("fJvt");
 
 //////////////////////////////////////////////////////////////////////////////
 SusyNtMaker::SusyNtMaker() :
@@ -222,7 +222,7 @@ Bool_t SusyNtMaker::Process(Long64_t entry)
             cout << "SusyNtMaker::Process    ERROR Unable to fill output tree, abort (TTree::Fill returns " << bytes << ")" << endl;
             abort();
         }
-        print_event_info(chainEntry);
+        //print_event_info(chainEntry);
     }
 
     clear_event();
@@ -801,13 +801,13 @@ void SusyNtMaker::fill_electron_variables()
             pVec.push_back((const xAOD::IParticle*) pobj);
         }
 
-        std::vector<int> evts_to_chk = {183392,97257,207450,317181,106752, 380544, 169156, 358344, 297324, 40469, 447279, 155952, 356072, 394258, 284949, 383831, 416255, 410878, 227189};
+        //TESTING :: printout of isolation
+        std::vector<int> evts_to_chk = {};
         int evt = xaodEventInfo()->eventNumber();
         bool print_evt = false;
         for (const auto event : evts_to_chk) {
             if (evt == event) {
-                print_evt = true;        
-                cout << "CUTFLOW CHECK: Event " << evt << ")\n";
+                //print_evt = true;        
             }
         }
 
@@ -1913,8 +1913,8 @@ void SusyNtMaker::store_jet(const xAOD::Jet& in)
     const xAOD::EventInfo* eventinfo = xaodEventInfo();
 
     Susy::Jet out;
-    out.fjvt = acc_fjvt(in);
-    out.pass_fjvt = acc_passFJvt(in);
+    //out.fjvt = acc_fjvt(in);
+    //out.pass_fjvt = acc_passFJvt(in);
 
     ///////////////////////////////////////////
     // 4-vector

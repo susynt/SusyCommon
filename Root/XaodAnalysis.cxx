@@ -700,7 +700,7 @@ void XaodAnalysis::initialize_tau_tools()
     
         if(tauRecalcOLR) {
             CHECK( m_tauSelToolMedium.setProperty("IgnoreAODFixCheck", true) );
-            CHECK( m_tauSelToolMedium.setProperty("RecalcEleOLR", true) );
+            CHECK( m_tauSelToolMedium.setProperty("RecalcEleOLR", false) );
         }
     
         CHECK( m_tauSelToolMedium.retrieve() );
@@ -845,6 +845,8 @@ void XaodAnalysis::initialize_SUSYTools()
 
             // add our signal
             prw_files.push_back(m_data_dir + "SusyCommon/signal_prw.root");
+            prw_files.push_back(m_data_dir + "SusyCommon/higgs_prw.root");
+            prw_files.push_back(m_data_dir + "SusyCommon/higgs_prw2.root");
 
             // add'l MC
             prw_files.push_back(m_data_dir + "SusyCommon/additional_mc_prw.root");
